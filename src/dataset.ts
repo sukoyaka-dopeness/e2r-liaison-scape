@@ -66,3 +66,12 @@ export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges:
   });
   return { nodes, edges };
 }
+
+export function getEntityDetail(dataset: Dataset, entityId: string) {
+  const entity = dataset.entities.find((candidate) => candidate.id === entityId);
+  if (!entity) return null;
+  const relationIds = dataset.relations
+    .filter((relation) => relation.sourceId === entityId || relation.targetId === entityId)
+    .map((relation) => relation.id);
+  return { entity, relationIds };
+}

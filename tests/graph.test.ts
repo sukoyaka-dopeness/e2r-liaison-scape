@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildEntityGraph, type Dataset } from "../src/dataset.ts";
+import { buildEntityGraph, getEntityDetail, type Dataset } from "../src/dataset.ts";
 
 test("A2: builds Entity nodes and Relation edges without making Relations nodes", () => {
   const dataset: Dataset = {
@@ -29,4 +29,17 @@ test("A3/A8: omits Event endpoint edges from Entity graph and preserves directio
   assert.deepEqual(graph.edges, [{ id: "entity-edge", sourceId: "entity", targetId: "entity" }]);
   assert.equal(graph.edges[0]?.sourceId, "entity");
   assert.equal(graph.edges[0]?.targetId, "entity");
+});
+
+test("A7: Entity Detail resolves the selected Entity and its Relations", () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [{ id: "entity-1", name: "Apollo 11", description: "Mission" }],
+    events: [],
+    relations: [{ id: "relation-1", sourceId: "entity-1", targetId: "entity-1" }],
+  };
+  const detail = getEntityDetail(dataset, "entity-1");
+  assert.equal(detail?.entity.name, "Apollo 11");
+  assert.deepEqual(detail?.relationIds, ["relation-1"]);
+  assert.equal(getEntityDetail(dataset, "missing"), null);
 });

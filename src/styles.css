@@ -10,3 +10,7 @@ li { margin: .35rem 0; }
 .node circle { fill: #dbeafe; stroke: currentColor; stroke-width: 2; }
 .node.selected circle { fill: #bfdbfe; stroke-width: 4; }
 .node text { fill: #111827; font-size: 12px; pointer-events: none; }
+.detail { margin-top: 1rem; padding: 1rem; border: 1px solid #d1d5db; background: #f9fafb; }
+.detail dl { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1rem; }
+.detail dt { font-weight: 700; }
+.detail dd { margin: 0; overflow-wrap: anywhere; }

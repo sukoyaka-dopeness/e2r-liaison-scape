@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { buildEntityGraph, loadDataset, serializeDataset, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
+import { buildEntityGraph, getEntityDetail, loadDataset, serializeDataset, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -14,6 +14,7 @@ export default function App() {
   const dragRef = useRef<{ kind: "canvas" | "node"; id?: string; x: number; y: number } | null>(null);
   const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [] }, [dataset]);
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
+  const selectedDetail = dataset && selectedId ? getEntityDetail(dataset, selectedId) : null;
 
   function open(raw: string) {
     const result = loadDataset(raw);
@@ -111,6 +112,17 @@ export default function App() {
             </g>
           </svg>
           <p role="status">{selectedId ? `Selected Entity: ${selectedId}` : "Select an Entity"}</p>
+          {selectedDetail && (
+            <aside className="detail" aria-label="Entity Detail">
+              <h3>Entity Detail</h3>
+              <dl>
+                <dt>ID</dt><dd>{selectedDetail.entity.id}</dd>
+                <dt>Name</dt><dd>{typeof selectedDetail.entity.name === "string" ? selectedDetail.entity.name : "(unnamed)"}</dd>
+                {typeof selectedDetail.entity.description === "string" && <><dt>Description</dt><dd>{selectedDetail.entity.description}</dd></>}
+                <dt>Relations</dt><dd>{selectedDetail.relationIds.length}</dd>
+              </dl>
+            </aside>
+          )}
         </section>
       )}
     </main>
