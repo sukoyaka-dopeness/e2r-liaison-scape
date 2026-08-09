@@ -72,3 +72,8 @@ test("A14: writes coordinates only when an explicit save operation is applied", 
   assert.deepEqual(dataset.entities[0]?.extensions, { coordinate: { positions: [{ spaceId: "other", x: 1, y: 2 }] } });
   assert.deepEqual((saved.entities[0]?.extensions as Record<string, unknown>).coordinate, { positions: [{ spaceId: "other", x: 1, y: 2 }, { spaceId: "linkscape", x: 80, y: 90 }] });
 });
+
+test("A15: fallback positions are deterministic for unchanged graph data", () => {
+  const dataset: Dataset = { version: "1.0", entities: [{ id: "a" }, { id: "b" }, { id: "c" }], events: [], relations: [] };
+  assert.deepEqual(buildEntityGraph(dataset).nodes, buildEntityGraph(dataset).nodes);
+});

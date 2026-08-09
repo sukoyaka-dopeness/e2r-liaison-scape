@@ -62,3 +62,13 @@ test("A19: validates the current Dataset before export and keeps warnings separa
   assert.equal(diagnostics[0]?.severity, "warning");
   assert.equal(validateDatasetForExport({ version: "1.0", entities: [], events: [] } as never)[0]?.severity, "error");
 });
+
+test("A10: rejects a Relation-to-Relation endpoint as a Core error", () => {
+  const raw = JSON.stringify({ version: "1.0", entities: [{ id: "entity-1" }], events: [], relations: [
+    { id: "relation-1", sourceId: "relation-2", targetId: "entity-1" },
+    { id: "relation-2", sourceId: "entity-1", targetId: "entity-1" },
+  ] });
+  const result = loadDataset(raw);
+  assert.equal(result.dataset, null);
+  assert.ok(result.diagnostics.some(({ code }) => code === "relation_source_is_relation"));
+});
