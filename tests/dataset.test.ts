@@ -72,3 +72,12 @@ test("A10: rejects a Relation-to-Relation endpoint as a Core error", () => {
   assert.equal(result.dataset, null);
   assert.ok(result.diagnostics.some(({ code }) => code === "relation_source_is_relation"));
 });
+
+test("A18: view state is not serialized into the interoperable Dataset", () => {
+  const dataset = { version: "1.0", entities: [], events: [], relations: [] };
+  const viewState = { zoom: 1.5, pan: { x: 20, y: 30 }, selectedId: "entity-1", panel: "detail" };
+  const exported = JSON.parse(serializeDataset(dataset));
+  assert.deepEqual(exported, dataset);
+  assert.equal("viewState" in exported, false);
+  assert.equal(viewState.selectedId, "entity-1");
+});
