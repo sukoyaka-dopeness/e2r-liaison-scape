@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { buildEntityGraph, getEntityDetail, loadDataset, serializeDataset, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
+import { applyStoredCoordinates, buildEntityGraph, getEntityDetail, getStoredCoordinates, loadDataset, serializeDataset, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -11,6 +11,7 @@ export default function App() {
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [coordinatesDirty, setCoordinatesDirty] = useState(false);
   const dragRef = useRef<{ kind: "canvas" | "node"; id?: string; x: number; y: number } | null>(null);
   const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [] }, [dataset]);
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
@@ -31,7 +32,8 @@ export default function App() {
     }
     setDataset(result.dataset);
     setSelectedId(null);
-    setPositions({});
+    setPositions(getStoredCoordinates(result.dataset));
+    setCoordinatesDirty(false);
     setPan({ x: 0, y: 0 });
     setScale(1);
     setMessage(`Loaded ${result.dataset.entities.length} Entities and ${result.dataset.relations.length} Relations.`);
@@ -46,7 +48,14 @@ export default function App() {
     const dy = (event.clientY - drag.y) / scale;
     dragRef.current = { ...drag, x: event.clientX, y: event.clientY };
     if (drag.kind === "canvas") setPan((value) => ({ x: value.x + dx * scale, y: value.y + dy * scale }));
-    else if (drag.id) setPositions((value) => ({ ...value, [drag.id!]: { ...nodePosition(nodeMap.get(drag.id!)!), x: nodePosition(nodeMap.get(drag.id!)!).x + dx, y: nodePosition(nodeMap.get(drag.id!)!).y + dy } }));
+    else if (drag.id) { setCoordinatesDirty(true); setPositions((value) => ({ ...value, [drag.id!]: { ...nodePosition(nodeMap.get(drag.id!)!), x: nodePosition(nodeMap.get(drag.id!)!).x + dx, y: nodePosition(nodeMap.get(drag.id!)!).y + dy } })); }
+  }
+
+  function saveCoordinates() {
+    if (!dataset || !coordinatesDirty) return;
+    setDataset(applyStoredCoordinates(dataset, positions));
+    setCoordinatesDirty(false);
+    setMessage("Entity coordinates saved to the Dataset.");
   }
 
   function exportDataset() {
@@ -73,6 +82,7 @@ export default function App() {
         }}
       />
       <button type="button" disabled={!dataset} onClick={exportDataset}>Export E2R JSON</button>
+      <button type="button" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>Save coordinates</button>
       <p role="status">{message}</p>
       {diagnostics.length > 0 && (
         <ul aria-label="Validation diagnostics">
@@ -112,6 +122,7 @@ export default function App() {
             </g>
           </svg>
           <p role="status">{selectedId ? `Selected Entity: ${selectedId}` : "Select an Entity"}</p>
+          <p>{coordinatesDirty ? "Moved coordinates are temporary until you save them." : "Stored coordinates are restored when available."}</p>
           {selectedDetail && (
             <aside className="detail" aria-label="Entity Detail">
               <h3>Entity Detail</h3>

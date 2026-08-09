@@ -49,6 +49,41 @@ export function serializeDataset(dataset: Dataset): string {
 
 export type GraphNode = { id: string; label: string; x: number; y: number };
 export type GraphEdge = { id: string; sourceId: string; targetId: string };
+export type Coordinate = { x: number; y: number };
+
+function isCoordinate(value: unknown): value is Coordinate {
+  return typeof value === "object" && value !== null && typeof (value as Record<string, unknown>).x === "number" && typeof (value as Record<string, unknown>).y === "number";
+}
+
+export function getStoredCoordinates(dataset: Dataset): Record<string, Coordinate> {
+  const result: Record<string, Coordinate> = {};
+  for (const entity of dataset.entities) {
+    const extension = entity.extensions;
+    if (typeof extension !== "object" || extension === null) continue;
+    const coordinate = (extension as Record<string, unknown>).coordinate;
+    if (typeof coordinate !== "object" || coordinate === null) continue;
+    const positions = (coordinate as Record<string, unknown>).positions;
+    if (Array.isArray(positions)) {
+      const position = positions.find((value) => isCoordinate(value) && (value as Record<string, unknown>).spaceId === "linkscape") ?? positions.find(isCoordinate);
+      if (position) result[entity.id] = { x: position.x, y: position.y };
+    }
+  }
+  return result;
+}
+
+export function applyStoredCoordinates(dataset: Dataset, positions: Record<string, Coordinate>): Dataset {
+  const copy = structuredClone(dataset) as Dataset;
+  copy.entities = copy.entities.map((entity) => {
+    const position = positions[entity.id];
+    if (!position) return entity;
+    const extensions = typeof entity.extensions === "object" && entity.extensions !== null ? entity.extensions as Record<string, unknown> : {};
+    const coordinate = typeof extensions.coordinate === "object" && extensions.coordinate !== null ? extensions.coordinate as Record<string, unknown> : {};
+    const existing = Array.isArray(coordinate.positions) ? coordinate.positions as unknown[] : [];
+    const withoutLinkscape = existing.filter((value) => !(isCoordinate(value) && (value as Record<string, unknown>).spaceId === "linkscape"));
+    return { ...entity, extensions: { ...extensions, coordinate: { ...coordinate, positions: [...withoutLinkscape, { spaceId: "linkscape", x: position.x, y: position.y }] } } };
+  });
+  return copy;
+}
 
 export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges: GraphEdge[] } {
   const nodes = dataset.entities.map((entity, index) => ({

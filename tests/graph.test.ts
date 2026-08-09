@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildEntityGraph, getEntityDetail, type Dataset } from "../src/dataset.ts";
+import { applyStoredCoordinates, buildEntityGraph, getEntityDetail, getStoredCoordinates, type Dataset } from "../src/dataset.ts";
 
 test("A2: builds Entity nodes and Relation edges without making Relations nodes", () => {
   const dataset: Dataset = {
@@ -42,4 +42,21 @@ test("A7: Entity Detail resolves the selected Entity and its Relations", () => {
   assert.equal(detail?.entity.name, "Apollo 11");
   assert.deepEqual(detail?.relationIds, ["relation-1"]);
   assert.equal(getEntityDetail(dataset, "missing"), null);
+});
+
+test("A11/A13: restores stored coordinates without mutating the input Dataset", () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [{ id: "entity-1", extensions: { coordinate: { positions: [{ spaceId: "main", x: 12, y: 24 }] } } }],
+    events: [], relations: [],
+  };
+  assert.deepEqual(getStoredCoordinates(dataset), { "entity-1": { x: 12, y: 24 } });
+  assert.deepEqual(dataset.entities[0]?.extensions, { coordinate: { positions: [{ spaceId: "main", x: 12, y: 24 }] } });
+});
+
+test("A14: writes coordinates only when an explicit save operation is applied", () => {
+  const dataset: Dataset = { version: "1.0", entities: [{ id: "entity-1", extensions: { coordinate: { positions: [{ spaceId: "other", x: 1, y: 2 }] } } }], events: [], relations: [] };
+  const saved = applyStoredCoordinates(dataset, { "entity-1": { x: 80, y: 90 } });
+  assert.deepEqual(dataset.entities[0]?.extensions, { coordinate: { positions: [{ spaceId: "other", x: 1, y: 2 }] } });
+  assert.deepEqual((saved.entities[0]?.extensions as Record<string, unknown>).coordinate, { positions: [{ spaceId: "other", x: 1, y: 2 }, { spaceId: "linkscape", x: 80, y: 90 }] });
 });
