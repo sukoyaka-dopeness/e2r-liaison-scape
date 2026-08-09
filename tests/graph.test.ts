@@ -69,6 +69,13 @@ test("A11/A13: restores stored coordinates without mutating the input Dataset", 
   assert.deepEqual(dataset.entities[0]?.extensions, { coordinate: { positions: [{ spaceId: "main", x: 12, y: 24 }] } });
 });
 
+test("A12: missing coordinates receive a temporary deterministic display position", () => {
+  const dataset: Dataset = { version: "1.0", entities: [{ id: "entity-1" }], events: [], relations: [] };
+  const graph = buildEntityGraph(dataset);
+  assert.deepEqual(graph.nodes[0] && { x: graph.nodes[0].x, y: graph.nodes[0].y }, { x: 140, y: 110 });
+  assert.equal(dataset.entities[0]?.extensions, undefined);
+});
+
 test("A14: writes coordinates only when an explicit save operation is applied", () => {
   const dataset: Dataset = { version: "1.0", entities: [{ id: "entity-1", extensions: { coordinate: { positions: [{ spaceId: "other", x: 1, y: 2 }] } } }], events: [], relations: [] };
   const saved = applyStoredCoordinates(dataset, { "entity-1": { x: 80, y: 90 } });
