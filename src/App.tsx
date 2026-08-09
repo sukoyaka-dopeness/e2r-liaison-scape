@@ -13,7 +13,7 @@ export default function App() {
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
   const [coordinatesDirty, setCoordinatesDirty] = useState(false);
   const dragRef = useRef<{ kind: "canvas" | "node"; id?: string; x: number; y: number } | null>(null);
-  const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [] }, [dataset]);
+  const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [], unsupportedEdges: 0 }, [dataset]);
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
   const selectedDetail = dataset && selectedId ? getEntityDetail(dataset, selectedId) : null;
 
@@ -120,6 +120,7 @@ export default function App() {
         <section>
           <h2>Entity graph</h2>
           <p>{graph.nodes.length} Entity nodes and {graph.edges.length} Entity-to-Entity edges.</p>
+          {graph.unsupportedEdges > 0 && <p role="status">{graph.unsupportedEdges} Relation(s) with an Event endpoint are not shown in the Entity-first MVP.</p>}
           <svg
             className="graph"
             viewBox="0 0 800 500"

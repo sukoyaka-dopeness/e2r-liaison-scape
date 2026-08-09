@@ -12,6 +12,7 @@ test("A2: builds Entity nodes and Relation edges without making Relations nodes"
   const graph = buildEntityGraph(dataset);
   assert.deepEqual(graph.nodes.map(({ id }) => id), ["a", "b"]);
   assert.deepEqual(graph.edges, [{ id: "r", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1 }]);
+  assert.equal(graph.unsupportedEdges, 0);
   assert.equal(graph.nodes.some(({ id }) => id === "r"), false);
 });
 
@@ -29,6 +30,7 @@ test("A3/A8: omits Event endpoint edges from Entity graph and preserves directio
   assert.deepEqual(graph.edges, [{ id: "entity-edge", sourceId: "entity", targetId: "entity", parallelIndex: 0, parallelCount: 1 }]);
   assert.equal(graph.edges[0]?.sourceId, "entity");
   assert.equal(graph.edges[0]?.targetId, "entity");
+  assert.equal(graph.unsupportedEdges, 1);
 });
 
 test("A9: retains self-relations and distinguishes multiple edges", () => {
