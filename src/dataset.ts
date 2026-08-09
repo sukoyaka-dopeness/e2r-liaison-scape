@@ -53,7 +53,7 @@ export function validateDatasetForExport(dataset: Dataset): Diagnostic[] {
 }
 
 export type GraphNode = { id: string; label: string; x: number; y: number };
-export type GraphEdge = { id: string; sourceId: string; targetId: string };
+export type GraphEdge = { id: string; sourceId: string; targetId: string; parallelIndex: number; parallelCount: number };
 export type Coordinate = { x: number; y: number };
 
 function isCoordinate(value: unknown): value is Coordinate {
@@ -102,8 +102,16 @@ export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges:
     const sourceId = typeof relation.sourceId === "string" ? relation.sourceId : "";
     const targetId = typeof relation.targetId === "string" ? relation.targetId : "";
     if (!entityIds.has(sourceId) || !entityIds.has(targetId)) return [];
-    return [{ id: relation.id, sourceId, targetId }];
+    return [{ id: relation.id, sourceId, targetId, parallelIndex: 0, parallelCount: 1 }];
   });
+  const groups = new Map<string, typeof edges>();
+  for (const edge of edges) {
+    const key = `${edge.sourceId}\u0000${edge.targetId}`;
+    const group = groups.get(key) ?? [];
+    group.push(edge);
+    groups.set(key, group);
+  }
+  for (const group of groups.values()) group.forEach((edge, index) => { edge.parallelIndex = index; edge.parallelCount = group.length; });
   return { nodes, edges };
 }
 

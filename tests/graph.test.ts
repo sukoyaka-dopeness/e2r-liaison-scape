@@ -11,7 +11,7 @@ test("A2: builds Entity nodes and Relation edges without making Relations nodes"
   };
   const graph = buildEntityGraph(dataset);
   assert.deepEqual(graph.nodes.map(({ id }) => id), ["a", "b"]);
-  assert.deepEqual(graph.edges, [{ id: "r", sourceId: "a", targetId: "b" }]);
+  assert.deepEqual(graph.edges, [{ id: "r", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1 }]);
   assert.equal(graph.nodes.some(({ id }) => id === "r"), false);
 });
 
@@ -26,9 +26,21 @@ test("A3/A8: omits Event endpoint edges from Entity graph and preserves directio
     ],
   };
   const graph = buildEntityGraph(dataset);
-  assert.deepEqual(graph.edges, [{ id: "entity-edge", sourceId: "entity", targetId: "entity" }]);
+  assert.deepEqual(graph.edges, [{ id: "entity-edge", sourceId: "entity", targetId: "entity", parallelIndex: 0, parallelCount: 1 }]);
   assert.equal(graph.edges[0]?.sourceId, "entity");
   assert.equal(graph.edges[0]?.targetId, "entity");
+});
+
+test("A9: retains self-relations and distinguishes multiple edges", () => {
+  const dataset: Dataset = { version: "1.0", entities: [{ id: "a" }, { id: "b" }], events: [], relations: [
+    { id: "self", sourceId: "a", targetId: "a" },
+    { id: "one", sourceId: "a", targetId: "b" },
+    { id: "two", sourceId: "a", targetId: "b" },
+  ] };
+  const graph = buildEntityGraph(dataset);
+  assert.equal(graph.edges.find((edge) => edge.id === "self")?.parallelCount, 1);
+  assert.deepEqual(graph.edges.filter((edge) => edge.sourceId === "a" && edge.targetId === "b").map((edge) => edge.parallelIndex), [0, 1]);
+  assert.equal(graph.edges.find((edge) => edge.id === "one")?.parallelCount, 2);
 });
 
 test("A7: Entity Detail resolves the selected Entity and its Relations", () => {

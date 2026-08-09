@@ -41,6 +41,24 @@ export default function App() {
 
   function nodePosition(node: GraphNode) { return positions[node.id] ?? node; }
 
+  function edgePath(edge: { sourceId: string; targetId: string; parallelIndex: number; parallelCount: number }) {
+    const source = nodePosition(nodeMap.get(edge.sourceId)!);
+    const target = nodePosition(nodeMap.get(edge.targetId)!);
+    if (edge.sourceId === edge.targetId) {
+      const radius = 42 + edge.parallelIndex * 12;
+      return `M ${source.x + 22} ${source.y - 22} C ${source.x + radius} ${source.y - radius}, ${source.x - radius} ${source.y - radius}, ${source.x - 22} ${source.y - 22}`;
+    }
+    const offset = (edge.parallelIndex - (edge.parallelCount - 1) / 2) * 24;
+    const midX = (source.x + target.x) / 2;
+    const midY = (source.y + target.y) / 2;
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const length = Math.max(1, Math.hypot(dx, dy));
+    const controlX = midX - (dy / length) * offset;
+    const controlY = midY + (dx / length) * offset;
+    return `M ${source.x} ${source.y} Q ${controlX} ${controlY} ${target.x} ${target.y}`;
+  }
+
   function onCanvasPointerMove(event: React.PointerEvent<SVGSVGElement>) {
     const drag = dragRef.current;
     if (!drag) return;
@@ -116,9 +134,7 @@ export default function App() {
             <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="currentColor" /></marker></defs>
             <g transform={`translate(${pan.x} ${pan.y}) scale(${scale})`}>
               {graph.edges.map((edge) => {
-                const source = nodePosition(nodeMap.get(edge.sourceId)!);
-                const target = nodePosition(nodeMap.get(edge.targetId)!);
-                return <line key={edge.id} x1={source.x} y1={source.y} x2={target.x} y2={target.y} className="edge" markerEnd="url(#arrow)" />;
+                return <path key={edge.id} d={edgePath(edge)} className="edge" markerEnd="url(#arrow)" />;
               })}
               {graph.nodes.map((node) => { const position = nodePosition(node); return (
                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}`} transform={`translate(${position.x} ${position.y})`} onClick={() => setSelectedId(node.id)} onPointerDown={(event) => { event.stopPropagation(); dragRef.current = { kind: "node", id: node.id, x: event.clientX, y: event.clientY }; }}>
