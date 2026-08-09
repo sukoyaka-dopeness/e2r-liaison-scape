@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "entities": [
+    { "id": "entity-alice", "name": "Alice" },
+    { "id": "entity-bob", "name": "Bob" },
+    { "id": "entity-cafe", "name": "Harbor Cafe" },
+    { "id": "entity-studio", "name": "North Studio" },
+    { "id": "entity-library", "name": "City Library" }
+  ],
+  "events": [],
+  "relations": [
+    { "id": "relation-alice-bob", "sourceId": "entity-alice", "targetId": "entity-bob" },
+    { "id": "relation-alice-cafe", "sourceId": "entity-alice", "targetId": "entity-cafe" },
+    { "id": "relation-bob-cafe", "sourceId": "entity-bob", "targetId": "entity-cafe" },
+    { "id": "relation-bob-studio", "sourceId": "entity-bob", "targetId": "entity-studio" },
+    { "id": "relation-cafe-library", "sourceId": "entity-cafe", "targetId": "entity-library" },
+    { "id": "relation-studio-library", "sourceId": "entity-studio", "targetId": "entity-library" }
+  ]
+}
