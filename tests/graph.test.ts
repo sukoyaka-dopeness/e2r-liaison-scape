@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { applyStoredCoordinates, buildEntityGraph, getEntityDetail, getStoredCoordinates, type Dataset } from "../src/dataset.ts";
+import { clampScale, zoomScale } from "../src/viewport.ts";
 
 test("A2: builds Entity nodes and Relation edges without making Relations nodes", () => {
   const dataset: Dataset = {
@@ -78,4 +79,11 @@ test("A14: writes coordinates only when an explicit save operation is applied", 
 test("A15: fallback positions are deterministic for unchanged graph data", () => {
   const dataset: Dataset = { version: "1.0", entities: [{ id: "a" }, { id: "b" }, { id: "c" }], events: [], relations: [] };
   assert.deepEqual(buildEntityGraph(dataset).nodes, buildEntityGraph(dataset).nodes);
+});
+
+test("A6: viewport zoom remains bounded and is independent of Dataset data", () => {
+  assert.equal(clampScale(10), 2.5);
+  assert.equal(clampScale(0), 0.5);
+  assert.equal(zoomScale(1, "in"), 1.1);
+  assert.equal(zoomScale(1, "out"), 0.9);
 });

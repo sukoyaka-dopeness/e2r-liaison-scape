@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { applyStoredCoordinates, buildEntityGraph, getEntityDetail, getStoredCoordinates, loadDataset, serializeDataset, type Dataset, type Diagnostic, validateDatasetForExport, type GraphNode } from "./dataset";
+import { clampScale, zoomScale } from "./viewport";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -76,6 +77,12 @@ export default function App() {
     setMessage("Entity coordinates saved to the Dataset.");
   }
 
+  function resetView() {
+    setScale(1);
+    setPan({ x: 0, y: 0 });
+    setSelectedId(null);
+  }
+
   function exportDataset() {
     if (!dataset) return;
     const exportDiagnostics = validateDatasetForExport(dataset);
@@ -120,13 +127,19 @@ export default function App() {
         <section>
           <h2>Entity graph</h2>
           <p>{graph.nodes.length} Entity nodes and {graph.edges.length} Entity-to-Entity edges.</p>
+          <div className="viewport-controls" aria-label="Graph view controls">
+            <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>Zoom out</button>
+            <span aria-live="polite">{Math.round(scale * 100)}%</span>
+            <button type="button" onClick={() => setScale((value) => zoomScale(value, "in"))}>Zoom in</button>
+            <button type="button" onClick={resetView}>Reset view</button>
+          </div>
           {graph.unsupportedEdges > 0 && <p role="status">{graph.unsupportedEdges} Relation(s) with an Event endpoint are not shown in the Entity-first MVP.</p>}
           <svg
             className="graph"
             viewBox="0 0 800 500"
             role="img"
             aria-label="Entity relationship graph"
-            onWheel={(event) => { event.preventDefault(); setScale((value) => Math.min(2.5, Math.max(.5, value * (event.deltaY < 0 ? 1.1 : .9)))); }}
+            onWheel={(event) => { event.preventDefault(); setScale((value) => clampScale(value * (event.deltaY < 0 ? 1.1 : .9))); }}
             onPointerDown={(event) => { if (event.target === event.currentTarget) dragRef.current = { kind: "canvas", x: event.clientX, y: event.clientY }; }}
             onPointerMove={onCanvasPointerMove}
             onPointerUp={() => { dragRef.current = null; }}
