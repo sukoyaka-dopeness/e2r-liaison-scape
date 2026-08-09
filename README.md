@@ -6,13 +6,19 @@ relationships. Its MVP boundary is defined by the
 
 ## Current status
 
-The initial React + TypeScript + Vite application is in place. The current
-slice implements Dataset import, shared Validator diagnostics, invalid-input
-preservation for the caller, and JSON save round trips that retain unknown
-Core fields and Extensions.
+The initial React + TypeScript + Vite application implements the documented
+Entity-first MVP boundary. It imports and validates Datasets, preserves invalid
+input for the caller, displays Entity nodes and directed Relation edges,
+supports Entity selection and Detail, zooming, panning, temporary dragging,
+stored-coordinate restoration, explicit coordinate saving, and Export-time
+Validator checks. Unknown Core fields and Extensions survive save round trips.
 
-Graph rendering and navigation are the next MVP slice. Event editing,
-semantic Relation labels, standardized Coordinate/Layout Extensions, and
+The acceptance test suite currently covers A1 through A19, including self and
+parallel Relations, Event-endpoint limitations, deterministic fallback
+positions, view-state separation, and warning/error distinction.
+
+Event editing, semantic Relation labels, Relation creation/deletion,
+standardized Coordinate/Layout Extensions, graph search/filtering, and
 application view-state serialization are outside the initial MVP.
 
 ## Development
