@@ -47,6 +47,11 @@ export function serializeDataset(dataset: Dataset): string {
   return JSON.stringify(dataset, null, 2);
 }
 
+export function validateDatasetForExport(dataset: Dataset): Diagnostic[] {
+  const result = validateDataset(dataset) as { diagnostics: Diagnostic[] };
+  return result.diagnostics;
+}
+
 export type GraphNode = { id: string; label: string; x: number; y: number };
 export type GraphEdge = { id: string; sourceId: string; targetId: string };
 export type Coordinate = { x: number; y: number };

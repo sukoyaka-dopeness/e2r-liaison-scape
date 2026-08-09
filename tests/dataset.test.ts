@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { loadDataset, serializeDataset } from "../src/dataset.ts";
+import { loadDataset, serializeDataset, validateDatasetForExport } from "../src/dataset.ts";
 
 const empty = JSON.stringify({ version: "1.0", entities: [], events: [], relations: [] });
 
@@ -53,4 +53,12 @@ test("invalid JSON remains available for the caller to preserve", () => {
   assert.equal(result.dataset, null);
   assert.equal(result.raw, raw);
   assert.ok(result.parseError);
+});
+
+test("A19: validates the current Dataset before export and keeps warnings separate", () => {
+  const dataset = JSON.parse(empty) as Record<string, unknown>;
+  dataset.extensions = { "vendor.example": { keep: true } };
+  const diagnostics = validateDatasetForExport(dataset as never);
+  assert.equal(diagnostics[0]?.severity, "warning");
+  assert.equal(validateDatasetForExport({ version: "1.0", entities: [], events: [] } as never)[0]?.severity, "error");
 });

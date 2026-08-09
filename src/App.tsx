@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { applyStoredCoordinates, buildEntityGraph, getEntityDetail, getStoredCoordinates, loadDataset, serializeDataset, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
+import { applyStoredCoordinates, buildEntityGraph, getEntityDetail, getStoredCoordinates, loadDataset, serializeDataset, type Dataset, type Diagnostic, validateDatasetForExport, type GraphNode } from "./dataset";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -60,6 +60,13 @@ export default function App() {
 
   function exportDataset() {
     if (!dataset) return;
+    const exportDiagnostics = validateDatasetForExport(dataset);
+    setDiagnostics(exportDiagnostics);
+    if (exportDiagnostics.some(({ severity }) => severity === "error")) {
+      setMessage("Export blocked: the Dataset has validation errors.");
+      return;
+    }
+    if (exportDiagnostics.length > 0) setMessage("Exporting with validation warnings.");
     const blob = new Blob([serializeDataset(dataset)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
