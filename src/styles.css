@@ -1,7 +1,22 @@
 :root { font-family: system-ui, sans-serif; color: #1f2937; background: #f3f4f6; }
 body { margin: 0; }
 main { max-width: 52rem; margin: 4rem auto; padding: 2rem; background: white; border-radius: 1rem; }
-button { margin-left: .75rem; }
+button {
+  box-sizing: border-box;
+  min-height: 40px;
+  margin-left: .75rem;
+  padding: 8px 12px;
+  border: 1px solid #9ca3af;
+  border-radius: 6px;
+  font: inherit;
+  line-height: 120%;
+  color: #1f2937;
+  background: white;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: #f3f4f6; }
+button:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+button:disabled { opacity: .55; cursor: not-allowed; }
 li { margin: .35rem 0; }
 .graph { width: 100%; min-height: 24rem; border: 1px solid #d1d5db; background: #f9fafb; touch-action: none; }
 .edge { stroke: #6b7280; stroke-width: 2; }
