@@ -41,6 +41,7 @@ export default function App() {
   }
 
   function nodePosition(node: GraphNode) { return positions[node.id] ?? node; }
+  function nodeLabel(label: string) { return label.length > 14 ? `${label.slice(0, 13)}…` : label; }
 
   function edgePath(edge: { sourceId: string; targetId: string; parallelIndex: number; parallelCount: number }) {
     const source = nodePosition(nodeMap.get(edge.sourceId)!);
@@ -153,7 +154,8 @@ export default function App() {
               {graph.nodes.map((node) => { const position = nodePosition(node); return (
                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}`} transform={`translate(${position.x} ${position.y})`} onClick={() => setSelectedId(node.id)} onPointerDown={(event) => { event.stopPropagation(); dragRef.current = { kind: "node", id: node.id, x: event.clientX, y: event.clientY }; }}>
                   <circle r="32" />
-                  <text textAnchor="middle" dy="4">{node.label}</text>
+                  <title>{node.label}</title>
+                  <text textAnchor="middle" dy="4">{nodeLabel(node.label)}</text>
                 </g>
               ); })}
             </g>
