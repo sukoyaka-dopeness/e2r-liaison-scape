@@ -3,3 +3,10 @@ body { margin: 0; }
 main { max-width: 52rem; margin: 4rem auto; padding: 2rem; background: white; border-radius: 1rem; }
 button { margin-left: .75rem; }
 li { margin: .35rem 0; }
+.graph { width: 100%; min-height: 24rem; border: 1px solid #d1d5db; background: #f9fafb; touch-action: none; }
+.edge { stroke: #6b7280; stroke-width: 2; }
+.node { cursor: grab; color: #2563eb; }
+.node:active { cursor: grabbing; }
+.node circle { fill: #dbeafe; stroke: currentColor; stroke-width: 2; }
+.node.selected circle { fill: #bfdbfe; stroke-width: 4; }
+.node text { fill: #111827; font-size: 12px; pointer-events: none; }

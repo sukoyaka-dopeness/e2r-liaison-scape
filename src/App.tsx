@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { loadDataset, serializeDataset, type Dataset, type Diagnostic } from "./dataset";
+import { useMemo, useRef, useState } from "react";
+import { buildEntityGraph, loadDataset, serializeDataset, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -7,6 +7,13 @@ export default function App() {
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [scale, setScale] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const dragRef = useRef<{ kind: "canvas" | "node"; id?: string; x: number; y: number } | null>(null);
+  const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [] }, [dataset]);
+  const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
 
   function open(raw: string) {
     const result = loadDataset(raw);
@@ -22,7 +29,23 @@ export default function App() {
       return;
     }
     setDataset(result.dataset);
+    setSelectedId(null);
+    setPositions({});
+    setPan({ x: 0, y: 0 });
+    setScale(1);
     setMessage(`Loaded ${result.dataset.entities.length} Entities and ${result.dataset.relations.length} Relations.`);
+  }
+
+  function nodePosition(node: GraphNode) { return positions[node.id] ?? node; }
+
+  function onCanvasPointerMove(event: React.PointerEvent<SVGSVGElement>) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const dx = (event.clientX - drag.x) / scale;
+    const dy = (event.clientY - drag.y) / scale;
+    dragRef.current = { ...drag, x: event.clientX, y: event.clientY };
+    if (drag.kind === "canvas") setPan((value) => ({ x: value.x + dx * scale, y: value.y + dy * scale }));
+    else if (drag.id) setPositions((value) => ({ ...value, [drag.id!]: { ...nodePosition(nodeMap.get(drag.id!)!), x: nodePosition(nodeMap.get(drag.id!)!).x + dx, y: nodePosition(nodeMap.get(drag.id!)!).y + dy } }));
   }
 
   function exportDataset() {
@@ -57,7 +80,39 @@ export default function App() {
           ))}
         </ul>
       )}
-      {dataset && <p>{dataset.entities.length} Entity nodes loaded. Graph rendering is the next MVP step.</p>}
+      {dataset && (
+        <section>
+          <h2>Entity graph</h2>
+          <p>{graph.nodes.length} Entity nodes and {graph.edges.length} Entity-to-Entity edges.</p>
+          <svg
+            className="graph"
+            viewBox="0 0 800 500"
+            role="img"
+            aria-label="Entity relationship graph"
+            onWheel={(event) => { event.preventDefault(); setScale((value) => Math.min(2.5, Math.max(.5, value * (event.deltaY < 0 ? 1.1 : .9)))); }}
+            onPointerDown={(event) => { if (event.target === event.currentTarget) dragRef.current = { kind: "canvas", x: event.clientX, y: event.clientY }; }}
+            onPointerMove={onCanvasPointerMove}
+            onPointerUp={() => { dragRef.current = null; }}
+            onPointerLeave={() => { dragRef.current = null; }}
+          >
+            <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="currentColor" /></marker></defs>
+            <g transform={`translate(${pan.x} ${pan.y}) scale(${scale})`}>
+              {graph.edges.map((edge) => {
+                const source = nodePosition(nodeMap.get(edge.sourceId)!);
+                const target = nodePosition(nodeMap.get(edge.targetId)!);
+                return <line key={edge.id} x1={source.x} y1={source.y} x2={target.x} y2={target.y} className="edge" markerEnd="url(#arrow)" />;
+              })}
+              {graph.nodes.map((node) => { const position = nodePosition(node); return (
+                <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}`} transform={`translate(${position.x} ${position.y})`} onClick={() => setSelectedId(node.id)} onPointerDown={(event) => { event.stopPropagation(); dragRef.current = { kind: "node", id: node.id, x: event.clientX, y: event.clientY }; }}>
+                  <circle r="32" />
+                  <text textAnchor="middle" dy="4">{node.label}</text>
+                </g>
+              ); })}
+            </g>
+          </svg>
+          <p role="status">{selectedId ? `Selected Entity: ${selectedId}` : "Select an Entity"}</p>
+        </section>
+      )}
     </main>
   );
 }

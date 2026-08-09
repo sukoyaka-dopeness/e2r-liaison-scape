@@ -46,3 +46,23 @@ export function loadDataset(raw: string): LoadResult {
 export function serializeDataset(dataset: Dataset): string {
   return JSON.stringify(dataset, null, 2);
 }
+
+export type GraphNode = { id: string; label: string; x: number; y: number };
+export type GraphEdge = { id: string; sourceId: string; targetId: string };
+
+export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges: GraphEdge[] } {
+  const nodes = dataset.entities.map((entity, index) => ({
+    id: entity.id,
+    label: typeof entity.name === "string" && entity.name.trim() ? entity.name : entity.id,
+    x: 140 + (index % 4) * 180,
+    y: 110 + Math.floor(index / 4) * 130,
+  }));
+  const entityIds = new Set(nodes.map(({ id }) => id));
+  const edges = dataset.relations.flatMap((relation) => {
+    const sourceId = typeof relation.sourceId === "string" ? relation.sourceId : "";
+    const targetId = typeof relation.targetId === "string" ? relation.targetId : "";
+    if (!entityIds.has(sourceId) || !entityIds.has(targetId)) return [];
+    return [{ id: relation.id, sourceId, targetId }];
+  });
+  return { nodes, edges };
+}
