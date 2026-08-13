@@ -30,6 +30,47 @@ test("A5: accepts and preserves unknown Extensions", () => {
   assert.deepEqual(result.dataset?.extensions, dataset.extensions);
 });
 
+test("Validator 0.2.0 distinguishes undeclared and exactly declared Extension versions", () => {
+  const undeclared = {
+    version: "1.0",
+    entities: [],
+    events: [{ id: "event-1", extensions: { history: { time: { year: 2026 } } } }],
+    relations: [],
+    extensions: { metadata: { title: "Undeclared versions" } },
+  };
+  const undeclaredResult = loadDataset(JSON.stringify(undeclared));
+  assert.ok(undeclaredResult.dataset);
+  assert.deepEqual(
+    undeclaredResult.diagnostics.map(({ code, path }) => ({ code, path })),
+    [
+      {
+        code: "extension_version_unspecified",
+        path: "/extensions/metadata",
+      },
+      {
+        code: "extension_version_unspecified",
+        path: "/events/0/extensions/history",
+      },
+    ],
+  );
+
+  const specificationId = "draft.github.sukoyaka-dopeness.specification";
+  const declared = structuredClone(undeclared) as typeof undeclared & {
+    extensions: Record<string, unknown>;
+  };
+  declared.extensions[specificationId] = {
+    specVersion: "0.1.0",
+    uses: [
+      { extension: "metadata", version: "1.0.0" },
+      { extension: "history", version: "1.0.0" },
+    ],
+  };
+
+  const declaredResult = loadDataset(JSON.stringify(declared));
+  assert.ok(declaredResult.dataset);
+  assert.deepEqual(declaredResult.diagnostics, []);
+});
+
 test("A16-A17: preserves Core and Extension data through a save round trip", () => {
   const dataset = {
     version: "1.0",
