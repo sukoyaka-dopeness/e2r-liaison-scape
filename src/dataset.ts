@@ -1,12 +1,12 @@
 import type { CoreObjectDraft, Dataset, DeletionAssessment, DeletionResult, Diagnostic, E2RObject, IdCandidateGenerator, LoadResult, RelationCreationResult } from "./models";
-export type { CoreObjectDraft, Dataset, DeletionAssessment, DeletionResult, Diagnostic, E2RObject, IdCandidateGenerator, LoadResult, RelationCreationResult } from "./models";
+export type { CoreObjectDraft, Dataset, DeletionAssessment, DeletionResult, Diagnostic, E2RObject, IdCandidateGenerator, LoadResult, RelationCreationResult, RelationUpdateResult } from "./models";
 
 
 export { isCoreObjectIdTaken, createCoreObjectId } from "./services/IdentifierService.ts";
 export { createEntity, assessEntityDeletion, deleteEntity } from "./services/EntityService.ts";
 export { createRelation, assessRelationDeletion, deleteRelation } from "./services/RelationService.ts";
 export { getEntityDetail, updateEntityDetails } from "./services/EntityService.ts";
-export { getRelationDetail, updateRelationDetails } from "./services/RelationService.ts";
+export { getRelationDetail, updateRelation, updateRelationDetails } from "./services/RelationService.ts";
 
 export { loadDataset, serializeDataset, validateDatasetForExport, getDatasetMetadata } from "./services/DatasetService.ts";
 

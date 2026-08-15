@@ -5,5 +5,6 @@ export type LoadResult = { dataset: Dataset | null; raw: string; diagnostics: Di
 export type CoreObjectDraft = { name?: string; description?: string };
 export type IdCandidateGenerator = () => string;
 export type RelationCreationResult = { dataset: Dataset; relationId: string } | { dataset: Dataset; refusal: string };
+export type RelationUpdateResult = { dataset: Dataset } | { dataset: Dataset; refusal: string };
 export type DeletionAssessment = { ready: true } | { ready: false; reason: string; incidentRelationCount?: number };
 export type DeletionResult = { dataset: Dataset; deleted: true; deletedId: string } | { dataset: Dataset; deleted: false; reason: string };

@@ -7,7 +7,7 @@ import { getDatasetMetadata, loadDataset, serializeDataset, validateDatasetForEx
 import { assessEntityDeletion, createEntity, deleteEntity } from "./services/EntityService";
 import { getEntityDetail, updateEntityDetails } from "./services/EntityService";
 import { assessRelationDeletion, createRelation, deleteRelation } from "./services/RelationService";
-import { getRelationDetail, updateRelationDetails } from "./services/RelationService";
+import { getRelationDetail, updateRelation } from "./services/RelationService";
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
@@ -27,6 +27,8 @@ export default function App() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [relationNameDraft, setRelationNameDraft] = useState("");
   const [relationDescriptionDraft, setRelationDescriptionDraft] = useState("");
+  const [relationSourceDraft, setRelationSourceDraft] = useState("");
+  const [relationTargetDraft, setRelationTargetDraft] = useState("");
   const [nodeLayerOrder, setNodeLayerOrder] = useState<string[]>([]);
   const [edgeLayerOrder, setEdgeLayerOrder] = useState<string[]>([]);
   const [nodeLabelOffsets, setNodeLabelOffsets] = useState<Record<string, { x: number; y: number }>>({});
@@ -174,6 +176,29 @@ export default function App() {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [detailOpen]);
+
+  useEffect(() => {
+    if (!detailOpen && !creationMode && !deleteConfirmation) return;
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+      const dialogs = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"]'));
+      const dialog = dialogs.at(-1);
+      if (!dialog) return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )).filter((element) => element.getClientRects().length > 0);
+      if (focusable.length === 0) { event.preventDefault(); return; }
+      const first = focusable[0];
+      const last = focusable.at(-1)!;
+      if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+        event.preventDefault(); first.focus();
+      }
+    };
+    document.addEventListener("keydown", trapFocus, true);
+    return () => document.removeEventListener("keydown", trapFocus, true);
+  }, [creationMode, deleteConfirmation, detailOpen]);
 
   function open(raw: string) {
     const result = loadDataset(raw);
@@ -335,6 +360,8 @@ export default function App() {
       setDetailOpen(false);
       setRelationNameDraft(typeof relation?.name === "string" ? relation.name : "");
       setRelationDescriptionDraft(typeof relation?.description === "string" ? relation.description : "");
+      setRelationSourceDraft(typeof relation?.sourceId === "string" ? relation.sourceId : "");
+      setRelationTargetDraft(typeof relation?.targetId === "string" ? relation.targetId : "");
       setEdgeLayerOrder((value) => bringToFront(value, drag.id!));
     }
     if (isEdgeLabelTap && drag.id) {
@@ -344,6 +371,8 @@ export default function App() {
       setDetailOpen(true);
       setRelationNameDraft(typeof relation?.name === "string" ? relation.name : "");
       setRelationDescriptionDraft(typeof relation?.description === "string" ? relation.description : "");
+      setRelationSourceDraft(typeof relation?.sourceId === "string" ? relation.sourceId : "");
+      setRelationTargetDraft(typeof relation?.targetId === "string" ? relation.targetId : "");
       setEdgeLayerOrder((value) => bringToFront(value, drag.id!));
     }
     pointersRef.current.delete(event.pointerId);
@@ -410,10 +439,17 @@ export default function App() {
 
   function saveRelationDetails() {
     if (!dataset || !selectedRelationId) return;
-    setDataset(updateRelationDetails(dataset, selectedRelationId, {
+    const current = getRelationDetail(dataset, selectedRelationId);
+    if (!current) { setMessage(`Relation ${selectedRelationId} cannot be updated: relation_not_found`); return; }
+    const result = updateRelation(dataset, selectedRelationId, {
+      sourceId: relationSourceDraft,
+      targetId: relationTargetDraft,
       name: relationNameDraft,
       description: relationDescriptionDraft,
-    }));
+    });
+    if ("refusal" in result) { setMessage(`Relation ${selectedRelationId} cannot be updated: ${result.refusal}`); return; }
+    setDataset(result.dataset);
+    setDetailOpen(false);
     setMessage(`Relation ${selectedRelationId} updated.`);
   }
 
@@ -481,6 +517,7 @@ export default function App() {
       name: entityNameDraft,
       description: entityDescriptionDraft,
     }));
+    setDetailOpen(false);
     setMessage(`Entity ${selectedId} updated.`);
   }
 
@@ -492,6 +529,8 @@ export default function App() {
     setSelectedId(null);
     setRelationNameDraft(typeof relation.name === "string" ? relation.name : "");
     setRelationDescriptionDraft(typeof relation.description === "string" ? relation.description : "");
+    setRelationSourceDraft(typeof relation.sourceId === "string" ? relation.sourceId : "");
+    setRelationTargetDraft(typeof relation.targetId === "string" ? relation.targetId : "");
     setDetailOpen(true);
   }
 
@@ -578,13 +617,6 @@ export default function App() {
         />
       )}
 {dataset && deleteConfirmation && <ConfirmationDialog subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
-      {dataset && coordinateMigrationReadiness && !coordinateMigrationReadiness.ready && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_no_source" && (
-        <p className="status-message" role="status">
-          {coordinateMigrationReadiness.code === "linkscape_coordinate_draft_migration_target_exists"
-            ? "Coordinate Draft is already present; migration has already been completed."
-            : `Coordinate migration unavailable: ${coordinateMigrationReadiness.code} (${coordinateMigrationReadiness.path})`}
-        </p>
-      )}
       {dataset && (
         <dl className="dataset-metadata" aria-label="Dataset metadata">
           <dt>Dataset title</dt><dd>{metadata?.title ?? "Untitled"}</dd>
@@ -601,7 +633,6 @@ export default function App() {
       {dataset && (
         <section className="graph-section">
           <h2>Graph</h2>
-          <p className="graph-summary">{graph.nodes.length} entities · {graph.edges.length} relations</p>
           <div className="viewport-controls" aria-label="Graph view controls">
             <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>Zoom out</button>
             <span aria-live="polite">{Math.round(scale * 100)}%</span>
@@ -748,6 +779,13 @@ export default function App() {
             </div>
           )}
           <p className="graph-summary">{graph.nodes.length} entities · {graph.edges.length} relations</p>
+          {dataset && coordinateMigrationReadiness && !coordinateMigrationReadiness.ready && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_no_source" && (
+            <p className="status-message" role="status">
+              {coordinateMigrationReadiness.code === "linkscape_coordinate_draft_migration_target_exists"
+                ? "Coordinate Draft is already present; migration has already been completed."
+                : `Coordinate migration unavailable: ${coordinateMigrationReadiness.code} (${coordinateMigrationReadiness.path})`}
+            </p>
+          )}
           <p className="selection-message" role="status">{transientSuccess ? message : (coordinatesDirty ? "Moved coordinates are temporary until you save them." : "Stored coordinates are restored when available.")}</p>
           {detailOpen && selectedDetail && (
             <EntityDetailDialog
@@ -772,6 +810,16 @@ export default function App() {
               target={selectedRelationDetail.target}
               name={relationNameDraft}
               description={relationDescriptionDraft}
+              endpointEditing={dataset.entities.some(({ id }) => id === selectedRelationDetail.sourceId)
+                && dataset.entities.some(({ id }) => id === selectedRelationDetail.targetId)
+                ? {
+                  entities: dataset.entities,
+                  sourceId: relationSourceDraft,
+                  targetId: relationTargetDraft,
+                  onSourceChange: setRelationSourceDraft,
+                  onTargetChange: setRelationTargetDraft,
+                }
+                : undefined}
               onNameChange={setRelationNameDraft}
               onDescriptionChange={setRelationDescriptionDraft}
               onSave={saveRelationDetails}
