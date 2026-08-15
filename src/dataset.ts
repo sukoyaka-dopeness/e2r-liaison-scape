@@ -27,79 +27,16 @@ export type LoadResult = {
 export type CoreObjectDraft = { name?: string; description?: string };
 export type IdCandidateGenerator = () => string;
 
-export function isCoreObjectIdTaken(dataset: Dataset, id: string): boolean {
-  return [...dataset.entities, ...dataset.events, ...dataset.relations].some((object) => object.id === id);
-}
-
-export function createCoreObjectId(dataset: Dataset, nextCandidate: IdCandidateGenerator = () => globalThis.crypto?.randomUUID?.() ?? `object-${Date.now()}-${Math.random().toString(36).slice(2)}`): string {
-  for (let attempt = 0; attempt < 1000; attempt += 1) {
-    const candidate = nextCandidate();
-    if (typeof candidate === "string" && candidate.trim() && !isCoreObjectIdTaken(dataset, candidate)) return candidate;
-  }
-  throw new Error("Unable to generate a unique Core Object ID");
-}
-
-function optionalText(value: string | undefined): string | undefined {
-  return typeof value === "string" && value.trim() ? value : undefined;
-}
-
-export function createEntity(dataset: Dataset, draft: CoreObjectDraft, nextCandidate?: IdCandidateGenerator): { dataset: Dataset; entityId: string } {
-  const id = createCoreObjectId(dataset, nextCandidate);
-  const entity: E2RObject = { id };
-  const name = optionalText(draft.name);
-  const description = optionalText(draft.description);
-  if (name !== undefined) entity.name = name;
-  if (description !== undefined) entity.description = description;
-  return { dataset: { ...dataset, entities: [...dataset.entities, entity] }, entityId: id };
-}
-
 export type RelationCreationResult = { dataset: Dataset; relationId: string } | { dataset: Dataset; refusal: string };
-
-export function createRelation(dataset: Dataset, draft: CoreObjectDraft & { sourceId?: string; targetId?: string }, nextCandidate?: IdCandidateGenerator): RelationCreationResult {
-  const sourceId = typeof draft.sourceId === "string" ? draft.sourceId : "";
-  const targetId = typeof draft.targetId === "string" ? draft.targetId : "";
-  if (!sourceId || !targetId) return { dataset, refusal: "relation_endpoint_required" };
-  if (!dataset.entities.some(({ id }) => id === sourceId)) return { dataset, refusal: "relation_source_entity_required" };
-  if (!dataset.entities.some(({ id }) => id === targetId)) return { dataset, refusal: "relation_target_entity_required" };
-  const id = createCoreObjectId(dataset, nextCandidate);
-  const relation: E2RObject = { id, sourceId, targetId };
-  const name = optionalText(draft.name);
-  const description = optionalText(draft.description);
-  if (name !== undefined) relation.name = name;
-  if (description !== undefined) relation.description = description;
-  return { dataset: { ...dataset, relations: [...dataset.relations, relation] }, relationId: id };
-}
 
 export type DeletionAssessment =
   | { ready: true }
   | { ready: false; reason: string; incidentRelationCount?: number };
 export type DeletionResult = { dataset: Dataset; deleted: true; deletedId: string } | { dataset: Dataset; deleted: false; reason: string };
 
-export function assessRelationDeletion(dataset: Dataset, relationId: string): DeletionAssessment {
-  return dataset.relations.some(({ id }) => id === relationId)
-    ? { ready: true }
-    : { ready: false, reason: "relation_not_found" };
-}
-
-export function deleteRelation(dataset: Dataset, relationId: string): DeletionResult {
-  const assessment = assessRelationDeletion(dataset, relationId);
-  if (!assessment.ready) return { dataset, deleted: false, reason: assessment.reason };
-  return { dataset: { ...dataset, relations: dataset.relations.filter(({ id }) => id !== relationId) }, deleted: true, deletedId: relationId };
-}
-
-export function assessEntityDeletion(dataset: Dataset, entityId: string): DeletionAssessment {
-  if (!dataset.entities.some(({ id }) => id === entityId)) return { ready: false, reason: "entity_not_found" };
-  const incidentRelationCount = dataset.relations.filter(({ sourceId, targetId }) => sourceId === entityId || targetId === entityId).length;
-  return incidentRelationCount === 0
-    ? { ready: true }
-    : { ready: false, reason: "entity_has_incident_relations", incidentRelationCount };
-}
-
-export function deleteEntity(dataset: Dataset, entityId: string): DeletionResult {
-  const assessment = assessEntityDeletion(dataset, entityId);
-  if (!assessment.ready) return { dataset, deleted: false, reason: assessment.reason };
-  return { dataset: { ...dataset, entities: dataset.entities.filter(({ id }) => id !== entityId) }, deleted: true, deletedId: entityId };
-}
+export { isCoreObjectIdTaken, createCoreObjectId } from "./services/IdentifierService.ts";
+export { createEntity, assessEntityDeletion, deleteEntity } from "./services/EntityService.ts";
+export { createRelation, assessRelationDeletion, deleteRelation } from "./services/RelationService.ts";
 
 export function loadDataset(raw: string): LoadResult {
   try {
