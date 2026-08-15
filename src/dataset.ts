@@ -70,6 +70,37 @@ export function createRelation(dataset: Dataset, draft: CoreObjectDraft & { sour
   return { dataset: { ...dataset, relations: [...dataset.relations, relation] }, relationId: id };
 }
 
+export type DeletionAssessment =
+  | { ready: true }
+  | { ready: false; reason: string; incidentRelationCount?: number };
+export type DeletionResult = { dataset: Dataset; deleted: true; deletedId: string } | { dataset: Dataset; deleted: false; reason: string };
+
+export function assessRelationDeletion(dataset: Dataset, relationId: string): DeletionAssessment {
+  return dataset.relations.some(({ id }) => id === relationId)
+    ? { ready: true }
+    : { ready: false, reason: "relation_not_found" };
+}
+
+export function deleteRelation(dataset: Dataset, relationId: string): DeletionResult {
+  const assessment = assessRelationDeletion(dataset, relationId);
+  if (!assessment.ready) return { dataset, deleted: false, reason: assessment.reason };
+  return { dataset: { ...dataset, relations: dataset.relations.filter(({ id }) => id !== relationId) }, deleted: true, deletedId: relationId };
+}
+
+export function assessEntityDeletion(dataset: Dataset, entityId: string): DeletionAssessment {
+  if (!dataset.entities.some(({ id }) => id === entityId)) return { ready: false, reason: "entity_not_found" };
+  const incidentRelationCount = dataset.relations.filter(({ sourceId, targetId }) => sourceId === entityId || targetId === entityId).length;
+  return incidentRelationCount === 0
+    ? { ready: true }
+    : { ready: false, reason: "entity_has_incident_relations", incidentRelationCount };
+}
+
+export function deleteEntity(dataset: Dataset, entityId: string): DeletionResult {
+  const assessment = assessEntityDeletion(dataset, entityId);
+  if (!assessment.ready) return { dataset, deleted: false, reason: assessment.reason };
+  return { dataset: { ...dataset, entities: dataset.entities.filter(({ id }) => id !== entityId) }, deleted: true, deletedId: entityId };
+}
+
 export function loadDataset(raw: string): LoadResult {
   try {
     const value: unknown = JSON.parse(raw);

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { assessCoordinateDraftMigration, migrateCoordinatePrototypeToDraft } from "./coordinate-migration";
 import { assessLiaisonScapeSpaceMigration, migrateLinkscapeSpaceToLiaisonScape } from "./space-migration";
 import { assessLegacyLinkscapeCoordinateMigration, migrateLegacyLinkscapeCoordinatesToLiaisonScape } from "./legacy-migration";
-import { applyStoredCoordinates, buildEntityGraph, createEntity, createRelation, getDatasetMetadata, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, type Dataset, type Diagnostic, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type GraphNode } from "./dataset";
+import { applyStoredCoordinates, assessEntityDeletion, assessRelationDeletion, buildEntityGraph, createEntity, createRelation, deleteEntity, deleteRelation, getDatasetMetadata, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, type Dataset, type Diagnostic, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type GraphNode } from "./dataset";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, zoomScale } from "./viewport";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
@@ -33,6 +33,8 @@ export default function App() {
   const [creationDescription, setCreationDescription] = useState("");
   const [creationSource, setCreationSource] = useState("");
   const [creationTarget, setCreationTarget] = useState("");
+  const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve"; id?: string; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
@@ -42,6 +44,7 @@ export default function App() {
   const spaceMigrationReadiness = dataset ? assessLiaisonScapeSpaceMigration(dataset) : null;
   const legacyMigrationReadiness = dataset ? assessLegacyLinkscapeCoordinateMigration(dataset) : null;
   const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [], unsupportedEdges: 0 }, [dataset]);
+  const transientSuccess = /(?:created|updated|deleted)\./.test(message);
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
   const relationMap = useMemo(() => new Map(dataset?.relations.map((relation) => [relation.id, relation]) ?? []), [dataset]);
   const routedEdges = useMemo(() => {
@@ -406,7 +409,8 @@ export default function App() {
   }
 
   function openCreation(mode: "entity" | "relation") {
-    setCreationMode(mode); setCreationName(""); setCreationDescription(""); setCreationSource(""); setCreationTarget(""); setDetailOpen(false);
+    const selectedEntity = mode === "relation" ? selectedId ?? "" : "";
+    setCreationMode(mode); setCreationName(""); setCreationDescription(""); setCreationSource(selectedEntity); setCreationTarget(selectedEntity); setDetailOpen(false);
   }
 
   function saveCreation() {
@@ -415,12 +419,51 @@ export default function App() {
       const result = createEntity(dataset, { name: creationName, description: creationDescription });
       const created = result.dataset.entities.find(({ id }) => id === result.entityId)!;
       setDataset(result.dataset); setSelectedId(result.entityId); setSelectedRelationId(null); setCreationMode(null);
+      setPositions((value) => ({ ...value, [result.entityId]: { x: 400, y: 250 } }));
+      setNodeLayerOrder((value) => bringToFront(value, result.entityId));
       setEntityNameDraft(typeof created.name === "string" ? created.name : ""); setEntityDescriptionDraft(typeof created.description === "string" ? created.description : "");
       setMessage(`Entity ${result.entityId} created.`); return;
     }
     const result = createRelation(dataset, { sourceId: creationSource, targetId: creationTarget, name: creationName, description: creationDescription });
     if (!("relationId" in result)) { setMessage(`Relation not created: ${result.refusal}`); return; }
     setDataset(result.dataset); setSelectedRelationId(result.relationId); setSelectedId(null); setCreationMode(null); setMessage(`Relation ${result.relationId} created.`);
+  }
+
+  function removeSelectedRelation() {
+    if (!dataset || !selectedRelationId) return;
+    const assessment = assessRelationDeletion(dataset, selectedRelationId);
+    if (!assessment.ready) { setMessage(`Relation cannot be deleted: ${assessment.reason}`); return; }
+    setDeleteConfirmationId(selectedRelationId);
+    setDetailOpen(false);
+    setDeleteConfirmation("relation");
+  }
+
+  function removeSelectedEntity() {
+    const entityId = selectedId ?? selectedDetail?.entity.id;
+    if (!dataset || !entityId) return;
+    const assessment = assessEntityDeletion(dataset, entityId);
+    if (!assessment.ready) {
+      setMessage(assessment.incidentRelationCount ? `Entity cannot be deleted because ${assessment.incidentRelationCount} Relation(s) reference it. Remove those Relations first.` : `Entity cannot be deleted: ${assessment.reason}`);
+      return;
+    }
+    setDeleteConfirmationId(entityId);
+    if (!selectedId) setSelectedId(entityId);
+    setDetailOpen(false);
+    setDeleteConfirmation("entity");
+  }
+
+  function confirmDeletion() {
+    if (!dataset || !deleteConfirmation || !deleteConfirmationId) return;
+    if (deleteConfirmation === "relation") {
+      const result = deleteRelation(dataset, deleteConfirmationId);
+      if (!result.deleted) { setMessage(`Relation cannot be deleted: ${result.reason}`); setDeleteConfirmation(null); return; }
+      setDataset(result.dataset); setSelectedRelationId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage(`Relation ${result.deletedId} deleted.`); return;
+    }
+    if (deleteConfirmation === "entity") {
+      const result = deleteEntity(dataset, deleteConfirmationId);
+      if (!result.deleted) { setMessage(`Entity cannot be deleted: ${result.reason}`); setDeleteConfirmation(null); return; }
+      setDataset(result.dataset); setPositions((value) => { const next = { ...value }; delete next[result.deletedId]; return next; }); setSelectedId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage(`Entity ${result.deletedId} deleted.`);
+    }
   }
 
   function saveEntityDetails() {
@@ -430,6 +473,17 @@ export default function App() {
       description: entityDescriptionDraft,
     }));
     setMessage(`Entity ${selectedId} updated.`);
+  }
+
+  function openRelatedRelation(relationId: string) {
+    if (!dataset) return;
+    const relation = dataset.relations.find(({ id }) => id === relationId);
+    if (!relation) return;
+    setSelectedRelationId(relationId);
+    setSelectedId(null);
+    setRelationNameDraft(typeof relation.name === "string" ? relation.name : "");
+    setRelationDescriptionDraft(typeof relation.description === "string" ? relation.description : "");
+    setDetailOpen(true);
   }
 
   function resetView() {
@@ -497,7 +551,7 @@ export default function App() {
             </details>
           </div>
         </div>
-        <p className="status-message" role="status">{message}</p>
+        {!transientSuccess && <p className="status-message" role="status">{message}</p>}
       {dataset && creationMode && (
         <aside className="detail" role="dialog" aria-modal="true" aria-label={`Create ${creationMode}`}>
           <div className="detail-header"><h3>Create {creationMode === "entity" ? "Entity" : "Relation"}</h3><button type="button" onClick={() => setCreationMode(null)}>Cancel</button></div>
@@ -511,6 +565,16 @@ export default function App() {
           <label htmlFor="creation-description">Description</label><textarea id="creation-description" rows={4} value={creationDescription} onChange={(event) => setCreationDescription(event.target.value)} />
           <button type="button" onClick={saveCreation}>Save {creationMode === "entity" ? "Entity" : "Relation"}</button>
         </aside>
+      )}
+      {dataset && deleteConfirmation && (
+        <>
+          <button className="detail-backdrop confirmation-backdrop" type="button" aria-label="Cancel deletion" onClick={() => setDeleteConfirmation(null)} />
+          <aside className={`detail confirmation confirmation-${deleteConfirmation}`} role="dialog" aria-modal="true" aria-label="Confirm deletion">
+            <h3>Confirm deletion</h3>
+            <p>Delete this {deleteConfirmation === "entity" ? "Entity" : "Relation"}?</p>
+            <div className="detail-actions"><button type="button" onClick={() => setDeleteConfirmation(null)}>Cancel</button><button type="button" className="danger-confirm" onClick={confirmDeletion}>Delete</button></div>
+          </aside>
+        </>
       )}
       {dataset && coordinateMigrationReadiness && !coordinateMigrationReadiness.ready && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_no_source" && (
         <p className="status-message" role="status">
@@ -681,7 +745,8 @@ export default function App() {
               <button type="button" onClick={() => setDetailOpen(true)}>Edit Entity</button>
             </div>
           )}
-          <p>{coordinatesDirty ? "Moved coordinates are temporary until you save them." : "Stored coordinates are restored when available."}</p>
+          <p className="graph-summary">{graph.nodes.length} entities · {graph.edges.length} relations</p>
+          <p className="selection-message" role="status">{transientSuccess ? message : (coordinatesDirty ? "Moved coordinates are temporary until you save them." : "Stored coordinates are restored when available.")}</p>
           {detailOpen && selectedDetail && (
             <>
             <button className="detail-backdrop" type="button" aria-label="Close Entity Detail" onClick={() => setDetailOpen(false)} />
@@ -711,6 +776,23 @@ export default function App() {
                   Save Entity
                 </button>
               </div>
+              {(() => {
+                const incidentRelations = dataset.relations.filter(({ sourceId, targetId }) => sourceId === selectedDetail.entity.id || targetId === selectedDetail.entity.id);
+                return <div className="detail-danger">
+                  <strong>Danger zone</strong>
+                  {incidentRelations.length > 0 ? <>
+                    <p>This Entity is connected by {incidentRelations.length} Relation(s). Delete those Relations before deleting this Entity.</p>
+                    <div className="related-relations"><span>Related Relations:</span>{incidentRelations.map((relation) => {
+                      const source = dataset.entities.find(({ id }) => id === relation.sourceId) ?? dataset.events.find(({ id }) => id === relation.sourceId);
+                      const target = dataset.entities.find(({ id }) => id === relation.targetId) ?? dataset.events.find(({ id }) => id === relation.targetId);
+                      const sourceLabel = typeof source?.name === "string" ? source.name : String(relation.sourceId);
+                      const targetLabel = typeof target?.name === "string" ? target.name : String(relation.targetId);
+                      return <button type="button" key={relation.id} onClick={() => openRelatedRelation(relation.id)}>{typeof relation.name === "string" && relation.name.trim() ? relation.name : relation.id} — {sourceLabel} → {targetLabel}</button>;
+                    })}</div>
+                    <button type="button" disabled>Delete Entity</button>
+                  </> : <button type="button" onClick={removeSelectedEntity}>Delete Entity</button>}
+                </div>;
+              })()}
             </aside>
             </>
           )}
@@ -743,6 +825,7 @@ export default function App() {
                   Save Relation
                 </button>
               </div>
+              <div className="detail-danger"><span>Danger zone</span><button type="button" onClick={removeSelectedRelation}>Delete Relation</button></div>
             </aside>
             </>
           )}

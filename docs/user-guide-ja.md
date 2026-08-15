@@ -83,8 +83,9 @@ Relationの`Name`は水平なエッジラベルとして表示されます。こ
 ## 現在のMVP制限
 
 - EventノードとEvent編集は未対応です。
-- Entity / Entity-to-Entity Relationの作成は対応しています。Relationの削除、
-  接続先変更、Event authoringは未対応です。
+- Entity / Entity-to-Entity Relationの作成と削除に対応しています。Entityは
+  参照Relationが0件の場合だけ削除できます。cascade削除は行いません。
+  Relationの接続先変更、Eventの削除・作成、Undo/Redoは未対応です。
 - 意味的なRelation型、矢印表示方式、永続レイヤー順は未対応です。
 - 手動エッジ曲率とラベル位置はDatasetへ保存されません。
 - Coordinate payloadはauthority-qualifiedな`0.1.0`実験であり、登録済みStable Extensionではありません。Layoutの標準化も今後の検討事項です。

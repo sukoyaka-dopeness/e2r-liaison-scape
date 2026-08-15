@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { applyStoredCoordinates, createCoreObjectId, createEntity, createRelation, getDatasetMetadata, loadDataset, serializeDataset, updateEntityDetails, validateDatasetForExport, LIAISONSCAPE_SPACE_ID, type Dataset } from "../src/dataset.ts";
+import { applyStoredCoordinates, assessEntityDeletion, assessRelationDeletion, createCoreObjectId, createEntity, createRelation, deleteEntity, deleteRelation, getDatasetMetadata, loadDataset, serializeDataset, updateEntityDetails, validateDatasetForExport, LIAISONSCAPE_SPACE_ID, type Dataset } from "../src/dataset.ts";
 
 const empty = JSON.stringify({ version: "1.0", entities: [], events: [], relations: [] });
 
@@ -48,6 +48,42 @@ test("createRelation refuses missing, Event, and Relation endpoints without muta
     assert.ok("refusal" in result);
     assert.equal(result.dataset, dataset);
   }
+});
+
+test("relation deletion removes exactly one relation and preserves siblings", () => {
+  const dataset = { version: "1.0", entities: [{ id: "a" }, { id: "b" }], events: [], relations: [{ id: "r1", sourceId: "a", targetId: "b" }, { id: "r2", sourceId: "a", targetId: "b" }], extensions: { opaque: { keep: "r1" } } } as Dataset;
+  assert.deepEqual(assessRelationDeletion(dataset, "r1"), { ready: true });
+  const result = deleteRelation(dataset, "r1");
+  assert.ok(result.deleted);
+  assert.deepEqual(result.dataset.relations.map(({ id }) => id), ["r2"]);
+  assert.deepEqual(result.dataset.entities, dataset.entities);
+  assert.deepEqual(result.dataset.extensions, dataset.extensions);
+  assert.deepEqual(dataset.relations.map(({ id }) => id), ["r1", "r2"]);
+});
+
+test("relation deletion supports self relations and refuses stale IDs", () => {
+  const dataset = { version: "1.0", entities: [{ id: "a" }], events: [], relations: [{ id: "self", sourceId: "a", targetId: "a" }] } as Dataset;
+  assert.ok(deleteRelation(dataset, "self").deleted);
+  const refused = deleteRelation(dataset, "missing");
+  assert.equal(refused.deleted, false);
+  assert.equal(refused.dataset, dataset);
+});
+
+test("entity deletion blocks every incident relation and counts self once", () => {
+  const dataset = { version: "1.0", entities: [{ id: "a" }, { id: "b" }], events: [{ id: "v" }], relations: [{ id: "self", sourceId: "a", targetId: "a" }, { id: "event", sourceId: "v", targetId: "a" }, { id: "parallel", sourceId: "a", targetId: "b" }] } as Dataset;
+  assert.deepEqual(assessEntityDeletion(dataset, "a"), { ready: false, reason: "entity_has_incident_relations", incidentRelationCount: 3 });
+  const refused = deleteEntity(dataset, "a");
+  assert.equal(refused.deleted, false);
+  assert.equal(refused.dataset, dataset);
+});
+
+test("entity deletion removes only an unreferenced entity and preserves Dataset-level data", () => {
+  const dataset = { version: "1.0", entities: [{ id: "a", extensions: { opaque: true } }, { id: "b" }], events: [], relations: [], extensions: { coordinate: { spaces: [{ id: "liaisonscape-graph" }] }, opaque: { ref: "a" } } } as Dataset;
+  const result = deleteEntity(dataset, "a");
+  assert.ok(result.deleted);
+  assert.deepEqual(result.dataset.entities, [{ id: "b" }]);
+  assert.deepEqual(result.dataset.extensions, dataset.extensions);
+  assert.deepEqual(dataset.entities.map(({ id }) => id), ["a", "b"]);
 });
 
 test("A1: opens a valid minimal Dataset without inventing objects or coordinates", () => {
