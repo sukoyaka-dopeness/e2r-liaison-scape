@@ -42,6 +42,7 @@ export default function App() {
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
   const [coordinatesDirty, setCoordinatesDirty] = useState(false);
   const [creationMode, setCreationMode] = useState<"entity" | "relation" | null>(null);
+  const [relationCreationPreview, setRelationCreationPreview] = useState<{ sourceId: string; point: { x: number; y: number }; targetId: string | null } | null>(null);
   const [creationName, setCreationName] = useState("");
   const [creationDescription, setCreationDescription] = useState("");
   const [creationSource, setCreationSource] = useState("");
@@ -50,12 +51,13 @@ export default function App() {
   const [pendingEntityPlacement, setPendingEntityPlacement] = useState<{ x: number; y: number } | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
-  const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve"; id?: string; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
+  const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
   const graphRef = useRef<SVGSVGElement>(null);
   const viewportToolbarRef = useRef<HTMLDivElement>(null);
   const viewportToolbarDragRef = useRef<{ offsetX: number; offsetY: number } | null>(null);
+  const edgeCurveDragStartRef = useRef<{ id: string; offset?: number; selfLoop?: { orientation: number; radius: number } } | null>(null);
   const longPressRef = useRef<{ pointerId: number; startX: number; startY: number; timer: number; kind: "canvas" | "entity" | "relation"; id?: string; canceled: boolean } | null>(null);
   const longPressClaimedRef = useRef<number | null>(null);
   const suppressNextContextMenuRef = useRef(false);
@@ -204,6 +206,32 @@ export default function App() {
   }, [detailOpen]);
 
   useEffect(() => {
+    if (!relationCreationPreview) return;
+    const cancelOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setRelationCreationPreview(null);
+      dragRef.current = null;
+      pinchRef.current = null;
+      pointersRef.current.clear();
+    };
+    window.addEventListener("keydown", cancelOnEscape);
+    return () => window.removeEventListener("keydown", cancelOnEscape);
+  }, [relationCreationPreview]);
+
+  useEffect(() => {
+    const cancelCurveDrag = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || dragRef.current?.kind !== "edge-curve") return;
+      restoreEdgeCurveDrag();
+      edgeCurveDragStartRef.current = null;
+      dragRef.current = null;
+      pointersRef.current.clear();
+      pinchRef.current = null;
+    };
+    window.addEventListener("keydown", cancelCurveDrag);
+    return () => window.removeEventListener("keydown", cancelCurveDrag);
+  });
+
+  useEffect(() => {
     if (!detailOpen && !creationMode && !deleteConfirmation) return;
     const trapFocus = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return;
@@ -301,6 +329,37 @@ export default function App() {
   }
 
   function nodePosition(node: GraphNode) { return positions[node.id] ?? node; }
+  function graphPointForPointer(clientX: number, clientY: number) {
+    const svg = graphRef.current;
+    if (!svg) return null;
+    const rect = svg.getBoundingClientRect();
+    return graphPointFromPointer(
+      { clientX, clientY },
+      { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+      { width: 800, height: 500 },
+      scale,
+      pan,
+    );
+  }
+
+  function relationTargetAt(point: { x: number; y: number }, sourceId: string) {
+    const target = graph.nodes.find((node) => node.id !== sourceId && Math.hypot((positions[node.id]?.x ?? node.x) - point.x, (positions[node.id]?.y ?? node.y) - point.y) <= 40);
+    if (target) return target.id;
+    const source = graph.nodes.find((node) => node.id === sourceId);
+    if (source && Math.hypot((positions[source.id]?.x ?? source.x) - point.x, (positions[source.id]?.y ?? source.y) - point.y) <= 40) return source.id;
+    return null;
+  }
+
+  function startRelationCreation(event: React.PointerEvent<SVGCircleElement>, sourceId: string) {
+    if (event.pointerType !== "mouse") return;
+    event.preventDefault();
+    event.stopPropagation();
+    const point = graphPointForPointer(event.clientX, event.clientY);
+    if (!point) return;
+    setRelationCreationPreview({ sourceId, point, targetId: sourceId });
+    startGraphPointer(event, { kind: "relation-create", id: sourceId });
+  }
+
   function cancelLongPress() {
     const pending = longPressRef.current;
     if (pending) window.clearTimeout(pending.timer);
@@ -317,7 +376,7 @@ export default function App() {
     const element = target instanceof Element ? target : null;
     const entityElement = element?.closest<SVGGElement>(".node");
     const entityLabelElement = element?.closest<SVGGElement>(".node-label-group");
-    const relationElement = element?.closest<SVGGElement>(".edge-group, .edge-label-group, .edge-curve-control");
+    const relationElement = element?.closest<SVGGElement>(".edge-group, .edge-label-group");
     const kind: "canvas" | "entity" | "relation" = entityElement || entityLabelElement ? "entity" : relationElement ? "relation" : "canvas";
     const id = entityElement?.getAttribute("data-entity-id") ?? entityLabelElement?.getAttribute("data-entity-id") ?? relationElement?.getAttribute("data-relation-id") ?? undefined;
     const pending = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, kind, id, canceled: false, timer: 0 };
@@ -375,6 +434,38 @@ export default function App() {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     viewportToolbarDragRef.current = null;
   }
+  function applyEdgeCurveDrag(id: string, dx: number, dy: number) {
+    const edge = graph.edges.find(({ id: edgeId }) => edgeId === id);
+    if (!edge) return;
+    if (edge.sourceId === edge.targetId) {
+      const node = nodePosition(nodeMap.get(edge.sourceId)!);
+      const route = routedEdges.find(({ id: edgeId }) => edgeId === id);
+      if (route) {
+        const desired = { x: route.controlPoint.x + dx, y: route.controlPoint.y + dy };
+        const distance = Math.max(70, Math.hypot(desired.x - node.x, desired.y - node.y));
+        const sidewaysDistance = Math.sin(Math.PI / 4) * 32;
+        const outwardDistance = Math.cos(Math.PI / 4) * 32;
+        const remaining = Math.max(1, distance - outwardDistance);
+        const radius = Math.max(38, Math.min(180, (remaining * remaining + sidewaysDistance * sidewaysDistance) / (2 * remaining)));
+        setSelfLoopOverrides((value) => ({ ...value, [id]: { orientation: Math.atan2(desired.y - node.y, desired.x - node.x), radius } }));
+      }
+      return;
+    }
+    const source = nodePosition(nodeMap.get(edge.sourceId)!);
+    const target = nodePosition(nodeMap.get(edge.targetId)!);
+    const length = Math.max(1, Math.hypot(target.x - source.x, target.y - source.y));
+    const normalX = -(target.y - source.y) / length;
+    const normalY = (target.x - source.x) / length;
+    setEdgeCurveOffsets((value) => ({ ...value, [id]: (value[id] ?? 0) + normalX * dx + normalY * dy }));
+  }
+  function restoreEdgeCurveDrag() {
+    const start = edgeCurveDragStartRef.current;
+    if (!start) return;
+    if (start.offset === undefined) setEdgeCurveOffsets((value) => { const next = { ...value }; delete next[start.id]; return next; });
+    else setEdgeCurveOffsets((value) => ({ ...value, [start.id]: start.offset! }));
+    if (start.selfLoop === undefined) setSelfLoopOverrides((value) => { const next = { ...value }; delete next[start.id]; return next; });
+    else setSelfLoopOverrides((value) => ({ ...value, [start.id]: start.selfLoop! }));
+  }
   function onCanvasPointerMove(event: React.PointerEvent<SVGSVGElement>) {
     if (pointersRef.current.has(event.pointerId)) {
       pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -392,11 +483,19 @@ export default function App() {
     }
     const drag = dragRef.current;
     if (!drag) return;
+    if (drag.kind === "relation-create" && drag.id) {
+      const point = graphPointForPointer(event.clientX, event.clientY);
+      if (point) setRelationCreationPreview({ sourceId: drag.id, point, targetId: relationTargetAt(point, drag.id) });
+      return;
+    }
     const dx = (event.clientX - drag.x) / scale;
     const dy = (event.clientY - drag.y) / scale;
     const moved = drag.moved || Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) >= 4;
     dragRef.current = { ...drag, x: event.clientX, y: event.clientY, moved };
-    if (drag.kind === "canvas" || drag.kind === "edge") setPan((value) => ({ x: value.x + dx * scale, y: value.y + dy * scale }));
+    if (drag.kind === "canvas") setPan((value) => ({ x: value.x + dx * scale, y: value.y + dy * scale }));
+    else if (drag.kind === "edge" && drag.id && selectedRelationId === drag.id) {
+      if (moved) { dragRef.current = { ...dragRef.current!, kind: "edge-curve" }; applyEdgeCurveDrag(drag.id, dx, dy); }
+    }
     else if (drag.kind === "node" && drag.id && moved) { setCoordinatesDirty(true); setPositions((value) => ({ ...value, [drag.id!]: { ...nodePosition(nodeMap.get(drag.id!)!), x: nodePosition(nodeMap.get(drag.id!)!).x + dx, y: nodePosition(nodeMap.get(drag.id!)!).y + dy } })); }
     else if (drag.kind === "node-label" && drag.id && moved) setNodeLabelOffsets((value) => ({ ...value, [drag.id!]: { x: (value[drag.id!]?.x ?? 0) + dx, y: (value[drag.id!]?.y ?? 0) + dy } }));
     else if (drag.kind === "edge-label" && drag.id && moved) {
@@ -408,41 +507,12 @@ export default function App() {
         },
       }));
     }
-    else if (drag.kind === "edge-curve" && drag.id && moved) {
-      const edge = graph.edges.find(({ id }) => id === drag.id);
-      if (edge && edge.sourceId === edge.targetId) {
-        const node = nodePosition(nodeMap.get(edge.sourceId)!);
-        const route = routedEdges.find(({ id }) => id === drag.id);
-        if (route) {
-          const desired = { x: route.controlPoint.x + dx, y: route.controlPoint.y + dy };
-          const distance = Math.max(70, Math.hypot(desired.x - node.x, desired.y - node.y));
-          const sidewaysDistance = Math.sin(Math.PI / 4) * 32;
-          const outwardDistance = Math.cos(Math.PI / 4) * 32;
-          const remaining = Math.max(1, distance - outwardDistance);
-          const radius = Math.max(38, Math.min(180, (remaining * remaining + sidewaysDistance * sidewaysDistance) / (2 * remaining)));
-          setSelfLoopOverrides((value) => ({
-            ...value,
-            [drag.id!]: { orientation: Math.atan2(desired.y - node.y, desired.x - node.x), radius },
-          }));
-        }
-      }
-      else if (edge) {
-        const source = nodePosition(nodeMap.get(edge.sourceId)!);
-        const target = nodePosition(nodeMap.get(edge.targetId)!);
-        const length = Math.max(1, Math.hypot(target.x - source.x, target.y - source.y));
-        const normalX = -(target.y - source.y) / length;
-        const normalY = (target.x - source.x) / length;
-        setEdgeCurveOffsets((value) => ({
-          ...value,
-          [drag.id!]: (value[drag.id!] ?? 0) + normalX * dx + normalY * dy,
-        }));
-      }
-    }
+    else if (drag.kind === "edge-curve" && drag.id && moved) applyEdgeCurveDrag(drag.id, dx, dy);
   }
 
   function startGraphPointer(
     event: React.PointerEvent<SVGElement>,
-    drag: { kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve"; id?: string },
+    drag: { kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string },
   ) {
     event.preventDefault();
     const svg = event.currentTarget instanceof SVGSVGElement
@@ -477,6 +547,27 @@ export default function App() {
     }
     const drag = dragRef.current;
     const wasPinch = pinchRef.current !== null || pointersRef.current.size >= 2;
+    if (drag?.kind === "edge-curve") {
+      if (event.type === "pointercancel") restoreEdgeCurveDrag();
+      edgeCurveDragStartRef.current = null;
+      pointersRef.current.delete(event.pointerId);
+      dragRef.current = null;
+      pinchRef.current = null;
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+      return;
+    }
+    if (drag?.kind === "relation-create") {
+      const preview = relationCreationPreview;
+      if (preview && preview.sourceId === drag.id && preview.targetId) {
+        openCreation("relation", null, { sourceId: preview.sourceId, targetId: preview.targetId });
+      }
+      setRelationCreationPreview(null);
+      pointersRef.current.delete(event.pointerId);
+      dragRef.current = null;
+      pinchRef.current = null;
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+      return;
+    }
     const isNodeTap = drag?.kind === "node"
       && !drag.moved
       && pointersRef.current.size === 1
@@ -605,10 +696,10 @@ export default function App() {
     setMessage(`Relation ${selectedRelationId} updated.`);
   }
 
-  function openCreation(mode: "entity" | "relation", placement: { x: number; y: number } | null = null) {
-    const selectedEntity = mode === "relation" ? selectedId ?? "" : "";
+  function openCreation(mode: "entity" | "relation", placement: { x: number; y: number } | null = null, endpoints: { sourceId: string; targetId: string } | null = null) {
+    const selectedEntity = mode === "relation" ? endpoints?.sourceId ?? selectedId ?? "" : "";
     setPendingEntityPlacement(mode === "entity" ? placement : null);
-    setCreationMode(mode); setCreationName(""); setCreationDescription(""); setCreationSource(selectedEntity); setCreationTarget(selectedEntity); setDetailOpen(false);
+    setCreationMode(mode); setCreationName(""); setCreationDescription(""); setCreationSource(selectedEntity); setCreationTarget(mode === "relation" ? endpoints?.targetId ?? selectedEntity : ""); setDetailOpen(false);
   }
 
   function openCanvasContextAt(clientX: number, clientY: number) {
@@ -627,7 +718,7 @@ export default function App() {
 
   function openCanvasContextMenu(event: React.MouseEvent<SVGSVGElement>) {
     const target = event.target;
-    if (target instanceof Element && target.closest(".node, .edge-group, .edge-label-group, .edge-curve-control")) return;
+    if (target instanceof Element && target.closest(".node, .edge-group, .edge-label-group")) return;
     event.preventDefault();
     if (suppressNextContextMenuRef.current) { suppressNextContextMenuRef.current = false; return; }
     openCanvasContextAt(event.clientX, event.clientY);
@@ -881,6 +972,12 @@ export default function App() {
           >
             <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="currentColor" /></marker></defs>
             <g transform={centeredViewportTransform(scale, pan, 800, 500)}>
+              {relationCreationPreview && (() => {
+                const source = graph.nodes.find(({ id }) => id === relationCreationPreview.sourceId);
+                if (!source) return null;
+                const sourcePoint = nodePosition(source);
+                return <line className={`relation-creation-preview${relationCreationPreview.targetId ? " valid" : ""}`} x1={sourcePoint.x} y1={sourcePoint.y} x2={relationCreationPreview.point.x} y2={relationCreationPreview.point.y} />;
+              })()}
               {displayedEdges.map((edge) => {
                 return <g
                   key={edge.id}
@@ -890,6 +987,7 @@ export default function App() {
                   onPointerDown={(event) => {
                     event.stopPropagation();
                     setEdgeLayerOrder((value) => bringToFront(value, edge.id));
+                    if (selectedRelationId === edge.id) edgeCurveDragStartRef.current = { id: edge.id, offset: edgeCurveOffsets[edge.id], selfLoop: selfLoopOverrides[edge.id] };
                     startGraphPointer(event, { kind: "edge", id: edge.id });
                   }}
                 >
@@ -913,23 +1011,10 @@ export default function App() {
                   <text className="edge-label" x={labelPoint.x} y={labelPoint.y - 5} aria-hidden="true">{edge.label}</text>
                 </g>;
               })}
-              {displayedEdges.map((edge) => selectedRelationId === edge.id && (
-                <g key={`control-${edge.id}`} className="edge-curve-control">
-                  <line x1={edge.labelPoint.x} y1={edge.labelPoint.y} x2={edge.controlPoint.x} y2={edge.controlPoint.y} />
-                  <circle
-                    cx={edge.controlPoint.x}
-                    cy={edge.controlPoint.y}
-                    r="7"
-                    onPointerDown={(event) => {
-                      event.stopPropagation();
-                      startGraphPointer(event, { kind: "edge-curve", id: edge.id });
-                    }}
-                  />
-                </g>
-              ))}
               {displayedNodes.map((node) => { const position = nodePosition(node); return (
                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onContextMenu={(event) => openEntityDetailFromContext(node.id, event)} onPointerDown={(event) => { event.stopPropagation(); setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
-                  <circle r="32" />
+                  <rect className="entity-body" x="-32" y="-32" width="64" height="64" rx="12" />
+                  <circle className="connection-handle" cx="34" cy="16" r="7" onPointerDown={(event) => startRelationCreation(event, node.id)} />
                   <title>{node.description ? `${node.label}\n${node.description}` : node.label}</title>
                   {(() => {
                     const placement = nodeLabelPlacements.get(node.id)!;
@@ -974,6 +1059,7 @@ export default function App() {
               : "Select an Entity or Relation"}</p>
           {selectedRelationDetail && !detailOpen && (
             <div className="graph-selection-actions">
+              <p className="relation-curvature-hint" role="status">Drag the selected relation to adjust its curve.</p>
               <button type="button" onClick={() => setDetailOpen(true)}>Edit Relation</button>
               <button
                 type="button"
