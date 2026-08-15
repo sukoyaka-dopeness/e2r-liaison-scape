@@ -8,6 +8,9 @@ import { assessEntityDeletion, createEntity, deleteEntity } from "./services/Ent
 import { getEntityDetail, updateEntityDetails } from "./services/EntityService";
 import { assessRelationDeletion, createRelation, deleteRelation } from "./services/RelationService";
 import { getRelationDetail, updateRelationDetails } from "./services/RelationService";
+import { ConfirmationDialog } from "./components/ConfirmationDialog";
+import { EntityDetailDialog } from "./components/EntityDetailDialog";
+import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, zoomScale } from "./viewport";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
@@ -571,16 +574,7 @@ export default function App() {
           <button type="button" onClick={saveCreation}>Save {creationMode === "entity" ? "Entity" : "Relation"}</button>
         </aside>
       )}
-      {dataset && deleteConfirmation && (
-        <>
-          <button className="detail-backdrop confirmation-backdrop" type="button" aria-label="Cancel deletion" onClick={() => setDeleteConfirmation(null)} />
-          <aside className={`detail confirmation confirmation-${deleteConfirmation}`} role="dialog" aria-modal="true" aria-label="Confirm deletion">
-            <h3>Confirm deletion</h3>
-            <p>Delete this {deleteConfirmation === "entity" ? "Entity" : "Relation"}?</p>
-            <div className="detail-actions"><button type="button" onClick={() => setDeleteConfirmation(null)}>Cancel</button><button type="button" className="danger-confirm" onClick={confirmDeletion}>Delete</button></div>
-          </aside>
-        </>
-      )}
+          {dataset && deleteConfirmation && <ConfirmationDialog subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
       {dataset && coordinateMigrationReadiness && !coordinateMigrationReadiness.ready && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_no_source" && (
         <p className="status-message" role="status">
           {coordinateMigrationReadiness.code === "linkscape_coordinate_draft_migration_target_exists"
@@ -754,8 +748,7 @@ export default function App() {
           <p className="selection-message" role="status">{transientSuccess ? message : (coordinatesDirty ? "Moved coordinates are temporary until you save them." : "Stored coordinates are restored when available.")}</p>
           {detailOpen && selectedDetail && (
             <>
-            <button className="detail-backdrop" type="button" aria-label="Close Entity Detail" onClick={() => setDetailOpen(false)} />
-            <aside className="detail" role="dialog" aria-modal="true" aria-labelledby="entity-detail-title">
+            <EntityDetailDialog onClose={() => setDetailOpen(false)}>
               <div className="detail-header">
                 <h3 id="entity-detail-title">Entity Detail</h3>
                 <button type="button" onClick={() => setDetailOpen(false)}>Close</button>
@@ -798,13 +791,12 @@ export default function App() {
                   </> : <button type="button" onClick={removeSelectedEntity}>Delete Entity</button>}
                 </div>;
               })()}
-            </aside>
+            </EntityDetailDialog>
             </>
           )}
           {detailOpen && selectedRelationDetail && (
             <>
-            <button className="detail-backdrop" type="button" aria-label="Close Relation Detail" onClick={() => setDetailOpen(false)} />
-            <aside className="detail" role="dialog" aria-modal="true" aria-labelledby="relation-detail-title">
+            <RelationDetailDialog onClose={() => setDetailOpen(false)}>
               <div className="detail-header">
                 <h3 id="relation-detail-title">Relation Detail</h3>
                 <button type="button" onClick={() => setDetailOpen(false)}>Close</button>
@@ -831,7 +823,7 @@ export default function App() {
                 </button>
               </div>
               <div className="detail-danger"><span>Danger zone</span><button type="button" onClick={removeSelectedRelation}>Delete Relation</button></div>
-            </aside>
+            </RelationDetailDialog>
             </>
           )}
         </section>
