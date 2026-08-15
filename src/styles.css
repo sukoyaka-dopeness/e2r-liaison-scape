@@ -32,6 +32,8 @@ body { margin: 0; }
 .maintenance-menu summary { min-height: 40px; padding: 8px 12px; border: 1px solid #e5e4e7; border-radius: 6px; color: #08060d; background: #fff; cursor: pointer; list-style: none; }
 .maintenance-menu summary::-webkit-details-marker { display: none; }
 .maintenance-menu__items { position: absolute; z-index: 4; right: 0; top: calc(100% + 6px); display: grid; width: max-content; max-width: min(28rem, calc(100vw - 32px)); gap: 6px; padding: 8px; border: 1px solid #e5e4e7; border-radius: 8px; background: #fff; box-shadow: 0 12px 30px rgba(8,6,13,.14); }
+.canvas-context-menu { z-index: 10; display: grid; min-width: 10rem; max-width: calc(100vw - 16px); gap: 6px; padding: 8px; border: 1px solid #d9d5df; border-radius: 8px; background: #fff; box-shadow: 0 12px 30px rgba(8,6,13,.18); }
+.canvas-context-menu button { width: 100%; min-height: 40px; padding: 8px 12px; text-align: left; }
 .graph-section { position: relative; min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; margin-top: 8px; }
 .graph-section h2 { display: none; }
 .graph-section > p { margin: 3px 0; font-size: .84rem; }

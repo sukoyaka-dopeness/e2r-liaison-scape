@@ -8,6 +8,7 @@ import { assessEntityDeletion, createEntity, deleteEntity } from "./services/Ent
 import { getEntityDetail, updateEntityDetails } from "./services/EntityService";
 import { assessRelationDeletion, createRelation, deleteRelation } from "./services/RelationService";
 import { getRelationDetail, updateRelation } from "./services/RelationService";
+import { canCompleteLongPress, createCanvasContextMenu, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, type CanvasContextMenu } from "./direct-graph-authoring";
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
@@ -37,6 +38,7 @@ export default function App() {
   const [selfLoopOverrides, setSelfLoopOverrides] = useState<Record<string, { orientation: number; radius: number }>>({});
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [viewportToolbarPosition, setViewportToolbarPosition] = useState<{ x: number; y: number } | null>(null);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
   const [coordinatesDirty, setCoordinatesDirty] = useState(false);
   const [creationMode, setCreationMode] = useState<"entity" | "relation" | null>(null);
@@ -44,12 +46,19 @@ export default function App() {
   const [creationDescription, setCreationDescription] = useState("");
   const [creationSource, setCreationSource] = useState("");
   const [creationTarget, setCreationTarget] = useState("");
+  const [canvasContextMenu, setCanvasContextMenu] = useState<(CanvasContextMenu & { clientX: number; clientY: number }) | null>(null);
+  const [pendingEntityPlacement, setPendingEntityPlacement] = useState<{ x: number; y: number } | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve"; id?: string; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
   const graphRef = useRef<SVGSVGElement>(null);
+  const viewportToolbarRef = useRef<HTMLDivElement>(null);
+  const viewportToolbarDragRef = useRef<{ offsetX: number; offsetY: number } | null>(null);
+  const longPressRef = useRef<{ pointerId: number; startX: number; startY: number; timer: number; kind: "canvas" | "entity" | "relation"; id?: string; canceled: boolean } | null>(null);
+  const longPressClaimedRef = useRef<number | null>(null);
+  const suppressNextContextMenuRef = useRef(false);
   const metadata = dataset ? getDatasetMetadata(dataset) : null;
   const coordinateMigrationReadiness = dataset ? assessCoordinateDraftMigration(dataset) : null;
   const spaceMigrationReadiness = dataset ? assessLiaisonScapeSpaceMigration(dataset) : null;
@@ -149,8 +158,25 @@ export default function App() {
       if (event.touches.length >= 2) event.preventDefault();
     };
     const zoomWithWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey) return;
+      const rect = graphElement.getBoundingClientRect();
+      const pointer = { clientX: event.clientX, clientY: event.clientY };
+      const graphPoint = graphPointFromPointer(
+        pointer,
+        { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+        { width: 800, height: 500 },
+        scale,
+        pan,
+      );
+      const nextScale = clampScale(scale * (event.deltaY < 0 ? 1.1 : .9));
+      const viewX = (event.clientX - rect.left) * 800 / rect.width;
+      const viewY = (event.clientY - rect.top) * 500 / rect.height;
       event.preventDefault();
-      setScale((value) => clampScale(value * (event.deltaY < 0 ? 1.1 : .9)));
+      setScale(nextScale);
+      setPan({
+        x: viewX - 400 - nextScale * (graphPoint.x - 400),
+        y: viewY - 250 - nextScale * (graphPoint.y - 250),
+      });
     };
 
     graphElement.addEventListener("gesturestart", preventSafariGesture, { passive: false });
@@ -166,7 +192,7 @@ export default function App() {
       graphElement.removeEventListener("touchmove", preventBrowserPinch);
       graphElement.removeEventListener("wheel", zoomWithWheel);
     };
-  }, [dataset]);
+  }, [dataset, pan, scale]);
 
   useEffect(() => {
     if (!detailOpen) return;
@@ -199,6 +225,43 @@ export default function App() {
     document.addEventListener("keydown", trapFocus, true);
     return () => document.removeEventListener("keydown", trapFocus, true);
   }, [creationMode, deleteConfirmation, detailOpen]);
+
+  useEffect(() => {
+    if (!canvasContextMenu) return;
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setCanvasContextMenu(null);
+    };
+    const dismissOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".canvas-context-menu")) return;
+      setCanvasContextMenu(null);
+    };
+    window.addEventListener("keydown", dismissOnEscape);
+    window.addEventListener("pointerdown", dismissOnOutsidePointer);
+    return () => {
+      window.removeEventListener("keydown", dismissOnEscape);
+      window.removeEventListener("pointerdown", dismissOnOutsidePointer);
+    };
+  }, [canvasContextMenu]);
+
+  useEffect(() => {
+    if (!viewportToolbarPosition) return;
+    const graphElement = graphRef.current;
+    const toolbar = viewportToolbarRef.current;
+    if (!graphElement || !toolbar) return;
+    const clampToolbar = () => {
+      const graphRect = graphElement.getBoundingClientRect();
+      const toolbarRect = toolbar.getBoundingClientRect();
+      setViewportToolbarPosition((value) => value ? {
+        x: Math.max(0, Math.min(value.x, graphRect.width - toolbarRect.width)),
+        y: Math.max(0, Math.min(value.y, graphRect.height - toolbarRect.height)),
+      } : value);
+    };
+    const observer = new ResizeObserver(clampToolbar);
+    observer.observe(graphElement);
+    observer.observe(toolbar);
+    return () => observer.disconnect();
+  }, [viewportToolbarPosition]);
 
   function open(raw: string) {
     const result = loadDataset(raw);
@@ -238,6 +301,80 @@ export default function App() {
   }
 
   function nodePosition(node: GraphNode) { return positions[node.id] ?? node; }
+  function cancelLongPress() {
+    const pending = longPressRef.current;
+    if (pending) window.clearTimeout(pending.timer);
+    longPressRef.current = null;
+  }
+  function startLongPress(event: React.PointerEvent<SVGSVGElement>) {
+    if (event.pointerType === "mouse") return;
+    suppressNextContextMenuRef.current = false;
+    if (longPressRef.current || pointersRef.current.size > 0) {
+      cancelLongPress();
+      if (pointersRef.current.size > 0) return;
+    }
+    const target = event.target;
+    const element = target instanceof Element ? target : null;
+    const entityElement = element?.closest<SVGGElement>(".node");
+    const entityLabelElement = element?.closest<SVGGElement>(".node-label-group");
+    const relationElement = element?.closest<SVGGElement>(".edge-group, .edge-label-group, .edge-curve-control");
+    const kind: "canvas" | "entity" | "relation" = entityElement || entityLabelElement ? "entity" : relationElement ? "relation" : "canvas";
+    const id = entityElement?.getAttribute("data-entity-id") ?? entityLabelElement?.getAttribute("data-entity-id") ?? relationElement?.getAttribute("data-relation-id") ?? undefined;
+    const pending = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, kind, id, canceled: false, timer: 0 };
+    pending.timer = window.setTimeout(() => {
+      const current = longPressRef.current;
+      if (!current || current.pointerId !== event.pointerId || current.canceled) return;
+      if (!canCompleteLongPress(pointersRef.current.size <= 1, current.canceled) || !isLongPress(500, 0)) return;
+      longPressClaimedRef.current = event.pointerId;
+      suppressNextContextMenuRef.current = true;
+      window.setTimeout(() => { suppressNextContextMenuRef.current = false; }, 1000);
+      dragRef.current = null;
+      if (current.kind === "canvas") openCanvasContextAt(event.clientX, event.clientY);
+      else if (current.kind === "entity" && current.id) openEntityDetail(current.id);
+      else if (current.kind === "relation" && current.id) openRelationDetail(current.id);
+    }, 500);
+    longPressRef.current = pending;
+  }
+
+  function updateLongPress(event: React.PointerEvent<SVGSVGElement>) {
+    const pending = longPressRef.current;
+    if (!pending || pending.pointerId !== event.pointerId) return;
+    if (Math.hypot(event.clientX - pending.startX, event.clientY - pending.startY) > 8) cancelLongPress();
+  }
+
+  function finishLongPress(event: React.PointerEvent<SVGSVGElement>) {
+    if (longPressRef.current?.pointerId === event.pointerId) cancelLongPress();
+  }
+
+  function moveViewportToolbar(event: React.PointerEvent<HTMLButtonElement>) {
+    const graphElement = graphRef.current;
+    const toolbar = viewportToolbarRef.current;
+    const drag = viewportToolbarDragRef.current;
+    if (!graphElement || !toolbar || !drag) return;
+    const graphRect = graphElement.getBoundingClientRect();
+    const toolbarRect = toolbar.getBoundingClientRect();
+    setViewportToolbarPosition({
+      x: Math.max(0, Math.min(event.clientX - graphRect.left - drag.offsetX, graphRect.width - toolbarRect.width)),
+      y: Math.max(0, Math.min(event.clientY - graphRect.top - drag.offsetY, graphRect.height - toolbarRect.height)),
+    });
+  }
+  function startViewportToolbarDrag(event: React.PointerEvent<HTMLButtonElement>) {
+    const toolbar = viewportToolbarRef.current;
+    const graphElement = graphRef.current;
+    if (!toolbar || !graphElement) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const graphRect = graphElement.getBoundingClientRect();
+    const toolbarRect = toolbar.getBoundingClientRect();
+    const currentPosition = viewportToolbarPosition ?? { x: toolbarRect.left - graphRect.left, y: toolbarRect.top - graphRect.top };
+    setViewportToolbarPosition(currentPosition);
+    viewportToolbarDragRef.current = { offsetX: event.clientX - graphRect.left - currentPosition.x, offsetY: event.clientY - graphRect.top - currentPosition.y };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+  function endViewportToolbarDrag(event: React.PointerEvent<HTMLButtonElement>) {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    viewportToolbarDragRef.current = null;
+  }
   function onCanvasPointerMove(event: React.PointerEvent<SVGSVGElement>) {
     if (pointersRef.current.has(event.pointerId)) {
       pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -330,7 +467,16 @@ export default function App() {
   }
 
   function endGraphPointer(event: React.PointerEvent<SVGSVGElement>) {
+    if (longPressClaimedRef.current === event.pointerId) {
+      longPressClaimedRef.current = null;
+      pointersRef.current.delete(event.pointerId);
+      dragRef.current = null;
+      pinchRef.current = null;
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+      return;
+    }
     const drag = dragRef.current;
+    const wasPinch = pinchRef.current !== null || pointersRef.current.size >= 2;
     const isNodeTap = drag?.kind === "node"
       && !drag.moved
       && pointersRef.current.size === 1
@@ -374,6 +520,12 @@ export default function App() {
       setRelationSourceDraft(typeof relation?.sourceId === "string" ? relation.sourceId : "");
       setRelationTargetDraft(typeof relation?.targetId === "string" ? relation.targetId : "");
       setEdgeLayerOrder((value) => bringToFront(value, drag.id!));
+    }
+    if (wasPinch) {
+      pointersRef.current.clear();
+      dragRef.current = null;
+      pinchRef.current = null;
+      return;
     }
     pointersRef.current.delete(event.pointerId);
     pinchRef.current = null;
@@ -453,18 +605,48 @@ export default function App() {
     setMessage(`Relation ${selectedRelationId} updated.`);
   }
 
-  function openCreation(mode: "entity" | "relation") {
+  function openCreation(mode: "entity" | "relation", placement: { x: number; y: number } | null = null) {
     const selectedEntity = mode === "relation" ? selectedId ?? "" : "";
+    setPendingEntityPlacement(mode === "entity" ? placement : null);
     setCreationMode(mode); setCreationName(""); setCreationDescription(""); setCreationSource(selectedEntity); setCreationTarget(selectedEntity); setDetailOpen(false);
+  }
+
+  function openCanvasContextAt(clientX: number, clientY: number) {
+    const svg = graphRef.current;
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const point = graphPointFromPointer(
+      { clientX, clientY },
+      { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+      { width: 800, height: 500 },
+      scale,
+      pan,
+    );
+    setCanvasContextMenu({ ...createCanvasContextMenu(point), clientX, clientY });
+  }
+
+  function openCanvasContextMenu(event: React.MouseEvent<SVGSVGElement>) {
+    const target = event.target;
+    if (target instanceof Element && target.closest(".node, .edge-group, .edge-label-group, .edge-curve-control")) return;
+    event.preventDefault();
+    if (suppressNextContextMenuRef.current) { suppressNextContextMenuRef.current = false; return; }
+    openCanvasContextAt(event.clientX, event.clientY);
+  }
+
+  function chooseCanvasAddEntity() {
+    if (!canvasContextMenu) return;
+    openCreation("entity", canvasContextMenu.point);
+    setCanvasContextMenu(null);
   }
 
   function saveCreation() {
     if (!dataset || !creationMode) return;
     if (creationMode === "entity") {
+      const placement = pendingEntityPlacement;
       const result = createEntity(dataset, { name: creationName, description: creationDescription });
       const created = result.dataset.entities.find(({ id }) => id === result.entityId)!;
-      setDataset(result.dataset); setSelectedId(result.entityId); setSelectedRelationId(null); setCreationMode(null);
-      setPositions((value) => ({ ...value, [result.entityId]: { x: 400, y: 250 } }));
+      setDataset(result.dataset); setSelectedId(result.entityId); setSelectedRelationId(null); setCreationMode(null); setPendingEntityPlacement(null);
+      setPositions((value) => ({ ...value, [result.entityId]: placement ?? graphPointFromViewportCenter({ width: 800, height: 500 }, scale, pan) }));
       setNodeLayerOrder((value) => bringToFront(value, result.entityId));
       setEntityNameDraft(typeof created.name === "string" ? created.name : ""); setEntityDescriptionDraft(typeof created.description === "string" ? created.description : "");
       setMessage(`Entity ${result.entityId} created.`); return;
@@ -534,6 +716,42 @@ export default function App() {
     setDetailOpen(true);
   }
 
+  function openEntityDetail(entityId: string) {
+    const entity = dataset?.entities.find(({ id }) => id === entityId);
+    if (!entity) return;
+    setSelectedId(entityId);
+    setSelectedRelationId(null);
+    setEntityNameDraft(typeof entity.name === "string" ? entity.name : "");
+    setEntityDescriptionDraft(typeof entity.description === "string" ? entity.description : "");
+    setDetailOpen(true);
+  }
+
+  function openEntityDetailFromContext(entityId: string, event: React.MouseEvent<SVGGElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (suppressNextContextMenuRef.current) { suppressNextContextMenuRef.current = false; return; }
+    openEntityDetail(entityId);
+  }
+
+  function openRelationDetail(relationId: string) {
+    const relation = dataset?.relations.find(({ id }) => id === relationId);
+    if (!relation) return;
+    setSelectedRelationId(relationId);
+    setSelectedId(null);
+    setRelationNameDraft(typeof relation.name === "string" ? relation.name : "");
+    setRelationDescriptionDraft(typeof relation.description === "string" ? relation.description : "");
+    setRelationSourceDraft(typeof relation.sourceId === "string" ? relation.sourceId : "");
+    setRelationTargetDraft(typeof relation.targetId === "string" ? relation.targetId : "");
+    setDetailOpen(true);
+  }
+
+  function openRelationDetailFromContext(relationId: string, event: React.MouseEvent<SVGGElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (suppressNextContextMenuRef.current) { suppressNextContextMenuRef.current = false; return; }
+    openRelationDetail(relationId);
+  }
+
   function resetView() {
     const fittedView = fitGraphView(graph.nodes.map(nodePosition), 800, 500);
     setScale(fittedView.scale);
@@ -600,6 +818,10 @@ export default function App() {
           </div>
         </div>
         {!transientSuccess && <p className="status-message" role="status">{message}</p>}
+      {canvasContextMenu && <div className="canvas-context-menu" role="menu" aria-label="Canvas actions" style={{ position: "fixed", left: canvasContextMenu.clientX, top: canvasContextMenu.clientY }} onPointerDown={(event) => event.stopPropagation()}>
+        <button type="button" role="menuitem" onClick={chooseCanvasAddEntity}>Add Entity</button>
+        <button type="button" role="menuitem" onClick={() => setCanvasContextMenu(null)}>Cancel</button>
+      </div>}
       {dataset && creationMode && (
         <CreationDialog
           mode={creationMode}
@@ -613,7 +835,7 @@ export default function App() {
           onSourceChange={setCreationSource}
           onTargetChange={setCreationTarget}
           onSave={saveCreation}
-          onCancel={() => setCreationMode(null)}
+          onCancel={() => { setCreationMode(null); setPendingEntityPlacement(null); }}
         />
       )}
 {dataset && deleteConfirmation && <ConfirmationDialog subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
@@ -633,7 +855,8 @@ export default function App() {
       {dataset && (
         <section className="graph-section">
           <h2>Graph</h2>
-          <div className="viewport-controls" aria-label="Graph view controls">
+          <div ref={viewportToolbarRef} className="viewport-controls" aria-label="Graph view controls" style={viewportToolbarPosition ? { left: viewportToolbarPosition.x, top: viewportToolbarPosition.y, right: "auto" } : undefined}>
+            <button type="button" className="viewport-toolbar-handle" aria-label="Move zoom controls" title="Move zoom controls" onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={endViewportToolbarDrag}>⠿</button>
             <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>Zoom out</button>
             <span aria-live="polite">{Math.round(scale * 100)}%</span>
             <button type="button" onClick={() => setScale((value) => zoomScale(value, "in"))}>Zoom in</button>
@@ -647,9 +870,14 @@ export default function App() {
             role="img"
             aria-label="Entity relationship graph"
             onPointerDown={(event) => { startGraphPointer(event, { kind: "canvas" }); }}
+            onPointerDownCapture={startLongPress}
             onPointerMove={onCanvasPointerMove}
+            onPointerMoveCapture={updateLongPress}
             onPointerUp={endGraphPointer}
+            onPointerUpCapture={finishLongPress}
             onPointerCancel={endGraphPointer}
+            onPointerCancelCapture={finishLongPress}
+            onContextMenu={openCanvasContextMenu}
           >
             <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="currentColor" /></marker></defs>
             <g transform={centeredViewportTransform(scale, pan, 800, 500)}>
@@ -657,6 +885,8 @@ export default function App() {
                 return <g
                   key={edge.id}
                   className={`edge-group${selectedRelationId === edge.id ? " selected" : ""}`}
+                  data-relation-id={edge.id}
+                  onContextMenu={(event) => openRelationDetailFromContext(edge.id, event)}
                   onPointerDown={(event) => {
                     event.stopPropagation();
                     setEdgeLayerOrder((value) => bringToFront(value, edge.id));
@@ -674,7 +904,9 @@ export default function App() {
                 return <g
                   key={`label-${edge.id}`}
                   className="edge-label-group"
+                  data-relation-id={edge.id}
                   transform={`translate(${edgeLabelOffsets[edge.id]?.x ?? 0} ${edgeLabelOffsets[edge.id]?.y ?? 0})`}
+                  onContextMenu={(event) => openRelationDetailFromContext(edge.id, event)}
                   onPointerDown={(event) => { event.stopPropagation(); startGraphPointer(event, { kind: "edge-label", id: edge.id }); }}
                 >
                   <rect className="label-drag-hit" x={labelPoint.x - Math.max(24, edge.label.length * 3.5)} y={labelPoint.y - 18} width={Math.max(48, edge.label.length * 7)} height="22" rx="3" />
@@ -696,7 +928,7 @@ export default function App() {
                 </g>
               ))}
               {displayedNodes.map((node) => { const position = nodePosition(node); return (
-                <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}`} transform={`translate(${position.x} ${position.y})`} onPointerDown={(event) => { event.stopPropagation(); setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
+                <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onContextMenu={(event) => openEntityDetailFromContext(node.id, event)} onPointerDown={(event) => { event.stopPropagation(); setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
                   <circle r="32" />
                   <title>{node.description ? `${node.label}\n${node.description}` : node.label}</title>
                   {(() => {
@@ -713,6 +945,8 @@ export default function App() {
                     );
                     return <g
                       className="node-label-group"
+                      data-entity-id={node.id}
+                      onContextMenu={(event) => openEntityDetailFromContext(node.id, event)}
                       onPointerDown={(event) => { event.stopPropagation(); startGraphPointer(event, { kind: "node-label", id: node.id }); }}
                     >
                       {shouldShowNodeLabelConnector({ x: offsetX, y: offsetY }) && (
