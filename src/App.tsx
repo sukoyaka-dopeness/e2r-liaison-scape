@@ -18,6 +18,7 @@ import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, plac
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
 export default function App() {
+  const [view, setView] = useState<"home" | "workspace">("home");
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
@@ -61,6 +62,16 @@ export default function App() {
   const longPressRef = useRef<{ pointerId: number; startX: number; startY: number; timer: number; kind: "canvas" | "entity" | "relation"; id?: string; canceled: boolean } | null>(null);
   const longPressClaimedRef = useRef<number | null>(null);
   const suppressNextContextMenuRef = useRef(false);
+
+  useEffect(() => {
+    window.history.replaceState({ liaisonScapeView: "home" }, "");
+    const onPopState = () => {
+      setView("home");
+      setMessage("Your Dataset is still open. Continue to return to the workspace.");
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
   const metadata = dataset ? getDatasetMetadata(dataset) : null;
   const coordinateMigrationReadiness = dataset ? assessCoordinateDraftMigration(dataset) : null;
   const spaceMigrationReadiness = dataset ? assessLiaisonScapeSpaceMigration(dataset) : null;
@@ -305,6 +316,7 @@ export default function App() {
       return;
     }
     setDataset(result.dataset);
+    enterWorkspace();
     setSelectedId(null);
     setSelectedRelationId(null);
     setDetailOpen(false);
@@ -327,6 +339,47 @@ export default function App() {
     setScale(fittedView.scale);
     setMessage(`Loaded ${result.dataset.entities.length} Entities and ${result.dataset.relations.length} Relations.`);
   }
+
+  function enterWorkspace() {
+    setView("workspace");
+    window.history.pushState({ liaisonScapeView: "workspace" }, "", window.location.href);
+  }
+
+  function startNewDataset() {
+    setDataset(structuredClone(emptyDataset));
+    setDiagnostics([]);
+    setMessage("New Dataset ready.");
+    setSelectedId(null);
+    setSelectedRelationId(null);
+    setPositions({});
+    setCoordinatesDirty(false);
+    enterWorkspace();
+  }
+
+  if (view === "home") return (
+    <div className="app-frame home-page">
+      <header className="app-header"><button className="app-brand app-brand-button" type="button" onClick={() => setView("home")}>LiaisonScape</button></header>
+      <main className="home-content">
+        <h1>Get Started</h1>
+        <p className="home-description">Create and edit E2R relationship graphs centered on Entities and Relations.</p>
+        <div className="home-actions">
+          <button type="button" onClick={startNewDataset}>New Dataset</button>
+          <label className="open-dataset-button">Open E2R Dataset<input
+            type="file" accept="application/json,.json,.e2r.json"
+            onChange={(event) => { const file = event.target.files?.[0]; if (file) void file.text().then(open); }}
+          /></label>
+          {dataset && <button type="button" onClick={enterWorkspace}>Continue Editing</button>}
+        </div>
+        <nav className="home-guides" aria-label="Guides">
+          <a href="https://github.com/sukoyaka-dopeness/e2r-liaison-scape/blob/main/docs/user-guide-en.md" target="_blank" rel="noreferrer">English guide</a>
+          <a href="https://github.com/sukoyaka-dopeness/e2r-liaison-scape/blob/main/docs/user-guide-ja.md" target="_blank" rel="noreferrer">日本語ガイド</a>
+        </nav>
+      </main>
+      <footer className="app-footer home-footer">
+        <small>E2R relationship editor</small>
+      </footer>
+    </div>
+  );
 
   function nodePosition(node: GraphNode) { return positions[node.id] ?? node; }
   function graphPointForPointer(clientX: number, clientY: number) {
@@ -877,7 +930,8 @@ export default function App() {
   return (
     <div className="app-frame">
       <header className="app-header">
-        <span className="app-brand">LiaisonScape</span>
+        <button className="app-brand app-brand-button" type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>LiaisonScape</button>
+        <button className="header-home-button" type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>Home</button>
       </header>
       <main className="app-content">
         <div className="page-header">
@@ -1150,6 +1204,9 @@ export default function App() {
         </section>
       )}
       </main>
+      <footer className="app-footer workspace-footer">
+        <button type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>Home</button>
+      </footer>
     </div>
   );
 }
