@@ -24,6 +24,52 @@ export type LoadResult = {
   parseError?: string;
 };
 
+export type CoreObjectDraft = { name?: string; description?: string };
+export type IdCandidateGenerator = () => string;
+
+export function isCoreObjectIdTaken(dataset: Dataset, id: string): boolean {
+  return [...dataset.entities, ...dataset.events, ...dataset.relations].some((object) => object.id === id);
+}
+
+export function createCoreObjectId(dataset: Dataset, nextCandidate: IdCandidateGenerator = () => globalThis.crypto?.randomUUID?.() ?? `object-${Date.now()}-${Math.random().toString(36).slice(2)}`): string {
+  for (let attempt = 0; attempt < 1000; attempt += 1) {
+    const candidate = nextCandidate();
+    if (typeof candidate === "string" && candidate.trim() && !isCoreObjectIdTaken(dataset, candidate)) return candidate;
+  }
+  throw new Error("Unable to generate a unique Core Object ID");
+}
+
+function optionalText(value: string | undefined): string | undefined {
+  return typeof value === "string" && value.trim() ? value : undefined;
+}
+
+export function createEntity(dataset: Dataset, draft: CoreObjectDraft, nextCandidate?: IdCandidateGenerator): { dataset: Dataset; entityId: string } {
+  const id = createCoreObjectId(dataset, nextCandidate);
+  const entity: E2RObject = { id };
+  const name = optionalText(draft.name);
+  const description = optionalText(draft.description);
+  if (name !== undefined) entity.name = name;
+  if (description !== undefined) entity.description = description;
+  return { dataset: { ...dataset, entities: [...dataset.entities, entity] }, entityId: id };
+}
+
+export type RelationCreationResult = { dataset: Dataset; relationId: string } | { dataset: Dataset; refusal: string };
+
+export function createRelation(dataset: Dataset, draft: CoreObjectDraft & { sourceId?: string; targetId?: string }, nextCandidate?: IdCandidateGenerator): RelationCreationResult {
+  const sourceId = typeof draft.sourceId === "string" ? draft.sourceId : "";
+  const targetId = typeof draft.targetId === "string" ? draft.targetId : "";
+  if (!sourceId || !targetId) return { dataset, refusal: "relation_endpoint_required" };
+  if (!dataset.entities.some(({ id }) => id === sourceId)) return { dataset, refusal: "relation_source_entity_required" };
+  if (!dataset.entities.some(({ id }) => id === targetId)) return { dataset, refusal: "relation_target_entity_required" };
+  const id = createCoreObjectId(dataset, nextCandidate);
+  const relation: E2RObject = { id, sourceId, targetId };
+  const name = optionalText(draft.name);
+  const description = optionalText(draft.description);
+  if (name !== undefined) relation.name = name;
+  if (description !== undefined) relation.description = description;
+  return { dataset: { ...dataset, relations: [...dataset.relations, relation] }, relationId: id };
+}
+
 export function loadDataset(raw: string): LoadResult {
   try {
     const value: unknown = JSON.parse(raw);
@@ -52,41 +98,444 @@ export function validateDatasetForExport(dataset: Dataset): Diagnostic[] {
   return result.diagnostics;
 }
 
-export type GraphNode = { id: string; label: string; x: number; y: number };
+export function getDatasetMetadata(dataset: Dataset): { datasetId: string | null; title: string | null } {
+  const extensions = dataset.extensions;
+  if (typeof extensions !== "object" || extensions === null) return { datasetId: null, title: null };
+  const metadata = (extensions as Record<string, unknown>).metadata;
+  if (typeof metadata !== "object" || metadata === null) return { datasetId: null, title: null };
+  const value = metadata as Record<string, unknown>;
+  return {
+    datasetId: typeof value.datasetId === "string" && value.datasetId.trim() ? value.datasetId : null,
+    title: typeof value.title === "string" && value.title.trim() ? value.title : null,
+  };
+}
+
+export type GraphNode = { id: string; label: string; description: string; x: number; y: number };
 export type GraphEdge = { id: string; sourceId: string; targetId: string; parallelIndex: number; parallelCount: number };
 export type Coordinate = { x: number; y: number };
 
+export const COORDINATE_EXTENSION_ID = "experimental.github.sukoyaka-dopeness.coordinate";
+export const COORDINATE_FORMAT_VERSION = "0.1.0";
+export const COORDINATE_DRAFT_EXTENSION_ID = "draft.github.sukoyaka-dopeness.coordinate";
+export const LIAISONSCAPE_SPACE_ID = "liaisonscape-graph";
+export const LIAISONSCAPE_USER_UNIT = "liaisonscape-user-unit";
+export const LEGACY_LINKSCAPE_SPACE_ID = "linkscape-graph";
+export const LEGACY_LINKSCAPE_USER_UNIT = "linkscape-user-unit";
+/** @deprecated Use LEGACY_LINKSCAPE_SPACE_ID when referring to persisted legacy data. */
+export const LINKSCAPE_SPACE_ID = LEGACY_LINKSCAPE_SPACE_ID;
+const SPECIFICATION_EXTENSION_ID = "draft.github.sukoyaka-dopeness.specification";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function isCoordinate(value: unknown): value is Coordinate {
-  return typeof value === "object" && value !== null && typeof (value as Record<string, unknown>).x === "number" && typeof (value as Record<string, unknown>).y === "number";
+  return isRecord(value)
+    && typeof value.x === "number"
+    && Number.isFinite(value.x)
+    && typeof value.y === "number"
+    && Number.isFinite(value.y);
+}
+
+function spaceDefinition(spaceId: string, unit: string, existing?: Record<string, unknown>): Record<string, unknown> {
+  const existingComponents = isRecord(existing?.components) ? existing.components : {};
+  const existingX = isRecord(existingComponents.x) ? existingComponents.x : {};
+  const existingY = isRecord(existingComponents.y) ? existingComponents.y : {};
+  return {
+    ...existing,
+    id: spaceId,
+    name: spaceId === LIAISONSCAPE_SPACE_ID ? "LiaisonScape graph coordinates" : "Linkscape graph coordinates",
+    kind: "cartesian-2d",
+    components: {
+      ...existingComponents,
+      x: { ...existingX, unit, positiveDirection: "display-right" },
+      y: { ...existingY, unit, positiveDirection: "display-down" },
+    },
+  };
+}
+
+function isCompatibleSpace(space: unknown, spaceId: string, unit: string): space is Record<string, unknown> {
+  if (!isRecord(space) || space.id !== spaceId || space.kind !== "cartesian-2d" || !isRecord(space.components)) return false;
+  const x = space.components.x;
+  const y = space.components.y;
+  return isRecord(x)
+    && x.unit === unit
+    && x.positiveDirection === "display-right"
+    && isRecord(y)
+    && y.unit === unit
+    && y.positiveDirection === "display-down";
+}
+
+function hasSupportedSpace(
+  dataset: Dataset,
+  spaceId: string,
+  unit: string,
+  extensionId = COORDINATE_EXTENSION_ID,
+  versionField: "formatVersion" | "specVersion" = "formatVersion",
+): boolean {
+  if (!isRecord(dataset.extensions)) return false;
+  const payload = dataset.extensions[extensionId];
+  if (!isRecord(payload) || payload[versionField] !== COORDINATE_FORMAT_VERSION || !Array.isArray(payload.spaces)) return false;
+  const space = payload.spaces.find((candidate) => isRecord(candidate) && candidate.id === spaceId);
+  return isCompatibleSpace(space, spaceId, unit);
+}
+
+function hasSupportedLinkscapeSpace(dataset: Dataset, extensionId = COORDINATE_EXTENSION_ID, versionField: "formatVersion" | "specVersion" = "formatVersion") {
+  return hasSupportedSpace(dataset, LEGACY_LINKSCAPE_SPACE_ID, LEGACY_LINKSCAPE_USER_UNIT, extensionId, versionField);
+}
+
+function hasSupportedLiaisonScapeSpace(dataset: Dataset, extensionId = COORDINATE_EXTENSION_ID, versionField: "formatVersion" | "specVersion" = "formatVersion") {
+  return hasSupportedSpace(dataset, LIAISONSCAPE_SPACE_ID, LIAISONSCAPE_USER_UNIT, extensionId, versionField);
+}
+
+function writableSpaceId(dataset: Dataset, extensionId: string): string | null {
+  const payload = isRecord(dataset.extensions) ? dataset.extensions[extensionId] : undefined;
+  const spaces = isRecord(payload) && Array.isArray(payload.spaces) ? payload.spaces : [];
+  const hasNew = spaces.some((space) => isRecord(space) && space.id === LIAISONSCAPE_SPACE_ID);
+  const hasOld = spaces.some((space) => isRecord(space) && space.id === LEGACY_LINKSCAPE_SPACE_ID);
+  if (hasNew && hasOld) return null;
+  return hasNew ? LIAISONSCAPE_SPACE_ID : hasOld ? LEGACY_LINKSCAPE_SPACE_ID : LIAISONSCAPE_SPACE_ID;
+}
+
+function spaceUnit(spaceId: string): string {
+  return spaceId === LIAISONSCAPE_SPACE_ID ? LIAISONSCAPE_USER_UNIT : LEGACY_LINKSCAPE_USER_UNIT;
+}
+
+function isCompatibleLinkscapeSpace(space: unknown): space is Record<string, unknown> {
+  return isCompatibleSpace(space, LEGACY_LINKSCAPE_SPACE_ID, LEGACY_LINKSCAPE_USER_UNIT);
+}
+
+function linkscapeSpaceDefinition(existing?: Record<string, unknown>): Record<string, unknown> {
+  return spaceDefinition(LEGACY_LINKSCAPE_SPACE_ID, LEGACY_LINKSCAPE_USER_UNIT, existing);
+}
+
+function getPrototypeCoordinate(entity: E2RObject): Coordinate | null {
+  if (!isRecord(entity.extensions)) return null;
+  const payload = entity.extensions[COORDINATE_EXTENSION_ID];
+  if (!isRecord(payload) || !Array.isArray(payload.coordinates)) return null;
+  const coordinate = payload.coordinates.find((candidate) => isRecord(candidate) && candidate.spaceId === LINKSCAPE_SPACE_ID);
+  if (!isRecord(coordinate) || !isRecord(coordinate.values) || !isCoordinate(coordinate.values)) return null;
+  return { x: coordinate.values.x, y: coordinate.values.y };
+}
+
+function getPrototypeCoordinateForSpace(entity: E2RObject, spaceId: string): Coordinate | null {
+  if (!isRecord(entity.extensions)) return null;
+  const payload = entity.extensions[COORDINATE_EXTENSION_ID];
+  if (!isRecord(payload) || !Array.isArray(payload.coordinates)) return null;
+  const coordinate = payload.coordinates.find((candidate) => isRecord(candidate) && candidate.spaceId === spaceId);
+  if (!isRecord(coordinate) || !isRecord(coordinate.values) || !isCoordinate(coordinate.values)) return null;
+  return { x: coordinate.values.x, y: coordinate.values.y };
+}
+
+function getDraftCoordinate(entity: E2RObject): Coordinate | null {
+  if (!isRecord(entity.extensions)) return null;
+  const payload = entity.extensions[COORDINATE_DRAFT_EXTENSION_ID];
+  if (!isRecord(payload) || !Array.isArray(payload.coordinates)) return null;
+  const coordinate = payload.coordinates.find((candidate) => isRecord(candidate) && candidate.spaceId === LINKSCAPE_SPACE_ID);
+  if (!isRecord(coordinate) || !isRecord(coordinate.values) || !isCoordinate(coordinate.values)) return null;
+  return { x: coordinate.values.x, y: coordinate.values.y };
+}
+
+function getDraftCoordinateForSpace(entity: E2RObject, spaceId: string): Coordinate | null {
+  if (!isRecord(entity.extensions)) return null;
+  const payload = entity.extensions[COORDINATE_DRAFT_EXTENSION_ID];
+  if (!isRecord(payload) || !Array.isArray(payload.coordinates)) return null;
+  const coordinate = payload.coordinates.find((candidate) => isRecord(candidate) && candidate.spaceId === spaceId);
+  if (!isRecord(coordinate) || !isRecord(coordinate.values) || !isCoordinate(coordinate.values)) return null;
+  return { x: coordinate.values.x, y: coordinate.values.y };
+}
+
+function getLegacyCoordinate(entity: E2RObject): Coordinate | null {
+  if (!isRecord(entity.extensions)) return null;
+  const payload = entity.extensions.coordinate;
+  if (!isRecord(payload) || !Array.isArray(payload.positions)) return null;
+  const position = payload.positions.find((value) => isRecord(value) && value.spaceId === "linkscape" && isCoordinate(value))
+    ?? payload.positions.find(isCoordinate);
+  return position ? { x: position.x, y: position.y } : null;
 }
 
 export function getStoredCoordinates(dataset: Dataset): Record<string, Coordinate> {
   const result: Record<string, Coordinate> = {};
+  const canReadCanonicalPrototype = hasSupportedLiaisonScapeSpace(dataset);
+  const canReadPrototype = hasSupportedLinkscapeSpace(dataset);
+  const canReadCanonicalDraft = hasSupportedLiaisonScapeSpace(dataset, COORDINATE_DRAFT_EXTENSION_ID, "specVersion");
+  const canReadDraft = hasSupportedLinkscapeSpace(dataset, COORDINATE_DRAFT_EXTENSION_ID, "specVersion");
+  if ((canReadCanonicalPrototype && canReadPrototype) || (canReadCanonicalDraft && canReadDraft)) return result;
   for (const entity of dataset.entities) {
-    const extension = entity.extensions;
-    if (typeof extension !== "object" || extension === null) continue;
-    const coordinate = (extension as Record<string, unknown>).coordinate;
-    if (typeof coordinate !== "object" || coordinate === null) continue;
-    const positions = (coordinate as Record<string, unknown>).positions;
-    if (Array.isArray(positions)) {
-      const position = positions.find((value) => isCoordinate(value) && (value as Record<string, unknown>).spaceId === "linkscape") ?? positions.find(isCoordinate);
-      if (position) result[entity.id] = { x: position.x, y: position.y };
-    }
+    const position = (canReadCanonicalDraft ? getDraftCoordinateForSpace(entity, LIAISONSCAPE_SPACE_ID) : null)
+      ?? (canReadDraft ? getDraftCoordinate(entity) : null)
+      ?? (canReadCanonicalPrototype ? getPrototypeCoordinateForSpace(entity, LIAISONSCAPE_SPACE_ID) : null)
+      ?? (canReadPrototype ? getPrototypeCoordinate(entity) : null)
+      ?? getLegacyCoordinate(entity);
+    if (position) result[entity.id] = position;
   }
   return result;
 }
 
+function collectExtensionIdentifiers(dataset: Dataset): Set<string> {
+  const identifiers = new Set<string>();
+  const visit = (value: unknown) => {
+    if (!isRecord(value) || !isRecord(value.extensions)) return;
+    for (const identifier of Object.keys(value.extensions)) identifiers.add(identifier);
+  };
+  visit(dataset);
+  for (const entity of dataset.entities) visit(entity);
+  for (const event of dataset.events) visit(event);
+  for (const relation of dataset.relations) visit(relation);
+  return identifiers;
+}
+
+function canSafelyWriteCoordinatePrototype(dataset: Dataset, positions: Record<string, Coordinate>): boolean {
+  const targetSpaceId = writableSpaceId(dataset, COORDINATE_EXTENSION_ID);
+  if (!targetSpaceId) return false;
+  if (targetSpaceId === LIAISONSCAPE_SPACE_ID && Object.values(dataset.entities).some((entity) => getLegacyCoordinate(entity))) return false;
+  if (collectExtensionIdentifiers(dataset).has(COORDINATE_DRAFT_EXTENSION_ID)) return false;
+
+  const datasetExtensions = isRecord(dataset.extensions) ? dataset.extensions : {};
+  const hasDatasetPayload = COORDINATE_EXTENSION_ID in datasetExtensions;
+  const existingPayload = datasetExtensions[COORDINATE_EXTENSION_ID];
+
+  if (!hasDatasetPayload) {
+    return ![...dataset.entities, ...dataset.events, ...dataset.relations].some(
+      (object) => isRecord(object.extensions) && COORDINATE_EXTENSION_ID in object.extensions,
+    );
+  }
+  if (!isRecord(existingPayload)
+    || existingPayload.formatVersion !== COORDINATE_FORMAT_VERSION
+    || !Array.isArray(existingPayload.spaces)) return false;
+
+  const matchingSpaces = existingPayload.spaces.filter(
+    (candidate) => isRecord(candidate) && candidate.id === targetSpaceId,
+  );
+  if (matchingSpaces.length > 1) return false;
+  if (matchingSpaces.length === 1 && !isCompatibleSpace(matchingSpaces[0], targetSpaceId, spaceUnit(targetSpaceId))) return false;
+
+  for (const entity of dataset.entities) {
+    if (!isCoordinate(positions[entity.id]) || !isRecord(entity.extensions)) continue;
+    const objectPayload = entity.extensions[COORDINATE_EXTENSION_ID];
+    if (objectPayload === undefined) continue;
+    if (!isRecord(objectPayload) || !Array.isArray(objectPayload.coordinates)) return false;
+    const matchingCoordinates = objectPayload.coordinates.filter(
+      (candidate) => isRecord(candidate) && candidate.spaceId === targetSpaceId,
+    );
+    if (matchingCoordinates.length > 1) return false;
+    if (matchingCoordinates.length === 1 && !isRecord(matchingCoordinates[0]?.values)) return false;
+  }
+  return true;
+}
+
+function canMaintainSpecificationDeclaration(
+  dataset: Dataset,
+  coordinateId = COORDINATE_EXTENSION_ID,
+  coordinateVersion = COORDINATE_FORMAT_VERSION,
+): boolean {
+  if (!isRecord(dataset.extensions) || !(SPECIFICATION_EXTENSION_ID in dataset.extensions)) return true;
+  const specification = dataset.extensions[SPECIFICATION_EXTENSION_ID];
+  if (!isRecord(specification) || specification.specVersion !== "0.1.0") return false;
+  const uses = specification.uses === undefined ? [] : specification.uses;
+  if (!Array.isArray(uses) || !uses.every(isRecord)) return false;
+
+  const coordinateDeclarations = uses.filter(({ extension }) => extension === coordinateId);
+  if (coordinateDeclarations.length > 1) return false;
+  if (coordinateDeclarations.length === 1 && coordinateDeclarations[0]?.version !== coordinateVersion) return false;
+
+  const otherPayloads = collectExtensionIdentifiers(dataset);
+  otherPayloads.delete(SPECIFICATION_EXTENSION_ID);
+  otherPayloads.delete(coordinateId);
+  const otherDeclarations = uses.filter(({ extension }) => extension !== coordinateId);
+  const declared = new Set(otherDeclarations.map(({ extension }) => extension).filter((value): value is string => typeof value === "string"));
+  if (declared.size !== otherDeclarations.length || declared.size !== otherPayloads.size) return false;
+  return [...otherPayloads].every((identifier) => declared.has(identifier));
+}
+
+function canSafelyWriteCoordinateDraft(dataset: Dataset, positions: Record<string, Coordinate>): boolean {
+  const targetSpaceId = writableSpaceId(dataset, COORDINATE_DRAFT_EXTENSION_ID);
+  if (!targetSpaceId) return false;
+  if (targetSpaceId === LIAISONSCAPE_SPACE_ID && Object.values(dataset.entities).some((entity) => getLegacyCoordinate(entity))) return false;
+  if (collectExtensionIdentifiers(dataset).has(COORDINATE_EXTENSION_ID)) return false;
+  if (!isRecord(dataset.extensions)) return false;
+  const payload = dataset.extensions[COORDINATE_DRAFT_EXTENSION_ID];
+  if (!isRecord(payload)
+    || payload.specVersion !== COORDINATE_FORMAT_VERSION
+    || !Array.isArray(payload.spaces)) return false;
+
+  const matchingSpaces = payload.spaces.filter(
+    (candidate) => isRecord(candidate) && candidate.id === targetSpaceId,
+  );
+  if (matchingSpaces.length !== 1 || !isCompatibleSpace(matchingSpaces[0], targetSpaceId, spaceUnit(targetSpaceId))) return false;
+
+  for (const collection of [dataset.entities, dataset.events, dataset.relations]) {
+    for (const object of collection) {
+      if (!isRecord(object.extensions) || !(COORDINATE_DRAFT_EXTENSION_ID in object.extensions)) continue;
+      if (collection === dataset.relations) return false;
+      const objectPayload = object.extensions[COORDINATE_DRAFT_EXTENSION_ID];
+      if (!isRecord(objectPayload) || !Array.isArray(objectPayload.coordinates)) return false;
+      const matchingCoordinates = objectPayload.coordinates.filter(
+        (candidate) => isRecord(candidate) && candidate.spaceId === targetSpaceId,
+      );
+      if (matchingCoordinates.length > 1) return false;
+      if (matchingCoordinates.length === 1 && !isRecord(matchingCoordinates[0]?.values)) return false;
+    }
+  }
+  return canMaintainSpecificationDeclaration(
+    dataset,
+    COORDINATE_DRAFT_EXTENSION_ID,
+    COORDINATE_FORMAT_VERSION,
+  );
+}
+
+function updateExistingCompleteSpecificationDeclaration(dataset: Dataset): void {
+  if (!isRecord(dataset.extensions)) return;
+  const specification = dataset.extensions[SPECIFICATION_EXTENSION_ID];
+  if (!isRecord(specification) || specification.specVersion !== "0.1.0") return;
+
+  const uses = specification.uses === undefined ? [] : specification.uses;
+  if (!Array.isArray(uses)) return;
+  const declarations = uses.filter(isRecord);
+  if (declarations.length !== uses.length) return;
+  const presentPayloads = collectExtensionIdentifiers(dataset);
+  const withoutRemovedLegacy = declarations.filter(({ extension }) => extension !== "coordinate" || presentPayloads.has("coordinate"));
+  const coordinateDeclarations = withoutRemovedLegacy.filter(({ extension }) => extension === COORDINATE_EXTENSION_ID);
+  if (coordinateDeclarations.length > 1) return;
+  const nextUses = coordinateDeclarations.length === 1
+    ? withoutRemovedLegacy
+    : [...withoutRemovedLegacy, { extension: COORDINATE_EXTENSION_ID, version: COORDINATE_FORMAT_VERSION }];
+
+  dataset.extensions[SPECIFICATION_EXTENSION_ID] = {
+    ...specification,
+    uses: nextUses,
+  };
+}
+
 export function applyStoredCoordinates(dataset: Dataset, positions: Record<string, Coordinate>): Dataset {
+  const hasSavablePosition = dataset.entities.some((entity) => isCoordinate(positions[entity.id]));
+  if (!hasSavablePosition) return dataset;
+  if (canSafelyWriteCoordinateDraft(dataset, positions)) {
+    const targetSpaceId = writableSpaceId(dataset, COORDINATE_DRAFT_EXTENSION_ID);
+    if (!targetSpaceId) return dataset;
+    const copy = structuredClone(dataset) as Dataset;
+    const datasetExtensions = isRecord(copy.extensions) ? copy.extensions : {};
+    const draftPayload = datasetExtensions[COORDINATE_DRAFT_EXTENSION_ID] as Record<string, unknown>;
+    const spaces = Array.isArray(draftPayload.spaces) ? draftPayload.spaces : [];
+    const existingSpaceIndex = spaces.findIndex((candidate) => isRecord(candidate) && candidate.id === targetSpaceId);
+    const existingSpace = existingSpaceIndex >= 0 && isRecord(spaces[existingSpaceIndex]) ? spaces[existingSpaceIndex] : undefined;
+    const nextSpaces = [...spaces];
+    const nextSpace = spaceDefinition(targetSpaceId, spaceUnit(targetSpaceId), existingSpace);
+    if (existingSpaceIndex >= 0) nextSpaces[existingSpaceIndex] = nextSpace;
+    else nextSpaces.push(nextSpace);
+    copy.extensions = {
+      ...datasetExtensions,
+      [COORDINATE_DRAFT_EXTENSION_ID]: {
+        ...draftPayload,
+        specVersion: COORDINATE_FORMAT_VERSION,
+        spaces: nextSpaces,
+      },
+    };
+    copy.entities = copy.entities.map((entity) => {
+      const position = positions[entity.id];
+      if (!position || !isCoordinate(position)) return entity;
+      const extensions = isRecord(entity.extensions) ? entity.extensions : {};
+      const draft = isRecord(extensions[COORDINATE_DRAFT_EXTENSION_ID])
+        ? extensions[COORDINATE_DRAFT_EXTENSION_ID] as Record<string, unknown>
+        : {};
+      const coordinates = Array.isArray(draft.coordinates) ? draft.coordinates : [];
+      const existingCoordinateIndex = coordinates.findIndex(
+        (value) => isRecord(value) && value.spaceId === targetSpaceId,
+      );
+      const existingCoordinate = existingCoordinateIndex >= 0 ? coordinates[existingCoordinateIndex] : undefined;
+      const existingValues = isRecord(existingCoordinate) && isRecord(existingCoordinate.values)
+        ? existingCoordinate.values
+        : {};
+      const nextCoordinate = {
+        ...(isRecord(existingCoordinate) ? existingCoordinate : {}),
+        spaceId: targetSpaceId,
+        values: { ...existingValues, x: position.x, y: position.y },
+      };
+      const nextCoordinates = [...coordinates];
+      if (existingCoordinateIndex >= 0) nextCoordinates[existingCoordinateIndex] = nextCoordinate;
+      else nextCoordinates.push(nextCoordinate);
+      return {
+        ...entity,
+        extensions: {
+          ...extensions,
+          [COORDINATE_DRAFT_EXTENSION_ID]: { ...draft, coordinates: nextCoordinates },
+        },
+      };
+    });
+    return copy;
+  }
+  if (!canMaintainSpecificationDeclaration(dataset) || !canSafelyWriteCoordinatePrototype(dataset, positions)) return dataset;
+
   const copy = structuredClone(dataset) as Dataset;
+  const targetSpaceId = writableSpaceId(dataset, COORDINATE_EXTENSION_ID);
+  if (!targetSpaceId) return dataset;
+  const datasetExtensions = isRecord(copy.extensions) ? copy.extensions : {};
+  const coordinatePayload = isRecord(datasetExtensions[COORDINATE_EXTENSION_ID])
+    ? datasetExtensions[COORDINATE_EXTENSION_ID] as Record<string, unknown>
+    : {};
+  const spaces = Array.isArray(coordinatePayload.spaces) ? coordinatePayload.spaces : [];
+  const existingSpaceIndex = spaces.findIndex((candidate) => isRecord(candidate) && candidate.id === targetSpaceId);
+  const existingSpace = existingSpaceIndex >= 0 && isRecord(spaces[existingSpaceIndex]) ? spaces[existingSpaceIndex] : undefined;
+  const nextSpaces = [...spaces];
+  const nextSpace = spaceDefinition(targetSpaceId, spaceUnit(targetSpaceId), existingSpace);
+  if (existingSpaceIndex >= 0) nextSpaces[existingSpaceIndex] = nextSpace;
+  else nextSpaces.push(nextSpace);
+  copy.extensions = {
+    ...datasetExtensions,
+    [COORDINATE_EXTENSION_ID]: {
+      ...coordinatePayload,
+      formatVersion: COORDINATE_FORMAT_VERSION,
+      spaces: nextSpaces,
+    },
+  };
+
   copy.entities = copy.entities.map((entity) => {
     const position = positions[entity.id];
-    if (!position) return entity;
-    const extensions = typeof entity.extensions === "object" && entity.extensions !== null ? entity.extensions as Record<string, unknown> : {};
-    const coordinate = typeof extensions.coordinate === "object" && extensions.coordinate !== null ? extensions.coordinate as Record<string, unknown> : {};
-    const existing = Array.isArray(coordinate.positions) ? coordinate.positions as unknown[] : [];
-    const withoutLinkscape = existing.filter((value) => !(isCoordinate(value) && (value as Record<string, unknown>).spaceId === "linkscape"));
-    return { ...entity, extensions: { ...extensions, coordinate: { ...coordinate, positions: [...withoutLinkscape, { spaceId: "linkscape", x: position.x, y: position.y }] } } };
+    if (!position || !isCoordinate(position)) return entity;
+    const extensions = isRecord(entity.extensions) ? entity.extensions : {};
+    const prototype = isRecord(extensions[COORDINATE_EXTENSION_ID])
+      ? extensions[COORDINATE_EXTENSION_ID] as Record<string, unknown>
+      : {};
+    const coordinates = Array.isArray(prototype.coordinates) ? prototype.coordinates : [];
+    const existingCoordinateIndex = coordinates.findIndex(
+      (value) => isRecord(value) && value.spaceId === targetSpaceId,
+    );
+    const existingCoordinate = existingCoordinateIndex >= 0
+      ? coordinates[existingCoordinateIndex]
+      : undefined;
+    const existingValues = isRecord(existingCoordinate) && isRecord(existingCoordinate.values)
+      ? existingCoordinate.values
+      : {};
+    const nextCoordinate = {
+      ...(isRecord(existingCoordinate) ? existingCoordinate : {}),
+      spaceId: targetSpaceId,
+      values: { ...existingValues, x: position.x, y: position.y },
+    };
+    const nextCoordinates = [...coordinates];
+    if (existingCoordinateIndex >= 0) nextCoordinates[existingCoordinateIndex] = nextCoordinate;
+    else nextCoordinates.push(nextCoordinate);
+    const nextExtensions: Record<string, unknown> = {
+      ...extensions,
+      [COORDINATE_EXTENSION_ID]: {
+        ...prototype,
+        coordinates: nextCoordinates,
+      },
+    };
+
+    const legacy = extensions.coordinate;
+    if (isRecord(legacy) && Array.isArray(legacy.positions)) {
+      const remainingPositions = legacy.positions.filter((value) => !(isRecord(value) && value.spaceId === "linkscape"));
+      if (remainingPositions.length !== legacy.positions.length) {
+        const nextLegacy = { ...legacy };
+        if (remainingPositions.length > 0) nextLegacy.positions = remainingPositions;
+        else delete nextLegacy.positions;
+        if (Object.keys(nextLegacy).length > 0) nextExtensions.coordinate = nextLegacy;
+        else delete nextExtensions.coordinate;
+      }
+    }
+    return { ...entity, extensions: nextExtensions };
   });
+  updateExistingCompleteSpecificationDeclaration(copy);
   return copy;
 }
 
@@ -94,8 +543,9 @@ export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges:
   const nodes = dataset.entities.map((entity, index) => ({
     id: entity.id,
     label: typeof entity.name === "string" && entity.name.trim() ? entity.name : entity.id,
-    x: 140 + (index % 4) * 180,
-    y: 110 + Math.floor(index / 4) * 130,
+    description: typeof entity.description === "string" ? entity.description : "",
+    x: 150 + (index % 4) * 240,
+    y: 130 + Math.floor(index / 4) * 180,
   }));
   const entityIds = new Set(nodes.map(({ id }) => id));
   let unsupportedEdges = 0;
@@ -119,8 +569,68 @@ export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges:
 export function getEntityDetail(dataset: Dataset, entityId: string) {
   const entity = dataset.entities.find((candidate) => candidate.id === entityId);
   if (!entity) return null;
+  const entityIds = new Set(dataset.entities.map((candidate) => candidate.id));
   const relationIds = dataset.relations
     .filter((relation) => relation.sourceId === entityId || relation.targetId === entityId)
     .map((relation) => relation.id);
-  return { entity, relationIds };
+  const visibleRelationIds = dataset.relations
+    .filter((relation) => (relation.sourceId === entityId || relation.targetId === entityId)
+      && typeof relation.sourceId === "string"
+      && typeof relation.targetId === "string"
+      && entityIds.has(relation.sourceId)
+      && entityIds.has(relation.targetId))
+    .map((relation) => relation.id);
+  return { entity, relationIds, visibleRelationIds };
+}
+
+export function updateEntityDetails(
+  dataset: Dataset,
+  entityId: string,
+  updates: { name: string; description: string },
+): Dataset {
+  return {
+    ...dataset,
+    entities: dataset.entities.map((entity) => {
+      if (entity.id !== entityId) return entity;
+      const updated = { ...entity };
+      if (updates.name.trim()) updated.name = updates.name;
+      else delete updated.name;
+      if (updates.description.trim()) updated.description = updates.description;
+      else delete updated.description;
+      return updated;
+    }),
+  };
+}
+
+export function getRelationDetail(dataset: Dataset, relationId: string) {
+  const relation = dataset.relations.find((candidate) => candidate.id === relationId);
+  if (!relation) return null;
+  const sourceId = typeof relation.sourceId === "string" ? relation.sourceId : "";
+  const targetId = typeof relation.targetId === "string" ? relation.targetId : "";
+  const source = dataset.entities.find((entity) => entity.id === sourceId)
+    ?? dataset.events.find((event) => event.id === sourceId)
+    ?? null;
+  const target = dataset.entities.find((entity) => entity.id === targetId)
+    ?? dataset.events.find((event) => event.id === targetId)
+    ?? null;
+  return { relation, sourceId, targetId, source, target };
+}
+
+export function updateRelationDetails(
+  dataset: Dataset,
+  relationId: string,
+  updates: { name: string; description: string },
+): Dataset {
+  return {
+    ...dataset,
+    relations: dataset.relations.map((relation) => {
+      if (relation.id !== relationId) return relation;
+      const updated = { ...relation };
+      if (updates.name.trim()) updated.name = updates.name;
+      else delete updated.name;
+      if (updates.description.trim()) updated.description = updates.description;
+      else delete updated.description;
+      return updated;
+    }),
+  };
 }

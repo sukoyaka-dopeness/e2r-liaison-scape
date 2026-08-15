@@ -1,8 +1,54 @@
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { loadDataset, serializeDataset, validateDatasetForExport } from "../src/dataset.ts";
+import { applyStoredCoordinates, createCoreObjectId, createEntity, createRelation, getDatasetMetadata, loadDataset, serializeDataset, updateEntityDetails, validateDatasetForExport, LIAISONSCAPE_SPACE_ID, type Dataset } from "../src/dataset.ts";
 
 const empty = JSON.stringify({ version: "1.0", entities: [], events: [], relations: [] });
+
+test("creation generates collision-safe IDs across Entity, Event, and Relation", () => {
+  const dataset = { version: "1.0", entities: [{ id: "e" }], events: [{ id: "v" }], relations: [{ id: "r", sourceId: "e", targetId: "e" }] } as Dataset;
+  const candidates = ["e", "v", "r", "fresh-id"];
+  assert.equal(createCoreObjectId(dataset, () => candidates.shift()!), "fresh-id");
+});
+
+test("createEntity appends a minimal entity and preserves input", () => {
+  const dataset = { version: "1.0", entities: [], events: [{ id: "v", opaque: true }], relations: [], vendor: { keep: true } } as Dataset;
+  const result = createEntity(dataset, { name: "  ", description: "  " }, () => "entity-new");
+  assert.deepEqual(result.dataset.entities, [{ id: "entity-new" }]);
+  assert.deepEqual(dataset.entities, []);
+  assert.deepEqual(result.dataset.events, dataset.events);
+  assert.deepEqual(result.dataset.vendor, dataset.vendor);
+});
+
+test("createEntity preserves authored optional text and round-trips", () => {
+  const result = createEntity({ version: "1.0", entities: [], events: [], relations: [] }, { name: "Alice", description: "Person" }, () => "alice");
+  const loaded = loadDataset(serializeDataset(result.dataset));
+  assert.ok(loaded.dataset);
+  assert.deepEqual(loaded.dataset.entities, [{ id: "alice", name: "Alice", description: "Person" }]);
+});
+
+test("createRelation supports self and parallel Entity Relations without type", () => {
+  const dataset = { version: "1.0", entities: [{ id: "a" }, { id: "b" }], events: [], relations: [] } as Dataset;
+  const first = createRelation(dataset, { sourceId: "a", targetId: "b", name: "friend" }, () => "r1");
+  assert.ok("relationId" in first);
+  const second = createRelation(first.dataset, { sourceId: "a", targetId: "b" }, () => "r2");
+  const self = createRelation(second.dataset, { sourceId: "a", targetId: "a" }, () => "r3");
+  assert.ok("relationId" in self);
+  assert.deepEqual(self.dataset.relations.map(({ id, sourceId, targetId, type }) => ({ id, sourceId, targetId, type })), [
+    { id: "r1", sourceId: "a", targetId: "b", type: undefined },
+    { id: "r2", sourceId: "a", targetId: "b", type: undefined },
+    { id: "r3", sourceId: "a", targetId: "a", type: undefined },
+  ]);
+});
+
+test("createRelation refuses missing, Event, and Relation endpoints without mutation", () => {
+  const dataset = { version: "1.0", entities: [{ id: "a" }], events: [{ id: "v" }], relations: [{ id: "r", sourceId: "a", targetId: "a" }] } as Dataset;
+  for (const draft of [{ sourceId: "", targetId: "a" }, { sourceId: "a", targetId: "v" }, { sourceId: "r", targetId: "a" }]) {
+    const result = createRelation(dataset, draft);
+    assert.ok("refusal" in result);
+    assert.equal(result.dataset, dataset);
+  }
+});
 
 test("A1: opens a valid minimal Dataset without inventing objects or coordinates", () => {
   const result = loadDataset(empty);
@@ -11,6 +57,15 @@ test("A1: opens a valid minimal Dataset without inventing objects or coordinates
   assert.deepEqual(result.dataset?.events, []);
   assert.deepEqual(result.dataset?.relations, []);
   assert.deepEqual(result.diagnostics, []);
+});
+
+test("Stage 4: new coordinate adoption creates only the LiaisonScape profile", () => {
+  const dataset = { version: "1.0", entities: [{ id: "entity-1" }], events: [], relations: [] } as Dataset;
+  const saved = applyStoredCoordinates(dataset, { "entity-1": { x: 10, y: 20 } });
+  const payload = (saved.extensions as Record<string, unknown>)["experimental.github.sukoyaka-dopeness.coordinate"] as Record<string, unknown>;
+  const spaces = payload.spaces as Record<string, unknown>[];
+  assert.deepEqual(spaces.map(({ id }) => id), [LIAISONSCAPE_SPACE_ID]);
+  assert.equal((spaces[0]?.components as Record<string, Record<string, unknown>>).x.unit, "liaisonscape-user-unit");
 });
 
 test("A4: preserves invalid input while reporting validation diagnostics", () => {
@@ -28,6 +83,19 @@ test("A5: accepts and preserves unknown Extensions", () => {
   assert.ok(result.dataset);
   assert.equal(result.diagnostics[0]?.severity, "warning");
   assert.deepEqual(result.dataset?.extensions, dataset.extensions);
+});
+
+test("preserves the target-reference research fixture through a save round trip", async () => {
+  const source = await readFile(
+    new URL("../../e2r-spec/examples/research/target-reference/roundtrip-opaque-record.json", import.meta.url),
+    "utf8",
+  );
+  const original = JSON.parse(source);
+  const result = loadDataset(source);
+
+  assert.ok(result.dataset);
+  assert.ok(result.diagnostics.some(({ code }) => code === "unknown_extension"));
+  assert.deepEqual(JSON.parse(serializeDataset(result.dataset)), original);
 });
 
 test("Validator 0.2.0 distinguishes undeclared and exactly declared Extension versions", () => {
@@ -121,4 +189,90 @@ test("A18: view state is not serialized into the interoperable Dataset", () => {
   assert.deepEqual(exported, dataset);
   assert.equal("viewState" in exported, false);
   assert.equal(viewState.selectedId, "entity-1");
+});
+
+test("Metadata title and Dataset ID are read without inventing missing values", () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [], events: [], relations: [],
+    extensions: { metadata: { datasetId: "dataset-1", title: "Example", unknown: true } },
+  };
+  assert.deepEqual(getDatasetMetadata(dataset), { datasetId: "dataset-1", title: "Example" });
+  assert.deepEqual(
+    getDatasetMetadata({ version: "1.0", entities: [], events: [], relations: [] }),
+    { datasetId: null, title: null },
+  );
+  assert.deepEqual((dataset.extensions as Record<string, unknown>).metadata, {
+    datasetId: "dataset-1",
+    title: "Example",
+    unknown: true,
+  });
+});
+
+test("preserves opaque P1 Names research data through an unrelated Core edit and two saves", () => {
+  const namesExtensionId = "research.fixture.p1-names";
+  const original = {
+    version: "1.0",
+    entities: [
+      {
+        id: "entity-with-names",
+        extensions: {
+          [namesExtensionId]: {
+            expressions: [
+              { id: "name-ja", value: "東京", language: "ja", script: "Jpan", future: null },
+              { id: "name-en", value: "Tokyo", language: "en", script: "Latn", future: { keep: true } },
+              { id: "name-transliteration", value: "Tōkyō", language: "en", script: "Latn" },
+            ],
+            unknown: ["first", null, { nested: "keep" }],
+          },
+        },
+      },
+      { id: "unrelated-entity", name: "Unrelated" },
+    ],
+    events: [],
+    relations: [],
+  };
+  const originalNames = structuredClone(original.entities[0]!.extensions![namesExtensionId]);
+
+  const loaded = loadDataset(JSON.stringify(original));
+  assert.ok(loaded.dataset);
+  assert.ok(loaded.diagnostics.some(
+    ({ code, path }) => code === "unknown_extension"
+      && path === `/entities/0/extensions/${namesExtensionId}`,
+  ));
+
+  const edited = updateEntityDetails(loaded.dataset!, "unrelated-entity", {
+    name: "Unrelated",
+    description: "Unrelated Core edit",
+  });
+  const firstSave = serializeDataset(edited);
+  const firstSavedDataset = JSON.parse(firstSave);
+  const expected = structuredClone(original);
+  expected.entities[1]!.description = "Unrelated Core edit";
+
+  assert.deepEqual(firstSavedDataset, expected);
+  assert.deepEqual(
+    firstSavedDataset.entities[0].extensions[namesExtensionId],
+    originalNames,
+  );
+  assert.deepEqual(
+    firstSavedDataset.entities[0].extensions[namesExtensionId].expressions.map(
+      ({ id, value, language, script, future }: Record<string, unknown>) => ({ id, value, language, script, future }),
+    ),
+    [
+      { id: "name-ja", value: "東京", language: "ja", script: "Jpan", future: null },
+      { id: "name-en", value: "Tokyo", language: "en", script: "Latn", future: { keep: true } },
+      { id: "name-transliteration", value: "Tōkyō", language: "en", script: "Latn", future: undefined },
+    ],
+  );
+
+  const reloaded = loadDataset(firstSave);
+  assert.ok(reloaded.dataset);
+  assert.deepEqual(
+    (reloaded.dataset!.entities[0]!.extensions as Record<string, unknown>)[namesExtensionId],
+    originalNames,
+  );
+
+  const secondSave = serializeDataset(reloaded.dataset!);
+  assert.deepEqual(JSON.parse(secondSave), firstSavedDataset);
 });

@@ -1,0 +1,104 @@
+{
+  "version": "1.0",
+  "entities": [
+    {
+      "id": "harbor-light",
+      "name": "Harbor Light",
+      "description": "A lighthouse being restored.",
+      "extensions": {
+        "experimental.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "linkscape-graph",
+              "values": { "x": 160, "y": 220 }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "restoration-team",
+      "name": "Restoration Team",
+      "description": "The group carrying out the restoration.",
+      "extensions": {
+        "experimental.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "linkscape-graph",
+              "values": { "x": 400, "y": 220 }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "harbor-community",
+      "name": "Harbor Community",
+      "description": "Residents and supporters nearby.",
+      "extensions": {
+        "experimental.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "linkscape-graph",
+              "values": { "x": 640, "y": 220 }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "events": [],
+  "relations": [
+    {
+      "id": "restoration-supports-community",
+      "sourceId": "restoration-team",
+      "targetId": "harbor-community",
+      "name": "supports"
+    },
+    {
+      "id": "community-restores-light",
+      "sourceId": "harbor-community",
+      "targetId": "harbor-light",
+      "name": "restores"
+    }
+  ],
+  "extensions": {
+    "metadata": {
+      "datasetId": "linkscape-coordinate-migration-ready",
+      "title": "Coordinate Prototype migration check"
+    },
+    "experimental.github.sukoyaka-dopeness.coordinate": {
+      "formatVersion": "0.1.0",
+      "spaces": [
+        {
+          "id": "linkscape-graph",
+          "name": "Linkscape graph coordinates",
+          "kind": "cartesian-2d",
+          "components": {
+            "x": {
+              "unit": "linkscape-user-unit",
+              "positiveDirection": "display-right"
+            },
+            "y": {
+              "unit": "linkscape-user-unit",
+              "positiveDirection": "display-down"
+            }
+          }
+        }
+      ]
+    },
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        {
+          "extension": "metadata",
+          "version": "1.0.0"
+        },
+        {
+          "extension": "experimental.github.sukoyaka-dopeness.coordinate",
+          "version": "0.1.0"
+        }
+      ]
+    }
+  }
+}
