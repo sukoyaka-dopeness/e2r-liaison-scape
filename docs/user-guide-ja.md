@@ -61,10 +61,17 @@ Relationは許可されます。作成後は新しいオブジェクトが選択
 ## Relationを編集する
 
 1. エッジを選択します。
-2. Relation Detailで`Name`または`Description`を編集します。
-3. `Save Relation`を押します。
+2. EntityからEntityへのRelationでは、Entity selectorで`Source`または
+   `Target`を変更できます。self Relationやparallel Relationも許可され、
+   既存RelationのIDは維持されます。
+3. 必要に応じてRelation Detailで`Name`または`Description`を編集します。
+4. `Save Relation`を押します。
 
 Relationの`Name`は水平なエッジラベルとして表示されます。これは人が読むCoreラベルであり、Relationの意味的な型ではありません。
+
+Eventを端点に持つRelationをインポートした場合、このEntity-first MVPでは
+端点は読み取り専用です。ただし`Name`と`Description`は編集・保存でき、
+エクスポート時にもEvent端点は保持されます。
 
 ## ラベルを移動する
 
@@ -85,7 +92,8 @@ Relationの`Name`は水平なエッジラベルとして表示されます。こ
 - EventノードとEvent編集は未対応です。
 - Entity / Entity-to-Entity Relationの作成と削除に対応しています。Entityは
   参照Relationが0件の場合だけ削除できます。cascade削除は行いません。
-  Relationの接続先変更、Eventの削除・作成、Undo/Redoは未対応です。
+  Entity-to-Entity Relationの接続先変更に対応しています。Event端点の変更、
+  Eventの削除・作成、Undo/Redoは未対応です。
 - 意味的なRelation型、矢印表示方式、永続レイヤー順は未対応です。
 - 手動エッジ曲率とラベル位置はDatasetへ保存されません。
 - Coordinate payloadはauthority-qualifiedな`0.1.0`実験であり、登録済みStable Extensionではありません。Layoutの標準化も今後の検討事項です。

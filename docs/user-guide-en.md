@@ -52,10 +52,17 @@ The graph label updates from the saved name and description. Saving an empty val
 ## Edit a Relation
 
 1. Select an edge.
-2. Edit `Name` or `Description` in Relation Detail.
-3. Choose `Save Relation`.
+2. For an Entity-to-Entity Relation, edit `Source` and/or `Target` in the
+   Entity selectors. Entity endpoint changes may create self or parallel
+   Relations and preserve the existing Relation ID.
+3. Edit `Name` or `Description` in Relation Detail if desired.
+4. Choose `Save Relation`.
 
 A Relation `Name` appears as a horizontal edge label. It is a human-readable Core label, not a semantic Relation type.
+
+Relations imported with an Event endpoint remain endpoint-read-only in this
+Entity-first MVP. Their `Name` and `Description` can still be edited and
+saved, and the Event endpoint is preserved on export.
 
 ## Move labels
 
@@ -77,8 +84,8 @@ Saved Entity and Relation edits and saved coordinates are exported. Zoom, pan, s
 - Entity and Relation deletion are supported. Entity deletion is allowed only
   when no Relations reference it; remove related Relations first. Cascade
   deletion is not performed.
-- Relation endpoint editing, Event deletion/authoring, and Undo/Redo are not
-  supported. Entity and Entity-to-Entity Relation creation are supported.
+- Event endpoint editing, Event deletion/authoring, and Undo/Redo are not
+  supported. Entity-to-Entity Relation endpoint editing is supported.
 - Semantic Relation types, arrow presentation modes, and persistent layer order are not supported.
 - Manual edge curvature and label positions are not stored in the Dataset.
 - The Coordinate payload is an authority-qualified `0.1.0` experiment, not a registered Stable Extension. Layout standardization also remains future work.
