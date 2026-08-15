@@ -1,6 +1,6 @@
 # LiaisonScape MVP / Release-Readiness Audit
 
-Status: `RELEASE-READINESS AUDIT COMPLETE — READY FOR FIRST-DISTRIBUTION PREP`
+Status: `INTERNAL MVP READY / FIRST DISTRIBUTION DEFERRED`
 
 Audit basis: `2f237a3 feat: complete Relation endpoint editing MVP`
 
@@ -139,8 +139,50 @@ Before handing LiaisonScape to another person:
 
 ## Final audit verdict
 
-`RELEASE-READINESS AUDIT COMPLETE — READY FOR FIRST-DISTRIBUTION PREP`
+`INTERNAL MVP READY / FIRST DISTRIBUTION DEFERRED`
 
-The current application is functionally suitable for first-distribution
-preparation. Legacy migration remains intentionally deferred until that
-preparation; it is not an internal-MVP blocker.
+No internal MVP blocker remains in the audited LiaisonScape boundary. This
+does not declare first-distribution readiness. Friend-facing first
+distribution remains deferred until Direct Graph Authoring and the planned
+application UI Japanese localization are complete.
+
+## Internal MVP closure
+
+The LiaisonScape internal MVP audit is closed at the Relation Endpoint Editing
+checkpoint lineage beginning with `2f237a3 feat: complete Relation endpoint
+editing MVP`.
+
+The following are explicitly deferred beyond this audit:
+
+- Legacy migration UI final `KEEP` / `REMOVE BEFORE RELEASE` decision, deferred
+  to First-Distribution Prep and not an internal-MVP blocker;
+- Direct Graph Authoring, including its future Inventory and Decision Pass;
+- application UI Japanese localization;
+- Relation Arrow Appearance as a future presentation workstream.
+
+These deferred items do not reopen the completed Relation Endpoint Editing
+contract, Core specification, Coordinate responsibility, or migration
+behavior.
+
+## Next workstream candidate
+
+`Direct Graph Authoring — Inventory and Decision Pass`
+
+The next workstream must begin with design and audit only. It must not change
+production behavior during the Decision Pass. The inventory should cover:
+
+- canvas right-click and long-press context menus;
+- Entity right-click and long-press context menus;
+- connection-handle drag for Relation creation;
+- drag-start Entity as source and drop Entity as target;
+- self and parallel Relations;
+- preservation of existing Add Entity and Add Relation buttons;
+- conflicts among node drag, canvas pan, pinch, and edge manipulation;
+- mouse and touch behavior;
+- cancellation and accidental-creation feedback;
+- whether canvas Add Entity uses the click position as a temporary graph
+  position;
+- preservation of the rule that Coordinate data is not automatically saved;
+- reuse of `createRelation()` and `createEntity()`;
+- no changes to Core, Coordinate, migration, or Relation Endpoint Editing
+  contracts.
