@@ -159,6 +159,13 @@ li { margin: .35rem 0; }
 .detail-fields input,
 .detail-fields textarea { width: 100%; padding: 8px 12px; border: 1px solid #e5e4e7; border-radius: 6px; color: #08060d; background: #fff; }
 .detail-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+.creation-dialog { gap: 8px; }
+.creation-dialog > label { margin-top: 4px; }
+.creation-dialog > input,
+.creation-dialog > textarea,
+.creation-dialog > select { width: 100%; padding: 8px 12px; border: 1px solid #e5e4e7; border-radius: 6px; color: #08060d; background: #fff; }
+.creation-dialog-actions { display: grid; gap: 8px; margin-top: 12px; }
+.creation-dialog-actions button { width: 100%; }
 .detail-danger { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 28px; padding-top: 12px; border-top: 1px solid #fecaca; color: #991b1b; font-size: .82rem; }
 .detail-danger { flex-wrap: wrap; }
 .detail-danger p { flex-basis: 100%; margin: 0; }

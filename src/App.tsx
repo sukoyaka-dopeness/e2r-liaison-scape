@@ -11,6 +11,7 @@ import { getRelationDetail, updateRelationDetails } from "./services/RelationSer
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
+import { CreationDialog } from "./components/CreationDialog";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, zoomScale } from "./viewport";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
@@ -561,20 +562,22 @@ export default function App() {
         </div>
         {!transientSuccess && <p className="status-message" role="status">{message}</p>}
       {dataset && creationMode && (
-        <aside className="detail" role="dialog" aria-modal="true" aria-label={`Create ${creationMode}`}>
-          <div className="detail-header"><h3>Create {creationMode === "entity" ? "Entity" : "Relation"}</h3><button type="button" onClick={() => setCreationMode(null)}>Cancel</button></div>
-          {creationMode === "relation" && <>
-            <label htmlFor="creation-source">Source Entity</label>
-            <select id="creation-source" value={creationSource} onChange={(event) => setCreationSource(event.target.value)}><option value="">Select source</option>{dataset.entities.map((entity) => <option key={entity.id} value={entity.id}>{typeof entity.name === "string" ? entity.name : entity.id}</option>)}</select>
-            <label htmlFor="creation-target">Target Entity</label>
-            <select id="creation-target" value={creationTarget} onChange={(event) => setCreationTarget(event.target.value)}><option value="">Select target</option>{dataset.entities.map((entity) => <option key={entity.id} value={entity.id}>{typeof entity.name === "string" ? entity.name : entity.id}</option>)}</select>
-          </>}
-          <label htmlFor="creation-name">Name</label><input id="creation-name" value={creationName} onChange={(event) => setCreationName(event.target.value)} />
-          <label htmlFor="creation-description">Description</label><textarea id="creation-description" rows={4} value={creationDescription} onChange={(event) => setCreationDescription(event.target.value)} />
-          <button type="button" onClick={saveCreation}>Save {creationMode === "entity" ? "Entity" : "Relation"}</button>
-        </aside>
+        <CreationDialog
+          mode={creationMode}
+          entities={dataset.entities}
+          name={creationName}
+          description={creationDescription}
+          source={creationSource}
+          target={creationTarget}
+          onNameChange={setCreationName}
+          onDescriptionChange={setCreationDescription}
+          onSourceChange={setCreationSource}
+          onTargetChange={setCreationTarget}
+          onSave={saveCreation}
+          onCancel={() => setCreationMode(null)}
+        />
       )}
-          {dataset && deleteConfirmation && <ConfirmationDialog subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
+{dataset && deleteConfirmation && <ConfirmationDialog subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
       {dataset && coordinateMigrationReadiness && !coordinateMigrationReadiness.ready && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_no_source" && (
         <p className="status-message" role="status">
           {coordinateMigrationReadiness.code === "linkscape_coordinate_draft_migration_target_exists"
