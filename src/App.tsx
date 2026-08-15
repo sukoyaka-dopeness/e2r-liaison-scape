@@ -747,84 +747,34 @@ export default function App() {
           <p className="graph-summary">{graph.nodes.length} entities · {graph.edges.length} relations</p>
           <p className="selection-message" role="status">{transientSuccess ? message : (coordinatesDirty ? "Moved coordinates are temporary until you save them." : "Stored coordinates are restored when available.")}</p>
           {detailOpen && selectedDetail && (
-            <>
-            <EntityDetailDialog onClose={() => setDetailOpen(false)}>
-              <div className="detail-header">
-                <h3 id="entity-detail-title">Entity Detail</h3>
-                <button type="button" onClick={() => setDetailOpen(false)}>Close</button>
-              </div>
-              <dl>
-                <dt>ID</dt><dd>{selectedDetail.entity.id}</dd>
-                <dt>Shown Relations</dt><dd>{selectedDetail.visibleRelationIds.length}</dd>
-                <dt>Dataset Relations</dt><dd>{selectedDetail.relationIds.length}</dd>
-              </dl>
-              <div className="detail-fields">
-                <label htmlFor="entity-name">Name</label>
-                <input id="entity-name" type="text" value={entityNameDraft} onChange={(event) => setEntityNameDraft(event.target.value)} />
-                <label htmlFor="entity-description">Description</label>
-                <textarea id="entity-description" rows={4} value={entityDescriptionDraft} onChange={(event) => setEntityDescriptionDraft(event.target.value)} />
-              </div>
-              <div className="detail-actions">
-                <button
-                  type="button"
-                  disabled={entityNameDraft === (typeof selectedDetail.entity.name === "string" ? selectedDetail.entity.name : "")
-                    && entityDescriptionDraft === (typeof selectedDetail.entity.description === "string" ? selectedDetail.entity.description : "")}
-                  onClick={saveEntityDetails}
-                >
-                  Save Entity
-                </button>
-              </div>
-              {(() => {
-                const incidentRelations = dataset.relations.filter(({ sourceId, targetId }) => sourceId === selectedDetail.entity.id || targetId === selectedDetail.entity.id);
-                return <div className="detail-danger">
-                  <strong>Danger zone</strong>
-                  {incidentRelations.length > 0 ? <>
-                    <p>This Entity is connected by {incidentRelations.length} Relation(s). Delete those Relations before deleting this Entity.</p>
-                    <div className="related-relations"><span>Related Relations:</span>{incidentRelations.map((relation) => {
-                      const source = dataset.entities.find(({ id }) => id === relation.sourceId) ?? dataset.events.find(({ id }) => id === relation.sourceId);
-                      const target = dataset.entities.find(({ id }) => id === relation.targetId) ?? dataset.events.find(({ id }) => id === relation.targetId);
-                      const sourceLabel = typeof source?.name === "string" ? source.name : String(relation.sourceId);
-                      const targetLabel = typeof target?.name === "string" ? target.name : String(relation.targetId);
-                      return <button type="button" key={relation.id} onClick={() => openRelatedRelation(relation.id)}>{typeof relation.name === "string" && relation.name.trim() ? relation.name : relation.id} — {sourceLabel} → {targetLabel}</button>;
-                    })}</div>
-                    <button type="button" disabled>Delete Entity</button>
-                  </> : <button type="button" onClick={removeSelectedEntity}>Delete Entity</button>}
-                </div>;
-              })()}
-            </EntityDetailDialog>
-            </>
+            <EntityDetailDialog
+              dataset={dataset}
+              detail={selectedDetail}
+              name={entityNameDraft}
+              description={entityDescriptionDraft}
+              onNameChange={setEntityNameDraft}
+              onDescriptionChange={setEntityDescriptionDraft}
+              onSave={saveEntityDetails}
+              onDelete={removeSelectedEntity}
+              onRelated={openRelatedRelation}
+              onClose={() => setDetailOpen(false)}
+            />
           )}
           {detailOpen && selectedRelationDetail && (
-            <>
-            <RelationDetailDialog onClose={() => setDetailOpen(false)}>
-              <div className="detail-header">
-                <h3 id="relation-detail-title">Relation Detail</h3>
-                <button type="button" onClick={() => setDetailOpen(false)}>Close</button>
-              </div>
-              <dl>
-                <dt>ID</dt><dd>{selectedRelationDetail.relation.id}</dd>
-                <dt>Source</dt><dd>{typeof selectedRelationDetail.source?.name === "string" ? selectedRelationDetail.source.name : selectedRelationDetail.sourceId}</dd>
-                <dt>Target</dt><dd>{typeof selectedRelationDetail.target?.name === "string" ? selectedRelationDetail.target.name : selectedRelationDetail.targetId}</dd>
-              </dl>
-              <div className="detail-fields">
-                <label htmlFor="relation-name">Name</label>
-                <input id="relation-name" type="text" value={relationNameDraft} onChange={(event) => setRelationNameDraft(event.target.value)} />
-                <label htmlFor="relation-description">Description</label>
-                <textarea id="relation-description" rows={4} value={relationDescriptionDraft} onChange={(event) => setRelationDescriptionDraft(event.target.value)} />
-              </div>
-              <div className="detail-actions">
-                <button
-                  type="button"
-                  disabled={relationNameDraft === (typeof selectedRelationDetail.relation.name === "string" ? selectedRelationDetail.relation.name : "")
-                    && relationDescriptionDraft === (typeof selectedRelationDetail.relation.description === "string" ? selectedRelationDetail.relation.description : "")}
-                  onClick={saveRelationDetails}
-                >
-                  Save Relation
-                </button>
-              </div>
-              <div className="detail-danger"><span>Danger zone</span><button type="button" onClick={removeSelectedRelation}>Delete Relation</button></div>
-            </RelationDetailDialog>
-            </>
+            <RelationDetailDialog
+              relation={selectedRelationDetail.relation}
+              sourceId={selectedRelationDetail.sourceId}
+              targetId={selectedRelationDetail.targetId}
+              source={selectedRelationDetail.source}
+              target={selectedRelationDetail.target}
+              name={relationNameDraft}
+              description={relationDescriptionDraft}
+              onNameChange={setRelationNameDraft}
+              onDescriptionChange={setRelationDescriptionDraft}
+              onSave={saveRelationDetails}
+              onDelete={removeSelectedRelation}
+              onClose={() => setDetailOpen(false)}
+            />
           )}
         </section>
       )}
