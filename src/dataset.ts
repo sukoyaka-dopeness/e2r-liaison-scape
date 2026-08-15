@@ -1,82 +1,14 @@
-import { validateDataset } from "@sukoyaka-dopeness/e2r-validator";
+import type { CoreObjectDraft, Dataset, DeletionAssessment, DeletionResult, Diagnostic, E2RObject, IdCandidateGenerator, LoadResult, RelationCreationResult } from "./models";
+export type { CoreObjectDraft, Dataset, DeletionAssessment, DeletionResult, Diagnostic, E2RObject, IdCandidateGenerator, LoadResult, RelationCreationResult } from "./models";
 
-export type E2RObject = Record<string, unknown> & { id: string };
-
-export type Dataset = {
-  version: string;
-  entities: E2RObject[];
-  events: E2RObject[];
-  relations: E2RObject[];
-  [key: string]: unknown;
-};
-
-export type Diagnostic = {
-  severity: "error" | "warning";
-  code: string;
-  path: string;
-  relatedIds?: string[];
-};
-
-export type LoadResult = {
-  dataset: Dataset | null;
-  raw: string;
-  diagnostics: Diagnostic[];
-  parseError?: string;
-};
-
-export type CoreObjectDraft = { name?: string; description?: string };
-export type IdCandidateGenerator = () => string;
-
-export type RelationCreationResult = { dataset: Dataset; relationId: string } | { dataset: Dataset; refusal: string };
-
-export type DeletionAssessment =
-  | { ready: true }
-  | { ready: false; reason: string; incidentRelationCount?: number };
-export type DeletionResult = { dataset: Dataset; deleted: true; deletedId: string } | { dataset: Dataset; deleted: false; reason: string };
 
 export { isCoreObjectIdTaken, createCoreObjectId } from "./services/IdentifierService.ts";
 export { createEntity, assessEntityDeletion, deleteEntity } from "./services/EntityService.ts";
 export { createRelation, assessRelationDeletion, deleteRelation } from "./services/RelationService.ts";
+export { getEntityDetail, updateEntityDetails } from "./services/EntityService.ts";
+export { getRelationDetail, updateRelationDetails } from "./services/RelationService.ts";
 
-export function loadDataset(raw: string): LoadResult {
-  try {
-    const value: unknown = JSON.parse(raw);
-    const result = validateDataset(value) as { valid: boolean; diagnostics: Diagnostic[] };
-    return {
-      dataset: result.valid ? (value as Dataset) : null,
-      raw,
-      diagnostics: result.diagnostics,
-    };
-  } catch (error) {
-    return {
-      dataset: null,
-      raw,
-      diagnostics: [],
-      parseError: error instanceof Error ? error.message : "Invalid JSON",
-    };
-  }
-}
-
-export function serializeDataset(dataset: Dataset): string {
-  return JSON.stringify(dataset, null, 2);
-}
-
-export function validateDatasetForExport(dataset: Dataset): Diagnostic[] {
-  const result = validateDataset(dataset) as { diagnostics: Diagnostic[] };
-  return result.diagnostics;
-}
-
-export function getDatasetMetadata(dataset: Dataset): { datasetId: string | null; title: string | null } {
-  const extensions = dataset.extensions;
-  if (typeof extensions !== "object" || extensions === null) return { datasetId: null, title: null };
-  const metadata = (extensions as Record<string, unknown>).metadata;
-  if (typeof metadata !== "object" || metadata === null) return { datasetId: null, title: null };
-  const value = metadata as Record<string, unknown>;
-  return {
-    datasetId: typeof value.datasetId === "string" && value.datasetId.trim() ? value.datasetId : null,
-    title: typeof value.title === "string" && value.title.trim() ? value.title : null,
-  };
-}
+export { loadDataset, serializeDataset, validateDatasetForExport, getDatasetMetadata } from "./services/DatasetService.ts";
 
 export type GraphNode = { id: string; label: string; description: string; x: number; y: number };
 export type GraphEdge = { id: string; sourceId: string; targetId: string; parallelIndex: number; parallelCount: number };
@@ -532,73 +464,4 @@ export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges:
   }
   for (const group of groups.values()) group.forEach((edge, index) => { edge.parallelIndex = index; edge.parallelCount = group.length; });
   return { nodes, edges, unsupportedEdges };
-}
-
-export function getEntityDetail(dataset: Dataset, entityId: string) {
-  const entity = dataset.entities.find((candidate) => candidate.id === entityId);
-  if (!entity) return null;
-  const entityIds = new Set(dataset.entities.map((candidate) => candidate.id));
-  const relationIds = dataset.relations
-    .filter((relation) => relation.sourceId === entityId || relation.targetId === entityId)
-    .map((relation) => relation.id);
-  const visibleRelationIds = dataset.relations
-    .filter((relation) => (relation.sourceId === entityId || relation.targetId === entityId)
-      && typeof relation.sourceId === "string"
-      && typeof relation.targetId === "string"
-      && entityIds.has(relation.sourceId)
-      && entityIds.has(relation.targetId))
-    .map((relation) => relation.id);
-  return { entity, relationIds, visibleRelationIds };
-}
-
-export function updateEntityDetails(
-  dataset: Dataset,
-  entityId: string,
-  updates: { name: string; description: string },
-): Dataset {
-  return {
-    ...dataset,
-    entities: dataset.entities.map((entity) => {
-      if (entity.id !== entityId) return entity;
-      const updated = { ...entity };
-      if (updates.name.trim()) updated.name = updates.name;
-      else delete updated.name;
-      if (updates.description.trim()) updated.description = updates.description;
-      else delete updated.description;
-      return updated;
-    }),
-  };
-}
-
-export function getRelationDetail(dataset: Dataset, relationId: string) {
-  const relation = dataset.relations.find((candidate) => candidate.id === relationId);
-  if (!relation) return null;
-  const sourceId = typeof relation.sourceId === "string" ? relation.sourceId : "";
-  const targetId = typeof relation.targetId === "string" ? relation.targetId : "";
-  const source = dataset.entities.find((entity) => entity.id === sourceId)
-    ?? dataset.events.find((event) => event.id === sourceId)
-    ?? null;
-  const target = dataset.entities.find((entity) => entity.id === targetId)
-    ?? dataset.events.find((event) => event.id === targetId)
-    ?? null;
-  return { relation, sourceId, targetId, source, target };
-}
-
-export function updateRelationDetails(
-  dataset: Dataset,
-  relationId: string,
-  updates: { name: string; description: string },
-): Dataset {
-  return {
-    ...dataset,
-    relations: dataset.relations.map((relation) => {
-      if (relation.id !== relationId) return relation;
-      const updated = { ...relation };
-      if (updates.name.trim()) updated.name = updates.name;
-      else delete updated.name;
-      if (updates.description.trim()) updated.description = updates.description;
-      else delete updated.description;
-      return updated;
-    }),
-  };
 }

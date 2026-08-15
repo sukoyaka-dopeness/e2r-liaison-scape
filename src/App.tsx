@@ -2,9 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { assessCoordinateDraftMigration, migrateCoordinatePrototypeToDraft } from "./coordinate-migration";
 import { assessLiaisonScapeSpaceMigration, migrateLinkscapeSpaceToLiaisonScape } from "./space-migration";
 import { assessLegacyLinkscapeCoordinateMigration, migrateLegacyLinkscapeCoordinatesToLiaisonScape } from "./legacy-migration";
-import { applyStoredCoordinates, buildEntityGraph, getDatasetMetadata, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, type Dataset, type Diagnostic, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type GraphNode } from "./dataset";
+import { applyStoredCoordinates, buildEntityGraph, getStoredCoordinates, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
+import { getDatasetMetadata, loadDataset, serializeDataset, validateDatasetForExport } from "./services/DatasetService";
 import { assessEntityDeletion, createEntity, deleteEntity } from "./services/EntityService";
+import { getEntityDetail, updateEntityDetails } from "./services/EntityService";
 import { assessRelationDeletion, createRelation, deleteRelation } from "./services/RelationService";
+import { getRelationDetail, updateRelationDetails } from "./services/RelationService";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, zoomScale } from "./viewport";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
