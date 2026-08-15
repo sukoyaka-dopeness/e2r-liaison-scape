@@ -53,7 +53,7 @@ applications:
 
 | Concept | English UI | Japanese UI |
 | --- | --- | --- |
-| Dataset | Dataset | データセット |
+| Dataset | Dataset | Dataset |
 | Entity | Entity | Entity |
 | Relation | Relation | Relation |
 | Event | Event | Event |

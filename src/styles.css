@@ -6,10 +6,9 @@
   text-rendering: optimizeLegibility;
 }
 * { box-sizing: border-box; }
-html { scrollbar-gutter: stable; }
 html, body, #root { width: 100%; max-width: 100%; min-height: 100%; overflow-x: hidden; }
 body { margin: 0; }
-#root { width: min(1280px, 100%); min-height: 100dvh; margin: 0 auto; }
+#root { width: 100%; min-height: 100dvh; margin: 0 auto; }
 .app-frame { min-height: 100dvh; display: flex; flex-direction: column; }
 .app-header { width: 100%; padding: 16px 32px; border-bottom: 1px solid #e5e4e7; background: #fff; }
 .app-header { display: flex; align-items: center; justify-content: space-between; }
@@ -23,7 +22,7 @@ body { margin: 0; }
 .app-content { width: 100%; min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; padding: 16px 24px 20px; }
 .home-content { width: min(352px, 100%); max-width: 352px; margin: auto; padding: 16px; text-align: center; }
 .home-content h1 { margin: 0; color: #08060d; font-size: 36px; font-weight: 500; line-height: 1.15; letter-spacing: -.06em; }
-.home-description { margin: 12px 0 24px; color: #6b6375; font-family: system-ui, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 400; line-height: 145%; }
+.home-description { margin: 12px 0 24px; color: #6b6375; font-family: system-ui, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 400; line-height: 145%; white-space: pre-line; }
 .home-actions { display: flex; flex-direction: column; gap: 12px; margin: 28px 0 20px; }
 .home-actions > * { width: 100%; }
 .home-actions button,

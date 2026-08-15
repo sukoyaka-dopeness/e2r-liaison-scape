@@ -14,10 +14,15 @@ import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, zoomScale } from "./viewport";
+import { applyLocale, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
 export default function App() {
+  const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
+    window.localStorage,
+    window.navigator.language,
+  ));
   const [view, setView] = useState<"home" | "workspace">("home");
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
@@ -62,6 +67,11 @@ export default function App() {
   const longPressRef = useRef<{ pointerId: number; startX: number; startY: number; timer: number; kind: "canvas" | "entity" | "relation"; id?: string; canceled: boolean } | null>(null);
   const longPressClaimedRef = useRef<number | null>(null);
   const suppressNextContextMenuRef = useRef(false);
+
+  useEffect(() => {
+    saveLocale(window.localStorage, locale);
+    applyLocale(locale, document);
+  }, [locale]);
 
   useEffect(() => {
     window.history.replaceState({ liaisonScapeView: "home" }, "");
@@ -360,23 +370,33 @@ export default function App() {
     <div className="app-frame home-page">
       <header className="app-header"><button className="app-brand app-brand-button" type="button" onClick={() => setView("home")}>LiaisonScape</button></header>
       <main className="home-content">
-        <h1>Get Started</h1>
-        <p className="home-description">Create and edit E2R relationship graphs centered on Entities and Relations.</p>
+        <h1>{translate(locale, "getStarted")}</h1>
+        <p className="home-description">{translate(locale, "homeDescription")}</p>
         <div className="home-actions">
-          <button type="button" onClick={startNewDataset}>New Dataset</button>
-          <label className="open-dataset-button">Open E2R Dataset<input
+          {dataset && <button type="button" onClick={enterWorkspace}>{translate(locale, "continueEditing")}</button>}
+          <button type="button" onClick={startNewDataset}>{translate(locale, "newDataset")}</button>
+          <label className="open-dataset-button">{translate(locale, "openDataset")}<input
             type="file" accept="application/json,.json,.e2r.json"
             onChange={(event) => { const file = event.target.files?.[0]; if (file) void file.text().then(open); }}
           /></label>
-          {dataset && <button type="button" onClick={enterWorkspace}>Continue Editing</button>}
         </div>
         <nav className="home-guides" aria-label="Guides">
-          <a href="https://github.com/sukoyaka-dopeness/e2r-liaison-scape/blob/main/docs/user-guide-en.md" target="_blank" rel="noreferrer">English guide</a>
-          <a href="https://github.com/sukoyaka-dopeness/e2r-liaison-scape/blob/main/docs/user-guide-ja.md" target="_blank" rel="noreferrer">日本語ガイド</a>
+          <a
+            href={locale === "ja"
+              ? "https://github.com/sukoyaka-dopeness/e2r-liaison-scape/blob/main/docs/user-guide-ja.md"
+              : "https://github.com/sukoyaka-dopeness/e2r-liaison-scape/blob/main/docs/user-guide-en.md"}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {translate(locale, "userGuide")}
+          </a>
         </nav>
       </main>
       <footer className="app-footer home-footer">
-        <small>E2R relationship editor</small>
+        <small>{translate(locale, "footerDescriptor")}</small>
+        {locale === "ja"
+          ? <button type="button" onClick={() => setLocale("en")}>English</button>
+          : <button type="button" onClick={() => setLocale("ja")}>日本語</button>}
       </footer>
     </div>
   );
@@ -931,7 +951,7 @@ export default function App() {
     <div className="app-frame">
       <header className="app-header">
         <button className="app-brand app-brand-button" type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>LiaisonScape</button>
-        <button className="header-home-button" type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>Home</button>
+        <button className="header-home-button" type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>{translate(locale, "home")}</button>
       </header>
       <main className="app-content">
         <div className="page-header">
@@ -939,7 +959,7 @@ export default function App() {
           <p>Entity-first E2R relationship graph.</p>
         </div>
         <div className="dataset-actions">
-          <label className="open-dataset-button">Open Dataset<input
+          <label className="open-dataset-button">{translate(locale, "openWorkspaceDataset")}<input
             type="file"
             accept="application/json,.json,.e2r.json"
             onChange={(event) => {
@@ -948,27 +968,28 @@ export default function App() {
             }}
           /></label>
           <div className="dataset-actions__buttons">
-            <button type="button" disabled={!dataset} onClick={exportDataset}>Export E2R JSON</button>
-            <button type="button" disabled={!dataset} onClick={() => openCreation("entity")}>Add Entity</button>
-            <button type="button" disabled={!dataset} onClick={() => openCreation("relation")}>Add Relation</button>
-            <button type="button" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>Save node coordinates</button>
+            <button type="button" disabled={!dataset} onClick={exportDataset}>{translate(locale, "exportDataset")}</button>
+            <button type="button" disabled={!dataset} onClick={() => openCreation("entity")}>{translate(locale, "addEntity")}</button>
+            <button type="button" disabled={!dataset} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
+            <button type="button" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
             <details className="maintenance-menu">
-              <summary>More</summary>
+              <summary>{translate(locale, "more")}</summary>
               <div className="maintenance-menu__items">
-                <button type="button" disabled={!dataset || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>Migrate Coordinate to Draft</button>
-                <button type="button" disabled={!dataset || spaceMigrationReadiness?.ready !== true} onClick={migrateSpaceToLiaisonScape}>Migrate Linkscape coordinates to LiaisonScape</button>
-                <button type="button" disabled={!dataset || legacyMigrationReadiness?.ready !== true} onClick={migrateLegacyCoordinatesToLiaisonScape}>Migrate legacy Linkscape coordinates to LiaisonScape</button>
+                <button type="button" disabled={!dataset || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>{translate(locale, "migrateCoordinateDraft")}</button>
+                <button type="button" disabled={!dataset || spaceMigrationReadiness?.ready !== true} onClick={migrateSpaceToLiaisonScape}>{translate(locale, "migrateLinkscapeCoordinates")}</button>
+                <button type="button" disabled={!dataset || legacyMigrationReadiness?.ready !== true} onClick={migrateLegacyCoordinatesToLiaisonScape}>{translate(locale, "migrateLegacyCoordinates")}</button>
               </div>
             </details>
           </div>
         </div>
         {!transientSuccess && <p className="status-message" role="status">{message}</p>}
       {canvasContextMenu && <div className="canvas-context-menu" role="menu" aria-label="Canvas actions" style={{ position: "fixed", left: canvasContextMenu.clientX, top: canvasContextMenu.clientY }} onPointerDown={(event) => event.stopPropagation()}>
-        <button type="button" role="menuitem" onClick={chooseCanvasAddEntity}>Add Entity</button>
-        <button type="button" role="menuitem" onClick={() => setCanvasContextMenu(null)}>Cancel</button>
+        <button type="button" role="menuitem" onClick={chooseCanvasAddEntity}>{translate(locale, "addEntity")}</button>
+        <button type="button" role="menuitem" onClick={() => setCanvasContextMenu(null)}>{translate(locale, "cancel")}</button>
       </div>}
       {dataset && creationMode && (
         <CreationDialog
+          locale={locale}
           mode={creationMode}
           entities={dataset.entities}
           name={creationName}
@@ -986,7 +1007,7 @@ export default function App() {
 {dataset && deleteConfirmation && <ConfirmationDialog subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
       {dataset && (
         <dl className="dataset-metadata" aria-label="Dataset metadata">
-          <dt>Dataset title</dt><dd>{metadata?.title ?? "Untitled"}</dd>
+          <dt>{translate(locale, "datasetTitle")}</dt><dd>{metadata?.title ?? translate(locale, "untitled")}</dd>
           <dt>Dataset ID</dt><dd>{metadata?.datasetId ?? "Not assigned"}</dd>
         </dl>
       )}
@@ -1002,10 +1023,10 @@ export default function App() {
           <h2>Graph</h2>
           <div ref={viewportToolbarRef} className="viewport-controls" aria-label="Graph view controls" style={viewportToolbarPosition ? { left: viewportToolbarPosition.x, top: viewportToolbarPosition.y, right: "auto" } : undefined}>
             <button type="button" className="viewport-toolbar-handle" aria-label="Move zoom controls" title="Move zoom controls" onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={endViewportToolbarDrag}>⠿</button>
-            <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>Zoom out</button>
+            <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>{translate(locale, "zoomOut")}</button>
             <span aria-live="polite">{Math.round(scale * 100)}%</span>
-            <button type="button" onClick={() => setScale((value) => zoomScale(value, "in"))}>Zoom in</button>
-            <button type="button" onClick={resetView}>Reset view</button>
+            <button type="button" onClick={() => setScale((value) => zoomScale(value, "in"))}>{translate(locale, "zoomIn")}</button>
+            <button type="button" onClick={resetView}>{translate(locale, "resetView")}</button>
           </div>
           {graph.unsupportedEdges > 0 && <p role="status">{graph.unsupportedEdges} Relation(s) with an Event endpoint are not shown in the Entity-first MVP.</p>}
           <svg
@@ -1013,7 +1034,7 @@ export default function App() {
             className="graph"
             viewBox="0 0 800 500"
             role="img"
-            aria-label="Entity relationship graph"
+            aria-label={translate(locale, "entityRelationshipGraph")}
             onPointerDown={(event) => { startGraphPointer(event, { kind: "canvas" }); }}
             onPointerDownCapture={startLongPress}
             onPointerMove={onCanvasPointerMove}
@@ -1113,8 +1134,8 @@ export default function App() {
               : "Select an Entity or Relation"}</p>
           {selectedRelationDetail && !detailOpen && (
             <div className="graph-selection-actions">
-              <p className="relation-curvature-hint" role="status">Drag the selected relation to adjust its curve.</p>
-              <button type="button" onClick={() => setDetailOpen(true)}>Edit Relation</button>
+              <p className="relation-curvature-hint" role="status">{translate(locale, "selectedRelationCurvatureHint")}</p>
+              <button type="button" onClick={() => setDetailOpen(true)}>{translate(locale, "editRelation")}</button>
               <button
                 type="button"
                 disabled={edgeCurveOffsets[selectedRelationDetail.relation.id] === undefined
@@ -1149,7 +1170,7 @@ export default function App() {
           )}
           {selectedDetail && !detailOpen && (
             <div className="graph-selection-actions">
-              <button type="button" onClick={() => setDetailOpen(true)}>Edit Entity</button>
+              <button type="button" onClick={() => setDetailOpen(true)}>{translate(locale, "editEntity")}</button>
             </div>
           )}
           <p className="graph-summary">{graph.nodes.length} entities · {graph.edges.length} relations</p>
@@ -1205,7 +1226,7 @@ export default function App() {
       )}
       </main>
       <footer className="app-footer workspace-footer">
-        <button type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>Home</button>
+        <button type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>{translate(locale, "home")}</button>
       </footer>
     </div>
   );
