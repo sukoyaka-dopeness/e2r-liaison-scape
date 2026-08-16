@@ -13,7 +13,27 @@ only exact owned paths or hunks, inspect `git diff --cached --name-status`, run
 LiaisonScape gates are `npm test`, `npm run lint`, and `npm run build`.
 
 After committing, report the hash, subject, scope, verification results,
-worktree status, and unpushed status. Preserve unrelated dirty work. Do not
-use broad staging, reset, clean, restore, stash, rebase, squash, amend,
-history rewriting, or force push without explicit authorization. Push,
-release, deployment, and publication always require explicit authorization.
+worktree status, and unpushed status. Preserve unrelated dirty work.
+
+Do not use the following unless the user explicitly authorizes that exact
+operation:
+
+- `git add .`
+- `git add -A`
+- `git commit -a`
+- `git reset --hard`
+- `git clean`
+- broad `git restore`
+- broad or automatic `git stash`
+- rebase
+- squash
+- amend of an existing checkpoint
+- history rewriting
+- force push
+
+Prefer exact-path staging such as:
+
+`git add -- path/to/file1 path/to/file2`
+
+or precise hunk staging when required. Push, release, deployment, and
+publication always require explicit authorization.
