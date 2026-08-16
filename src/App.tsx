@@ -356,6 +356,16 @@ export default function App() {
     setMessage(formatLoadedDataset(locale, result.dataset.entities.length, result.dataset.relations.length));
   }
 
+  async function openSample() {
+    try {
+      const response = await fetch(`${import.meta.env.BASE_URL}lighthouse-restoration-demo.${locale}.e2r.json`);
+      if (!response.ok) throw new Error(`Sample request failed: ${response.status}`);
+      open(await response.text());
+    } catch {
+      setMessage(translate(locale, "sampleDatasetLoadFailure"));
+    }
+  }
+
   function enterWorkspace() {
     setView("workspace");
     window.history.pushState({ liaisonScapeView: "workspace" }, "", window.location.href);
@@ -385,6 +395,9 @@ export default function App() {
             type="file" accept="application/json,.json,.e2r.json"
             onChange={(event) => { const file = event.target.files?.[0]; if (file) void file.text().then(open); }}
           /></label>
+          <div className="sample-action">
+            <button type="button" onClick={() => void openSample()}>{translate(locale, "openSampleDataset")}</button>
+          </div>
         </div>
         <nav className="home-guides" aria-label={translate(locale, "guides")}>
           <a
