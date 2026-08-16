@@ -57,6 +57,7 @@ export default function App() {
   const [pendingEntityPlacement, setPendingEntityPlacement] = useState<{ x: number; y: number } | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
+  const [creditsOpen, setCreditsOpen] = useState(false);
   const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
@@ -252,7 +253,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (!detailOpen && !creationMode && !deleteConfirmation) return;
+    if (!detailOpen && !creationMode && !deleteConfirmation && !creditsOpen) return;
     const trapFocus = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return;
       const dialogs = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"]'));
@@ -272,7 +273,14 @@ export default function App() {
     };
     document.addEventListener("keydown", trapFocus, true);
     return () => document.removeEventListener("keydown", trapFocus, true);
-  }, [creationMode, deleteConfirmation, detailOpen]);
+  }, [creationMode, deleteConfirmation, detailOpen, creditsOpen]);
+
+  useEffect(() => {
+    if (!creditsOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setCreditsOpen(false); };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [creditsOpen]);
 
   useEffect(() => {
     if (!canvasContextMenu) return;

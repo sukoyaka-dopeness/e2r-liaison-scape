@@ -2,7 +2,8 @@
 
 Status: `INTERNAL MVP READY / FIRST DISTRIBUTION DEFERRED`
 
-Audit basis: `2f237a3 feat: complete Relation endpoint editing MVP`
+Audit basis: current closure checkpoints `6e669e6` (Direct Graph Authoring),
+`155415c` (Home / Entry UX), and `ae3290b` (LiaisonScape i18n MVP).
 
 This is a non-normative product audit. It does not change the E2R Core or any
 Extension specification. No production behavior was changed during this
@@ -39,6 +40,7 @@ The current LiaisonScape implementation and acceptance evidence cover:
 - Relation identity preservation on endpoint changes;
 - imported Event endpoint preservation;
 - atomic refusal and preservation of unknown fields and Extensions.
+- Direct Graph Authoring MVP behavior is closed at checkpoint `6e669e6`.
 
 The application remains intentionally Entity-first. It does not create or
 edit Events, and it does not present Event endpoints as ordinary graph nodes.
@@ -109,10 +111,10 @@ need a final product decision and wording review before distribution.
 
 ### 6. Release boundary — PASS WITH EXPLICIT POST-MVP QUEUE
 
-The following are not MVP blockers and remain outside this audit's
+The following are not First Distribution blockers by virtue of being future
+work alone and remain outside this audit's
 implementation scope:
 
-- Direct Graph Authoring;
 - Event creation or editing;
 - semantic Relation types;
 - Layout/Perspective standardization;
@@ -121,9 +123,9 @@ implementation scope:
 - on-demand external provider research;
 - AI-generated names, descriptions, or layouts.
 
-Direct Graph Authoring is recorded in
-`docs/direct-graph-authoring.md` as a future UX workstream. It must not be
-selected or implemented as part of this release-readiness audit.
+Direct Graph Authoring is complete at `6e669e6`. Its future follow-ups remain
+separate from the completed MVP and are recorded in
+`docs/direct-graph-authoring-closure.md`.
 
 ## Release preparation actions
 
@@ -139,12 +141,13 @@ Before handing LiaisonScape to another person:
 
 ## Final audit verdict
 
-`INTERNAL MVP READY / FIRST DISTRIBUTION DEFERRED`
+`INTERNAL MVP READY / FIRST DISTRIBUTION PREPARATION REQUIRED`
 
-No internal MVP blocker remains in the audited LiaisonScape boundary. This
-does not declare first-distribution readiness. Friend-facing first
-distribution remains deferred until Direct Graph Authoring and the planned
-application UI Japanese localization are complete.
+No internal MVP blocker remains in the current LiaisonScape boundary. This
+does not declare first-distribution readiness. First Distribution preparation
+remains pending the Legacy migration product decision and distribution
+mechanics/documentation review. Direct Graph Authoring and application UI
+Japanese localization are already closed at their current checkpoints.
 
 ## Internal MVP closure
 
@@ -156,15 +159,17 @@ The following are explicitly deferred beyond this audit:
 
 - Legacy migration UI final `KEEP` / `REMOVE BEFORE RELEASE` decision, deferred
   to First-Distribution Prep and not an internal-MVP blocker;
-- Direct Graph Authoring, including its future Inventory and Decision Pass;
-- application UI Japanese localization;
 - Relation Arrow Appearance as a future presentation workstream.
 
 These deferred items do not reopen the completed Relation Endpoint Editing
 contract, Core specification, Coordinate responsibility, or migration
 behavior.
 
-## Next workstream candidate
+## Historical next-workstream note
+
+The following historical inventory predates checkpoint `6e669e6` and is not a
+current workstream recommendation. Use
+`docs/first-distribution-readiness-reconciliation.md` for the current order.
 
 `Direct Graph Authoring — Inventory and Decision Pass`
 
