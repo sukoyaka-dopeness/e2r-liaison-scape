@@ -1,0 +1,225 @@
+{
+  "version": "1.0",
+  "entities": [
+    {
+      "id": "entity-lighthouse",
+      "name": "旧港灯台",
+      "description": "地域で使い続けるために修復されている歴史ある灯台です。",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 400, "y": 250 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-restoration-team",
+      "name": "灯台修復チーム",
+      "description": "修復を進める技術者、作業員、灯台守のチームです。",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 180, "y": 120 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-harbor-community",
+      "name": "港の地域社会",
+      "description": "灯台と港を支え、そこに暮らす住民と支援者です。",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 620, "y": 120 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-beacon-system",
+      "name": "灯火システム",
+      "description": "灯台の中にある照明と監視の設備です。",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 620, "y": 370 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-harbor-authority",
+      "name": "港湾当局",
+      "description": "港と灯台の敷地を管理する公共機関です。",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 180, "y": 370 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-historical-archive",
+      "name": "港の歴史資料館",
+      "description": "港の設計図、写真、物語を保存する資料館です。",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 400, "y": 440 } }
+          ]
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "event-lighthouse-built",
+      "name": "灯台の建設",
+      "description": "港へ入る船を導くために旧港灯台が建設されました。",
+      "extensions": { "history": { "time": { "year": 1898, "month": 6 } } }
+    },
+    {
+      "id": "event-beacon-failure",
+      "name": "灯火の故障",
+      "description": "灯火システムが故障し、協力した修復活動が始まりました。",
+      "extensions": { "history": { "time": { "year": 2025, "month": 11, "day": 18 } } }
+    },
+    {
+      "id": "event-restoration-announced",
+      "name": "修復計画の発表",
+      "description": "地域の支援を受けた修復計画が発表されました。",
+      "extensions": { "history": { "time": { "year": 2026, "month": 2, "day": 14, "hour": 10, "minute": 0 } } }
+    },
+    {
+      "id": "event-lighthouse-reopened",
+      "name": "灯台の再開",
+      "description": "修復された灯台が、現役の灯火と地域の目印として再開しました。",
+      "extensions": { "history": { "time": { "year": 2026, "month": 8, "day": 10 } } }
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-team-lighthouse",
+      "name": "修復する",
+      "description": "チームが灯台の構造と稼働システムを修復します。",
+      "sourceId": "entity-restoration-team",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-community-team",
+      "name": "支援する",
+      "description": "地域社会がボランティアと募金で修復チームを支援します。",
+      "sourceId": "entity-harbor-community",
+      "targetId": "entity-restoration-team"
+    },
+    {
+      "id": "relation-authority-lighthouse",
+      "name": "管理する",
+      "description": "港湾当局が灯台とその敷地を管理します。",
+      "sourceId": "entity-harbor-authority",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-archive-lighthouse",
+      "name": "記録する",
+      "description": "歴史資料館が灯台とその歴史を記録します。",
+      "sourceId": "entity-historical-archive",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-beacon-lighthouse",
+      "name": "役割を担う",
+      "description": "灯火システムが灯台の航行支援の役割を担います。",
+      "sourceId": "entity-beacon-system",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-beacon-self-monitoring",
+      "name": "自己監視する",
+      "description": "灯火システムが自身の稼働状態を監視します。",
+      "sourceId": "entity-beacon-system",
+      "targetId": "entity-beacon-system"
+    },
+    {
+      "id": "relation-team-community-coordination",
+      "name": "連携する",
+      "description": "修復チームが港の地域社会と作業を連携します。",
+      "sourceId": "entity-restoration-team",
+      "targetId": "entity-harbor-community"
+    },
+    {
+      "id": "relation-team-community-updates",
+      "name": "進捗を共有する",
+      "description": "修復チームが計画の進捗を港の地域社会と共有します。",
+      "sourceId": "entity-restoration-team",
+      "targetId": "entity-harbor-community"
+    },
+    {
+      "id": "relation-built-lighthouse",
+      "name": "建設された",
+      "sourceId": "event-lighthouse-built",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-failure-beacon",
+      "name": "影響した",
+      "sourceId": "event-beacon-failure",
+      "targetId": "entity-beacon-system"
+    },
+    {
+      "id": "relation-announced-team",
+      "name": "主催された",
+      "sourceId": "event-restoration-announced",
+      "targetId": "entity-restoration-team"
+    },
+    {
+      "id": "relation-announced-community",
+      "name": "支援された",
+      "sourceId": "event-restoration-announced",
+      "targetId": "entity-harbor-community"
+    },
+    {
+      "id": "relation-reopened-lighthouse",
+      "name": "再開した",
+      "sourceId": "event-lighthouse-reopened",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-reopened-authority",
+      "name": "認可された",
+      "sourceId": "event-lighthouse-reopened",
+      "targetId": "entity-harbor-authority"
+    }
+  ],
+  "extensions": {
+    "metadata": {
+      "datasetId": "example-lighthouse-restoration-ja",
+      "title": "灯台修復プロジェクト"
+    },
+    "draft.github.sukoyaka-dopeness.coordinate": {
+      "specVersion": "0.1.0",
+      "spaces": [
+        {
+          "id": "liaisonscape-graph",
+          "name": "LiaisonScape graph coordinates",
+          "kind": "cartesian-2d",
+          "components": {
+            "x": { "unit": "liaisonscape-user-unit", "positiveDirection": "display-right" },
+            "y": { "unit": "liaisonscape-user-unit", "positiveDirection": "display-down" }
+          }
+        }
+      ]
+    },
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        { "extension": "metadata", "version": "1.0.0" },
+        { "extension": "history", "version": "1.0.0" },
+        { "extension": "draft.github.sukoyaka-dopeness.coordinate", "version": "0.1.0" }
+      ]
+    }
+  }
+}
