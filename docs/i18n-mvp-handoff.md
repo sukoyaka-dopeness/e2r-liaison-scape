@@ -34,7 +34,7 @@ application vocabulary are intentionally treated as separate layers.
 
 - Home headings, description, actions, guide label, footer descriptor, and
   locale switch.
-- Workspace shell labels and descriptor.
+- Workspace shell labels.
 - Workspace fixed toolbar/control labels.
 - Selection/editing visible strings:
   - `Drag the selected relation to adjust its curve.`
@@ -127,6 +127,11 @@ and migration results.
 - Group / Cluster;
 - First Distribution;
 - Dataset title editing.
+- Future UI polish: reduce oversized button text and button borders in both
+  LiaisonScape and the sibling NarrativeLine application when the timing is
+  appropriate. This note records a deferred visual adjustment only; it does
+  not authorize changes to button behavior, semantics, or interaction hit
+  areas in the current workstream.
 
 NarrativeLine is not part of this LiaisonScape implementation checkpoint.
 
@@ -157,4 +162,3 @@ dialog or fixed visible category—not dynamic messages or a broad replacement.
 This handoff records the current i18n-related working-tree changes. The
 checkpoint commit is created separately after final verification. No push is
 part of this handoff.
-

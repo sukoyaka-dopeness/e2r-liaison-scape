@@ -14,7 +14,7 @@ import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, zoomScale } from "./viewport";
-import { applyLocale, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
+import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatLoadedDataset, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -77,7 +77,7 @@ export default function App() {
     window.history.replaceState({ liaisonScapeView: "home" }, "");
     const onPopState = () => {
       setView("home");
-      setMessage("Your Dataset is still open. Continue to return to the workspace.");
+      setMessage(translate(locale, "browserBackDatasetNotice"));
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -87,7 +87,6 @@ export default function App() {
   const spaceMigrationReadiness = dataset ? assessLiaisonScapeSpaceMigration(dataset) : null;
   const legacyMigrationReadiness = dataset ? assessLegacyLinkscapeCoordinateMigration(dataset) : null;
   const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [], unsupportedEdges: 0 }, [dataset]);
-  const transientSuccess = /(?:created|updated|deleted)\./.test(message);
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
   const relationMap = useMemo(() => new Map(dataset?.relations.map((relation) => [relation.id, relation]) ?? []), [dataset]);
   const routedEdges = useMemo(() => {
@@ -317,12 +316,12 @@ export default function App() {
     setDiagnostics(result.diagnostics);
     if (result.parseError) {
       setDataset(null);
-      setMessage(`Import failed: ${result.parseError}`);
+      setMessage(translate(locale, "jsonLoadFailure"));
       return;
     }
     if (!result.dataset) {
       setDataset(null);
-      setMessage("Dataset is invalid according to the Core or supported Extensions.");
+      setMessage(translate(locale, "datasetValidationFailure"));
       return;
     }
     setDataset(result.dataset);
@@ -347,7 +346,7 @@ export default function App() {
     setCoordinatesDirty(false);
     setPan(fittedView.pan);
     setScale(fittedView.scale);
-    setMessage(`Loaded ${result.dataset.entities.length} Entities and ${result.dataset.relations.length} Relations.`);
+    setMessage(formatLoadedDataset(locale, result.dataset.entities.length, result.dataset.relations.length));
   }
 
   function enterWorkspace() {
@@ -358,7 +357,7 @@ export default function App() {
   function startNewDataset() {
     setDataset(structuredClone(emptyDataset));
     setDiagnostics([]);
-    setMessage("New Dataset ready.");
+    setMessage("");
     setSelectedId(null);
     setSelectedRelationId(null);
     setPositions({});
@@ -380,7 +379,7 @@ export default function App() {
             onChange={(event) => { const file = event.target.files?.[0]; if (file) void file.text().then(open); }}
           /></label>
         </div>
-        <nav className="home-guides" aria-label="Guides">
+        <nav className="home-guides" aria-label={translate(locale, "guides")}>
           <a
             href={locale === "ja"
               ? "https://github.com/sukoyaka-dopeness/e2r-liaison-scape/blob/main/docs/user-guide-ja.md"
@@ -702,15 +701,15 @@ export default function App() {
     if (saved === dataset) {
       const readiness = assessCoordinateDraftMigration(dataset);
       if (!readiness.ready && readiness.code === "linkscape_coordinate_draft_migration_target_exists") {
-        setMessage("Draft coordinates are already active, but this Dataset does not match LiaisonScape's writable legacy Draft profile.");
+        setMessage(translate(locale, "coordinateDraftWriteRefusal"));
         return;
       }
-      setMessage("Coordinates remain temporary because the existing Coordinate or Specification payload is not safely writable.");
+      setMessage(translate(locale, "coordinatePayloadWriteRefusal"));
       return;
     }
     setDataset(saved);
     setCoordinatesDirty(false);
-    setMessage("Entity coordinates saved to the experimental Coordinate payload.");
+    setMessage(translate(locale, "coordinateSaveSuccess"));
   }
 
   function migrateCoordinatesToDraft() {
@@ -719,13 +718,13 @@ export default function App() {
     setDiagnostics(result.diagnostics);
     if (!result.migrated) {
       if (result.readiness.ready) return;
-      setMessage(`Coordinate migration is unavailable (${result.readiness.code} at ${result.readiness.path}).`);
+      setMessage(translate(locale, "coordinateDraftMigrationRefusal"));
       return;
     }
     setDataset(result.dataset);
     setPositions(getStoredCoordinates(result.dataset));
     setCoordinatesDirty(false);
-    setMessage("Coordinate Prototype migrated to Coordinate Draft 0.1.0.");
+    setMessage(translate(locale, "coordinateDraftMigrationSuccess"));
   }
 
   function migrateSpaceToLiaisonScape() {
@@ -733,40 +732,40 @@ export default function App() {
     const result = migrateLinkscapeSpaceToLiaisonScape(dataset);
     setDiagnostics(result.diagnostics);
     if (!result.migrated) {
-      setMessage(`Space migration is unavailable (${result.readiness.code} at ${result.readiness.path}).`);
+      setMessage(translate(locale, "spaceMigrationRefusal"));
       return;
     }
     setDataset(result.dataset);
     setPositions(getStoredCoordinates(result.dataset));
     setCoordinatesDirty(false);
-    setMessage("Linkscape coordinates migrated to LiaisonScape.");
+    setMessage(translate(locale, "spaceMigrationSuccess"));
   }
 
   function migrateLegacyCoordinatesToLiaisonScape() {
     if (!dataset) return;
     const result = migrateLegacyLinkscapeCoordinatesToLiaisonScape(dataset);
     setDiagnostics(result.diagnostics);
-    if (!result.migrated) { setMessage(`Legacy migration is unavailable (${result.readiness.code} at ${result.readiness.path}).`); return; }
+    if (!result.migrated) { setMessage(translate(locale, "legacyMigrationRefusal")); return; }
     setDataset(result.dataset);
     setPositions(getStoredCoordinates(result.dataset));
     setCoordinatesDirty(false);
-    setMessage("Legacy Linkscape coordinates migrated to LiaisonScape.");
+    setMessage(translate(locale, "legacyMigrationSuccess"));
   }
 
   function saveRelationDetails() {
     if (!dataset || !selectedRelationId) return;
     const current = getRelationDetail(dataset, selectedRelationId);
-    if (!current) { setMessage(`Relation ${selectedRelationId} cannot be updated: relation_not_found`); return; }
+    if (!current) { setMessage(formatRelationUpdateRefusal(locale, "relation_not_found")); return; }
     const result = updateRelation(dataset, selectedRelationId, {
       sourceId: relationSourceDraft,
       targetId: relationTargetDraft,
       name: relationNameDraft,
       description: relationDescriptionDraft,
     });
-    if ("refusal" in result) { setMessage(`Relation ${selectedRelationId} cannot be updated: ${result.refusal}`); return; }
+    if ("refusal" in result) { setMessage(formatRelationUpdateRefusal(locale, result.refusal)); return; }
     setDataset(result.dataset);
     setDetailOpen(false);
-    setMessage(`Relation ${selectedRelationId} updated.`);
+    setMessage("");
   }
 
   function openCreation(mode: "entity" | "relation", placement: { x: number; y: number } | null = null, endpoints: { sourceId: string; targetId: string } | null = null) {
@@ -813,17 +812,17 @@ export default function App() {
       setPositions((value) => ({ ...value, [result.entityId]: placement ?? graphPointFromViewportCenter({ width: 800, height: 500 }, scale, pan) }));
       setNodeLayerOrder((value) => bringToFront(value, result.entityId));
       setEntityNameDraft(typeof created.name === "string" ? created.name : ""); setEntityDescriptionDraft(typeof created.description === "string" ? created.description : "");
-      setMessage(`Entity ${result.entityId} created.`); return;
+      setMessage(""); return;
     }
     const result = createRelation(dataset, { sourceId: creationSource, targetId: creationTarget, name: creationName, description: creationDescription });
-    if (!("relationId" in result)) { setMessage(`Relation not created: ${result.refusal}`); return; }
-    setDataset(result.dataset); setSelectedRelationId(result.relationId); setSelectedId(null); setCreationMode(null); setMessage(`Relation ${result.relationId} created.`);
+    if (!("relationId" in result)) { setMessage(formatRelationCreationRefusal(locale, result.refusal)); return; }
+    setDataset(result.dataset); setSelectedRelationId(result.relationId); setSelectedId(null); setCreationMode(null); setMessage("");
   }
 
   function removeSelectedRelation() {
     if (!dataset || !selectedRelationId) return;
     const assessment = assessRelationDeletion(dataset, selectedRelationId);
-    if (!assessment.ready) { setMessage(`Relation cannot be deleted: ${assessment.reason}`); return; }
+    if (!assessment.ready) { setMessage(formatRelationDeletionRefusal(locale, assessment.reason)); return; }
     setDeleteConfirmationId(selectedRelationId);
     setDetailOpen(false);
     setDeleteConfirmation("relation");
@@ -834,7 +833,7 @@ export default function App() {
     if (!dataset || !entityId) return;
     const assessment = assessEntityDeletion(dataset, entityId);
     if (!assessment.ready) {
-      setMessage(assessment.incidentRelationCount ? `Entity cannot be deleted because ${assessment.incidentRelationCount} Relation(s) reference it. Remove those Relations first.` : `Entity cannot be deleted: ${assessment.reason}`);
+      setMessage(assessment.incidentRelationCount ? formatEntityIncidentWarning(locale, assessment.incidentRelationCount) : formatEntityDeletionRefusal(locale, assessment.reason));
       return;
     }
     setDeleteConfirmationId(entityId);
@@ -847,13 +846,13 @@ export default function App() {
     if (!dataset || !deleteConfirmation || !deleteConfirmationId) return;
     if (deleteConfirmation === "relation") {
       const result = deleteRelation(dataset, deleteConfirmationId);
-      if (!result.deleted) { setMessage(`Relation cannot be deleted: ${result.reason}`); setDeleteConfirmation(null); return; }
-      setDataset(result.dataset); setSelectedRelationId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage(`Relation ${result.deletedId} deleted.`); return;
+      if (!result.deleted) { setMessage(formatRelationDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); return; }
+      setDataset(result.dataset); setSelectedRelationId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage(""); return;
     }
     if (deleteConfirmation === "entity") {
       const result = deleteEntity(dataset, deleteConfirmationId);
-      if (!result.deleted) { setMessage(`Entity cannot be deleted: ${result.reason}`); setDeleteConfirmation(null); return; }
-      setDataset(result.dataset); setPositions((value) => { const next = { ...value }; delete next[result.deletedId]; return next; }); setSelectedId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage(`Entity ${result.deletedId} deleted.`);
+      if (!result.deleted) { setMessage(formatEntityDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); return; }
+      setDataset(result.dataset); setPositions((value) => { const next = { ...value }; delete next[result.deletedId]; return next; }); setSelectedId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage("");
     }
   }
 
@@ -864,7 +863,7 @@ export default function App() {
       description: entityDescriptionDraft,
     }));
     setDetailOpen(false);
-    setMessage(`Entity ${selectedId} updated.`);
+    setMessage("");
   }
 
   function openRelatedRelation(relationId: string) {
@@ -934,10 +933,10 @@ export default function App() {
     const exportDiagnostics = validateDatasetForExport(dataset);
     setDiagnostics(exportDiagnostics);
     if (exportDiagnostics.some(({ severity }) => severity === "error")) {
-      setMessage("Export blocked: the Dataset has validation errors.");
+      setMessage(translate(locale, "exportBlockedValidation"));
       return;
     }
-    if (exportDiagnostics.length > 0) setMessage("Exporting with validation warnings.");
+    if (exportDiagnostics.length > 0) setMessage(translate(locale, "exportWithWarnings"));
     const blob = new Blob([serializeDataset(dataset)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -982,8 +981,8 @@ export default function App() {
             </details>
           </div>
         </div>
-        {!transientSuccess && <p className="status-message" role="status">{message}</p>}
-      {canvasContextMenu && <div className="canvas-context-menu" role="menu" aria-label="Canvas actions" style={{ position: "fixed", left: canvasContextMenu.clientX, top: canvasContextMenu.clientY }} onPointerDown={(event) => event.stopPropagation()}>
+        {message && <p className="status-message" role="status">{message}</p>}
+      {canvasContextMenu && <div className="canvas-context-menu" role="menu" aria-label={translate(locale, "canvasActions")} style={{ position: "fixed", left: canvasContextMenu.clientX, top: canvasContextMenu.clientY }} onPointerDown={(event) => event.stopPropagation()}>
         <button type="button" role="menuitem" onClick={chooseCanvasAddEntity}>{translate(locale, "addEntity")}</button>
         <button type="button" role="menuitem" onClick={() => setCanvasContextMenu(null)}>{translate(locale, "cancel")}</button>
       </div>}
@@ -1004,31 +1003,35 @@ export default function App() {
           onCancel={() => { setCreationMode(null); setPendingEntityPlacement(null); }}
         />
       )}
-{dataset && deleteConfirmation && <ConfirmationDialog subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
+{dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
       {dataset && (
-        <dl className="dataset-metadata" aria-label="Dataset metadata">
+        <dl className="dataset-metadata" aria-label={translate(locale, "datasetMetadata")}>
           <dt>{translate(locale, "datasetTitle")}</dt><dd>{metadata?.title ?? translate(locale, "untitled")}</dd>
-          <dt>Dataset ID</dt><dd>{metadata?.datasetId ?? "Not assigned"}</dd>
+          <dt>Dataset ID</dt><dd>{metadata?.datasetId ?? translate(locale, "datasetIdNotAssigned")}</dd>
         </dl>
       )}
       {diagnostics.length > 0 && (
-        <ul aria-label="Validation diagnostics">
+        <ul aria-label={translate(locale, "validationDiagnostics")}>
           {diagnostics.map((diagnostic, index) => (
-            <li key={`${diagnostic.code}-${index}`}>{diagnostic.severity}: {diagnostic.code} ({diagnostic.path})</li>
+            <li key={`${diagnostic.code}-${index}`}>
+              <div>{formatDiagnosticSeverity(locale, diagnostic.severity)}</div>
+              <div>{translate(locale, "diagnosticCodeLabel")}: {diagnostic.code}</div>
+              <div>{translate(locale, "diagnosticPathLabel")}: {diagnostic.path}</div>
+            </li>
           ))}
         </ul>
       )}
       {dataset && (
         <section className="graph-section">
           <h2>Graph</h2>
-          <div ref={viewportToolbarRef} className="viewport-controls" aria-label="Graph view controls" style={viewportToolbarPosition ? { left: viewportToolbarPosition.x, top: viewportToolbarPosition.y, right: "auto" } : undefined}>
-            <button type="button" className="viewport-toolbar-handle" aria-label="Move zoom controls" title="Move zoom controls" onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={endViewportToolbarDrag}>⠿</button>
+          <div ref={viewportToolbarRef} className="viewport-controls" aria-label={translate(locale, "graphViewControls")} style={viewportToolbarPosition ? { left: viewportToolbarPosition.x, top: viewportToolbarPosition.y, right: "auto" } : undefined}>
+            <button type="button" className="viewport-toolbar-handle" aria-label={translate(locale, "moveZoomControls")} title={translate(locale, "moveZoomControls")} onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={endViewportToolbarDrag}>⠿</button>
             <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>{translate(locale, "zoomOut")}</button>
             <span aria-live="polite">{Math.round(scale * 100)}%</span>
             <button type="button" onClick={() => setScale((value) => zoomScale(value, "in"))}>{translate(locale, "zoomIn")}</button>
             <button type="button" onClick={resetView}>{translate(locale, "resetView")}</button>
           </div>
-          {graph.unsupportedEdges > 0 && <p role="status">{graph.unsupportedEdges} Relation(s) with an Event endpoint are not shown in the Entity-first MVP.</p>}
+          {graph.unsupportedEdges > 0 && <p role="status">{formatUnsupportedEventRelations(locale, graph.unsupportedEdges)}</p>}
           <svg
             ref={graphRef}
             className="graph"
@@ -1128,10 +1131,10 @@ export default function App() {
             </g>
           </svg>
           <p role="status">{selectedId
-            ? `Selected Entity: ${selectedId}`
+            ? formatSelectedEntity(locale, selectedId)
             : selectedRelationId
-              ? `Selected Relation: ${selectedRelationId}`
-              : "Select an Entity or Relation"}</p>
+              ? formatSelectedRelation(locale, selectedRelationId)
+              : translate(locale, "selectEntityOrRelation")}</p>
           {selectedRelationDetail && !detailOpen && (
             <div className="graph-selection-actions">
               <p className="relation-curvature-hint" role="status">{translate(locale, "selectedRelationCurvatureHint")}</p>
@@ -1153,7 +1156,7 @@ export default function App() {
                   });
                 }}
               >
-                Use automatic route
+                {translate(locale, "automaticRoute")}
               </button>
               <button
                 type="button"
@@ -1164,7 +1167,7 @@ export default function App() {
                   return updated;
                 })}
               >
-                Use automatic label position
+                {translate(locale, "automaticLabelPlacement")}
               </button>
             </div>
           )}
@@ -1173,17 +1176,16 @@ export default function App() {
               <button type="button" onClick={() => setDetailOpen(true)}>{translate(locale, "editEntity")}</button>
             </div>
           )}
-          <p className="graph-summary">{graph.nodes.length} entities · {graph.edges.length} relations</p>
-          {dataset && coordinateMigrationReadiness && !coordinateMigrationReadiness.ready && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_no_source" && (
+          <p className="graph-summary">{formatGraphSummary(locale, graph.nodes.length, graph.edges.length)}</p>
+          {dataset && coordinateMigrationReadiness && !coordinateMigrationReadiness.ready && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_no_source" && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_target_exists" && (
             <p className="status-message" role="status">
-              {coordinateMigrationReadiness.code === "linkscape_coordinate_draft_migration_target_exists"
-                ? "Coordinate Draft is already present; migration has already been completed."
-                : `Coordinate migration unavailable: ${coordinateMigrationReadiness.code} (${coordinateMigrationReadiness.path})`}
+              {translate(locale, "coordinateDraftMigrationRefusal")}
             </p>
           )}
-          <p className="selection-message" role="status">{transientSuccess ? message : (coordinatesDirty ? "Moved coordinates are temporary until you save them." : "Stored coordinates are restored when available.")}</p>
+          {coordinatesDirty && <p className="selection-message" role="status">{translate(locale, "movedCoordinatesTemporaryDetail")}</p>}
           {detailOpen && selectedDetail && (
             <EntityDetailDialog
+              locale={locale}
               dataset={dataset}
               detail={selectedDetail}
               name={entityNameDraft}
@@ -1198,6 +1200,7 @@ export default function App() {
           )}
           {detailOpen && selectedRelationDetail && (
             <RelationDetailDialog
+              locale={locale}
               relation={selectedRelationDetail.relation}
               sourceId={selectedRelationDetail.sourceId}
               targetId={selectedRelationDetail.targetId}
