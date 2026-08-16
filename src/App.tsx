@@ -396,7 +396,6 @@ export default function App() {
           >
             {translate(locale, "userGuide")}
           </a>
-          <button type="button" onClick={() => setCreditsOpen(true)}>{translate(locale, "credits")}</button>
         </nav>
       </main>
       <footer className="app-footer home-footer">
@@ -404,6 +403,7 @@ export default function App() {
         {locale === "ja"
           ? <button type="button" onClick={() => setLocale("en")}>English</button>
           : <button type="button" onClick={() => setLocale("ja")}>日本語</button>}
+        <button type="button" className="credits-button" onClick={() => setCreditsOpen(true)}>{translate(locale, "credits")}</button>
       </footer>
       {creditsOpen && <CreditsDialog locale={locale} onClose={() => setCreditsOpen(false)} />}
     </div>

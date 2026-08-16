@@ -17,7 +17,8 @@ body { margin: 0; }
 .app-brand-button:hover:not(:disabled) { border: 0; background: transparent; }
 .header-home-button { display: none; }
 .app-footer { display: flex; align-items: center; gap: 12px; padding: 16px 32px; border-top: 1px solid #e5e4e7; }
-.home-footer { justify-content: center; }
+.home-footer { justify-content: center; font-size: 18px; line-height: 145%; }
+.home-footer button { min-height: 40px; padding: 8px 12px; font: inherit; line-height: 120%; }
 .workspace-footer { justify-content: flex-start; }
 .app-content { width: 100%; min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; padding: 16px 24px 20px; }
 .home-content { width: min(352px, 100%); max-width: 352px; margin: auto; padding: 16px; text-align: center; }
@@ -30,7 +31,7 @@ body { margin: 0; }
 .home-actions button:first-child { color: #08060d; border-color: #e5e4e7; background: #fff; }
 .home-guides { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 28px; }
 .home-guides a { color: #4f2390; }
-.home-guides button { color: #4f2390; background: transparent; border: 0; padding: 0; }
+.credits-button { min-height: 40px; padding: 8px 12px; font-size: inherit; }
 .page-header { display: none; }
 .page-header h1 { margin: 0; color: #08060d; font-size: 36px; line-height: 115%; font-weight: 500; letter-spacing: -.72px; }
 .page-header p { margin-top: 8px; }
@@ -199,8 +200,16 @@ li { margin: .35rem 0; }
 .detail.confirmation-entity,
 .detail.confirmation-relation { z-index: 32; }
 .credits-backdrop { z-index: 30; }
-.credits-dialog { z-index: 31; width: min(32rem, calc(100% - 32px)); }
+.credits-dialog { z-index: 31; width: min(28rem, calc(100% - 32px)); padding: 16px; border-radius: 6px; }
+.credits-dialog h2 { margin: 0 0 8px; color: #08060d; font-size: 24px; font-weight: 500; line-height: 118%; letter-spacing: -.24px; }
+.credits-dialog p { margin: 0; }
 .credits-links { display: grid; gap: 8px; }
+.credits-actions { display: flex; justify-content: flex-start; margin-top: 16px; }
+
+@media (max-width: 1024px) {
+  :root { font-size: 16px; }
+  .credits-dialog h2 { font-size: 20px; }
+}
 .danger-confirm { border-color: #dc2626; color: #fff; background: #b91c1c; }
 .danger-confirm:hover:not(:disabled) { border-color: #991b1b; background: #991b1b; }
 .graph-selection-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; }
