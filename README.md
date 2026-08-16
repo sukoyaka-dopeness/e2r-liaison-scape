@@ -64,16 +64,16 @@ directory.
 The repository contains a GitHub Pages deployment workflow and is prepared for
 deployment under the project base path `/e2r-liaison-scape/`.
 
-The actual GitHub Pages deployment and live application URL have not yet been
-verified. No live URL is listed here until a Pages deployment has completed
-successfully.
+The live application is available at:
+
+https://sukoyaka-dopeness.github.io/e2r-liaison-scape/
 
 ## Version
 
 Current package version: `0.1.0`
 
 The package version and Credits display are aligned. The First Distribution
-release date has not been decided and is intentionally not listed here.
+release date is 2026-08-16.
 
 ## Known limitations
 
