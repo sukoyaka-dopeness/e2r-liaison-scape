@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { assessCoordinateDraftMigration, migrateCoordinatePrototypeToDraft } from "./coordinate-migration";
 import { assessLiaisonScapeSpaceMigration, migrateLinkscapeSpaceToLiaisonScape } from "./space-migration";
-import { assessLegacyLinkscapeCoordinateMigration, migrateLegacyLinkscapeCoordinatesToLiaisonScape } from "./legacy-migration";
 import { applyStoredCoordinates, buildEntityGraph, getStoredCoordinates, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
 import { getDatasetMetadata, loadDataset, serializeDataset, validateDatasetForExport } from "./services/DatasetService";
 import { assessEntityDeletion, createEntity, deleteEntity } from "./services/EntityService";
@@ -10,6 +9,7 @@ import { assessRelationDeletion, createRelation, deleteRelation } from "./servic
 import { getRelationDetail, updateRelation } from "./services/RelationService";
 import { canCompleteLongPress, createCanvasContextMenu, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, type CanvasContextMenu } from "./direct-graph-authoring";
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
+import { CreditsDialog } from "./components/CreditsDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
@@ -86,7 +86,6 @@ export default function App() {
   const metadata = dataset ? getDatasetMetadata(dataset) : null;
   const coordinateMigrationReadiness = dataset ? assessCoordinateDraftMigration(dataset) : null;
   const spaceMigrationReadiness = dataset ? assessLiaisonScapeSpaceMigration(dataset) : null;
-  const legacyMigrationReadiness = dataset ? assessLegacyLinkscapeCoordinateMigration(dataset) : null;
   const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [], unsupportedEdges: 0 }, [dataset]);
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
   const relationMap = useMemo(() => new Map(dataset?.relations.map((relation) => [relation.id, relation]) ?? []), [dataset]);
@@ -397,6 +396,7 @@ export default function App() {
           >
             {translate(locale, "userGuide")}
           </a>
+          <button type="button" onClick={() => setCreditsOpen(true)}>{translate(locale, "credits")}</button>
         </nav>
       </main>
       <footer className="app-footer home-footer">
@@ -405,6 +405,7 @@ export default function App() {
           ? <button type="button" onClick={() => setLocale("en")}>English</button>
           : <button type="button" onClick={() => setLocale("ja")}>日本語</button>}
       </footer>
+      {creditsOpen && <CreditsDialog locale={locale} onClose={() => setCreditsOpen(false)} />}
     </div>
   );
 
@@ -749,17 +750,6 @@ export default function App() {
     setMessage(translate(locale, "spaceMigrationSuccess"));
   }
 
-  function migrateLegacyCoordinatesToLiaisonScape() {
-    if (!dataset) return;
-    const result = migrateLegacyLinkscapeCoordinatesToLiaisonScape(dataset);
-    setDiagnostics(result.diagnostics);
-    if (!result.migrated) { setMessage(translate(locale, "legacyMigrationRefusal")); return; }
-    setDataset(result.dataset);
-    setPositions(getStoredCoordinates(result.dataset));
-    setCoordinatesDirty(false);
-    setMessage(translate(locale, "legacyMigrationSuccess"));
-  }
-
   function saveRelationDetails() {
     if (!dataset || !selectedRelationId) return;
     const current = getRelationDetail(dataset, selectedRelationId);
@@ -984,7 +974,6 @@ export default function App() {
               <div className="maintenance-menu__items">
                 <button type="button" disabled={!dataset || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>{translate(locale, "migrateCoordinateDraft")}</button>
                 <button type="button" disabled={!dataset || spaceMigrationReadiness?.ready !== true} onClick={migrateSpaceToLiaisonScape}>{translate(locale, "migrateLinkscapeCoordinates")}</button>
-                <button type="button" disabled={!dataset || legacyMigrationReadiness?.ready !== true} onClick={migrateLegacyCoordinatesToLiaisonScape}>{translate(locale, "migrateLegacyCoordinates")}</button>
               </div>
             </details>
           </div>
