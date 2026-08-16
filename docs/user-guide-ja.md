@@ -1,99 +1,124 @@
 # LiaisonScape ユーザーガイド
 
-LiaisonScapeは、E2R Datasetに含まれるEntity同士のつながりを確認し、軽く編集するrelationship explorerです。
+LiaisonScapeは、Datasetに含まれるEntityと、それらのつながりをグラフとして見たり、編集したりするアプリケーションです。
+このガイドでは、データの細かな仕様を先に学ぶのではなく、画面を操作しながら基本的な使い方を説明します。
+
+## このガイドで使う言葉
+
+- Dataset：Entityやつながりをまとめたデータです。
+- Entity：人物、組織、場所、物など、グラフ上でノードとして表示される対象です。
+- Relation：Entityから別のEntityへのつながりです。向きがあります。
+- ノード：グラフ上に表示されるEntityです。
+- つながり：グラフ上の線として表示されるRelationです。
+
+画面上の表示やボタンでは、現在の日本語UIに合わせて一部の用語を使います。たとえば「Entity」は「エンティティ」、「Relation」は「つながり」として説明します。
+
+## Homeから始める
+
+Homeには、主に次の操作があります。
+
+- 「新しいDataset」：空のDatasetを作成します。
+- 「E2R Datasetを開く」：手元のE2R JSONファイルを開きます。
+- 「サンプルDatasetを開く」：LiaisonScapeのサンプルを開きます。
+- 「日本語」：表示言語を切り替えます。
+- 「クレジット」：Creditsを表示します。
+
+初めて使う場合は、「サンプルDatasetを開く」から始めると、グラフの表示や編集をすぐに試せます。
 
 ## Datasetを開く
 
-1. `ファイルを選択`からE2R JSONを選びます。
-2. ValidatorでCore構造を検証します。
-3. 有効なDatasetであれば、Entityをノード、Entity間のRelationをエッジとして表示します。
+「E2R Datasetを開く」を選び、E2R JSONファイルを指定します。読み込みに成功すると、Entityがノードとして、Entity同士のRelationが線として表示されます。
 
-Eventを端点に持つRelationは、Entity-first MVPのグラフには表示されません。データ自体は削除されず、エクスポート時にも保持されます。
+日本語UIでは「サンプルDatasetを開く」から、日本語向けの「灯台修復プロジェクト」のサンプルを開けます。このサンプルには複数のEntity、Event、Entity同士のつながりが含まれているため、グラフの操作を試すのに適しています。
 
-Metadata Extensionに`title`や`datasetId`がある場合、LiaisonScapeはDataset情報として表示します。値がない場合もDatasetは有効であり、LiaisonScapeが読み込みだけでIDを生成することはありません。
+Eventを端点に持つRelationはDatasetには保持されますが、現在のグラフ表示ではEntity同士の線としては表示されません。
 
 ## グラフを見る
 
-- ノードをクリックまたはタップすると、グラフ上のモーダルにEntity Detailが開きます。
-- エッジの線をクリックまたはタップすると、そのエッジが選択されて曲率ハンドルが現れます。
-- エッジラベルをクリックまたはタップすると、グラフ上のモーダルにRelation Detailが開きます。名前のないRelationは線を選択して`Edit Relation`を使います。
-- Detailモーダルは`Close`ボタン、外側の暗い領域、Escapeキーのいずれかで閉じられます。
-- エッジを選択し、紫色の曲率ハンドルをドラッグすると経路を一時的に調整できます。自己Relationではドラッグ方向で輪が回転し、ドラッグ距離で輪の大きさが変わります。
-- 手動調整したエッジはノードを動かしても手動経路を維持します。`Use automatic route`を選ぶと、そのエッジを自動経路へ戻せます。
-- エッジラベルは上下左右へ自由にドラッグできます。`Use automatic label position`を選ぶと、衝突回避を使った自動位置へ戻せます。
-- ノードやエッジへマウスを重ねると、利用できる補足情報を確認できます。
-- Relationの矢印はCoreの`sourceId`から`targetId`への構造方向です。因果、所有、時間順などの意味を自動的に表すものではありません。
+- ノードをクリックまたはタップすると、そのEntityの詳細を開けます。
+- つながりの線をクリックまたはタップすると、そのRelationを選択できます。
+- Relationのラベルを選ぶと、Relationの詳細を開けます。
+- Relationの矢印は、つながりの向きを示します。
+- グラフ上でドラッグすると、表示範囲を移動できます。
+- マウスホイール、または「Zoom in」「Zoom out」で拡大・縮小できます。
+- 「Reset view」で表示を初期状態に戻せます。
 
-グラフは、ノードやエッジの重なりを減らすよう自動的に配置・経路計算されます。この自動表示だけではDatasetは変更されません。
+グラフの自動配置は、見やすく表示するためのものです。自動配置だけではDatasetの内容は変更されません。
 
-## 移動とズーム
+## Entityを作成・編集する
 
-- 余白またはエッジをドラッグするとグラフをパンできます。
-- マウスホイール、`Zoom in`、`Zoom out`で拡大縮小できます。
-- スマートフォンでは1本指でパンし、2本指でピンチズームできます。
-- `Reset view`は現在のノード全体が収まる表示へ戻し、選択と手動ラベル位置を解除します。
+### Entityを作成する
 
-## ノードを移動する
+「エンティティを追加」を選び、名前と説明を入力して「エンティティを作成」を押します。名前が空でも作成できますが、あとで見分けやすい名前を付けることをおすすめします。
 
-ノードをドラッグすると位置を変更できます。移動直後の座標は一時状態です。
+作成直後のノードは、一時的な表示位置に置かれます。必要に応じてグラフ上で移動し、座標を保存してください。
 
-`Save node coordinates`を押すと、移動したEntity座標が未登録のE2R Coordinate相互運用プロトタイプへ書き込まれます。LiaisonScapeはDatasetレベルに論理的な旧`linkscape-graph` Spaceを定義し、EntityへComponent IDで指定した`x`と`y`を書き込みます。旧Linkscapeの`extensions.coordinate.positions`がある場合、明示保存時に`linkscape`位置だけを移行し、それ以外の旧データは保持します。Datasetに未対応のCoordinate版、互換性のない、または重複した`linkscape-graph`定義、LiaisonScapeが安全に維持できないSpecification宣言がある場合は、座標を一時状態のまま残し、保存しなかったことを表示します。互換性のある追加Componentと未知フィールドは、`x`と`y`を更新しても保持します。エッジ曲率とラベル位置は含まれません。Datasetを開く、パンする、ズームする、明示保存せずにエクスポートするだけでは、座標の生成や移行は行われません。
+### Entityを編集する
 
-## Entityを編集する
+ノードを選択して「Entity 詳細」を開き、「名前」または「説明」を編集します。「エンティティを作成」で保存します。
 
-1. ノードを選択します。
-2. Entity Detailで`Name`または`Description`を編集します。
-3. `Save Entity`を押します。
+既存のEntityを編集しても、LiaisonScapeが扱っていない追加データは可能な限り保持されます。
 
-名前と説明はグラフ上のラベルへ反映されます。空欄で保存すると、その任意フィールドは削除されます。ID、未知フィールド、未知Extensionは保持されます。
+### Entityを削除する
 
-## Entity / Relationを作成する
+Entityの詳細から削除できます。ただし、そのEntityにつながるRelationがある場合は、誤削除を防ぐため削除できません。先に関連するRelationを確認して削除してください。
 
-`Add Entity`で新しいEntityの名前と説明を入力し、`Save Entity`または
-`Cancel`を選びます。名前は空欄でも作成できます。
+## Relation（つながり）を作成・編集する
 
-`Add Relation`では既存EntityからSourceとTargetを選びます。作成できるのは
-EntityからEntityへのRelationです。self Relationと同じ端点間のparallel
-Relationは許可されます。作成後は新しいオブジェクトが選択されます。
+### Relationを作成する
 
-作成直後の配置は一時表示であり、Coordinateは自動保存されません。
+「つながりを追加」を選び、「つながり元」と「つながり先」にEntityを指定します。必要に応じて名前と説明を入力し、「つながりを作成」を押します。
 
-## Relationを編集する
+Relationには向きがあります。SourceからTargetへのつながりとして作成されるため、逆向きの意味にしたい場合はSourceとTargetを入れ替えます。
 
-1. エッジを選択します。
-2. EntityからEntityへのRelationでは、Entity selectorで`Source`または
-   `Target`を変更できます。self Relationやparallel Relationも許可され、
-   既存RelationのIDは維持されます。
-3. 必要に応じてRelation Detailで`Name`または`Description`を編集します。
-4. `Save Relation`を押します。
+同じEntityをSourceとTargetに指定する自己Relationや、同じEntityの組み合わせに複数のRelationを作成することもできます。
 
-Relationの`Name`は水平なエッジラベルとして表示されます。これは人が読むCoreラベルであり、Relationの意味的な型ではありません。
+### Relationを編集する
 
-Eventを端点に持つRelationをインポートした場合、このEntity-first MVPでは
-端点は読み取り専用です。ただし`Name`と`Description`は編集・保存でき、
-エクスポート時にもEvent端点は保持されます。
+線またはラベルからRelationを選び、「Relation 詳細」を開きます。Entity同士のRelationでは、「つながり元」と「つながり先」を変更できます。名前や説明を編集したら「変更を保存」を押します。
 
-## ラベルを移動する
+### Relationを削除する
 
-- Entityの名前と説明は一つのラベルとして自由にドラッグできます。
-- Entityラベルをアイコン内または近くへ置くと補助線が消えます。
-- Relationラベルはドラッグするとエッジ上の最寄り位置へ移動します。
+Relationの詳細から削除できます。削除する前に、向きや名前を確認してください。
 
-手動ラベル位置は現在のLiaisonScape表示だけに属し、Datasetへは保存されません。`Reset view`または再インポートで解除されます。
+## グラフを直接編集する
 
-## エクスポートする
+グラフ上で操作しながらEntityとRelationを作成できます。
 
-`Export E2R JSON`を押すと、現在のDatasetをValidatorで再確認してダウンロードします。
+- グラフ上の空白を操作して、新しいEntityの作成を開始できます。
+- Entityから別のEntityへ操作すると、Relationの作成を開始できます。
+- 作成途中の操作は、確認して保存するまでDatasetに確定しません。
 
-保存済みのEntity／Relation編集と座標は出力されます。ズーム、パン、選択、手動エッジ曲率、手動ラベル位置、表示レイヤー順は出力されません。未知フィールドと未知Extensionは可能な限りそのまま保持されます。
+現在のUIで表示される案内に従って、名前、Source、Targetなどを確認してから保存してください。
 
-## 現在のMVP制限
+## ノードを移動して位置を保存する
 
-- EventノードとEvent編集は未対応です。
-- Entity / Entity-to-Entity Relationの作成と削除に対応しています。Entityは
-  参照Relationが0件の場合だけ削除できます。cascade削除は行いません。
-  Entity-to-Entity Relationの接続先変更に対応しています。Event端点の変更、
-  Eventの削除・作成、Undo/Redoは未対応です。
-- 意味的なRelation型、矢印表示方式、永続レイヤー順は未対応です。
-- 手動エッジ曲率とラベル位置はDatasetへ保存されません。
-- Coordinate payloadはauthority-qualifiedな`0.1.0`実験であり、登録済みStable Extensionではありません。Layoutの標準化も今後の検討事項です。
+ノードをドラッグすると、グラフ上の位置を変更できます。移動しただけでは、Dataset内の座標は確定しません。
+
+位置を残したい場合は、ツールバーの「座標を保存」を押します。保存できない形式の座標情報がDatasetに含まれている場合は、移動位置は一時的な表示にとどまります。その場合、画面に表示される案内を確認してください。
+
+Relationの線の曲がり方やラベル位置は、現在の表示状態に関する設定です。ノードの座標保存とは別に扱われます。
+
+## Datasetを書き出す
+
+「E2R JSONを書き出す」を押すと、現在のDatasetを確認してからE2R JSONとしてダウンロードします。
+
+書き出し時に問題が見つかった場合は、画面に検証メッセージが表示され、ダウンロードされないことがあります。メッセージを確認して、EntityやRelationの内容を修正してください。
+
+表示位置、ズーム、パン、選択状態などの画面操作は、Datasetのデータそのものとは別の表示状態です。書き出されたファイルには、Datasetとして扱われる情報だけが含まれます。
+
+## 検証メッセージ
+
+Datasetを開くときや書き出すとき、LiaisonScapeはデータの整合性を確認します。
+
+- 問題がない場合は、そのまま操作や書き出しを続けられます。
+- 問題がある場合は、メッセージの内容を確認してください。
+- LiaisonScapeが表示に使わない情報でも、読み込み後の保存で可能な限り保持されます。
+
+検証メッセージは、E2R Datasetを安全に扱うための案内です。内容が分からない場合は、元のファイルを保存したうえで、メッセージと一緒に確認してください。
+
+## 現在のMVPの範囲
+
+現在のLiaisonScapeでは、EntityとEntity同士のRelationの作成・編集・削除、Relationの端点編集、自己Relation、並列Relation、グラフ上での直接作成、ノード位置の保存、Datasetの書き出しに対応しています。
+
+Eventをノードとして表示する機能、Eventの作成・編集・削除、Undo/Redo、Relationの高度な表示設定などは、今後の拡張対象です。
