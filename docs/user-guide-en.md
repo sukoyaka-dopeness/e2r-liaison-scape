@@ -1,91 +1,171 @@
 # LiaisonScape User Guide
 
-LiaisonScape is an E2R relationship explorer for viewing and lightly editing connections between Entities in an E2R Dataset.
+LiaisonScape is an application for viewing and editing the Entities and
+connections in an E2R Dataset as a graph. This guide explains the basic
+operations from a user's point of view without requiring prior knowledge of
+the E2R specification.
+
+## Terms used in this guide
+
+- Dataset: a collection of Entities and connections.
+- Entity: a person, organization, place, object, or other thing represented in
+  the graph as a node.
+- Relation: a connection from one Entity to another. A Relation has a
+  direction.
+- Node: the visual representation of an Entity in the graph.
+- Connection line: the line that displays a connection between Entities.
+
+## Start from Home
+
+Home provides the following actions:
+
+- `New Dataset`: create an empty Dataset.
+- `Open E2R Dataset`: open an E2R JSON file from your device.
+- `Open sample Dataset`: open the sample for the current locale.
+- `English`: switch the display language.
+- `Credits`: view the application credits.
+
+For a first visit, choose `Open sample Dataset`. In the English locale this
+opens the `Lighthouse Restoration Project`, which is designed to demonstrate
+the graph and editing features.
 
 ## Open a Dataset
 
-1. Choose an E2R JSON file with the file picker.
-2. LiaisonScape validates its Core structure.
-3. For a valid Dataset, Entities appear as nodes and Entity-to-Entity Relations appear as edges.
+Choose `Open E2R Dataset` and select an E2R JSON file. After a successful load,
+Entities appear as nodes and connections between Entities appear as lines.
 
-Relations with an Event endpoint are not shown in the Entity-first MVP graph. Their data is not deleted and remains available on export.
-
-When the Metadata Extension contains a `title` or `datasetId`, LiaisonScape displays it as Dataset information. A Dataset remains valid without these values, and opening it does not cause LiaisonScape to generate an ID.
+The English sample is available from Home through the current locale. A
+Relation connected to an Event remains in the Dataset, but it is not displayed
+as an Entity-to-Entity connection in the current graph view.
 
 ## Explore the graph
 
-- Click or tap a node to open Entity Detail in a modal over the graph.
-- Click or tap an edge line to select it and reveal its curve handle.
-- Click or tap an edge label to open Relation Detail in a modal over the graph. For an unnamed Relation, select its line and use `Edit Relation`.
-- Close a Detail modal with its `Close` button, the shaded background, or the Escape key.
-- Select an edge, then drag its purple curve handle to adjust its route temporarily. For a self-Relation, the drag direction rotates the loop and the drag distance changes its size.
-- A manually adjusted edge keeps its route while nodes move. Choose `Use automatic route` to return that edge to automatic routing.
-- Drag an edge label freely in any direction. Choose `Use automatic label position` to return it to collision-aware automatic placement.
-- Hover over graph objects to view available supporting information.
-- A Relation arrow follows the structural direction from Core `sourceId` to `targetId`. It does not automatically mean causality, ownership, chronology, or another domain interpretation.
+- Click or tap the body of a node to select its Entity.
+- Click or tap an Entity name or description to open that Entity's details.
+- Click or tap a connection line to select that Relation. Drag the selected
+  line to temporarily adjust its curve.
+- When a connection has a name, that name is shown near the line. This is the
+  connection name.
+- Click or tap a connection name to open that Relation's details.
+- The arrow on a connection line shows the connection's direction.
+- Drag the graph background to pan the visible area.
+- Drag an Entity name or description to adjust its displayed label position.
+  This changes the current view only and is not saved as a node Coordinate.
 
-LiaisonScape automatically places nodes and routes edges to reduce overlap. Automatic display calculations do not modify the Dataset.
+The initial position of a node without a saved position is assigned for
+display. This assignment alone does not modify the Dataset.
 
 ## Pan and zoom
 
-- Drag graph space or an edge to pan.
-- Use the mouse wheel, `Zoom in`, or `Zoom out` to change scale.
-- On a phone, use one finger to pan and two fingers to pinch zoom.
-- `Reset view` fits the current nodes into view and clears selection and manual label positions.
+- Hold `Ctrl` while scrolling the mouse wheel upward to zoom in.
+- Hold `Ctrl` while scrolling the mouse wheel downward to zoom out.
+- Use the toolbar's `Zoom in` and `Zoom out` buttons for the same operation.
+- Use `Reset view` to return to the initial fitted view.
 
-## Move nodes
+The toolbar can be moved within the graph area when needed. Zoom, pan,
+selection, and other temporary view state are separate from the Dataset.
 
-Drag a node to change its position. A moved coordinate remains temporary at first.
+## Create and edit Entities
 
-Choose `Save node coordinates` to write moved Entity positions to the unregistered E2R Coordinate interoperability prototype. LiaisonScape defines a logical legacy `linkscape-graph` Space at Dataset level and writes component-keyed `x` and `y` values for Entities. If an earlier Linkscape `extensions.coordinate.positions` value exists, explicit save migrates the `linkscape` position while preserving unrelated legacy values. If the Dataset already contains an unsupported Coordinate version, an incompatible or duplicate `linkscape-graph` claim, or a Specification declaration that LiaisonScape cannot maintain safely, it leaves the positions temporary and reports that it did not save them. Compatible extra Components and unknown fields are preserved when `x` and `y` are updated. Edge curvature and label positions are not included.
+### Create an Entity
 
-For an exact supported Prototype Dataset, choose `Migrate Coordinate to Draft` to perform an explicit, atomic migration to Coordinate Draft `0.1.0`. The complete target is validated before the Prototype payload is removed; refusal leaves the original Dataset untouched. LiaisonScape restores exact supported Draft positions when the Dataset is opened again and saves moved positions back to the same exact writable legacy Draft profile. Opening, panning, zooming, ordinary coordinate saving, or exporting never performs this migration.
+Choose `Add Entity`, enter a name and description, and choose `Create Entity`.
+An empty name is allowed, but a descriptive name makes the graph easier to
+understand.
 
-## Edit an Entity
+### Edit an Entity
 
-1. Select a node.
-2. Edit `Name` or `Description` in Entity Detail.
-3. Choose `Save Entity`.
+Select the Entity name or description to open `Entity Detail`. Edit `Name` or
+`Description`, then choose `Save Entity`.
 
-The graph label updates from the saved name and description. Saving an empty value removes that optional field. IDs, unknown fields, and unknown Extensions remain preserved.
+### Delete an Entity
 
-## Edit a Relation
+Delete an Entity from its detail view. An Entity with connected Relations
+cannot be deleted; remove or review those Relations first. Cascade deletion is
+not performed.
 
-1. Select an edge.
-2. For an Entity-to-Entity Relation, edit `Source` and/or `Target` in the
-   Entity selectors. Entity endpoint changes may create self or parallel
-   Relations and preserve the existing Relation ID.
-3. Edit `Name` or `Description` in Relation Detail if desired.
-4. Choose `Save Relation`.
+## Create and edit Relations
 
-A Relation `Name` appears as a horizontal edge label. It is a human-readable Core label, not a semantic Relation type.
+### Create a Relation
 
-Relations imported with an Event endpoint remain endpoint-read-only in this
-Entity-first MVP. Their `Name` and `Description` can still be edited and
-saved, and the Event endpoint is preserved on export.
+Choose `Add Relation`, select the `Source Entity` and `Target Entity`, enter an
+optional name and description, and choose `Save Relation`.
 
-## Move labels
+A Relation has a direction from its source to its target. To create the
+opposite direction, exchange the source and target selections.
 
-- Drag an Entity name and description together to place the label freely.
-- The connector disappears when an Entity label is inside or close to its icon.
-- Drag a Relation label to move it to the nearest point along its edge.
+The same Entity may be selected as both endpoints. Multiple Relations may also
+connect the same pair of Entities.
 
-Manual label positions belong only to the current LiaisonScape view. They are not saved to the Dataset and are cleared by `Reset view` or re-import.
+### Edit a Relation
 
-## Export
+Click or tap a connection name to open `Relation Detail`. For an
+Entity-to-Entity Relation, edit `Source Entity` or `Target Entity` as needed.
+You can also edit `Name` and `Description`, then choose `Save Relation`.
+
+### Delete a Relation
+
+Delete a Relation from `Relation Detail`.
+
+## Direct graph authoring
+
+The graph also provides direct authoring actions:
+
+- On a mouse or trackpad, right-click an empty graph area and choose `Add
+  Entity` from the context menu.
+- On a touch device, long-press an empty graph area to open the same action
+  menu.
+- Drag from the small connection port at the edge of one node to another node
+  to begin creating a Relation. Release on the target node, enter the name and
+  description, and save it.
+- Right-click a node or connection to open its detail view. On a touch device,
+  long-press the node or connection for the equivalent action where supported.
+
+Direct authoring is confirmed only when the creation or detail action is
+completed and saved. Temporary in-progress operations do not immediately
+become Dataset data.
+
+## Move nodes and save positions
+
+Drag a node to change its position in the current graph. Moving a node alone
+does not necessarily save its position in the Dataset.
+
+To persist moved node positions, choose `Save node coordinates`. If the
+Dataset's existing Coordinate information cannot be updated safely, LiaisonScape
+keeps the moved positions temporary and shows a message explaining that they
+were not saved. Follow that message rather than assuming that the move was
+persisted.
+
+Connection curves and displayed label positions are view settings separate
+from saved node positions.
+
+## Export a Dataset
 
 Choose `Export E2R JSON` to validate and download the current Dataset.
 
-Saved Entity and Relation edits and saved coordinates are exported. Zoom, pan, selection, manual edge curvature, manual label positions, and display layer order are not exported. Unknown fields and unknown Extensions remain preserved whenever practical.
+Export may be blocked when validation finds a problem. Review the displayed
+message and correct the relevant Entity or Relation before trying again.
 
-## Current MVP limitations
+Saved Entity and Relation edits and saved node coordinates are included in the
+export. Temporary unsaved node positions, zoom, pan, selection, connection
+curves, label positions, and other view state are not exported as Dataset data.
 
-- Event nodes and Event editing are not supported.
-- Entity and Relation deletion are supported. Entity deletion is allowed only
-  when no Relations reference it; remove related Relations first. Cascade
-  deletion is not performed.
-- Event endpoint editing, Event deletion/authoring, and Undo/Redo are not
-  supported. Entity-to-Entity Relation endpoint editing is supported.
-- Semantic Relation types, arrow presentation modes, and persistent layer order are not supported.
-- Manual edge curvature and label positions are not stored in the Dataset.
-- The Coordinate payload is an authority-qualified `0.1.0` experiment, not a registered Stable Extension. Layout standardization also remains future work.
+## Current MVP scope
+
+The current MVP supports:
+
+- creating, editing, and deleting Entities;
+- creating, editing, and deleting Entity-to-Entity Relations;
+- changing Relation source and target endpoints;
+- a Relation from an Entity to itself;
+- multiple Relations between the same pair of Entities;
+- direct graph authoring;
+- moving nodes and explicitly saving node coordinates; and
+- exporting the Dataset.
+
+The following are outside the current graph-authoring scope:
+
+- Event nodes;
+- creating, editing, or deleting Events;
+- Undo and Redo; and
+- advanced Relation appearance or other post-MVP features.
