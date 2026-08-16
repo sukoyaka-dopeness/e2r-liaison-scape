@@ -1,60 +1,44 @@
 # LiaisonScape
 
-LiaisonScape is an E2R relationship explorer and Entity-first reference application for exploring E2R
-relationships. Its MVP boundary is defined by the
-[E2R-SPEC acceptance criteria](https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/applications/liaisonscape-mvp-acceptance.md).
+LiaisonScape is an E2R relationship explorer and Entity-first reference
+application for exploring relationships between Entities and Relations.
+
+Repository: <https://github.com/sukoyaka-dopeness/e2r-liaison-scape>
 
 ## Current status
 
-The initial React + TypeScript + Vite application implements the documented
-Entity-first MVP boundary. It imports and validates Datasets, preserves invalid
-input for the caller, displays Entity nodes and directed Relation edges,
-supports Entity selection and Detail, zooming, panning, temporary dragging,
-stored-coordinate restoration, explicit coordinate saving through the
-authority-qualified Coordinate interoperability prototype, and Export-time
-Validator checks. Explicit save migrates LiaisonScape's earlier
-`extensions.coordinate.positions` values while preserving unrelated legacy
-data. It refuses to overwrite an existing `linkscape-graph` Space whose kind,
-units, directions, or duplicate claims are incompatible, and preserves
-supported fields written by another application. It also supports Entity and
-Relation Detail editing for Core
-`name` and `description`, Relation labels, mobile pinch zoom, automatic graph
-fitting, obstacle-aware edge routing, and movable labels. Unknown Core fields
-and Extensions survive save round trips.
+LiaisonScape currently provides:
 
-LiaisonScape uses E2R Validator `0.2.0`. It recognizes exact Specification
-Extension draft `0.1.0` declarations, reports undeclared Metadata and History
-versions as non-blocking diagnostics, and opens the fully declared shared
-cross-application fixture without warnings.
+- Open an E2R Dataset
+- Create a new Dataset
+- Entity graph visualization
+- Entity creation, editing, and safe deletion
+- Relation creation, editing, endpoint editing, and deletion
+- Self-Relations and parallel Relations
+- Direct graph authoring
+- Stored Entity coordinates and explicit coordinate saving
+- Dataset export with E2R Validator checks
+- English and Japanese UI
+- Locale-specific public sample Dataset loading from Home
 
-The acceptance test suite currently covers A1 through A19, including self and
-parallel Relations, Event-endpoint limitations, deterministic fallback
-positions, view-state separation, and warning/error distinction.
+The application uses E2R Validator `0.2.0` and preserves unknown Core fields
+and Extensions through supported load, edit, and save flows. Its current
+acceptance coverage includes A1 through A19, including Event endpoint
+limitations, self and parallel Relations, coordinate behavior, and validation
+diagnostics.
 
-Event editing, semantic Relation types, Relation creation/deletion,
-Stable Coordinate/Layout Extensions, graph search/filtering, and
-application view-state serialization are outside the initial MVP.
+## Public sample Dataset
 
-LiaisonScape treats the distinct Coordinate Extension draft `0.1.0` as a
-separate identity. It can read an exact supported `linkscape-graph` Draft
-payload and restore its Entity positions. A clearly explicit `Migrate
-Coordinate to Draft` action accepts only the conservative profile below,
-builds a complete target Dataset, validates it with Validator `0.2.0`, then
-replaces the Prototype payload atomically. Opening, arranging, ordinary
-coordinate saving, and Export never trigger this migration. After migration,
-LiaisonScape can save positions back to that same exact writable Draft profile.
-Unsupported Draft payloads remain opaque, and the Prototype is never written
-beside any Draft occurrence.
+Home provides a sample action for the current locale:
 
-The conservative migration readiness profile is documented in
-[`docs/coordinate-draft-migration-profile.md`](docs/coordinate-draft-migration-profile.md).
-It currently accepts only the exact legacy `linkscape-graph` semantics LiaisonScape
-implements; broader Spaces and external references remain refused.
+- English: [`lighthouse-restoration-demo.en.e2r.json`](public/lighthouse-restoration-demo.en.e2r.json)
+- Japanese: [`lighthouse-restoration-demo.ja.e2r.json`](public/lighthouse-restoration-demo.ja.e2r.json)
 
-The browser migration workflow can be tried with
-[`examples/coordinate-prototype-migration-ready.e2r.json`](examples/coordinate-prototype-migration-ready.e2r.json).
-Open it, choose `Migrate Coordinate to Draft`, export the result, and reopen
-the exported JSON to verify that the same Entity positions are restored.
+The Lighthouse Restoration Project sample contains six Entities, four Events,
+Entity-to-Entity Relations, Event endpoint Relations, a self-Relation, a
+parallel Relation pair, History data, and LiaisonScape Coordinate Draft data.
+The same Dataset structure is designed to offer a graph view in LiaisonScape
+and a timeline/event view in NarrativeLine.
 
 ## User guides
 
@@ -65,8 +49,43 @@ the exported JSON to verify that the same Entity positions are restored.
 
 ```text
 npm install
+npm run dev
 npm test
 npm run lint
 npm run build
-npm run dev
 ```
+
+`npm run lint` runs TypeScript type checking with `tsc --noEmit`.
+`npm run build` runs the TypeScript build and produces the Vite `dist/`
+directory.
+
+## GitHub Pages
+
+The repository contains a GitHub Pages deployment workflow and is prepared for
+deployment under the project base path `/e2r-liaison-scape/`.
+
+The actual GitHub Pages deployment and live application URL have not yet been
+verified. No live URL is listed here until a Pages deployment has completed
+successfully.
+
+## Version
+
+Current package version: `0.1.0`
+
+The package version and Credits display are aligned. The First Distribution
+release date has not been decided and is intentionally not listed here.
+
+## Known limitations
+
+The following remain candidates for post-distribution work:
+
+- Advanced validation diagnostics
+- Group / Cluster
+- Advanced routing and collision avoidance
+- Relation Arrow Appearance
+- Mobile UI refinement
+- Stable Coordinate standardization
+- Additional locales
+
+The current application does not publish to npm and does not include a native
+installer or desktop package.
