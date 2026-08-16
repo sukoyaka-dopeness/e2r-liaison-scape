@@ -1,0 +1,225 @@
+{
+  "version": "1.0",
+  "entities": [
+    {
+      "id": "entity-lighthouse",
+      "name": "Old Harbor Lighthouse",
+      "description": "A historic lighthouse being restored for continued community use.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 400, "y": 250 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-restoration-team",
+      "name": "Lighthouse Restoration Team",
+      "description": "The engineers, builders, and keepers carrying out the restoration.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 180, "y": 120 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-harbor-community",
+      "name": "Harbor Community",
+      "description": "Residents and supporters who depend on the lighthouse and its harbor.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 620, "y": 120 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-beacon-system",
+      "name": "Beacon System",
+      "description": "The lighting and monitoring equipment inside the lighthouse.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 620, "y": 370 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-harbor-authority",
+      "name": "Harbor Authority",
+      "description": "The public authority responsible for the harbor and lighthouse grounds.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 180, "y": 370 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-historical-archive",
+      "name": "Harbor Historical Archive",
+      "description": "An archive preserving plans, photographs, and stories of the harbor.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            { "spaceId": "liaisonscape-graph", "values": { "x": 400, "y": 440 } }
+          ]
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "event-lighthouse-built",
+      "name": "Lighthouse Built",
+      "description": "The Old Harbor Lighthouse was built to guide ships into the harbor.",
+      "extensions": { "history": { "time": { "year": 1898, "month": 6 } } }
+    },
+    {
+      "id": "event-beacon-failure",
+      "name": "Beacon Failure",
+      "description": "The beacon system failed, prompting a coordinated restoration effort.",
+      "extensions": { "history": { "time": { "year": 2025, "month": 11, "day": 18 } } }
+    },
+    {
+      "id": "event-restoration-announced",
+      "name": "Restoration Project Announced",
+      "description": "The restoration project was announced with support from the community.",
+      "extensions": { "history": { "time": { "year": 2026, "month": 2, "day": 14, "hour": 10, "minute": 0 } } }
+    },
+    {
+      "id": "event-lighthouse-reopened",
+      "name": "Lighthouse Reopened",
+      "description": "The restored lighthouse reopened as a working beacon and community landmark.",
+      "extensions": { "history": { "time": { "year": 2026, "month": 8, "day": 10 } } }
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-team-lighthouse",
+      "name": "restores",
+      "description": "The team restores the lighthouse structure and its working systems.",
+      "sourceId": "entity-restoration-team",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-community-team",
+      "name": "supports",
+      "description": "The community supports the restoration team with volunteers and fundraising.",
+      "sourceId": "entity-harbor-community",
+      "targetId": "entity-restoration-team"
+    },
+    {
+      "id": "relation-authority-lighthouse",
+      "name": "administers",
+      "description": "The harbor authority administers the lighthouse and its grounds.",
+      "sourceId": "entity-harbor-authority",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-archive-lighthouse",
+      "name": "documents",
+      "description": "The historical archive documents the lighthouse and its history.",
+      "sourceId": "entity-historical-archive",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-beacon-lighthouse",
+      "name": "serves",
+      "description": "The beacon system serves the lighthouse and its navigational purpose.",
+      "sourceId": "entity-beacon-system",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-beacon-self-monitoring",
+      "name": "self-monitors",
+      "description": "The beacon system monitors its own operating condition.",
+      "sourceId": "entity-beacon-system",
+      "targetId": "entity-beacon-system"
+    },
+    {
+      "id": "relation-team-community-coordination",
+      "name": "coordinates with",
+      "description": "The restoration team coordinates work with the harbor community.",
+      "sourceId": "entity-restoration-team",
+      "targetId": "entity-harbor-community"
+    },
+    {
+      "id": "relation-team-community-updates",
+      "name": "shares updates with",
+      "description": "The restoration team shares project updates with the harbor community.",
+      "sourceId": "entity-restoration-team",
+      "targetId": "entity-harbor-community"
+    },
+    {
+      "id": "relation-built-lighthouse",
+      "name": "built",
+      "sourceId": "event-lighthouse-built",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-failure-beacon",
+      "name": "affected",
+      "sourceId": "event-beacon-failure",
+      "targetId": "entity-beacon-system"
+    },
+    {
+      "id": "relation-announced-team",
+      "name": "organized by",
+      "sourceId": "event-restoration-announced",
+      "targetId": "entity-restoration-team"
+    },
+    {
+      "id": "relation-announced-community",
+      "name": "supported by",
+      "sourceId": "event-restoration-announced",
+      "targetId": "entity-harbor-community"
+    },
+    {
+      "id": "relation-reopened-lighthouse",
+      "name": "reopened",
+      "sourceId": "event-lighthouse-reopened",
+      "targetId": "entity-lighthouse"
+    },
+    {
+      "id": "relation-reopened-authority",
+      "name": "authorized by",
+      "sourceId": "event-lighthouse-reopened",
+      "targetId": "entity-harbor-authority"
+    }
+  ],
+  "extensions": {
+    "metadata": {
+      "datasetId": "example-lighthouse-restoration",
+      "title": "Lighthouse Restoration Project"
+    },
+    "draft.github.sukoyaka-dopeness.coordinate": {
+      "specVersion": "0.1.0",
+      "spaces": [
+        {
+          "id": "liaisonscape-graph",
+          "name": "LiaisonScape graph coordinates",
+          "kind": "cartesian-2d",
+          "components": {
+            "x": { "unit": "liaisonscape-user-unit", "positiveDirection": "display-right" },
+            "y": { "unit": "liaisonscape-user-unit", "positiveDirection": "display-down" }
+          }
+        }
+      ]
+    },
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        { "extension": "metadata", "version": "1.0.0" },
+        { "extension": "history", "version": "1.0.0" },
+        { "extension": "draft.github.sukoyaka-dopeness.coordinate", "version": "0.1.0" }
+      ]
+    }
+  }
+}
