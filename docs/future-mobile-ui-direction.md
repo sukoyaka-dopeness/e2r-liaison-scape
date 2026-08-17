@@ -142,3 +142,19 @@ This workstream must not silently change Core, Coordinate, or Relation domain
 semantics. It is independent of the completed Touch Long-Press + Gesture
 Arbitration acceptance and should be planned before broadening connection-handle
 authoring to touch and pen.
+
+## Near-term ecosystem sequence
+
+The current mobile cleanup should be accepted and committed before the next
+ecosystem step. The intended order is:
+
+1. Accept and commit the current LiaisonScape mobile cleanup.
+2. Confirm the smallest `e2r-hub` repository and URL.
+3. Confirm the Hub footer and navigation policy.
+4. Compact the LiaisonScape footer and add the Hub link.
+5. Align NarrativeLine with the same visual sizing direction.
+6. Decide separately whether NarrativeLine needs a compact footer on every
+   screen.
+
+This is a planning sequence only. It does not authorize Hub implementation,
+publication, or changes to Dataset semantics.

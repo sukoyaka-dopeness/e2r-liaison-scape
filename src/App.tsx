@@ -969,7 +969,7 @@ export default function App() {
           <p>Entity-first E2R relationship graph.</p>
         </div>
         <div className="dataset-actions">
-          <label className="open-dataset-button">{translate(locale, "openWorkspaceDataset")}<input
+          <label className="open-dataset-button mobile-hide">{translate(locale, "openWorkspaceDataset")}<input
             type="file"
             accept="application/json,.json,.e2r.json"
             onChange={(event) => {
@@ -978,15 +978,23 @@ export default function App() {
             }}
           /></label>
           <div className="dataset-actions__buttons">
-            <button type="button" disabled={!dataset} onClick={exportDataset}>{translate(locale, "exportDataset")}</button>
+            <button type="button" className="desktop-secondary-action" disabled={!dataset} onClick={exportDataset}>{translate(locale, "exportDataset")}</button>
             <button type="button" disabled={!dataset} onClick={() => openCreation("entity")}>{translate(locale, "addEntity")}</button>
             <button type="button" disabled={!dataset} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
-            <button type="button" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
+            <button type="button" className="desktop-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
             <details className="maintenance-menu">
               <summary>{translate(locale, "more")}</summary>
               <div className="maintenance-menu__items">
+                <button type="button" className="mobile-secondary-action" disabled={!dataset} onClick={exportDataset}>{translate(locale, "exportDataset")}</button>
+                <button type="button" className="mobile-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
                 <button type="button" disabled={!dataset || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>{translate(locale, "migrateCoordinateDraft")}</button>
                 <button type="button" disabled={!dataset || spaceMigrationReadiness?.ready !== true} onClick={migrateSpaceToLiaisonScape}>{translate(locale, "migrateLinkscapeCoordinates")}</button>
+                <div className="mobile-secondary-action mobile-viewport-menu" aria-label={translate(locale, "graphViewControls")}>
+                  <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>{translate(locale, "zoomOut")}</button>
+                  <span aria-live="polite">{Math.round(scale * 100)}%</span>
+                  <button type="button" onClick={() => setScale((value) => zoomScale(value, "in"))}>{translate(locale, "zoomIn")}</button>
+                  <button type="button" onClick={resetView}>{translate(locale, "resetView")}</button>
+                </div>
               </div>
             </details>
           </div>
@@ -1034,7 +1042,7 @@ export default function App() {
       {dataset && (
         <section className="graph-section">
           <h2>Graph</h2>
-          <div ref={viewportToolbarRef} className="viewport-controls" aria-label={translate(locale, "graphViewControls")} style={viewportToolbarPosition ? { left: viewportToolbarPosition.x, top: viewportToolbarPosition.y, right: "auto" } : undefined}>
+          <div ref={viewportToolbarRef} className="viewport-controls mobile-hide" aria-label={translate(locale, "graphViewControls")} style={viewportToolbarPosition ? { left: viewportToolbarPosition.x, top: viewportToolbarPosition.y, right: "auto" } : undefined}>
             <button type="button" className="viewport-toolbar-handle" aria-label={translate(locale, "moveZoomControls")} title={translate(locale, "moveZoomControls")} onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={endViewportToolbarDrag}>⠿</button>
             <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>{translate(locale, "zoomOut")}</button>
             <span aria-live="polite">{Math.round(scale * 100)}%</span>
