@@ -163,7 +163,7 @@ export function fitGraphView(
   points: Point[],
   width: number,
   height: number,
-  padding = 64,
+  padding = 96,
 ): { scale: number; pan: Point } {
   if (points.length === 0) return { scale: 1, pan: { x: 0, y: 0 } };
 

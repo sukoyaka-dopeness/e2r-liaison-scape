@@ -24,12 +24,16 @@ test("Lighthouse samples are valid, positioned, connected, and round-trip unchan
   for (const sample of [english, japanese]) {
     assert.equal(sample.entities.length, 10);
     assert.equal(sample.events.length, 11);
-    assert.equal(sample.relations.length, 25);
+    assert.equal(sample.relations.length, 26);
     assert.equal(Object.keys(sample.entities.filter((entity: any) => entity.extensions?.["draft.github.sukoyaka-dopeness.coordinate"])).length, 10);
     assert.equal(sample.relations.filter((relation: any) => relation.sourceId === relation.targetId).length, 2);
     assert.equal(sample.relations.filter((relation: any) => relation.sourceId === "clara" && relation.targetId === "thomas").length, 2);
     assert.equal(sample.relations.filter((relation: any) => sample.events.some((event: any) => event.id === relation.sourceId)).length, 14);
     assert.deepEqual(sample.relations.filter((relation: any) => relation.sourceId === "work-starts").map((relation: any) => relation.targetId), ["clara", "thomas", "maya", "beacon"]);
+    assert.deepEqual(sample.relations.filter((relation: any) => relation.id === "authority-lighthouse").map((relation: any) => [relation.sourceId, relation.targetId]), [["authority", "lighthouse"]]);
+    const entityIds = new Set(sample.entities.map((entity: any) => entity.id));
+    const connectedEntityIds = new Set(sample.relations.filter((relation: any) => entityIds.has(relation.sourceId) && entityIds.has(relation.targetId)).flatMap((relation: any) => [relation.sourceId, relation.targetId]));
+    assert.deepEqual([...connectedEntityIds].sort(), [...entityIds].sort());
     assert.ok(sample.entities.some((entity: any) => entity.id === "clara"));
     assert.ok(!sample.entities.some((entity: any) => entity.id === "entity-restoration-team"));
     assert.ok(!sample.entities.some((entity: any) => entity.id === "entity-harbor-community"));

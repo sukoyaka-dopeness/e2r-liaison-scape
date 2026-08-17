@@ -577,10 +577,11 @@ test("graph fitting centers small graphs and scales large graphs into view", () 
     scale: 1,
     pan: { x: 300, y: 150 },
   });
-  const largeGraphView = fitGraphView([{ x: 0, y: 0 }, { x: 1600, y: 800 }], 800, 500);
+  const largeGraphView = fitGraphView([{ x: 0, y: 0 }, { x: 1600, y: 800 }], 800, 500, 64);
   assert.ok(largeGraphView.scale < 0.5);
   assert.ok(largeGraphView.pan.x < 0);
   assert.ok(largeGraphView.pan.y < 0);
+  assert.ok(fitGraphView([{ x: 0, y: 0 }, { x: 1600, y: 800 }], 800, 500, 96).scale < largeGraphView.scale);
 });
 
 test("Entity edges use visible deterministic curves outside node centers", () => {
