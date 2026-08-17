@@ -1,33 +1,528 @@
 {
-  "version":"1.0",
-  "entities":[
-    {"id":"lighthouse","name":"Old Harbor Lighthouse","description":"A historic lighthouse being restored for continued community use.","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":500,"y":320}}]}}},
-    {"id":"clara","name":"Clara Bennett","description":"Restoration project lead and structural engineer.","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":350,"y":180}}]}}},
-    {"id":"elias","name":"Elias Ward","description":"Former lighthouse keeper who knows the site's history.","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":150,"y":180}}]}}},
-    {"id":"maya","name":"Maya Reed","description":"Electrical engineer responsible for the beacon system.","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":470,"y":480}}]}}},
-    {"id":"thomas","name":"Thomas Hale","description":"Stonework specialist supporting the restoration team.","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":300,"y":480}}]}}},
-    {"id":"sofia","name":"Sofia Moreno","description":"Archivist documenting the lighthouse's history.","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":150,"y":340}}]}}},
-    {"id":"daniel","name":"Daniel Brooks","description":"Harbor volunteer coordinating local support.","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":600,"y":250}}]}}},
-    {"id":"beacon","name":"Beacon System","description":"The lighting and monitoring equipment inside the lighthouse.","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":620,"y":520}}]}}},
-    {"id":"archive","name":"Harbor Historical Archive","description":"An archive preserving plans, photographs, and stories of the harbor.","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":150,"y":520}}]}}},
-    {"id":"authority","name":"Harbor Authority","description":"The public authority responsible for the harbor and lighthouse grounds.","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":650,"y":380}}]}}}
+  "version": "1.0",
+  "entities": [
+    {
+      "id": "lighthouse",
+      "name": "Old Harbor Lighthouse",
+      "description": "A historic lighthouse being restored for continued community use.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "liaisonscape-graph",
+              "values": {
+                "x": 500,
+                "y": 320
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "clara",
+      "name": "Clara Bennett",
+      "description": "Restoration project lead and structural engineer.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "liaisonscape-graph",
+              "values": {
+                "x": 350,
+                "y": 180
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "elias",
+      "name": "Elias Ward",
+      "description": "Former lighthouse keeper who knows the site's history.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "liaisonscape-graph",
+              "values": {
+                "x": 150,
+                "y": 180
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "maya",
+      "name": "Maya Reed",
+      "description": "Electrical engineer responsible for the beacon system.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "liaisonscape-graph",
+              "values": {
+                "x": 470,
+                "y": 480
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "thomas",
+      "name": "Thomas Hale",
+      "description": "Stonework specialist supporting the restoration team.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "liaisonscape-graph",
+              "values": {
+                "x": 300,
+                "y": 480
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "sofia",
+      "name": "Sofia Moreno",
+      "description": "Archivist documenting the lighthouse's history.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "liaisonscape-graph",
+              "values": {
+                "x": 150,
+                "y": 340
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "daniel",
+      "name": "Daniel Brooks",
+      "description": "Harbor volunteer coordinating local support.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "liaisonscape-graph",
+              "values": {
+                "x": 600,
+                "y": 250
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "beacon",
+      "name": "Beacon System",
+      "description": "The lighting and monitoring equipment inside the lighthouse.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "liaisonscape-graph",
+              "values": {
+                "x": 620,
+                "y": 520
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "archive",
+      "name": "Harbor Historical Archive",
+      "description": "An archive preserving plans, photographs, and stories of the harbor.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "liaisonscape-graph",
+              "values": {
+                "x": 150,
+                "y": 520
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "authority",
+      "name": "Harbor Authority",
+      "description": "The public authority responsible for the harbor and lighthouse grounds.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [
+            {
+              "spaceId": "liaisonscape-graph",
+              "values": {
+                "x": 650,
+                "y": 380
+              }
+            }
+          ]
+        }
+      }
+    }
   ],
-  "events":[
-    {"id":"built","name":"Lighthouse completed","description":"The Old Harbor Lighthouse began guiding ships into the harbor.","extensions":{"history":{"time":{"year":1898,"month":6}}}},
-    {"id":"records","name":"Historical records preserved","description":"Plans and photographs were transferred to the Harbor Historical Archive.","extensions":{"history":{"time":{"year":1987}}}},
-    {"id":"failure","name":"Beacon failure discovered","description":"The beacon system failed, prompting a coordinated restoration effort.","extensions":{"history":{"time":{"year":2025,"month":11,"day":18}}}},
-    {"id":"lead-appointed","name":"Clara appointed restoration lead","description":"The Harbor Authority appointed Clara to lead the restoration project.","extensions":{"history":{"time":{"year":2026,"month":1}}}},
-    {"id":"announced","name":"Restoration project announced","description":"The project was announced with support from the harbor community.","extensions":{"history":{"time":{"year":2026,"month":2,"day":14,"hour":10,"minute":0}}}},
-    {"id":"plans-found","name":"Original plans discovered","description":"Sofia found original construction plans in the archive.","extensions":{"history":{"time":{"year":2026,"month":3}}}},
-    {"id":"work-starts","name":"Restoration work begins","description":"Clara, Thomas, and Maya began work on the lighthouse and beacon.","extensions":{"history":{"time":{"year":2026,"month":4,"day":6}}}},
-    {"id":"fundraising","name":"Community fundraising milestone","description":"Daniel reported that local fundraising reached its restoration target.","extensions":{"history":{"time":{"year":2026,"month":6}}}},
-    {"id":"beacon-test","name":"Restored beacon test","description":"Maya tested the restored beacon system with the team.","extensions":{"history":{"time":{"year":2026,"month":7,"day":31,"hour":21,"minute":0}}}},
-    {"id":"reopened","name":"Lighthouse reopened","description":"The restored lighthouse reopened as a working beacon and community landmark.","extensions":{"history":{"time":{"year":2026,"month":8,"day":10}}}},
-    {"id":"future-maintenance","name":"Maintenance plan agreed","description":"The team agreed to continue monitoring the beacon after reopening.","extensions":{"history":{"time":{"year":2026,"month":8,"day":11}}}}
+  "events": [
+    {
+      "id": "built",
+      "name": "Lighthouse completed",
+      "description": "The Old Harbor Lighthouse began guiding ships into the harbor.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 1898,
+            "month": 6
+          }
+        }
+      }
+    },
+    {
+      "id": "records",
+      "name": "Historical records preserved",
+      "description": "Plans and photographs were transferred to the Harbor Historical Archive.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 1987
+          }
+        }
+      }
+    },
+    {
+      "id": "failure",
+      "name": "Beacon failure discovered",
+      "description": "The beacon system failed, prompting a coordinated restoration effort.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 2025,
+            "month": 11,
+            "day": 18
+          }
+        }
+      }
+    },
+    {
+      "id": "lead-appointed",
+      "name": "Clara appointed restoration lead",
+      "description": "The Harbor Authority appointed Clara to lead the restoration project.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 2026,
+            "month": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "announced",
+      "name": "Restoration project announced",
+      "description": "The project was announced with support from the harbor community.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 2026,
+            "month": 2,
+            "day": 14,
+            "hour": 10,
+            "minute": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "plans-found",
+      "name": "Original plans discovered",
+      "description": "Sofia found original construction plans in the archive.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 2026,
+            "month": 3
+          }
+        }
+      }
+    },
+    {
+      "id": "work-starts",
+      "name": "Restoration work begins",
+      "description": "Clara, Thomas, and Maya began work on the lighthouse and beacon.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 2026,
+            "month": 4,
+            "day": 6
+          }
+        }
+      }
+    },
+    {
+      "id": "fundraising",
+      "name": "Community fundraising milestone",
+      "description": "Daniel reported that local fundraising reached its restoration target.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 2026,
+            "month": 6
+          }
+        }
+      }
+    },
+    {
+      "id": "beacon-test",
+      "name": "Restored beacon test",
+      "description": "Maya tested the restored beacon system with the team.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 2026,
+            "month": 7,
+            "day": 31,
+            "hour": 21,
+            "minute": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "reopened",
+      "name": "Lighthouse reopened",
+      "description": "The restored lighthouse reopened as a working beacon and community landmark.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 2026,
+            "month": 8,
+            "day": 10
+          }
+        }
+      }
+    },
+    {
+      "id": "future-maintenance",
+      "name": "Maintenance plan agreed",
+      "description": "The team agreed to continue monitoring the beacon after reopening.",
+      "extensions": {
+        "history": {
+          "time": {
+            "year": 2026,
+            "month": 8,
+            "day": 11
+          }
+        }
+      }
+    }
   ],
-  "relations":[
-    {"id":"clara-thomas-supervises","name":"supervises","sourceId":"clara","targetId":"thomas"},{"id":"clara-thomas-mentors","name":"mentors","sourceId":"clara","targetId":"thomas"},{"id":"clara-maya","name":"works with","sourceId":"clara","targetId":"maya"},{"id":"elias-clara","name":"advises","sourceId":"elias","targetId":"clara"},{"id":"sofia-elias","name":"interviews","sourceId":"sofia","targetId":"elias"},{"id":"daniel-clara","name":"coordinates with","sourceId":"daniel","targetId":"clara"},{"id":"maya-beacon","name":"maintains","sourceId":"maya","targetId":"beacon"},{"id":"sofia-archive","name":"works with","sourceId":"sofia","targetId":"archive"},{"id":"clara-lighthouse","name":"leads restoration of","sourceId":"clara","targetId":"lighthouse"},{"id":"beacon-self-monitor","name":"self-monitors","description":"The beacon system monitors its own operating condition.","sourceId":"beacon","targetId":"beacon"},{"id":"beacon-self-calibrate","name":"self-calibrates","description":"A second maintenance loop demonstrates parallel self-Relations.","sourceId":"beacon","targetId":"beacon"},
-    {"id":"built-lighthouse","sourceId":"built","targetId":"lighthouse"},{"id":"records-archive","sourceId":"records","targetId":"archive"},{"id":"failure-beacon","sourceId":"failure","targetId":"beacon"},{"id":"lead-clara","sourceId":"lead-appointed","targetId":"clara"},{"id":"announce-authority","sourceId":"announced","targetId":"authority"},{"id":"authority-lighthouse","name":"administers","sourceId":"authority","targetId":"lighthouse"},{"id":"plans-sofia","sourceId":"plans-found","targetId":"sofia"},{"id":"work-clara","sourceId":"work-starts","targetId":"clara"},{"id":"work-thomas","sourceId":"work-starts","targetId":"thomas"},{"id":"work-maya","sourceId":"work-starts","targetId":"maya"},{"id":"work-beacon","sourceId":"work-starts","targetId":"beacon"},{"id":"fundraising-daniel","sourceId":"fundraising","targetId":"daniel"},{"id":"test-maya","sourceId":"beacon-test","targetId":"maya"},{"id":"reopen-lighthouse","sourceId":"reopened","targetId":"lighthouse"},{"id":"maintenance-maya","sourceId":"future-maintenance","targetId":"maya"}
+  "relations": [
+    {
+      "id": "clara-thomas-supervises",
+      "name": "supervises",
+      "sourceId": "clara",
+      "targetId": "thomas"
+    },
+    {
+      "id": "clara-thomas-mentors",
+      "name": "mentors",
+      "sourceId": "clara",
+      "targetId": "thomas"
+    },
+    {
+      "id": "clara-maya",
+      "name": "works with",
+      "sourceId": "clara",
+      "targetId": "maya"
+    },
+    {
+      "id": "elias-clara",
+      "name": "advises",
+      "sourceId": "elias",
+      "targetId": "clara"
+    },
+    {
+      "id": "sofia-elias",
+      "name": "interviews",
+      "sourceId": "sofia",
+      "targetId": "elias"
+    },
+    {
+      "id": "daniel-clara",
+      "name": "coordinates with",
+      "sourceId": "daniel",
+      "targetId": "clara"
+    },
+    {
+      "id": "maya-beacon",
+      "name": "maintains",
+      "sourceId": "maya",
+      "targetId": "beacon"
+    },
+    {
+      "id": "sofia-archive",
+      "name": "works with",
+      "sourceId": "sofia",
+      "targetId": "archive"
+    },
+    {
+      "id": "clara-lighthouse",
+      "name": "leads restoration of",
+      "sourceId": "clara",
+      "targetId": "lighthouse"
+    },
+    {
+      "id": "beacon-self-monitor",
+      "name": "self-monitors",
+      "description": "The beacon system monitors its own operating condition.",
+      "sourceId": "beacon",
+      "targetId": "beacon"
+    },
+    {
+      "id": "beacon-self-calibrate",
+      "name": "self-calibrates",
+      "description": "A second maintenance loop demonstrates parallel self-Relations.",
+      "sourceId": "beacon",
+      "targetId": "beacon"
+    },
+    {
+      "id": "built-lighthouse",
+      "sourceId": "built",
+      "targetId": "lighthouse"
+    },
+    {
+      "id": "records-archive",
+      "sourceId": "records",
+      "targetId": "archive"
+    },
+    {
+      "id": "failure-beacon",
+      "sourceId": "failure",
+      "targetId": "beacon"
+    },
+    {
+      "id": "lead-clara",
+      "sourceId": "lead-appointed",
+      "targetId": "clara"
+    },
+    {
+      "id": "announce-authority",
+      "sourceId": "announced",
+      "targetId": "authority"
+    },
+    {
+      "id": "authority-lighthouse",
+      "name": "administers",
+      "sourceId": "authority",
+      "targetId": "lighthouse"
+    },
+    {
+      "id": "plans-sofia",
+      "sourceId": "plans-found",
+      "targetId": "sofia"
+    },
+    {
+      "id": "work-clara",
+      "sourceId": "work-starts",
+      "targetId": "clara"
+    },
+    {
+      "id": "work-thomas",
+      "sourceId": "work-starts",
+      "targetId": "thomas"
+    },
+    {
+      "id": "work-maya",
+      "sourceId": "work-starts",
+      "targetId": "maya"
+    },
+    {
+      "id": "work-beacon",
+      "sourceId": "work-starts",
+      "targetId": "beacon"
+    },
+    {
+      "id": "fundraising-daniel",
+      "sourceId": "fundraising",
+      "targetId": "daniel"
+    },
+    {
+      "id": "test-maya",
+      "sourceId": "beacon-test",
+      "targetId": "maya"
+    },
+    {
+      "id": "reopen-lighthouse",
+      "sourceId": "reopened",
+      "targetId": "lighthouse"
+    },
+    {
+      "id": "maintenance-maya",
+      "sourceId": "future-maintenance",
+      "targetId": "maya"
+    }
   ],
-  "extensions":{"metadata":{"datasetId":"example-lighthouse-restoration-en-v2","title":"Lighthouse Restoration Project"},"draft.github.sukoyaka-dopeness.coordinate":{"specVersion":"0.1.0","spaces":[{"id":"liaisonscape-graph","name":"LiaisonScape graph coordinates","kind":"cartesian-2d","components":{"x":{"unit":"liaisonscape-user-unit","positiveDirection":"display-right"},"y":{"unit":"liaisonscape-user-unit","positiveDirection":"display-down"}}}]},"draft.github.sukoyaka-dopeness.specification":{"specVersion":"0.1.0","uses":[{"extension":"metadata","version":"1.0.0"},{"extension":"history","version":"1.0.0"},{"extension":"draft.github.sukoyaka-dopeness.coordinate","version":"0.1.0"}]}}
+  "extensions": {
+    "metadata": {
+      "datasetId": "example-lighthouse-restoration-en-v2",
+      "title": "Lighthouse Restoration Project"
+    },
+    "draft.github.sukoyaka-dopeness.coordinate": {
+      "specVersion": "0.1.0",
+      "spaces": [
+        {
+          "id": "liaisonscape-graph",
+          "name": "LiaisonScape graph coordinates",
+          "kind": "cartesian-2d",
+          "components": {
+            "x": {
+              "unit": "liaisonscape-user-unit",
+              "positiveDirection": "display-right"
+            },
+            "y": {
+              "unit": "liaisonscape-user-unit",
+              "positiveDirection": "display-down"
+            }
+          }
+        }
+      ]
+    },
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        {
+          "extension": "metadata",
+          "version": "1.0.0"
+        },
+        {
+          "extension": "history",
+          "version": "1.0.0"
+        },
+        {
+          "extension": "draft.github.sukoyaka-dopeness.coordinate",
+          "version": "0.1.0"
+        }
+      ]
+    }
+  }
 }
