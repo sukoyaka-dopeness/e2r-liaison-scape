@@ -34,9 +34,10 @@ Home provides a sample action for the current locale:
 - English: [`lighthouse-restoration-demo.en.e2r.json`](public/lighthouse-restoration-demo.en.e2r.json)
 - Japanese: [`lighthouse-restoration-demo.ja.e2r.json`](public/lighthouse-restoration-demo.ja.e2r.json)
 
-The Lighthouse Restoration Project sample contains six Entities, four Events,
-Entity-to-Entity Relations, Event endpoint Relations, a self-Relation, a
-parallel Relation pair, History data, and LiaisonScape Coordinate Draft data.
+The Lighthouse Restoration Project sample contains ten Entities, eleven
+Events, person-centered Entity-to-Entity Relations, Event endpoint Relations,
+self-Relations, a parallel Relation pair, History data, and LiaisonScape
+Coordinate Draft data.
 The same Dataset structure is designed to offer a graph view in LiaisonScape
 and a timeline/event view in NarrativeLine.
 

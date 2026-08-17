@@ -1,225 +1,33 @@
 {
-  "version": "1.0",
-  "entities": [
-    {
-      "id": "entity-lighthouse",
-      "name": "旧港灯台",
-      "description": "地域で使い続けるために修復されている歴史ある灯台です。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            { "spaceId": "liaisonscape-graph", "values": { "x": 400, "y": 250 } }
-          ]
-        }
-      }
-    },
-    {
-      "id": "entity-restoration-team",
-      "name": "灯台修復チーム",
-      "description": "修復を進める技術者、作業員、灯台守のチームです。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            { "spaceId": "liaisonscape-graph", "values": { "x": 180, "y": 120 } }
-          ]
-        }
-      }
-    },
-    {
-      "id": "entity-harbor-community",
-      "name": "港の地域社会",
-      "description": "灯台と港を支え、そこに暮らす住民と支援者です。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            { "spaceId": "liaisonscape-graph", "values": { "x": 620, "y": 120 } }
-          ]
-        }
-      }
-    },
-    {
-      "id": "entity-beacon-system",
-      "name": "灯火システム",
-      "description": "灯台の中にある照明と監視の設備です。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            { "spaceId": "liaisonscape-graph", "values": { "x": 620, "y": 370 } }
-          ]
-        }
-      }
-    },
-    {
-      "id": "entity-harbor-authority",
-      "name": "港湾当局",
-      "description": "港と灯台の敷地を管理する公共機関です。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            { "spaceId": "liaisonscape-graph", "values": { "x": 180, "y": 370 } }
-          ]
-        }
-      }
-    },
-    {
-      "id": "entity-historical-archive",
-      "name": "港の歴史資料館",
-      "description": "港の設計図、写真、物語を保存する資料館です。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            { "spaceId": "liaisonscape-graph", "values": { "x": 400, "y": 440 } }
-          ]
-        }
-      }
-    }
+  "version":"1.0",
+  "entities":[
+    {"id":"lighthouse","name":"旧港の灯台","description":"地域で使い続けるため修復される歴史的な灯台。","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":520,"y":300}}]}}},
+    {"id":"clara","name":"クララ・ベネット","description":"修復プロジェクトの責任者で構造技師。","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":300,"y":160}}]}}},
+    {"id":"elias","name":"イライアス・ワード","description":"灯台の歴史を知る元灯台守。","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":80,"y":160}}]}}},
+    {"id":"maya","name":"マヤ・リード","description":"灯台システムを担当する電気技師。","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":520,"y":500}}]}}},
+    {"id":"thomas","name":"トーマス・ヘイル","description":"修復チームを支える石工技師。","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":300,"y":500}}]}}},
+    {"id":"sofia","name":"ソフィア・モレノ","description":"灯台の歴史を記録するアーキビスト。","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":80,"y":360}}]}}},
+    {"id":"daniel","name":"ダニエル・ブルックス","description":"地域の支援を調整する港のボランティア。","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":760,"y":160}}]}}},
+    {"id":"beacon","name":"灯台システム","description":"灯台内部の照明と監視設備。","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":760,"y":420}}]}}},
+    {"id":"archive","name":"港の歴史資料館","description":"港の設計図、写真、物語を保存する資料館。","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":80,"y":520}}]}}},
+    {"id":"authority","name":"港湾局","description":"港と灯台の敷地を管理する公的機関。","extensions":{"draft.github.sukoyaka-dopeness.coordinate":{"coordinates":[{"spaceId":"liaisonscape-graph","values":{"x":760,"y":300}}]}}}
   ],
-  "events": [
-    {
-      "id": "event-lighthouse-built",
-      "name": "灯台の建設",
-      "description": "港へ入る船を導くために旧港灯台が建設されました。",
-      "extensions": { "history": { "time": { "year": 1898, "month": 6 } } }
-    },
-    {
-      "id": "event-beacon-failure",
-      "name": "灯火の故障",
-      "description": "灯火システムが故障し、協力した修復活動が始まりました。",
-      "extensions": { "history": { "time": { "year": 2025, "month": 11, "day": 18 } } }
-    },
-    {
-      "id": "event-restoration-announced",
-      "name": "修復計画の発表",
-      "description": "地域の支援を受けた修復計画が発表されました。",
-      "extensions": { "history": { "time": { "year": 2026, "month": 2, "day": 14, "hour": 10, "minute": 0 } } }
-    },
-    {
-      "id": "event-lighthouse-reopened",
-      "name": "灯台の再開",
-      "description": "修復された灯台が、現役の灯火と地域の目印として再開しました。",
-      "extensions": { "history": { "time": { "year": 2026, "month": 8, "day": 10 } } }
-    }
+  "events":[
+    {"id":"built","name":"灯台が完成","description":"旧港の灯台が船を港へ導き始めた。","extensions":{"history":{"time":{"year":1898,"month":6}}}},
+    {"id":"records","name":"歴史資料を保存","description":"設計図と写真が港の歴史資料館へ移された。","extensions":{"history":{"time":{"year":1987}}}},
+    {"id":"failure","name":"灯台システムの故障発見","description":"灯台システムが故障し、修復計画が始まった。","extensions":{"history":{"time":{"year":2025,"month":11,"day":18}}}},
+    {"id":"lead-appointed","name":"クララが修復責任者に就任","description":"港湾局がクララを修復プロジェクトの責任者に任命した。","extensions":{"history":{"time":{"year":2026,"month":1}}}},
+    {"id":"announced","name":"修復プロジェクトを発表","description":"港の地域社会の支援を受けて修復計画が発表された。","extensions":{"history":{"time":{"year":2026,"month":2,"day":14,"hour":10,"minute":0}}}},
+    {"id":"plans-found","name":"元の設計図を発見","description":"ソフィアが資料館で建設当時の設計図を発見した。","extensions":{"history":{"time":{"year":2026,"month":3}}}},
+    {"id":"work-starts","name":"修復作業を開始","description":"クララ、トーマス、マヤが灯台とシステムの作業を始めた。","extensions":{"history":{"time":{"year":2026,"month":4,"day":6}}}},
+    {"id":"fundraising","name":"地域募金の目標を達成","description":"ダニエルが地域募金の目標達成を報告した。","extensions":{"history":{"time":{"year":2026,"month":6}}}},
+    {"id":"beacon-test","name":"修復した灯台システムを試験","description":"マヤがチームと修復した灯台システムを試験した。","extensions":{"history":{"time":{"year":2026,"month":7,"day":31,"hour":21,"minute":0}}}},
+    {"id":"reopened","name":"灯台を再開","description":"修復された灯台が現役の灯台と地域の目印として再開した。","extensions":{"history":{"time":{"year":2026,"month":8,"day":10}}}},
+    {"id":"future-maintenance","name":"保守計画を合意","description":"再開後も灯台システムを監視し続ける計画を合意した。","extensions":{"history":{"time":{"year":2026,"month":8,"day":11}}}}
   ],
-  "relations": [
-    {
-      "id": "relation-team-lighthouse",
-      "name": "修復する",
-      "description": "チームが灯台の構造と稼働システムを修復します。",
-      "sourceId": "entity-restoration-team",
-      "targetId": "entity-lighthouse"
-    },
-    {
-      "id": "relation-community-team",
-      "name": "支援する",
-      "description": "地域社会がボランティアと募金で修復チームを支援します。",
-      "sourceId": "entity-harbor-community",
-      "targetId": "entity-restoration-team"
-    },
-    {
-      "id": "relation-authority-lighthouse",
-      "name": "管理する",
-      "description": "港湾当局が灯台とその敷地を管理します。",
-      "sourceId": "entity-harbor-authority",
-      "targetId": "entity-lighthouse"
-    },
-    {
-      "id": "relation-archive-lighthouse",
-      "name": "記録する",
-      "description": "歴史資料館が灯台とその歴史を記録します。",
-      "sourceId": "entity-historical-archive",
-      "targetId": "entity-lighthouse"
-    },
-    {
-      "id": "relation-beacon-lighthouse",
-      "name": "役割を担う",
-      "description": "灯火システムが灯台の航行支援の役割を担います。",
-      "sourceId": "entity-beacon-system",
-      "targetId": "entity-lighthouse"
-    },
-    {
-      "id": "relation-beacon-self-monitoring",
-      "name": "自己監視する",
-      "description": "灯火システムが自身の稼働状態を監視します。",
-      "sourceId": "entity-beacon-system",
-      "targetId": "entity-beacon-system"
-    },
-    {
-      "id": "relation-team-community-coordination",
-      "name": "連携する",
-      "description": "修復チームが港の地域社会と作業を連携します。",
-      "sourceId": "entity-restoration-team",
-      "targetId": "entity-harbor-community"
-    },
-    {
-      "id": "relation-team-community-updates",
-      "name": "進捗を共有する",
-      "description": "修復チームが計画の進捗を港の地域社会と共有します。",
-      "sourceId": "entity-restoration-team",
-      "targetId": "entity-harbor-community"
-    },
-    {
-      "id": "relation-built-lighthouse",
-      "name": "建設された",
-      "sourceId": "event-lighthouse-built",
-      "targetId": "entity-lighthouse"
-    },
-    {
-      "id": "relation-failure-beacon",
-      "name": "影響した",
-      "sourceId": "event-beacon-failure",
-      "targetId": "entity-beacon-system"
-    },
-    {
-      "id": "relation-announced-team",
-      "name": "主催された",
-      "sourceId": "event-restoration-announced",
-      "targetId": "entity-restoration-team"
-    },
-    {
-      "id": "relation-announced-community",
-      "name": "支援された",
-      "sourceId": "event-restoration-announced",
-      "targetId": "entity-harbor-community"
-    },
-    {
-      "id": "relation-reopened-lighthouse",
-      "name": "再開した",
-      "sourceId": "event-lighthouse-reopened",
-      "targetId": "entity-lighthouse"
-    },
-    {
-      "id": "relation-reopened-authority",
-      "name": "認可された",
-      "sourceId": "event-lighthouse-reopened",
-      "targetId": "entity-harbor-authority"
-    }
+  "relations":[
+    {"id":"clara-thomas-supervises","name":"監督する","sourceId":"clara","targetId":"thomas"},{"id":"clara-thomas-mentors","name":"指導する","sourceId":"clara","targetId":"thomas"},{"id":"clara-maya","name":"協力する","sourceId":"clara","targetId":"maya"},{"id":"elias-clara","name":"助言する","sourceId":"elias","targetId":"clara"},{"id":"sofia-elias","name":"聞き取りをする","sourceId":"sofia","targetId":"elias"},{"id":"daniel-clara","name":"調整する","sourceId":"daniel","targetId":"clara"},{"id":"maya-beacon","name":"保守する","sourceId":"maya","targetId":"beacon"},{"id":"sofia-archive","name":"協力する","sourceId":"sofia","targetId":"archive"},{"id":"clara-lighthouse","name":"修復を率いる","sourceId":"clara","targetId":"lighthouse"},{"id":"beacon-self-monitor","name":"自己監視する","sourceId":"beacon","targetId":"beacon"},{"id":"beacon-self-calibrate","name":"自己調整する","sourceId":"beacon","targetId":"beacon"},
+    {"id":"built-lighthouse","sourceId":"built","targetId":"lighthouse"},{"id":"records-archive","sourceId":"records","targetId":"archive"},{"id":"failure-beacon","sourceId":"failure","targetId":"beacon"},{"id":"lead-clara","sourceId":"lead-appointed","targetId":"clara"},{"id":"announce-authority","sourceId":"announced","targetId":"authority"},{"id":"plans-sofia","sourceId":"plans-found","targetId":"sofia"},{"id":"work-clara","sourceId":"work-starts","targetId":"clara"},{"id":"work-beacon","sourceId":"work-starts","targetId":"beacon"},{"id":"fundraising-daniel","sourceId":"fundraising","targetId":"daniel"},{"id":"test-maya","sourceId":"beacon-test","targetId":"maya"},{"id":"reopen-lighthouse","sourceId":"reopened","targetId":"lighthouse"},{"id":"maintenance-maya","sourceId":"future-maintenance","targetId":"maya"}
   ],
-  "extensions": {
-    "metadata": {
-      "datasetId": "example-lighthouse-restoration-ja",
-      "title": "灯台修復プロジェクト"
-    },
-    "draft.github.sukoyaka-dopeness.coordinate": {
-      "specVersion": "0.1.0",
-      "spaces": [
-        {
-          "id": "liaisonscape-graph",
-          "name": "LiaisonScape graph coordinates",
-          "kind": "cartesian-2d",
-          "components": {
-            "x": { "unit": "liaisonscape-user-unit", "positiveDirection": "display-right" },
-            "y": { "unit": "liaisonscape-user-unit", "positiveDirection": "display-down" }
-          }
-        }
-      ]
-    },
-    "draft.github.sukoyaka-dopeness.specification": {
-      "specVersion": "0.1.0",
-      "uses": [
-        { "extension": "metadata", "version": "1.0.0" },
-        { "extension": "history", "version": "1.0.0" },
-        { "extension": "draft.github.sukoyaka-dopeness.coordinate", "version": "0.1.0" }
-      ]
-    }
-  }
+  "extensions":{"metadata":{"datasetId":"example-lighthouse-restoration-ja-v2","title":"灯台修復プロジェクト"},"draft.github.sukoyaka-dopeness.coordinate":{"specVersion":"0.1.0","spaces":[{"id":"liaisonscape-graph","name":"LiaisonScape graph coordinates","kind":"cartesian-2d","components":{"x":{"unit":"liaisonscape-user-unit","positiveDirection":"display-right"},"y":{"unit":"liaisonscape-user-unit","positiveDirection":"display-down"}}}]},"draft.github.sukoyaka-dopeness.specification":{"specVersion":"0.1.0","uses":[{"extension":"metadata","version":"1.0.0"},{"extension":"history","version":"1.0.0"},{"extension":"draft.github.sukoyaka-dopeness.coordinate","version":"0.1.0"}]}}
 }
