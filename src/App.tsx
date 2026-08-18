@@ -158,6 +158,7 @@ export default function App() {
     const edgePaths = routedEdges.map(({ samples }) => samples).filter(({ length }) => length > 0);
     for (const node of graph.nodes) {
       const position = positions[node.id] ?? node;
+      const isActivelyDraggedNode = dragRef.current?.kind === "node" && dragRef.current.id === node.id;
       const placement = placeNodeLabel(
         position,
         node.label,
@@ -165,7 +166,7 @@ export default function App() {
         occupiedLabels,
         graph.nodes.filter(({ id }) => id !== node.id).map((other) => positions[other.id] ?? other),
         edgePaths,
-        previousNodeLabelPlacements.current.get(node.id),
+        isActivelyDraggedNode ? undefined : previousNodeLabelPlacements.current.get(node.id),
       );
       occupiedLabels.push(placement);
       result.set(node.id, placement);
