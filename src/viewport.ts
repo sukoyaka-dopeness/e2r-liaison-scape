@@ -79,6 +79,8 @@ export function placeEdgeLabel(
       y: Math.abs(normalY) < 1e-12 ? 0 : normalY,
     };
     return [0, -24, 24, -40, 40].map((normalOffset, awayFromPathPreference) => ({
+      sampleIndex,
+      normalOffset,
       candidate: {
         x: point.x + normal.x * normalOffset,
         y: point.y + normal.y * normalOffset,
@@ -91,7 +93,7 @@ export function placeEdgeLabel(
     }));
   });
 
-  return candidates.map(({ candidate, preference }) => {
+  const scoredCandidates = candidates.map(({ candidate, sampleIndex, normalOffset, preference }) => {
     const labelOverlap = occupiedLabels.reduce((total, occupied) => total + rectOverlapArea(candidate, occupied), 0);
     const nodeOverlap = nodes.reduce((total, node) => {
       const nearestX = Math.max(candidate.x - width / 2, Math.min(node.x, candidate.x + width / 2));
@@ -105,13 +107,24 @@ export function placeEdgeLabel(
         && pathPoint.y <= candidate.y + 15 ? 1 : 0), 0), 0);
     return {
       candidate,
+      sampleIndex,
+      normalOffset,
+      labelOverlap,
+      nodeOverlap,
+      edgeOverlap,
       score: labelOverlap * 100
         + nodeOverlap * 10000
         + edgeOverlap * 500
         + preference
         + placementMovementCost(candidate, previousPlacement),
     };
-  }).reduce((best, current) => current.score < best.score ? current : best).candidate;
+  });
+  const stableCandidate = scoredCandidates.reduce((best, current) => current.score < best.score ? current : best);
+  const recoveredCandidate = scoredCandidates
+    .filter(({ sampleIndex, labelOverlap, nodeOverlap, edgeOverlap }) =>
+      sampleIndex === stableCandidate.sampleIndex && labelOverlap === 0 && nodeOverlap === 0 && edgeOverlap === 0)
+    .sort((left, right) => Math.abs(left.normalOffset) - Math.abs(right.normalOffset))[0];
+  return (recoveredCandidate ?? stableCandidate).candidate;
 }
 
 function textDisplayWidth(value: string, maxLength: number): number {
