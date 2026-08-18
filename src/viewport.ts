@@ -48,12 +48,18 @@ function rectOverlapArea(left: LabelRect, right: LabelRect): number {
   return overlapWidth * overlapHeight;
 }
 
+function placementMovementCost(candidate: LabelRect, previous: LabelRect | undefined): number {
+  if (!previous) return 0;
+  return Math.hypot(candidate.x - previous.x, candidate.y - previous.y) * 4;
+}
+
 export function placeEdgeLabel(
   samples: Point[],
   label: string,
   occupiedLabels: LabelRect[],
   nodes: Point[],
   otherEdgePaths: Point[][] = [],
+  previousPlacement?: LabelRect,
 ): LabelRect {
   const fallback = samples[Math.floor(samples.length / 2)] ?? { x: 0, y: 0 };
   const width = Math.max(48, Math.min(220, textDisplayWidth(label, 32) + 12));
@@ -97,7 +103,14 @@ export function placeEdgeLabel(
         && pathPoint.x <= candidate.x + width / 2 + 4
         && pathPoint.y >= candidate.y - 15
         && pathPoint.y <= candidate.y + 15 ? 1 : 0), 0), 0);
-    return { candidate, score: labelOverlap * 100 + nodeOverlap * 10000 + edgeOverlap * 500 + preference };
+    return {
+      candidate,
+      score: labelOverlap * 100
+        + nodeOverlap * 10000
+        + edgeOverlap * 500
+        + preference
+        + placementMovementCost(candidate, previousPlacement),
+    };
   }).reduce((best, current) => current.score < best.score ? current : best).candidate;
 }
 
@@ -115,6 +128,7 @@ export function placeNodeLabel(
   occupiedLabels: LabelRect[],
   otherNodes: Point[],
   edgePaths: Point[][],
+  previousPlacement?: LabelRect,
 ): LabelRect {
   const width = Math.max(48, Math.min(180, Math.max(
     textDisplayWidth(name, 22),
@@ -155,7 +169,7 @@ export function placeNodeLabel(
         if (point.x >= left - 4 && point.x <= right + 4 && point.y >= top - 4 && point.y <= bottom + 4) score += 80;
       }
     }
-    return { candidate, score };
+    return { candidate, score: score + placementMovementCost(candidate, previousPlacement) };
   }).reduce((best, current) => current.score < best.score ? current : best).candidate;
 }
 

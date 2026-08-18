@@ -58,6 +58,8 @@ export default function App() {
   const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [creditsOpen, setCreditsOpen] = useState(false);
+  const previousNodeLabelPlacements = useRef(new Map<string, LabelRect>());
+  const previousEdgeLabelPlacements = useRef(new Map<string, LabelRect>());
   const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
@@ -137,7 +139,14 @@ export default function App() {
     for (const edge of routedEdges) {
       if (!edge.label) continue;
       const otherEdgePaths = routedEdges.filter(({ id }) => id !== edge.id).map(({ samples }) => samples);
-      const placement = placeEdgeLabel(edge.samples, edge.label, occupiedLabels, nodes, otherEdgePaths);
+      const placement = placeEdgeLabel(
+        edge.samples,
+        edge.label,
+        occupiedLabels,
+        nodes,
+        otherEdgePaths,
+        previousEdgeLabelPlacements.current.get(edge.id),
+      );
       occupiedLabels.push(placement);
       result.set(edge.id, placement);
     }
@@ -156,12 +165,23 @@ export default function App() {
         occupiedLabels,
         graph.nodes.filter(({ id }) => id !== node.id).map((other) => positions[other.id] ?? other),
         edgePaths,
+        previousNodeLabelPlacements.current.get(node.id),
       );
       occupiedLabels.push(placement);
       result.set(node.id, placement);
     }
     return result;
   }, [edgeLabelPlacements, graph.nodes, positions, routedEdges]);
+
+  useEffect(() => {
+    previousNodeLabelPlacements.current = new Map(nodeLabelPlacements);
+    previousEdgeLabelPlacements.current = new Map(edgeLabelPlacements);
+  }, [edgeLabelPlacements, nodeLabelPlacements]);
+
+  function resetPreviousLabelPlacements() {
+    previousNodeLabelPlacements.current.clear();
+    previousEdgeLabelPlacements.current.clear();
+  }
   const selectedDetail = dataset && selectedId ? getEntityDetail(dataset, selectedId) : null;
   const selectedRelationDetail = dataset && selectedRelationId ? getRelationDetail(dataset, selectedRelationId) : null;
   const edgeLayerIndexes = new Map(edgeLayerOrder.map((id, index) => [id, index]));
@@ -322,15 +342,18 @@ export default function App() {
     const result = loadDataset(raw);
     setDiagnostics(result.diagnostics);
     if (result.parseError) {
+      resetPreviousLabelPlacements();
       setDataset(null);
       setMessage(translate(locale, "jsonLoadFailure"));
       return;
     }
     if (!result.dataset) {
+      resetPreviousLabelPlacements();
       setDataset(null);
       setMessage(translate(locale, "datasetValidationFailure"));
       return;
     }
+    resetPreviousLabelPlacements();
     setDataset(result.dataset);
     enterWorkspace();
     setSelectedId(null);
@@ -372,6 +395,7 @@ export default function App() {
   }
 
   function startNewDataset() {
+    resetPreviousLabelPlacements();
     setDataset(structuredClone(emptyDataset));
     setDiagnostics([]);
     setMessage("");
