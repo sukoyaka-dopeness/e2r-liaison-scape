@@ -136,16 +136,19 @@ export default function App() {
     const occupiedLabels: LabelRect[] = [];
     const result = new Map<string, LabelRect>();
     const nodes = graph.nodes.map((node) => positions[node.id] ?? node);
+    const draggedNodeId = dragRef.current?.kind === "node" ? dragRef.current.id : undefined;
     for (const edge of routedEdges) {
       if (!edge.label) continue;
       const otherEdgePaths = routedEdges.filter(({ id }) => id !== edge.id).map(({ samples }) => samples);
+      const relationMovesWithDraggedNode = draggedNodeId !== undefined &&
+        (edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId);
       const placement = placeEdgeLabel(
         edge.samples,
         edge.label,
         occupiedLabels,
         nodes,
         otherEdgePaths,
-        previousEdgeLabelPlacements.current.get(edge.id),
+        relationMovesWithDraggedNode ? undefined : previousEdgeLabelPlacements.current.get(edge.id),
       );
       occupiedLabels.push(placement);
       result.set(edge.id, placement);
