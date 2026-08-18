@@ -130,11 +130,14 @@ export function placeNodeLabel(
   edgePaths: Point[][],
   previousPlacement?: LabelRect,
 ): LabelRect {
+  const descriptionLines = description.trim()
+    ? wrapNodeLabel(truncateNodeText(description, 28), 20)
+    : [];
   const width = Math.max(48, Math.min(180, Math.max(
     textDisplayWidth(name, 22),
-    textDisplayWidth(description, 28),
+    ...descriptionLines.map((line) => textDisplayWidth(line, 20)),
   ) + 12));
-  const height = description.trim() ? 34 : 20;
+  const height = descriptionLines.length === 0 ? 20 : descriptionLines.length === 1 ? 34 : 48;
   const angles = Array.from({ length: 32 }, (_, index) => Math.PI / 2 + index * Math.PI / 16);
 
   return angles.map((angle, index) => {

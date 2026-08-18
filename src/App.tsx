@@ -13,7 +13,7 @@ import { CreditsDialog } from "./components/CreditsDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
-import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, zoomScale } from "./viewport";
+import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatLoadedDataset, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
@@ -1139,6 +1139,9 @@ export default function App() {
                   <title>{node.description ? `${node.label}\n${node.description}` : node.label}</title>
                   {(() => {
                     const placement = nodeLabelPlacements.get(node.id)!;
+                    const descriptionLines = node.description.trim()
+                      ? wrapNodeLabel(truncateNodeText(node.description, 28), 20)
+                      : [];
                     const manualOffset = nodeLabelOffsets[node.id] ?? { x: 0, y: 0 };
                     const offsetX = placement.x - position.x + manualOffset.x;
                     const offsetY = placement.y - position.y + manualOffset.y;
@@ -1165,8 +1168,10 @@ export default function App() {
                         />
                       )}
                       <rect className="label-drag-hit" x={offsetX - placement.width / 2} y={offsetY - placement.height / 2} width={placement.width} height={placement.height} rx="3" />
-                      <text className="node-label" textAnchor="middle" x={offsetX} y={offsetY + (node.description ? -3 : 4)}>{truncateNodeText(node.label, 22)}</text>
-                      {node.description && <text className="node-description" textAnchor="middle" x={offsetX} y={offsetY + 12}>{truncateNodeText(node.description, 28)}</text>}
+                      <text className="node-label" textAnchor="middle" x={offsetX} y={offsetY + (descriptionLines.length === 0 ? 4 : descriptionLines.length === 1 ? -3 : -15)}>{truncateNodeText(node.label, 22)}</text>
+                      {descriptionLines.map((line, index) => (
+                        <text key={`description-${index}`} className="node-description" textAnchor="middle" x={offsetX} y={offsetY + (descriptionLines.length === 1 ? 12 : index * 15)}>{line}</text>
+                      ))}
                     </g>;
                   })()}
                 </g>
