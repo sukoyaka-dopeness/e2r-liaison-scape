@@ -135,7 +135,7 @@ export function placeNodeLabel(
     textDisplayWidth(description, 28),
   ) + 12));
   const height = description.trim() ? 34 : 20;
-  const angles = Array.from({ length: 16 }, (_, index) => Math.PI / 2 + index * Math.PI / 8);
+  const angles = Array.from({ length: 32 }, (_, index) => Math.PI / 2 + index * Math.PI / 16);
 
   return angles.map((angle, index) => {
     const directionX = Math.cos(angle);
