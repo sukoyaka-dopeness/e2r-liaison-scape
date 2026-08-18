@@ -153,7 +153,10 @@ export function placeNodeLabel(
     const right = candidate.x + width / 2;
     const top = candidate.y - height / 2;
     const bottom = candidate.y + height / 2;
-    let score = index * 0.01;
+    const modulo = index % 8;
+    const cardinalDistanceSteps = Math.min(modulo, 8 - modulo);
+    const cardinalPreferencePenalty = cardinalDistanceSteps * 0.5;
+    let score = index * 0.01 + cardinalPreferencePenalty;
 
     for (const occupied of occupiedLabels) {
       const overlapArea = rectOverlapArea(candidate, occupied);
