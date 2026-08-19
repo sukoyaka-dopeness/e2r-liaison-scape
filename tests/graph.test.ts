@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { COORDINATE_DRAFT_EXTENSION_ID, COORDINATE_EXTENSION_ID, applyStoredCoordinates, buildEntityGraph, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type Dataset } from "../src/dataset.ts";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, graphEdgePath, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, wrapNodeLabel, zoomScale } from "../src/viewport.ts";
+import { interpolateLabelRect, isLabelTransitionPathSafe, reconcileRelationLabelVisualState } from "../src/relation-label-presentation.ts";
+import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualNodeLabelPosition, reconstructManualRelationLabelTarget } from "../src/relation-label-presentation.ts";
 
 test("A2: builds Entity nodes and Relation edges without making Relations nodes", () => {
   const dataset: Dataset = {
@@ -665,6 +667,66 @@ test("edge labels can move perpendicular to escape a nearby parallel edge", () =
 
   assert.equal(placement.x, 200);
   assert.ok(placement.y > 100);
+});
+
+test("Relation-label visual state separates current position from logical target", () => {
+  const first = { x: 0, y: 0, width: 48, height: 22, directionX: 0, directionY: 1 };
+  const second = { ...first, x: 100 };
+  const state = reconcileRelationLabelVisualState({ current: first, target: first }, second, false);
+
+  assert.deepEqual(state.current, first);
+  assert.deepEqual(state.target, second);
+  assert.deepEqual(reconcileRelationLabelVisualState(undefined, second, false).current, second);
+  assert.deepEqual(reconcileRelationLabelVisualState(state, second, true).current, second);
+});
+
+test("Relation-label visual state immediately follows every target without an active transition", () => {
+  const first = { x: 0, y: 0, width: 48, height: 22, directionX: 0, directionY: 1 };
+  const second = { ...first, x: 100, y: 20 };
+  const state = reconcileRelationLabelVisualState({ current: first, target: first }, second, true);
+
+  assert.deepEqual(state.current, second);
+  assert.deepEqual(state.target, second);
+});
+
+test("Relation-label transition interpolation detects unsafe intermediate obstacles", () => {
+  const start = { x: 0, y: 0, width: 20, height: 20, directionX: 0, directionY: 1 };
+  const end = { ...start, x: 100 };
+  assert.equal(isLabelTransitionPathSafe(start, end, { nodes: [{ x: 50, y: 0 }] }), false);
+  assert.equal(isLabelTransitionPathSafe(start, end, { labels: [{ ...start, x: 50 }] }), false);
+  assert.equal(isLabelTransitionPathSafe(start, end, { paths: [[{ x: 50, y: -20 }, { x: 50, y: 20 }]] }), false);
+  assert.equal(isLabelTransitionPathSafe(start, end, { nodes: [{ x: 50, y: 100 }] }), true);
+});
+
+test("Relation-label interpolation preserves exact endpoints", () => {
+  const start = { x: 0, y: 0, width: 20, height: 20, directionX: 0, directionY: 1 };
+  const end = { x: 100, y: 40, width: 30, height: 22, directionX: 1, directionY: 0 };
+  assert.deepEqual(interpolateLabelRect(start, end, 0), start);
+  assert.deepEqual(interpolateLabelRect(start, end, 1), end);
+});
+
+test("manual Relation-label anchors use normalized route distance and reconstruct on a new route", () => {
+  const route = [{ x: 0, y: 0 }, { x: 50, y: 0 }, { x: 100, y: 50 }];
+  const anchor = deriveManualRelationLabelAnchor(route, { x: 55, y: 10 });
+  assert.ok(anchor.fraction > 0.5 && anchor.fraction < 0.7);
+  const reconstructed = reconstructManualRelationLabelTarget([{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 150, y: 50 }], anchor);
+  assert.ok(reconstructed.x > 50);
+  assert.ok(reconstructed.y > 0);
+});
+
+test("manual Relation-label anchor is independent of route sample density", () => {
+  const coarse = [{ x: 0, y: 0 }, { x: 100, y: 0 }];
+  const fine = Array.from({ length: 11 }, (_, index) => ({ x: index * 10, y: 0 }));
+  const coarseAnchor = deriveManualRelationLabelAnchor(coarse, { x: 25, y: 12 });
+  const fineAnchor = deriveManualRelationLabelAnchor(fine, { x: 25, y: 12 });
+  assert.ok(Math.abs(coarseAnchor.fraction - fineAnchor.fraction) < 0.001);
+  assert.ok(Math.abs(coarseAnchor.normalOffset - fineAnchor.normalOffset) < 0.001);
+});
+
+test("manual Node-label offset follows its point-like owner", () => {
+  const offset = deriveManualNodeLabelOffset({ x: 100, y: 80 }, { x: 140, y: 50 });
+  assert.deepEqual(offset, { x: 40, y: -30 });
+  assert.deepEqual(reconstructManualNodeLabelPosition({ x: 220, y: 180 }, offset), { x: 260, y: 150 });
 });
 
 test("a manual curve offset overrides automatic routing while keeping node-boundary attachments", () => {

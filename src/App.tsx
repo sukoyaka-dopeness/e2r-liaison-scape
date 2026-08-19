@@ -15,6 +15,7 @@ import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatLoadedDataset, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
+import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -38,7 +39,6 @@ export default function App() {
   const [relationTargetDraft, setRelationTargetDraft] = useState("");
   const [nodeLayerOrder, setNodeLayerOrder] = useState<string[]>([]);
   const [edgeLayerOrder, setEdgeLayerOrder] = useState<string[]>([]);
-  const [nodeLabelOffsets, setNodeLabelOffsets] = useState<Record<string, { x: number; y: number }>>({});
   const [edgeLabelOffsets, setEdgeLabelOffsets] = useState<Record<string, { x: number; y: number }>>({});
   const [edgeCurveOffsets, setEdgeCurveOffsets] = useState<Record<string, number>>({});
   const [selfLoopOverrides, setSelfLoopOverrides] = useState<Record<string, { orientation: number; radius: number }>>({});
@@ -58,8 +58,12 @@ export default function App() {
   const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [creditsOpen, setCreditsOpen] = useState(false);
+  const [manualLabelRevision, setManualLabelRevision] = useState(0);
   const previousNodeLabelPlacements = useRef(new Map<string, LabelRect>());
   const previousEdgeLabelPlacements = useRef(new Map<string, LabelRect>());
+  const relationLabelVisualState = useRef(new Map<string, RelationLabelVisualState>());
+  const manualRelationLabelAnchors = useRef(new Map<string, ManualRelationLabelAnchor>());
+  const manualNodeLabelOffsets = useRef(new Map<string, { x: number; y: number }>());
   const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
@@ -142,7 +146,7 @@ export default function App() {
       const otherEdgePaths = routedEdges.filter(({ id }) => id !== edge.id).map(({ samples }) => samples);
       const relationMovesWithDraggedNode = draggedNodeId !== undefined &&
         (edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId);
-      const placement = placeEdgeLabel(
+      const automaticPlacement = placeEdgeLabel(
         edge.samples,
         edge.label,
         occupiedLabels,
@@ -150,11 +154,31 @@ export default function App() {
         otherEdgePaths,
         relationMovesWithDraggedNode ? undefined : previousEdgeLabelPlacements.current.get(edge.id),
       );
+      const manualAnchor = manualRelationLabelAnchors.current.get(edge.id);
+      const placement = manualAnchor
+        ? { ...automaticPlacement, ...reconstructManualRelationLabelTarget(edge.samples, manualAnchor) }
+        : automaticPlacement;
       occupiedLabels.push(placement);
       result.set(edge.id, placement);
     }
     return result;
-  }, [graph.nodes, positions, routedEdges]);
+  }, [graph.nodes, positions, routedEdges, manualLabelRevision]);
+  const displayedEdgeLabelPlacements = useMemo(() => {
+    const result = new Map<string, LabelRect>();
+    const liveIds = new Set(edgeLabelPlacements.keys());
+    for (const id of relationLabelVisualState.current.keys()) if (!liveIds.has(id)) relationLabelVisualState.current.delete(id);
+    for (const [id, target] of edgeLabelPlacements) {
+      const edge = routedEdges.find(({ id: edgeId }) => edgeId === id);
+      const state = reconcileRelationLabelVisualState(
+        relationLabelVisualState.current.get(id),
+        target,
+        true,
+      );
+      relationLabelVisualState.current.set(id, state);
+      result.set(id, state.current);
+    }
+    return result;
+  }, [edgeLabelPlacements, routedEdges, positions]);
   const nodeLabelPlacements = useMemo(() => {
     const occupiedLabels: LabelRect[] = Array.from(edgeLabelPlacements.values());
     const result = new Map<string, LabelRect>();
@@ -162,7 +186,7 @@ export default function App() {
     for (const node of graph.nodes) {
       const position = positions[node.id] ?? node;
       const isActivelyDraggedNode = dragRef.current?.kind === "node" && dragRef.current.id === node.id;
-      const placement = placeNodeLabel(
+      const automaticPlacement = placeNodeLabel(
         position,
         node.label,
         node.description,
@@ -171,11 +195,15 @@ export default function App() {
         edgePaths,
         isActivelyDraggedNode ? undefined : previousNodeLabelPlacements.current.get(node.id),
       );
+      const manualOffset = manualNodeLabelOffsets.current.get(node.id);
+      const placement = manualOffset
+        ? { ...automaticPlacement, x: position.x + manualOffset.x, y: position.y + manualOffset.y }
+        : automaticPlacement;
       occupiedLabels.push(placement);
       result.set(node.id, placement);
     }
     return result;
-  }, [edgeLabelPlacements, graph.nodes, positions, routedEdges]);
+  }, [edgeLabelPlacements, graph.nodes, positions, routedEdges, manualLabelRevision]);
 
   useEffect(() => {
     previousNodeLabelPlacements.current = new Map(nodeLabelPlacements);
@@ -185,6 +213,10 @@ export default function App() {
   function resetPreviousLabelPlacements() {
     previousNodeLabelPlacements.current.clear();
     previousEdgeLabelPlacements.current.clear();
+    relationLabelVisualState.current.clear();
+    manualRelationLabelAnchors.current.clear();
+    manualNodeLabelOffsets.current.clear();
+    setManualLabelRevision((value) => value + 1);
   }
   const selectedDetail = dataset && selectedId ? getEntityDetail(dataset, selectedId) : null;
   const selectedRelationDetail = dataset && selectedRelationId ? getRelationDetail(dataset, selectedRelationId) : null;
@@ -367,7 +399,6 @@ export default function App() {
     const openedGraph = buildEntityGraph(result.dataset);
     setNodeLayerOrder(openedGraph.nodes.map(({ id }) => id));
     setEdgeLayerOrder(openedGraph.edges.map(({ id }) => id));
-    setNodeLabelOffsets({});
     setEdgeLabelOffsets({});
     setEdgeCurveOffsets({});
     setSelfLoopOverrides({});
@@ -619,15 +650,23 @@ export default function App() {
       if (moved) { dragRef.current = { ...dragRef.current!, kind: "edge-curve" }; applyEdgeCurveDrag(drag.id, dx, dy); }
     }
     else if (drag.kind === "node" && drag.id && moved) { setCoordinatesDirty(true); setPositions((value) => ({ ...value, [drag.id!]: { ...nodePosition(nodeMap.get(drag.id!)!), x: nodePosition(nodeMap.get(drag.id!)!).x + dx, y: nodePosition(nodeMap.get(drag.id!)!).y + dy } })); }
-    else if (drag.kind === "node-label" && drag.id && moved) setNodeLabelOffsets((value) => ({ ...value, [drag.id!]: { x: (value[drag.id!]?.x ?? 0) + dx, y: (value[drag.id!]?.y ?? 0) + dy } }));
+    else if (drag.kind === "node-label" && drag.id && moved) {
+      const node = nodeMap.get(drag.id);
+      const current = nodeLabelPlacements.get(drag.id);
+      if (node && current) {
+        const position = nodePosition(node);
+        manualNodeLabelOffsets.current.set(drag.id, deriveManualNodeLabelOffset(position, { x: current.x + dx, y: current.y + dy }));
+        setManualLabelRevision((value) => value + 1);
+      }
+    }
     else if (drag.kind === "edge-label" && drag.id && moved) {
-      setEdgeLabelOffsets((value) => ({
-        ...value,
-        [drag.id!]: {
-          x: (value[drag.id!]?.x ?? 0) + dx,
-          y: (value[drag.id!]?.y ?? 0) + dy,
-        },
-      }));
+      const edge = routedEdges.find(({ id }) => id === drag.id);
+      const current = edgeLabelPlacements.get(drag.id);
+      if (edge && current) {
+        const label = { x: current.x + dx, y: current.y + dy };
+        manualRelationLabelAnchors.current.set(drag.id, deriveManualRelationLabelAnchor(edge.samples, label));
+        setManualLabelRevision((value) => value + 1);
+      }
     }
     else if (drag.kind === "edge-curve" && drag.id && moved) applyEdgeCurveDrag(drag.id, dx, dy);
   }
@@ -886,11 +925,13 @@ export default function App() {
     if (deleteConfirmation === "relation") {
       const result = deleteRelation(dataset, deleteConfirmationId);
       if (!result.deleted) { setMessage(formatRelationDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); return; }
+      manualRelationLabelAnchors.current.delete(result.deletedId);
       setDataset(result.dataset); setSelectedRelationId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage(""); return;
     }
     if (deleteConfirmation === "entity") {
       const result = deleteEntity(dataset, deleteConfirmationId);
       if (!result.deleted) { setMessage(formatEntityDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); return; }
+      manualNodeLabelOffsets.current.delete(result.deletedId);
       setDataset(result.dataset); setPositions((value) => { const next = { ...value }; delete next[result.deletedId]; return next; }); setSelectedId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage("");
     }
   }
@@ -961,7 +1002,6 @@ export default function App() {
     setSelectedId(null);
     setSelectedRelationId(null);
     setDetailOpen(false);
-    setNodeLabelOffsets({});
     setEdgeLabelOffsets({});
     setEdgeCurveOffsets({});
     setSelfLoopOverrides({});
@@ -1122,17 +1162,19 @@ export default function App() {
               })}
               {displayedEdges.map((edge) => {
                 if (!edge.label) return null;
-                const labelPoint = edgeLabelPlacements.get(edge.id) ?? edge.labelPoint;
+                const labelPoint = displayedEdgeLabelPlacements.get(edge.id) ?? edge.labelPoint;
                 return <g
                   key={`label-${edge.id}`}
                   className="edge-label-group"
                   data-relation-id={edge.id}
-                  transform={`translate(${edgeLabelOffsets[edge.id]?.x ?? 0} ${edgeLabelOffsets[edge.id]?.y ?? 0})`}
+                  transform={`translate(${manualRelationLabelAnchors.current.has(edge.id) ? 0 : (edgeLabelOffsets[edge.id]?.x ?? 0)} ${manualRelationLabelAnchors.current.has(edge.id) ? 0 : (edgeLabelOffsets[edge.id]?.y ?? 0)})`}
                   onContextMenu={(event) => openRelationDetailFromContext(edge.id, event)}
                   onPointerDown={(event) => { event.stopPropagation(); startGraphPointer(event, { kind: "edge-label", id: edge.id }); }}
                 >
-                  <rect className="label-drag-hit" x={labelPoint.x - Math.max(24, edge.label.length * 3.5)} y={labelPoint.y - 18} width={Math.max(48, edge.label.length * 7)} height="22" rx="3" />
-                  <text className="edge-label" x={labelPoint.x} y={labelPoint.y - 5} aria-hidden="true">{edge.label}</text>
+                  <g transform={`translate(${labelPoint.x} ${labelPoint.y})`}>
+                    <rect className="label-drag-hit" x={-Math.max(24, edge.label.length * 3.5)} y={-18} width={Math.max(48, edge.label.length * 7)} height="22" rx="3" />
+                    <text className="edge-label" x="0" y="-5" aria-hidden="true">{edge.label}</text>
+                  </g>
                 </g>;
               })}
               {displayedNodes.map((node) => { const position = nodePosition(node); return (
@@ -1145,9 +1187,8 @@ export default function App() {
                     const descriptionLines = node.description.trim()
                       ? wrapNodeLabel(truncateNodeText(node.description, 28), 20)
                       : [];
-                    const manualOffset = nodeLabelOffsets[node.id] ?? { x: 0, y: 0 };
-                    const offsetX = placement.x - position.x + manualOffset.x;
-                    const offsetY = placement.y - position.y + manualOffset.y;
+                    const offsetX = placement.x - position.x;
+                    const offsetY = placement.y - position.y;
                     const labelDistance = Math.max(1, Math.hypot(offsetX, offsetY));
                     const directionX = offsetX / labelDistance;
                     const directionY = offsetY / labelDistance;
@@ -1211,12 +1252,16 @@ export default function App() {
               </button>
               <button
                 type="button"
-                disabled={edgeLabelOffsets[selectedRelationDetail.relation.id] === undefined}
-                onClick={() => setEdgeLabelOffsets((value) => {
-                  const updated = { ...value };
-                  delete updated[selectedRelationDetail.relation.id];
-                  return updated;
-                })}
+                disabled={!manualRelationLabelAnchors.current.has(selectedRelationDetail.relation.id)}
+                onClick={() => {
+                  manualRelationLabelAnchors.current.delete(selectedRelationDetail.relation.id);
+                  setEdgeLabelOffsets((value) => {
+                    const updated = { ...value };
+                    delete updated[selectedRelationDetail.relation.id];
+                    return updated;
+                  });
+                  setManualLabelRevision((value) => value + 1);
+                }}
               >
                 {translate(locale, "automaticLabelPlacement")}
               </button>
