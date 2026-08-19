@@ -348,8 +348,8 @@ export function routeGraphEdge(
   // even when they have been dragged onto an endpoint's coordinates.
   const routeObstacles = obstacles;
   const offsets = [baseOffset];
-  for (let step = 1; step <= 8; step += 1) {
-    const magnitude = Math.abs(baseOffset) + step * 24;
+  for (let step = 1; step <= 16; step += 1) {
+    const magnitude = Math.abs(baseOffset) + step * 12;
     offsets.push(direction * magnitude, -direction * magnitude);
   }
 

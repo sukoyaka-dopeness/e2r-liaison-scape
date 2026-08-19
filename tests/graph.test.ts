@@ -605,6 +605,18 @@ test("edge routes expose a stable midpoint for horizontal labels", () => {
   assert.ok(selfLabelPoint.y < 10);
 });
 
+test("automatic route generation uses a 12-unit intermediate offset", () => {
+  const route = routeGraphEdge({ x: 100, y: 100 }, { x: 300, y: 100 }, 0, 1, [{ x: 200, y: 42 }]);
+
+  assert.deepEqual(route.controlPoint, { x: 200, y: 112 });
+});
+
+test("automatic route generation stays within the 192-unit maximum search range", () => {
+  const route = routeGraphEdge({ x: 100, y: 100 }, { x: 300, y: 100 }, 0, 1, [{ x: 200, y: 100 }]);
+
+  assert.ok(Math.abs(route.controlPoint.y - 100) <= 192);
+});
+
 test("edge labels move along their paths to avoid an occupied midpoint", () => {
   const samples = Array.from({ length: 41 }, (_, index) => ({ x: index * 10, y: 100 }));
   const first = placeEdgeLabel(samples, "First", [], []);
