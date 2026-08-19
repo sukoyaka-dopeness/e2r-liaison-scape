@@ -595,8 +595,9 @@ test("Entity edges use visible deterministic curves outside node centers", () =>
 });
 
 test("edge routes expose a stable midpoint for horizontal labels", () => {
+  const route = routeGraphEdge({ x: 100, y: 100 }, { x: 300, y: 100 }, 0, 1);
   assert.deepEqual(
-    routeGraphEdge({ x: 100, y: 100 }, { x: 300, y: 100 }, 0, 1).labelPoint,
+    route.labelPoint,
     { x: 197, y: 100 },
   );
   const selfLabelPoint = routeGraphEdge({ x: 100, y: 100 }, { x: 100, y: 100 }, 0, 1).labelPoint;
@@ -611,6 +612,30 @@ test("edge labels move along their paths to avoid an occupied midpoint", () => {
 
   assert.deepEqual(first, { x: 200, y: 100, width: 48, height: 22, directionX: 0, directionY: 1 });
   assert.notDeepEqual({ x: second.x, y: second.y }, { x: first.x, y: first.y });
+});
+
+test("edge labels recover toward a safe midpoint at the same normal offset", () => {
+  const samples = Array.from({ length: 41 }, (_, index) => ({ x: index * 10, y: 100 }));
+  const occupied = { x: 200, y: 100, width: 48, height: 22, directionX: 0, directionY: 1 };
+  const placement = placeEdgeLabel(samples, "Midpoint", [occupied], [], [], undefined);
+
+  assert.deepEqual({ x: placement.x, y: placement.y }, { x: 200, y: 76 });
+});
+
+test("edge-label recovery prefers the candidate with greater minimum Node clearance", () => {
+  const samples = Array.from({ length: 41 }, (_, index) => ({ x: index * 10, y: 100 }));
+  const occupied = { x: 200, y: 100, width: 48, height: 22, directionX: 0, directionY: 1 };
+  const placement = placeEdgeLabel(samples, "Clearance", [occupied], [{ x: 200, y: 123 }], [], undefined);
+
+  assert.deepEqual({ x: placement.x, y: placement.y }, { x: 40, y: 76 });
+});
+
+test("edge-label recovery retains the midpoint anchor outside local Node pressure", () => {
+  const samples = Array.from({ length: 41 }, (_, index) => ({ x: index * 10, y: 100 }));
+  const occupied = { x: 200, y: 100, width: 48, height: 22, directionX: 0, directionY: 1 };
+  const placement = placeEdgeLabel(samples, "Anchor", [occupied], [{ x: 200, y: 200 }], [], undefined);
+
+  assert.deepEqual({ x: placement.x, y: placement.y }, { x: 200, y: 76 });
 });
 
 test("edge labels move along their paths to avoid another edge", () => {

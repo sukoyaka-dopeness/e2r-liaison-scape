@@ -1,5 +1,7 @@
 export const MIN_SCALE = 0.1;
 export const MAX_SCALE = 2.5;
+const RELATION_ROUTE_NODE_INFLUENCE_RADIUS = 60;
+const RELATION_LABEL_NODE_RECOVERY_CLEARANCE = 60;
 
 export function clampScale(value: number): number {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, value));
@@ -51,6 +53,15 @@ function rectOverlapArea(left: LabelRect, right: LabelRect): number {
 function placementMovementCost(candidate: LabelRect, previous: LabelRect | undefined): number {
   if (!previous) return 0;
   return Math.hypot(candidate.x - previous.x, candidate.y - previous.y) * 4;
+}
+
+function minimumNodeClearance(candidate: LabelRect, nodes: Point[]): number {
+  if (nodes.length === 0) return Infinity;
+  return Math.min(...nodes.map((node) => {
+    const nearestX = Math.max(candidate.x - candidate.width / 2, Math.min(node.x, candidate.x + candidate.width / 2));
+    const nearestY = Math.max(candidate.y - candidate.height / 2, Math.min(node.y, candidate.y + candidate.height / 2));
+    return Math.hypot(node.x - nearestX, node.y - nearestY);
+  }));
 }
 
 export function placeEdgeLabel(
@@ -112,6 +123,8 @@ export function placeEdgeLabel(
       labelOverlap,
       nodeOverlap,
       edgeOverlap,
+      preference,
+      nodeClearance: minimumNodeClearance(candidate, nodes),
       score: labelOverlap * 100
         + nodeOverlap * 10000
         + edgeOverlap * 500
@@ -124,7 +137,19 @@ export function placeEdgeLabel(
     .filter(({ sampleIndex, labelOverlap, nodeOverlap, edgeOverlap }) =>
       sampleIndex === stableCandidate.sampleIndex && labelOverlap === 0 && nodeOverlap === 0 && edgeOverlap === 0)
     .sort((left, right) => Math.abs(left.normalOffset) - Math.abs(right.normalOffset))[0];
-  return (recoveredCandidate ?? stableCandidate).candidate;
+  const normalRecoveredCandidate = recoveredCandidate ?? stableCandidate;
+  const safeSameNormalCandidates = scoredCandidates
+    .filter(({ normalOffset, labelOverlap, nodeOverlap, edgeOverlap }) =>
+      normalOffset === normalRecoveredCandidate.normalOffset
+      && labelOverlap === 0 && nodeOverlap === 0 && edgeOverlap === 0)
+    .sort((left, right) => left.preference - right.preference);
+  const anchorCandidate = safeSameNormalCandidates[0];
+  const selected = anchorCandidate && anchorCandidate.nodeClearance < RELATION_LABEL_NODE_RECOVERY_CLEARANCE
+    ? safeSameNormalCandidates
+      .slice()
+      .sort((left, right) => right.nodeClearance - left.nodeClearance || left.preference - right.preference)[0]
+    : (anchorCandidate ?? normalRecoveredCandidate);
+  return selected.candidate;
 }
 
 function textDisplayWidth(value: string, maxLength: number): number {
@@ -375,7 +400,7 @@ export function routeGraphEdge(
     const geometry = geometryForOffset(candidateOffset);
     const { samples } = geometry;
     const nodeOverlapScore = routeObstacles.reduce((total, obstacle) => total + samples.reduce((sampleTotal, point) => {
-      const penetration = Math.max(0, 42 - Math.hypot(point.x - obstacle.x, point.y - obstacle.y));
+      const penetration = Math.max(0, RELATION_ROUTE_NODE_INFLUENCE_RADIUS - Math.hypot(point.x - obstacle.x, point.y - obstacle.y));
       return sampleTotal + penetration * penetration;
     }, 0), 0);
     const innerSamples = samples.slice(5, -5);
