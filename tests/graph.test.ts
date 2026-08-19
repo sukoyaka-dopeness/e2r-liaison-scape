@@ -5,6 +5,7 @@ import { COORDINATE_DRAFT_EXTENSION_ID, COORDINATE_EXTENSION_ID, applyStoredCoor
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, graphEdgePath, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, wrapNodeLabel, zoomScale } from "../src/viewport.ts";
 import { interpolateLabelRect, isLabelTransitionPathSafe, reconcileRelationLabelVisualState } from "../src/relation-label-presentation.ts";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualNodeLabelPosition, reconstructManualRelationLabelTarget } from "../src/relation-label-presentation.ts";
+import { boundedHoverDescription, composeHoverLines, placementOwnership } from "../src/placement-ownership.ts";
 
 test("A2: builds Entity nodes and Relation edges without making Relations nodes", () => {
   const dataset: Dataset = {
@@ -727,6 +728,27 @@ test("manual Node-label offset follows its point-like owner", () => {
   const offset = deriveManualNodeLabelOffset({ x: 100, y: 80 }, { x: 140, y: 50 });
   assert.deepEqual(offset, { x: 40, y: -30 });
   assert.deepEqual(reconstructManualNodeLabelPosition({ x: 220, y: 180 }, offset), { x: 260, y: 150 });
+});
+
+test("placement ownership maps automatic and manual states consistently", () => {
+  assert.equal(placementOwnership(false), "automatic");
+  assert.equal(placementOwnership(true), "user");
+});
+
+test("hover descriptions are bounded and preserve empty descriptions", () => {
+  assert.equal(boundedHoverDescription("  short description  "), "short description");
+  assert.equal(boundedHoverDescription(""), "");
+  assert.equal(boundedHoverDescription("x".repeat(20), 10).length, 10);
+});
+
+test("hover content keeps ownership on its own line", () => {
+  assert.deepEqual(composeHoverLines("entity", { name: "Entity", ownership: "" }), ["Entity"]);
+  assert.deepEqual(composeHoverLines("node-label", { description: "Description", ownership: "User placement" }), ["Description", "User placement"]);
+  assert.deepEqual(composeHoverLines("node-label", { ownership: "Automatic placement" }), ["Automatic placement"]);
+  assert.deepEqual(composeHoverLines("relation-label", { name: "Supports", ownership: "User placement" }), ["Supports", "User placement"]);
+  assert.deepEqual(composeHoverLines("relation-label", { ownership: "Automatic placement" }), ["Automatic placement"]);
+  assert.deepEqual(composeHoverLines("relation-route", { source: "A", target: "B", ownership: "Automatic placement" }), ["A", "B", "Automatic placement"]);
+  assert.equal(composeHoverLines("node-label", { description: "x".repeat(200), ownership: "Automatic placement" })[0]!.length, 96);
 });
 
 test("a manual curve offset overrides automatic routing while keeping node-boundary attachments", () => {

@@ -120,6 +120,8 @@ li { margin: .35rem 0; }
 .edge-label-group:active,
 .node-label-group:active { cursor: grabbing; }
 .label-drag-hit { fill: transparent; stroke: none; pointer-events: all; }
+.placement-hover-popover { position: fixed; z-index: 30; max-width: min(240px, calc(100vw - 24px)); padding: 6px 8px; border: 1px solid #d9d5df; border-radius: 6px; color: #08060d; background: rgba(255,255,255,.96); box-shadow: 0 4px 14px rgba(8,6,13,.16); font-size: .875rem; line-height: 1.35; overflow-wrap: anywhere; pointer-events: none; }
+.placement-hover-popover__ownership { margin-top: 4px; font-size: .75rem; font-weight: 600; line-height: 1.2; }
 .node { cursor: grab; color: #2563eb; }
 .node:active { cursor: grabbing; }
 .node .entity-body { fill: #dbeafe; stroke: currentColor; stroke-width: 1.25; }

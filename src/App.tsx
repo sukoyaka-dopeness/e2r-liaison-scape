@@ -16,6 +16,7 @@ import { CreationDialog } from "./components/CreationDialog";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatLoadedDataset, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
+import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -59,6 +60,7 @@ export default function App() {
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [manualLabelRevision, setManualLabelRevision] = useState(0);
+  const [hoveredPlacement, setHoveredPlacement] = useState<{ target: PlacementTarget | "entity"; id: string; clientX: number; clientY: number } | null>(null);
   const previousNodeLabelPlacements = useRef(new Map<string, LabelRect>());
   const previousEdgeLabelPlacements = useRef(new Map<string, LabelRect>());
   const relationLabelVisualState = useRef(new Map<string, RelationLabelVisualState>());
@@ -226,6 +228,17 @@ export default function App() {
     (edgeLayerIndexes.get(left.id) ?? -1) - (edgeLayerIndexes.get(right.id) ?? -1));
   const displayedNodes = [...graph.nodes].sort((left, right) =>
     (nodeLayerIndexes.get(left.id) ?? -1) - (nodeLayerIndexes.get(right.id) ?? -1));
+  function placementText(target: PlacementTarget, id: string): string {
+    const manual = target === "relation-route"
+      ? edgeCurveOffsets[id] !== undefined || selfLoopOverrides[id] !== undefined
+      : target === "relation-label"
+        ? manualRelationLabelAnchors.current.has(id)
+        : manualNodeLabelOffsets.current.has(id);
+    return translate(locale, placementOwnership(manual) === "user" ? "userPlacement" : "automaticPlacement");
+  }
+  function setPlacementHover(event: React.PointerEvent<SVGElement>, target: PlacementTarget | "entity", id: string) {
+    setHoveredPlacement({ target, id, clientX: event.clientX, clientY: event.clientY });
+  }
 
   useEffect(() => {
     const graphElement = graphRef.current;
@@ -1157,7 +1170,12 @@ export default function App() {
                 >
                   <path d={edge.path} className="edge-halo" />
                   <path d={edge.path} className="edge" markerEnd="url(#arrow)" />
-                  <path d={edge.path} className="edge-hit-area" />
+                  <path
+                    d={edge.path}
+                    className="edge-hit-area"
+                    onPointerEnter={(event) => setPlacementHover(event, "relation-route", edge.id)}
+                    onPointerLeave={() => setHoveredPlacement((value) => value?.target === "relation-route" && value.id === edge.id ? null : value)}
+                  />
                 </g>;
               })}
               {displayedEdges.map((edge) => {
@@ -1172,16 +1190,33 @@ export default function App() {
                   onPointerDown={(event) => { event.stopPropagation(); startGraphPointer(event, { kind: "edge-label", id: edge.id }); }}
                 >
                   <g transform={`translate(${labelPoint.x} ${labelPoint.y})`}>
-                    <rect className="label-drag-hit" x={-Math.max(24, edge.label.length * 3.5)} y={-18} width={Math.max(48, edge.label.length * 7)} height="22" rx="3" />
+                    <rect
+                      className="label-drag-hit"
+                      x={-Math.max(24, edge.label.length * 3.5)}
+                      y={-18}
+                      width={Math.max(48, edge.label.length * 7)}
+                      height="22"
+                      rx="3"
+                      onPointerEnter={(event) => setPlacementHover(event, "relation-label", edge.id)}
+                      onPointerLeave={() => setHoveredPlacement((value) => value?.target === "relation-label" && value.id === edge.id ? null : value)}
+                    />
                     <text className="edge-label" x="0" y="-5" aria-hidden="true">{edge.label}</text>
                   </g>
                 </g>;
               })}
               {displayedNodes.map((node) => { const position = nodePosition(node); return (
                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onContextMenu={(event) => openEntityDetailFromContext(node.id, event)} onPointerDown={(event) => { event.stopPropagation(); setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
-                  <rect className="entity-body" x="-32" y="-32" width="64" height="64" rx="12" />
                   <circle className="connection-handle" cx="34" cy="16" r="7" onPointerDown={(event) => startRelationCreation(event, node.id)} />
-                  <title>{node.description ? `${node.label}\n${node.description}` : node.label}</title>
+                  <rect
+                    className="entity-body"
+                    x="-32"
+                    y="-32"
+                    width="64"
+                    height="64"
+                    rx="12"
+                    onPointerEnter={(event) => setPlacementHover(event, "entity", node.id)}
+                    onPointerLeave={() => setHoveredPlacement((value) => value?.target === "entity" && value.id === node.id ? null : value)}
+                  />
                   {(() => {
                     const placement = nodeLabelPlacements.get(node.id)!;
                     const descriptionLines = node.description.trim()
@@ -1211,7 +1246,16 @@ export default function App() {
                           y2={offsetY - directionY * boundaryDistance}
                         />
                       )}
-                      <rect className="label-drag-hit" x={offsetX - placement.width / 2} y={offsetY - placement.height / 2} width={placement.width} height={placement.height} rx="3" />
+                      <rect
+                        className="label-drag-hit"
+                        x={offsetX - placement.width / 2}
+                        y={offsetY - placement.height / 2}
+                        width={placement.width}
+                        height={placement.height}
+                        rx="3"
+                        onPointerEnter={(event) => setPlacementHover(event, "node-label", node.id)}
+                        onPointerLeave={() => setHoveredPlacement((value) => value?.target === "node-label" && value.id === node.id ? null : value)}
+                      />
                       <text className="node-label" textAnchor="middle" x={offsetX} y={offsetY + (descriptionLines.length === 0 ? 4 : descriptionLines.length === 1 ? -3 : -15)}>{truncateNodeText(node.label, 22)}</text>
                       {descriptionLines.map((line, index) => (
                         <text key={`description-${index}`} className="node-description" textAnchor="middle" x={offsetX} y={offsetY + (descriptionLines.length === 1 ? 12 : index * 15)}>{line}</text>
@@ -1222,6 +1266,30 @@ export default function App() {
               ); })}
             </g>
           </svg>
+          {hoveredPlacement && (
+            <div
+              className="placement-hover-popover"
+              role="status"
+              style={{ left: hoveredPlacement.clientX + 12, top: hoveredPlacement.clientY + 12 }}
+            >
+              {(() => {
+                const node = graph.nodes.find(({ id }) => id === hoveredPlacement.id);
+                const edge = routedEdges.find(({ id }) => id === hoveredPlacement.id);
+                const relation = dataset?.relations.find(({ id }) => id === hoveredPlacement.id);
+                const source = edge ? graph.nodes.find(({ id }) => id === edge.sourceId) : undefined;
+                const target = edge ? graph.nodes.find(({ id }) => id === edge.targetId) : undefined;
+                const kind = hoveredPlacement.target;
+                const lines = composeHoverLines(kind, {
+                  name: kind === "entity" ? node?.label : typeof relation?.name === "string" ? relation.name : undefined,
+                  description: kind === "node-label" ? node?.description : undefined,
+                  source: source?.label,
+                  target: target?.label,
+                  ownership: kind === "entity" ? "" : placementText(kind, hoveredPlacement.id),
+                });
+                return lines.map((line, index) => <div key={`${hoveredPlacement.id}-${index}`} className={kind === "entity" || index !== lines.length - 1 ? undefined : "placement-hover-popover__ownership"}>{line}</div>);
+              })()}
+            </div>
+          )}
           <p role="status">{selectedId
             ? formatSelectedEntity(locale, selectedId)
             : selectedRelationId
@@ -1276,8 +1344,10 @@ export default function App() {
           {dataset && coordinateMigrationReadiness && !coordinateMigrationReadiness.ready && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_no_source" && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_target_exists" && (
             <p className="status-message" role="status">
               {translate(locale, "coordinateDraftMigrationRefusal")}
-            </p>
+          </p>
           )}
+          {selectedRelationDetail && <p role="status">{translate(locale, "relationRoutePlacement")}: {placementText("relation-route", selectedRelationDetail.relation.id)} · {translate(locale, "relationLabelPlacement")}: {placementText("relation-label", selectedRelationDetail.relation.id)}</p>}
+          {selectedId && <p role="status">{translate(locale, "nodeLabelPlacement")}: {placementText("node-label", selectedId)}</p>}
           {coordinatesDirty && <p className="selection-message" role="status">{translate(locale, "movedCoordinatesTemporaryDetail")}</p>}
           {detailOpen && selectedDetail && (
             <EntityDetailDialog
