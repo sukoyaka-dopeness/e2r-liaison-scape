@@ -30,6 +30,7 @@ export default function App() {
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hoveredEntityId, setHoveredEntityId] = useState<string | null>(null);
   const [entityNameDraft, setEntityNameDraft] = useState("");
   const [entityDescriptionDraft, setEntityDescriptionDraft] = useState("");
   const [selectedRelationId, setSelectedRelationId] = useState<string | null>(null);
@@ -60,7 +61,7 @@ export default function App() {
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [manualLabelRevision, setManualLabelRevision] = useState(0);
-  const [hoveredPlacement, setHoveredPlacement] = useState<{ target: PlacementTarget | "entity"; id: string; clientX: number; clientY: number } | null>(null);
+  const [hoveredPlacement, setHoveredPlacement] = useState<{ target: PlacementTarget | "entity"; id: string; clientX: number; clientY: number; entityBounds?: { left: number; bottom: number } } | null>(null);
   const previousNodeLabelPlacements = useRef(new Map<string, LabelRect>());
   const previousEdgeLabelPlacements = useRef(new Map<string, LabelRect>());
   const relationLabelVisualState = useRef(new Map<string, RelationLabelVisualState>());
@@ -253,7 +254,8 @@ export default function App() {
     return translate(locale, placementOwnership(manual) === "user" ? "userPlacement" : "automaticPlacement");
   }
   function setPlacementHover(event: React.PointerEvent<SVGElement>, target: PlacementTarget | "entity", id: string) {
-    setHoveredPlacement({ target, id, clientX: event.clientX, clientY: event.clientY });
+    const bounds = target === "entity" ? event.currentTarget.getBoundingClientRect() : null;
+    setHoveredPlacement({ target, id, clientX: event.clientX, clientY: event.clientY, entityBounds: bounds ? { left: bounds.left, bottom: bounds.bottom } : undefined });
   }
 
   useEffect(() => {
@@ -1273,8 +1275,10 @@ export default function App() {
                 </g>;
               })}
               {displayedNodes.map((node) => { const position = nodePosition(node); return (
-                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onContextMenu={(event) => openObjectContextFromPointer("entity", node.id, event)} onPointerDown={(event) => { event.stopPropagation(); setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
-                  <circle className="connection-handle" cx="34" cy="16" r="7" onPointerDown={(event) => startRelationCreation(event, node.id)} />
+                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}${selectedId === node.id || hoveredEntityId === node.id || relationCreationPreview?.sourceId === node.id ? " handle-visible" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onPointerEnter={(event) => { if (event.pointerType === "mouse") setHoveredEntityId(node.id); }} onPointerLeave={(event) => { if (event.pointerType === "mouse") setHoveredEntityId((value) => value === node.id ? null : value); }} onContextMenu={(event) => openObjectContextFromPointer("entity", node.id, event)} onPointerDown={(event) => { event.stopPropagation(); setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
+                  <rect className="connection-handle-corridor" x="24" y="4" width="20" height="28" onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }} />
+                  <circle className="connection-hit-target" cx="34" cy="16" r="12" onPointerDown={(event) => startRelationCreation(event, node.id)} />
+                  <circle className="connection-handle" cx="34" cy="16" r="8.5" onPointerDown={(event) => startRelationCreation(event, node.id)} />
                   <rect
                     className="entity-body"
                     x="-32"
@@ -1336,11 +1340,16 @@ export default function App() {
               ); })}
             </g>
           </svg>
-          {hoveredPlacement && (
+          {hoveredPlacement && !(hoveredPlacement.target === "entity" && relationCreationPreview?.sourceId === hoveredPlacement.id) && (
             <div
               className="placement-hover-popover"
               role="status"
-              style={{ left: hoveredPlacement.clientX + 12, top: hoveredPlacement.clientY + 12 }}
+              style={hoveredPlacement.target === "entity" && hoveredPlacement.entityBounds
+                ? {
+                    left: Math.max(12, Math.min(hoveredPlacement.entityBounds.left, window.innerWidth - 252)),
+                    top: Math.max(12, Math.min(hoveredPlacement.entityBounds.bottom + 8, window.innerHeight - 96)),
+                  }
+                : { left: hoveredPlacement.clientX + 12, top: hoveredPlacement.clientY + 12 }}
             >
               {(() => {
                 const node = graph.nodes.find(({ id }) => id === hoveredPlacement.id);
