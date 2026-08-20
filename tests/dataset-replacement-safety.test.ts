@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, deriveReplacementSafetyState, discardAndContinueStagedDatasetReplacement, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, replacementActions, resetManualRelationRoute, resolveExportTransition } from "../src/dataset-replacement-safety.ts";
+import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, deriveReplacementSafetyState, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, replacementActions, resetManualRelationRoute, resolveExportTransition } from "../src/dataset-replacement-safety.ts";
 import { canRestoreReplacementTrigger } from "../src/replacement-focus.ts";
 import { loadDataset } from "../src/services/DatasetService.ts";
 
@@ -12,6 +12,16 @@ test("datasetModified uses Dataset content equality and clears after a true reve
   assert.equal(isDatasetModified(baseline, equalCopy), false);
   assert.equal(isDatasetModified(baseline, edited), true);
   assert.equal(isDatasetModified(baseline, { ...baseline, entities: [{ id: "entity-1", name: "Original" }] }), false);
+});
+
+test("document exit loss risk follows Dataset modification or pending user work", () => {
+  assert.equal(hasDocumentExitLossRisk(false, false), false);
+  assert.equal(hasDocumentExitLossRisk(true, false), true);
+  assert.equal(hasDocumentExitLossRisk(false, true), true);
+  assert.equal(hasDocumentExitLossRisk(true, true), true);
+  assert.equal(hasDocumentExitLossRisk(isDatasetModified(baseline, baseline), false), false);
+  assert.equal(hasDocumentExitLossRisk(false, true), true);
+  assert.equal(hasDocumentExitLossRisk(false, false), false);
 });
 
 test("replacement safety keeps Dataset, pending work, and recoverability independent", () => {

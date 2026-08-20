@@ -49,6 +49,10 @@ export function hasPendingUserWork(sources: PendingUserWorkSources): boolean {
   return Object.values(sources).some(Boolean);
 }
 
+export function hasDocumentExitLossRisk(datasetModified: boolean, pendingUserWork: boolean): boolean {
+  return datasetModified || pendingUserWork;
+}
+
 export function deriveReplacementSafetyState({
   cleanBaseline,
   currentDataset,

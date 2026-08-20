@@ -18,7 +18,7 @@ import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, getA
 import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatLoadedDataset, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
-import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
+import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
 import { canRestoreReplacementTrigger } from "./replacement-focus";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
@@ -280,7 +280,16 @@ export default function App() {
       || relationTargetDraft !== selectedRelationDetail.targetId
     ),
   });
-  const replacementLossRisk = datasetModified || pendingUserWork;
+  const replacementLossRisk = hasDocumentExitLossRisk(datasetModified, pendingUserWork);
+  useEffect(() => {
+    if (!replacementLossRisk) return;
+    const preventDocumentExitLoss = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", preventDocumentExitLoss);
+    return () => window.removeEventListener("beforeunload", preventDocumentExitLoss);
+  }, [replacementLossRisk]);
   const edgeLayerIndexes = new Map(edgeLayerOrder.map((id, index) => [id, index]));
   const nodeLayerIndexes = new Map(nodeLayerOrder.map((id, index) => [id, index]));
   const displayedEdges = [...routedEdges].sort((left, right) =>
