@@ -40,7 +40,7 @@ body { margin: 0; }
 .dataset-actions input { min-width: 0; max-width: 100%; font: inherit; font-size: max(16px, 1em); }
 .open-dataset-button { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 12px; border: 1px solid #e5e4e7; border-radius: 6px; color: #08060d; background: #fff; cursor: pointer; }
 .open-dataset-button:hover { border-color: rgba(170, 59, 255, .5); background: #f5e9ff; }
-.open-dataset-button input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.file-input-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .dataset-actions__buttons, .viewport-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .status-message { margin: 6px 0; min-height: 1.45em; font-size: .9rem; }
 .dataset-metadata { display: flex; gap: 8px; align-items: center; margin: 0 0 4px; padding: 0; border: 0; font-size: .86rem; }
@@ -206,7 +206,9 @@ li { margin: .35rem 0; }
 .related-relations button { min-height: 32px; padding: 4px 8px; text-align: left; font-size: .82rem; }
 .detail-danger button { border-color: #fca5a5; color: #991b1b; background: #fff7f7; }
 .detail-danger button:hover:not(:disabled) { border-color: #dc2626; background: #fee2e2; }
-.confirmation { width: min(24rem, calc(100% - 32px)); }
+.confirmation { width: min(42rem, calc(100% - 32px)); }
+.replacement-confirmation .detail-actions { flex-wrap: nowrap; gap: 8px; }
+.replacement-confirmation .detail-actions button { white-space: nowrap; }
 .confirmation-backdrop { z-index: 30; }
 .detail.confirmation { z-index: 31; }
 .detail.confirmation-entity,
@@ -252,6 +254,8 @@ li { margin: .35rem 0; }
   .home-footer button { min-height: 36px; padding: 6px 8px; font-size: 14px; }
   .graph { min-height: 20rem; }
   .detail { width: calc(100% - 16px); max-height: calc(100svh - 16px); padding: 16px; }
+  .replacement-confirmation .detail-actions { align-items: stretch; flex-direction: column; }
+  .replacement-confirmation .detail-actions button { width: 100%; }
   .detail dl { grid-template-columns: 1fr; min-height: 0; gap: 2px; }
   .detail dd { margin-bottom: 8px; }
   .dataset-metadata { grid-template-columns: 1fr; }

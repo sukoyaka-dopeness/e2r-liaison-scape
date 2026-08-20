@@ -16,6 +16,15 @@ export type ReplacementSafetyState = {
   replacementCase: "clean" | "modified-only" | "pending-only" | "modified-and-pending";
 };
 
+export type ReplacementAction = "cancel" | "discard-and-continue" | "export-and-continue" | "export-dataset";
+
+export function replacementActions(datasetModified: boolean, pendingUserWork: boolean): ReplacementAction[] {
+  if (!datasetModified && !pendingUserWork) return [];
+  if (datasetModified && !pendingUserWork) return ["cancel", "discard-and-continue", "export-and-continue"];
+  if (datasetModified && pendingUserWork) return ["cancel", "discard-and-continue", "export-dataset"];
+  return ["cancel", "discard-and-continue"];
+}
+
 function contentEqual(left: unknown, right: unknown): boolean {
   if (Object.is(left, right)) return true;
   if (!left || !right || typeof left !== "object" || typeof right !== "object") return false;
@@ -132,4 +141,12 @@ export function cancelStagedDatasetReplacement<T>(_stagedCandidate: T): { staged
 
 export function discardAndContinueStagedDatasetReplacement<T>(stagedCandidate: T): { candidate: T; stagedCandidate: null; refreshBaseline: true } {
   return { candidate: stagedCandidate, stagedCandidate: null, refreshBaseline: true };
+}
+
+export function resolveExportTransition({ success, pendingUserWork }: { success: boolean; pendingUserWork: boolean }): { refreshBaseline: boolean; acceptCandidate: boolean; keepCandidate: boolean } {
+  return {
+    refreshBaseline: success,
+    acceptCandidate: success && !pendingUserWork,
+    keepCandidate: !success || pendingUserWork,
+  };
 }

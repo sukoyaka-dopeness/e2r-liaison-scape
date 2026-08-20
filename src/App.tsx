@@ -9,6 +9,7 @@ import { assessRelationDeletion, createRelation, deleteRelation } from "./servic
 import { getRelationDetail, updateRelation } from "./services/RelationService";
 import { canCompleteLongPress, createCanvasContextMenu, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, type ContextMenu } from "./direct-graph-authoring";
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
+import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
 import { CreditsDialog } from "./components/CreditsDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
@@ -18,6 +19,7 @@ import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, for
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
 import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
+import { canRestoreReplacementTrigger } from "./replacement-focus";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -83,6 +85,10 @@ export default function App() {
   const longPressRef = useRef<{ pointerId: number; startX: number; startY: number; timer: number; kind: "canvas" | "entity" | "node-label" | "relation-path" | "relation-label"; id?: string; canceled: boolean } | null>(null);
   const longPressClaimedRef = useRef<number | null>(null);
   const suppressNextContextMenuRef = useRef(false);
+  const homeOpenFileInputRef = useRef<HTMLInputElement>(null);
+  const workspaceOpenFileInputRef = useRef<HTMLInputElement>(null);
+  const replacementTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const restoreReplacementFocusRef = useRef(false);
 
   useEffect(() => {
     saveLocale(window.localStorage, locale);
@@ -98,6 +104,18 @@ export default function App() {
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
+
+  useEffect(() => {
+    if (pendingDatasetReplacement || !restoreReplacementFocusRef.current) return;
+    restoreReplacementFocusRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      const trigger = replacementTriggerRef.current;
+      if (trigger && canRestoreReplacementTrigger(trigger)) trigger.focus();
+      else document.querySelector<HTMLElement>(".home-page h1, .app-brand-button")?.focus();
+      replacementTriggerRef.current = null;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [pendingDatasetReplacement]);
   const metadata = dataset ? getDatasetMetadata(dataset) : null;
   const coordinateMigrationReadiness = dataset ? assessCoordinateDraftMigration(dataset) : null;
   const spaceMigrationReadiness = dataset ? assessLiaisonScapeSpaceMigration(dataset) : null;
@@ -458,6 +476,8 @@ export default function App() {
   }, [viewportToolbarPosition]);
 
   function acceptDataset(nextDataset: Dataset) {
+    replacementTriggerRef.current = null;
+    restoreReplacementFocusRef.current = false;
     setContextMenu(null);
     setHoveredPlacement(null);
     resetPreviousLabelPlacements();
@@ -483,26 +503,68 @@ export default function App() {
     enterWorkspace();
   }
 
+  function refreshDatasetBaseline() {
+    if (!dataset) return;
+    cleanDatasetBaseline.current = structuredClone(dataset);
+    setDatasetModified(false);
+  }
+
   function updateDataset(nextDataset: Dataset) {
     setDataset(nextDataset);
     setDatasetModified(isDatasetModified(cleanDatasetBaseline.current ?? nextDataset, nextDataset));
   }
 
-  function requestDatasetReplacement(candidate: Dataset) {
+  function requestDatasetReplacement(candidate: Dataset, trigger?: HTMLButtonElement | null) {
+    if (pendingDatasetReplacement) return;
+    if (trigger) replacementTriggerRef.current = trigger;
     const decision = decideDatasetReplacement({ candidate, datasetModified, pendingUserWork });
     if (decision.action === "stage") setPendingDatasetReplacement(decision.candidate);
     else acceptDataset(decision.candidate);
   }
 
   function cancelDatasetReplacement() {
-    if (pendingDatasetReplacement) setPendingDatasetReplacement(cancelStagedDatasetReplacement(pendingDatasetReplacement).stagedCandidate);
+    if (pendingDatasetReplacement) {
+      restoreReplacementFocusRef.current = true;
+      setPendingDatasetReplacement(cancelStagedDatasetReplacement(pendingDatasetReplacement).stagedCandidate);
+    }
   }
 
   function discardAndContinueDatasetReplacement() {
     if (pendingDatasetReplacement) acceptDataset(discardAndContinueStagedDatasetReplacement(pendingDatasetReplacement).candidate);
   }
 
-  function open(raw: string) {
+  function exportCurrentDataset(): boolean {
+    if (!dataset) return false;
+    const exportDiagnostics = validateDatasetForExport(dataset);
+    setDiagnostics(exportDiagnostics);
+    if (exportDiagnostics.some(({ severity }) => severity === "error")) {
+      setMessage(translate(locale, "exportBlockedValidation"));
+      return false;
+    }
+    if (exportDiagnostics.length > 0) setMessage(translate(locale, "exportWithWarnings"));
+    const blob = new Blob([serializeDataset(dataset)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "e2r-dataset.json";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+    refreshDatasetBaseline();
+    return true;
+  }
+
+  function exportAndContinueDatasetReplacement() {
+    if (!pendingDatasetReplacement || pendingUserWork || !exportCurrentDataset()) return;
+    acceptDataset(pendingDatasetReplacement);
+  }
+
+  function exportDatasetOnly() {
+    exportCurrentDataset();
+  }
+
+  function open(raw: string, trigger?: HTMLButtonElement | null) {
     const result = loadDataset(raw);
     setDiagnostics(result.diagnostics);
     if (result.parseError) {
@@ -514,15 +576,15 @@ export default function App() {
       setMessage(translate(locale, "datasetValidationFailure"));
       return;
     }
-    requestDatasetReplacement(candidate);
+    requestDatasetReplacement(candidate, trigger);
     setMessage(formatLoadedDataset(locale, candidate.entities.length, candidate.relations.length));
   }
 
-  async function openSample() {
+  async function openSample(trigger?: HTMLButtonElement | null) {
     try {
       const response = await fetch(`${import.meta.env.BASE_URL}lighthouse-restoration-demo.${locale}.e2r.json`);
       if (!response.ok) throw new Error(`Sample request failed: ${response.status}`);
-      open(await response.text());
+      open(await response.text(), trigger);
     } catch {
       setMessage(translate(locale, "sampleDatasetLoadFailure"));
     }
@@ -533,25 +595,32 @@ export default function App() {
     window.history.pushState({ liaisonScapeView: "workspace" }, "", window.location.href);
   }
 
-  function startNewDataset() {
-    requestDatasetReplacement(structuredClone(emptyDataset));
+  function startNewDataset(trigger?: HTMLButtonElement | null) {
+    requestDatasetReplacement(structuredClone(emptyDataset), trigger);
   }
+
+  const replacementDialog = dataset && pendingDatasetReplacement
+    ? <DatasetReplacementDialog locale={locale} datasetModified={datasetModified} pendingUserWork={pendingUserWork} onCancel={cancelDatasetReplacement} onDiscard={discardAndContinueDatasetReplacement} onExportAndContinue={exportAndContinueDatasetReplacement} onExportDataset={exportDatasetOnly} />
+    : null;
 
   if (view === "home") return (
     <div className="app-frame home-page">
       <header className="app-header"><button className="app-brand app-brand-button" type="button" onClick={() => setView("home")}>LiaisonScape</button></header>
       <main className="home-content">
-        <h1>{translate(locale, "getStarted")}</h1>
+        <h1 tabIndex={-1}>{translate(locale, "getStarted")}</h1>
         <p className="home-description">{translate(locale, "homeDescription")}</p>
         <div className="home-actions">
           {dataset && <button type="button" onClick={enterWorkspace}>{translate(locale, "continueEditing")}</button>}
-          <button type="button" onClick={startNewDataset}>{translate(locale, "newDataset")}</button>
-          <label className="open-dataset-button">{translate(locale, "openDataset")}<input
-            type="file" accept="application/json,.json,.e2r.json"
-            onChange={(event) => { const file = event.target.files?.[0]; if (file) void file.text().then(open); }}
-          /></label>
+          <button type="button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => startNewDataset(event.currentTarget)}>{translate(locale, "newDataset")}</button>
+          <button type="button" className="open-dataset-button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; homeOpenFileInputRef.current?.click(); }}>{translate(locale, "openDataset")}</button>
+          <input
+            ref={homeOpenFileInputRef}
+            className="file-input-hidden"
+            type="file" tabIndex={-1} disabled={Boolean(pendingDatasetReplacement)} accept="application/json,.json,.e2r.json"
+            onChange={(event) => { const file = event.target.files?.[0]; const trigger = replacementTriggerRef.current; if (file) void file.text().then((raw) => open(raw, trigger)); }}
+          />
           <div className="sample-action">
-            <button type="button" onClick={() => void openSample()}>{translate(locale, "openSampleDataset")}</button>
+            <button type="button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => void openSample(event.currentTarget)}>{translate(locale, "openSampleDataset")}</button>
           </div>
         </div>
         <nav className="home-guides" aria-label={translate(locale, "guides")}>
@@ -574,6 +643,7 @@ export default function App() {
         <button type="button" className="credits-button" onClick={() => setCreditsOpen(true)}>{translate(locale, "credits")}</button>
       </footer>
       {creditsOpen && <CreditsDialog locale={locale} onClose={() => setCreditsOpen(false)} />}
+      {replacementDialog}
     </div>
   );
 
@@ -1137,24 +1207,7 @@ export default function App() {
     setEdgeLabelOffsets({});
   }
 
-  function exportDataset() {
-    if (!dataset) return;
-    const exportDiagnostics = validateDatasetForExport(dataset);
-    setDiagnostics(exportDiagnostics);
-    if (exportDiagnostics.some(({ severity }) => severity === "error")) {
-      setMessage(translate(locale, "exportBlockedValidation"));
-      return;
-    }
-    if (exportDiagnostics.length > 0) setMessage(translate(locale, "exportWithWarnings"));
-    const blob = new Blob([serializeDataset(dataset)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "e2r-dataset.json";
-    anchor.click();
-    URL.revokeObjectURL(url);
-    acceptDataset(dataset);
-  }
+  function exportDataset() { exportCurrentDataset(); }
 
   return (
     <div className="app-frame">
@@ -1168,16 +1221,20 @@ export default function App() {
           <p>Entity-first E2R relationship graph.</p>
         </div>
         <div className="dataset-actions">
-          <label className="open-dataset-button mobile-hide">{translate(locale, "openWorkspaceDataset")}<input
-            type="file"
+          <button type="button" className="open-dataset-button mobile-hide" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; workspaceOpenFileInputRef.current?.click(); }}>{translate(locale, "openWorkspaceDataset")}</button>
+          <input
+            ref={workspaceOpenFileInputRef}
+            className="file-input-hidden"
+            type="file" tabIndex={-1} disabled={Boolean(pendingDatasetReplacement)}
             accept="application/json,.json,.e2r.json"
             onChange={(event) => {
               const file = event.target.files?.[0];
-              if (file) void file.text().then(open);
+              const trigger = replacementTriggerRef.current;
+              if (file) void file.text().then((raw) => open(raw, trigger));
             }}
-          /></label>
+          />
           <div className="dataset-actions__buttons">
-            <button type="button" className="desktop-secondary-action" disabled={!dataset} onClick={exportDataset}>{translate(locale, "exportDataset")}</button>
+            <button type="button" className="desktop-secondary-action" disabled={!dataset || Boolean(pendingDatasetReplacement)} onClick={exportDataset}>{translate(locale, "exportDataset")}</button>
             <button type="button" disabled={!dataset} onClick={() => openCreation("entity")}>{translate(locale, "addEntity")}</button>
             <button type="button" disabled={!dataset} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
             <button type="button" className="desktop-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
@@ -1226,7 +1283,8 @@ export default function App() {
           onCancel={() => { setCreationMode(null); setPendingEntityPlacement(null); }}
         />
       )}
-{dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
+      {replacementDialog}
+      {dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
       {dataset && (
         <dl className="dataset-metadata" aria-label={translate(locale, "datasetMetadata")}>
           <dt>{translate(locale, "datasetTitle")}</dt><dd>{metadata?.title ?? translate(locale, "untitled")}</dd>

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, deriveReplacementSafetyState, discardAndContinueStagedDatasetReplacement, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "../src/dataset-replacement-safety.ts";
+import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, deriveReplacementSafetyState, discardAndContinueStagedDatasetReplacement, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, replacementActions, resetManualRelationRoute, resolveExportTransition } from "../src/dataset-replacement-safety.ts";
+import { canRestoreReplacementTrigger } from "../src/replacement-focus.ts";
 import { loadDataset } from "../src/services/DatasetService.ts";
 
 const baseline = { version: "1.0", entities: [{ id: "entity-1", name: "Original" }], events: [], relations: [] };
@@ -109,4 +110,24 @@ test("cancel and discard transitions preserve or accept only the staged candidat
 test("invalid JSON and schema-invalid loads generate no replacement candidate", () => {
   assert.equal(candidateFromLoadResult(loadDataset("{ invalid")), null);
   assert.equal(candidateFromLoadResult(loadDataset(JSON.stringify({ version: "1.0", entities: [], events: [] }))), null);
+});
+
+test("D6 exposes only the actions allowed by each safety state", () => {
+  assert.deepEqual(replacementActions(false, false), []);
+  assert.deepEqual(replacementActions(true, false), ["cancel", "discard-and-continue", "export-and-continue"]);
+  assert.deepEqual(replacementActions(false, true), ["cancel", "discard-and-continue"]);
+  assert.deepEqual(replacementActions(true, true), ["cancel", "discard-and-continue", "export-dataset"]);
+});
+
+test("replacement focus restores only a connected and enabled initiating trigger", () => {
+  assert.equal(canRestoreReplacementTrigger({ isConnected: true, disabled: false }), true);
+  assert.equal(canRestoreReplacementTrigger({ isConnected: true, disabled: true }), false);
+  assert.equal(canRestoreReplacementTrigger({ isConnected: false, disabled: false }), false);
+  assert.equal(canRestoreReplacementTrigger(null), false);
+});
+
+test("D6 export transitions never accept a candidate after failure and preserve pending work", () => {
+  assert.deepEqual(resolveExportTransition({ success: false, pendingUserWork: false }), { refreshBaseline: false, acceptCandidate: false, keepCandidate: true });
+  assert.deepEqual(resolveExportTransition({ success: true, pendingUserWork: false }), { refreshBaseline: true, acceptCandidate: true, keepCandidate: false });
+  assert.deepEqual(resolveExportTransition({ success: true, pendingUserWork: true }), { refreshBaseline: true, acceptCandidate: false, keepCandidate: true });
 });
