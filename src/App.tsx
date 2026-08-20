@@ -678,7 +678,7 @@ export default function App() {
     const moved = drag.moved || Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) >= 4;
     dragRef.current = { ...drag, x: event.clientX, y: event.clientY, moved };
     if (drag.kind === "canvas") setPan((value) => ({ x: value.x + dx * scale, y: value.y + dy * scale }));
-    else if (drag.kind === "edge" && drag.id && selectedRelationId === drag.id) {
+    else if (drag.kind === "edge" && drag.id && drag.button === 0) {
       if (moved) { dragRef.current = { ...dragRef.current!, kind: "edge-curve" }; applyEdgeCurveDrag(drag.id, dx, dy); }
     }
     else if (drag.kind === "node" && drag.id && moved) { setCoordinatesDirty(true); setPositions((value) => ({ ...value, [drag.id!]: { ...nodePosition(nodeMap.get(drag.id!)!), x: nodePosition(nodeMap.get(drag.id!)!).x + dx, y: nodePosition(nodeMap.get(drag.id!)!).y + dy } })); }
@@ -1216,7 +1216,14 @@ export default function App() {
                   onPointerDown={(event) => {
                     event.stopPropagation();
                     setEdgeLayerOrder((value) => bringToFront(value, edge.id));
-                    if (selectedRelationId === edge.id) edgeCurveDragStartRef.current = { id: edge.id, offset: edgeCurveOffsets[edge.id], selfLoop: selfLoopOverrides[edge.id] };
+                    if (event.button === 0) {
+                      if (selectedRelationId !== edge.id) {
+                        setSelectedRelationId(edge.id);
+                        setSelectedId(null);
+                        setDetailOpen(false);
+                      }
+                      edgeCurveDragStartRef.current = { id: edge.id, offset: edgeCurveOffsets[edge.id], selfLoop: selfLoopOverrides[edge.id] };
+                    }
                     startGraphPointer(event, { kind: "edge", id: edge.id });
                   }}
                 >
