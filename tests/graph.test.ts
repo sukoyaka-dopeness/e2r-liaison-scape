@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { COORDINATE_DRAFT_EXTENSION_ID, COORDINATE_EXTENSION_ID, applyStoredCoordinates, buildEntityGraph, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type Dataset } from "../src/dataset.ts";
+import { COORDINATE_DRAFT_EXTENSION_ID, COORDINATE_EXTENSION_ID, applyStoredCoordinates, buildEntityGraph, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type Dataset, type GraphEdge } from "../src/dataset.ts";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, getArrowheadGeometry, getEntityAttachment, graphEdgePath, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, wrapNodeLabel, zoomScale } from "../src/viewport.ts";
 import { interpolateLabelRect, isLabelTransitionPathSafe, reconcileRelationLabelVisualState } from "../src/relation-label-presentation.ts";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualNodeLabelPosition, reconstructManualRelationLabelTarget } from "../src/relation-label-presentation.ts";
@@ -10,6 +10,35 @@ import { boundedHoverDescription, composeHoverLines, placementOwnership } from "
 const roundedEntityShape = { kind: "rounded-rectangle" as const, halfWidth: 32, halfHeight: 32, cornerRadius: 12 };
 function assertClose(actual: number, expected: number, tolerance = 1e-8) {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} is not close to ${expected}`);
+}
+
+function routeWithCanonicalPriority(
+  edges: GraphEdge[],
+  positions: Record<string, { x: number; y: number }>,
+  manualOffsets: Record<string, number | undefined> = {},
+) {
+  const occupiedPaths: Array<Array<{ x: number; y: number }>> = [];
+  const routes = new Map<string, ReturnType<typeof routeGraphEdge>>();
+  const compare = (left: GraphEdge, right: GraphEdge) => left.sourceId.localeCompare(right.sourceId)
+    || left.targetId.localeCompare(right.targetId)
+    || left.id.localeCompare(right.id);
+  const fixed = edges.filter((edge) => manualOffsets[edge.id] !== undefined
+    || edge.sourceId === edge.targetId
+    || (positions[edge.sourceId]!.x === positions[edge.targetId]!.x && positions[edge.sourceId]!.y === positions[edge.targetId]!.y))
+    .sort(compare);
+  const automaticOrdinary = edges.filter((edge) => !fixed.some(({ id }) => id === edge.id)).sort(compare);
+  for (const edge of [...fixed, ...automaticOrdinary]) {
+    const source = positions[edge.sourceId]!;
+    const target = positions[edge.targetId]!;
+    const obstacles = Object.entries(positions)
+      .filter(([id]) => id !== edge.sourceId && id !== edge.targetId)
+      .map(([, position]) => position);
+    const route = routeGraphEdge(source, target, edge.parallelIndex, edge.parallelCount, obstacles, occupiedPaths,
+      edge.sourceId === edge.targetId, 0, manualOffsets[edge.id]);
+    occupiedPaths.push(route.samples);
+    routes.set(edge.id, route);
+  }
+  return { returnedOrder: edges.map(({ id }) => id), routes };
 }
 
 test("rounded rectangle attachment handles cardinal directions", () => {
@@ -681,6 +710,69 @@ test("edge routes expose a stable midpoint for horizontal labels", () => {
   const selfLabelPoint = routeGraphEdge({ x: 100, y: 100 }, { x: 100, y: 100 }, 0, 1).labelPoint;
   assert.equal(selfLabelPoint.x, 100);
   assert.ok(selfLabelPoint.y < 10);
+});
+
+test("parallel slots are canonical while graph edge order follows Dataset order", () => {
+  const first: Dataset = {
+    version: "1.0", entities: [{ id: "a" }, { id: "b" }], events: [],
+    relations: [{ id: "z", sourceId: "a", targetId: "b" }, { id: "a", sourceId: "a", targetId: "b" }],
+  };
+  const reversed = { ...first, relations: [...first.relations].reverse() };
+  const firstGraph = buildEntityGraph(first);
+  const reversedGraph = buildEntityGraph(reversed);
+  assert.deepEqual(firstGraph.edges.map(({ id }) => id), ["z", "a"]);
+  assert.deepEqual(reversedGraph.edges.map(({ id }) => id), ["a", "z"]);
+  assert.deepEqual(
+    Object.fromEntries(firstGraph.edges.map(({ id, parallelIndex }) => [id, parallelIndex])),
+    Object.fromEntries(reversedGraph.edges.map(({ id, parallelIndex }) => [id, parallelIndex])),
+  );
+});
+
+test("canonical routing makes self-loop and ordinary routes permutation-invariant", () => {
+  const positions = { loop: { x: 100, y: 100 }, start: { x: -40, y: -80 }, end: { x: 160, y: 100 } };
+  const first: Dataset = {
+    version: "1.0", entities: Object.keys(positions).map((id) => ({ id })), events: [],
+    relations: [{ id: "self", sourceId: "loop", targetId: "loop" }, { id: "ordinary", sourceId: "start", targetId: "end" }],
+  };
+  const reversed = { ...first, relations: [...first.relations].reverse() };
+  const firstRoutes = routeWithCanonicalPriority(buildEntityGraph(first).edges, positions);
+  const reversedRoutes = routeWithCanonicalPriority(buildEntityGraph(reversed).edges, positions);
+  assert.equal(firstRoutes.routes.get("self")?.path, reversedRoutes.routes.get("self")?.path);
+  assert.equal(firstRoutes.routes.get("ordinary")?.path, reversedRoutes.routes.get("ordinary")?.path);
+});
+
+test("canonical routing gives the same ordinary Relation the occupied-path avoidance route", () => {
+  const positions = { a: { x: 0, y: 100 }, b: { x: 300, y: 100 }, c: { x: 50, y: 100 }, d: { x: 350, y: 100 } };
+  const first: Dataset = {
+    version: "1.0", entities: Object.keys(positions).map((id) => ({ id })), events: [],
+    relations: [{ id: "r2", sourceId: "c", targetId: "d" }, { id: "r1", sourceId: "a", targetId: "b" }],
+  };
+  const reversed = { ...first, relations: [...first.relations].reverse() };
+  const firstRoutes = routeWithCanonicalPriority(buildEntityGraph(first).edges, positions);
+  const reversedRoutes = routeWithCanonicalPriority(buildEntityGraph(reversed).edges, positions);
+  assert.equal(firstRoutes.routes.get("r1")?.path, reversedRoutes.routes.get("r1")?.path);
+  assert.equal(firstRoutes.routes.get("r2")?.path, reversedRoutes.routes.get("r2")?.path);
+  const baselineR1 = routeGraphEdge(positions.a, positions.b, 0, 1, [positions.c, positions.d]);
+  const baselineR2 = routeGraphEdge(positions.c, positions.d, 0, 1, [positions.a, positions.b]);
+  assert.equal(firstRoutes.routes.get("r1")?.path, baselineR1.path);
+  assert.notEqual(firstRoutes.routes.get("r2")?.path, baselineR2.path);
+  assert.deepEqual(firstRoutes.returnedOrder, ["r2", "r1"]);
+});
+
+test("manual ordinary routes are canonical occupied-path baselines", () => {
+  const positions = { a: { x: 0, y: 100 }, b: { x: 300, y: 100 }, c: { x: 50, y: 100 }, d: { x: 350, y: 100 } };
+  const first: Dataset = {
+    version: "1.0", entities: Object.keys(positions).map((id) => ({ id })), events: [],
+    relations: [{ id: "automatic", sourceId: "c", targetId: "d" }, { id: "manual", sourceId: "a", targetId: "b" }],
+  };
+  const reversed = { ...first, relations: [...first.relations].reverse() };
+  const manualOffsets = { manual: 0 };
+  const firstRoutes = routeWithCanonicalPriority(buildEntityGraph(first).edges, positions, manualOffsets);
+  const reversedRoutes = routeWithCanonicalPriority(buildEntityGraph(reversed).edges, positions, manualOffsets);
+  assert.equal(firstRoutes.routes.get("manual")?.path, reversedRoutes.routes.get("manual")?.path);
+  assert.equal(firstRoutes.routes.get("automatic")?.path, reversedRoutes.routes.get("automatic")?.path);
+  assert.match(firstRoutes.routes.get("manual")?.path ?? "", / L /u);
+  assert.match(firstRoutes.routes.get("automatic")?.path ?? "", / Q /u);
 });
 
 test("automatic route generation uses a 12-unit intermediate offset", () => {

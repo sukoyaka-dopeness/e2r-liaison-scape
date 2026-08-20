@@ -462,6 +462,9 @@ export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges:
     group.push(edge);
     groups.set(key, group);
   }
-  for (const group of groups.values()) group.forEach((edge, index) => { edge.parallelIndex = index; edge.parallelCount = group.length; });
+  for (const group of groups.values()) {
+    const canonicalGroup = group.slice().sort((left, right) => left.id.localeCompare(right.id));
+    canonicalGroup.forEach((edge, index) => { edge.parallelIndex = index; edge.parallelCount = canonicalGroup.length; });
+  }
   return { nodes, edges, unsupportedEdges };
 }

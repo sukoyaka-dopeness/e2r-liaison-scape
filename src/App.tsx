@@ -100,7 +100,23 @@ export default function App() {
   const routedEdges = useMemo(() => {
     const occupiedPaths: Array<Array<{ x: number; y: number }>> = [];
     const overlapCounts = new Map<string, number>();
-    return graph.edges.map((edge) => {
+    const routedById = new Map<string, ReturnType<typeof routeGraphEdge> & { label: string }>();
+    const compareRoutingPriority = (left: typeof graph.edges[number], right: typeof graph.edges[number]) =>
+      left.sourceId.localeCompare(right.sourceId)
+      || left.targetId.localeCompare(right.targetId)
+      || left.id.localeCompare(right.id);
+    const fixedEdges = graph.edges.filter((edge) => {
+      const sourceNode = nodeMap.get(edge.sourceId)!;
+      const targetNode = nodeMap.get(edge.targetId)!;
+      const source = positions[sourceNode.id] ?? sourceNode;
+      const target = positions[targetNode.id] ?? targetNode;
+      return edgeCurveOffsets[edge.id] !== undefined
+        || edge.sourceId === edge.targetId
+        || (source.x === target.x && source.y === target.y);
+    }).sort(compareRoutingPriority);
+    const automaticOrdinaryEdges = graph.edges.filter((edge) => !fixedEdges.some(({ id }) => id === edge.id))
+      .sort(compareRoutingPriority);
+    for (const edge of [...fixedEdges, ...automaticOrdinaryEdges]) {
       const sourceNode = nodeMap.get(edge.sourceId)!;
       const targetNode = nodeMap.get(edge.targetId)!;
       const source = positions[sourceNode.id] ?? sourceNode;
@@ -128,15 +144,15 @@ export default function App() {
       );
       occupiedPaths.push(route.samples);
       const relation = relationMap.get(edge.id);
-      return {
-        ...edge,
+      routedById.set(edge.id, {
         path: route.path,
         samples: route.samples,
         labelPoint: route.labelPoint,
         controlPoint: route.controlPoint,
         label: typeof relation?.name === "string" ? relation.name : "",
-      };
-    });
+      });
+    }
+    return graph.edges.map((edge) => ({ ...edge, ...routedById.get(edge.id)! }));
   }, [edgeCurveOffsets, graph, nodeMap, positions, relationMap, selfLoopOverrides]);
   const edgeLabelPlacements = useMemo(() => {
     const occupiedLabels: LabelRect[] = [];
