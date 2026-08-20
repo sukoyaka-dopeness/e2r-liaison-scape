@@ -1022,6 +1022,22 @@ test("node labels choose a deterministic free direction around occupied space", 
   );
 });
 
+test("node-label route halo ignores distant routes and preserves no-route placement", () => {
+  const noRoute = placeNodeLabel({ x: 100, y: 100 }, "Node", "", [], [], []);
+  assert.deepEqual(
+    placeNodeLabel({ x: 100, y: 100 }, "Node", "", [], [], [[{ x: 1000, y: 1000 }]]),
+    noRoute,
+  );
+});
+
+test("node-label route halo anticipates a route just outside hard clearance", () => {
+  const routeNearPreferredCandidate = [[{ x: 100, y: 165 }]];
+  const first = placeNodeLabel({ x: 100, y: 100 }, "Node", "", [], [], routeNearPreferredCandidate);
+  const second = placeNodeLabel({ x: 100, y: 100 }, "Node", "", [], [], routeNearPreferredCandidate);
+  assert.notDeepEqual(first, { x: 100, y: 150, width: 48, height: 20, directionX: 0, directionY: 1 });
+  assert.deepEqual(first, second);
+});
+
 test("node label connectors appear only when labels are outside the icon", () => {
   assert.equal(shouldShowNodeLabelConnector({ x: 0, y: 0 }), false);
   assert.equal(shouldShowNodeLabelConnector({ x: 32, y: 0 }), false);

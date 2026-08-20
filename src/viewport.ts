@@ -4,6 +4,9 @@ const RELATION_ROUTE_NODE_INFLUENCE_RADIUS = 60;
 const RELATION_LABEL_NODE_RECOVERY_CLEARANCE = 60;
 const SELF_LOOP_ORIENTATION_STEP = Math.PI / 18;
 const SELF_LOOP_ORIENTATION_PREFERENCE_WEIGHT = 0.05;
+const NODE_LABEL_ROUTE_HARD_CLEARANCE = 4;
+const NODE_LABEL_ROUTE_HALO_WIDTH = 16;
+const NODE_LABEL_ROUTE_HALO_WEIGHT = 8;
 const ENTITY_ATTACHMENT_SHAPE: EntityAttachmentShape = {
   kind: "rounded-rectangle",
   halfWidth: 32,
@@ -174,6 +177,12 @@ function rectOverlapArea(left: LabelRect, right: LabelRect): number {
   return overlapWidth * overlapHeight;
 }
 
+function pointToRectDistance(point: Point, rect: LabelRect): number {
+  const dx = Math.max(Math.abs(point.x - rect.x) - rect.width / 2, 0);
+  const dy = Math.max(Math.abs(point.y - rect.y) - rect.height / 2, 0);
+  return Math.hypot(dx, dy);
+}
+
 function placementMovementCost(candidate: LabelRect, previous: LabelRect | undefined): number {
   if (!previous) return 0;
   return Math.hypot(candidate.x - previous.x, candidate.y - previous.y) * 4;
@@ -334,7 +343,14 @@ export function placeNodeLabel(
     }
     for (const path of edgePaths) {
       for (const point of path) {
-        if (point.x >= left - 4 && point.x <= right + 4 && point.y >= top - 4 && point.y <= bottom + 4) score += 80;
+        const routeDistance = pointToRectDistance(point, candidate);
+        if (routeDistance <= NODE_LABEL_ROUTE_HARD_CLEARANCE) {
+          score += 80;
+        } else if (routeDistance < NODE_LABEL_ROUTE_HARD_CLEARANCE + NODE_LABEL_ROUTE_HALO_WIDTH) {
+          const normalized = (NODE_LABEL_ROUTE_HARD_CLEARANCE + NODE_LABEL_ROUTE_HALO_WIDTH - routeDistance)
+            / NODE_LABEL_ROUTE_HALO_WIDTH;
+          score += NODE_LABEL_ROUTE_HALO_WEIGHT * normalized ** 2;
+        }
       }
     }
     return { candidate, score: score + placementMovementCost(candidate, previousPlacement) };
