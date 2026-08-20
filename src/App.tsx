@@ -17,7 +17,7 @@ import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, getA
 import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatLoadedDataset, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
-import { applyEntityCreationPlacement, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
+import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -29,6 +29,7 @@ export default function App() {
   const [view, setView] = useState<"home" | "workspace">("home");
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [datasetModified, setDatasetModified] = useState(false);
+  const [pendingDatasetReplacement, setPendingDatasetReplacement] = useState<Dataset | null>(null);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -457,9 +458,29 @@ export default function App() {
   }, [viewportToolbarPosition]);
 
   function acceptDataset(nextDataset: Dataset) {
+    setContextMenu(null);
+    setHoveredPlacement(null);
+    resetPreviousLabelPlacements();
     cleanDatasetBaseline.current = structuredClone(nextDataset);
     setDataset(nextDataset);
     setDatasetModified(false);
+    setPendingDatasetReplacement(null);
+    setSelectedId(null);
+    setSelectedRelationId(null);
+    setDetailOpen(false);
+    const storedPositions = getStoredCoordinates(nextDataset);
+    const openedGraph = buildEntityGraph(nextDataset);
+    setNodeLayerOrder(openedGraph.nodes.map(({ id }) => id));
+    setEdgeLayerOrder(openedGraph.edges.map(({ id }) => id));
+    setEdgeLabelOffsets({});
+    setEdgeCurveOffsets({});
+    setSelfLoopOverrides({});
+    const fittedView = fitGraphView(openedGraph.nodes.map((node) => storedPositions[node.id] ?? node), 800, 500);
+    setPositions(storedPositions);
+    setCoordinatesDirty(false);
+    setPan(fittedView.pan);
+    setScale(fittedView.scale);
+    enterWorkspace();
   }
 
   function updateDataset(nextDataset: Dataset) {
@@ -467,46 +488,34 @@ export default function App() {
     setDatasetModified(isDatasetModified(cleanDatasetBaseline.current ?? nextDataset, nextDataset));
   }
 
+  function requestDatasetReplacement(candidate: Dataset) {
+    const decision = decideDatasetReplacement({ candidate, datasetModified, pendingUserWork });
+    if (decision.action === "stage") setPendingDatasetReplacement(decision.candidate);
+    else acceptDataset(decision.candidate);
+  }
+
+  function cancelDatasetReplacement() {
+    if (pendingDatasetReplacement) setPendingDatasetReplacement(cancelStagedDatasetReplacement(pendingDatasetReplacement).stagedCandidate);
+  }
+
+  function discardAndContinueDatasetReplacement() {
+    if (pendingDatasetReplacement) acceptDataset(discardAndContinueStagedDatasetReplacement(pendingDatasetReplacement).candidate);
+  }
+
   function open(raw: string) {
-    setContextMenu(null);
-    setHoveredPlacement(null);
     const result = loadDataset(raw);
     setDiagnostics(result.diagnostics);
     if (result.parseError) {
-      resetPreviousLabelPlacements();
-      setDataset(null);
       setMessage(translate(locale, "jsonLoadFailure"));
       return;
     }
-    if (!result.dataset) {
-      resetPreviousLabelPlacements();
-      setDataset(null);
+    const candidate = candidateFromLoadResult(result);
+    if (!candidate) {
       setMessage(translate(locale, "datasetValidationFailure"));
       return;
     }
-    resetPreviousLabelPlacements();
-    acceptDataset(result.dataset);
-    enterWorkspace();
-    setSelectedId(null);
-    setSelectedRelationId(null);
-    setDetailOpen(false);
-    const storedPositions = getStoredCoordinates(result.dataset);
-    const openedGraph = buildEntityGraph(result.dataset);
-    setNodeLayerOrder(openedGraph.nodes.map(({ id }) => id));
-    setEdgeLayerOrder(openedGraph.edges.map(({ id }) => id));
-    setEdgeLabelOffsets({});
-    setEdgeCurveOffsets({});
-    setSelfLoopOverrides({});
-    const fittedView = fitGraphView(
-      openedGraph.nodes.map((node) => storedPositions[node.id] ?? node),
-      800,
-      500,
-    );
-    setPositions(storedPositions);
-    setCoordinatesDirty(false);
-    setPan(fittedView.pan);
-    setScale(fittedView.scale);
-    setMessage(formatLoadedDataset(locale, result.dataset.entities.length, result.dataset.relations.length));
+    requestDatasetReplacement(candidate);
+    setMessage(formatLoadedDataset(locale, candidate.entities.length, candidate.relations.length));
   }
 
   async function openSample() {
@@ -525,17 +534,7 @@ export default function App() {
   }
 
   function startNewDataset() {
-    setContextMenu(null);
-    setHoveredPlacement(null);
-    resetPreviousLabelPlacements();
-    acceptDataset(structuredClone(emptyDataset));
-    setDiagnostics([]);
-    setMessage("");
-    setSelectedId(null);
-    setSelectedRelationId(null);
-    setPositions({});
-    setCoordinatesDirty(false);
-    enterWorkspace();
+    requestDatasetReplacement(structuredClone(emptyDataset));
   }
 
   if (view === "home") return (

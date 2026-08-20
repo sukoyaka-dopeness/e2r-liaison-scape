@@ -105,3 +105,31 @@ export function applyEntityCreationPlacement<T>({
     coordinatesDirty: coordinatesDirty || explicitPlacement !== null,
   };
 }
+
+export function candidateFromLoadResult<T extends { dataset: unknown | null }>(result: T): T["dataset"] {
+  return result.dataset;
+}
+
+export function decideDatasetReplacement<T>({
+  candidate,
+  datasetModified,
+  pendingUserWork,
+}: {
+  candidate: T;
+  datasetModified: boolean;
+  pendingUserWork: boolean;
+}): { action: "accept" | "stage"; candidate: T; refreshBaseline: boolean } {
+  return {
+    action: datasetModified || pendingUserWork ? "stage" : "accept",
+    candidate,
+    refreshBaseline: !(datasetModified || pendingUserWork),
+  };
+}
+
+export function cancelStagedDatasetReplacement<T>(_stagedCandidate: T): { stagedCandidate: null; refreshBaseline: false } {
+  return { stagedCandidate: null, refreshBaseline: false };
+}
+
+export function discardAndContinueStagedDatasetReplacement<T>(stagedCandidate: T): { candidate: T; stagedCandidate: null; refreshBaseline: true } {
+  return { candidate: stagedCandidate, stagedCandidate: null, refreshBaseline: true };
+}

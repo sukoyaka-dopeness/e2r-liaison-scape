@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyEntityCreationPlacement, deriveReplacementSafetyState, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "../src/dataset-replacement-safety.ts";
+import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, deriveReplacementSafetyState, discardAndContinueStagedDatasetReplacement, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "../src/dataset-replacement-safety.ts";
+import { loadDataset } from "../src/services/DatasetService.ts";
 
 const baseline = { version: "1.0", entities: [{ id: "entity-1", name: "Original" }], events: [], relations: [] };
 
@@ -87,4 +88,25 @@ test("explicit Entity placement makes a modified Dataset a modified-and-pending 
     }),
   });
   assert.equal(state.replacementCase, "modified-and-pending");
+});
+
+test("replacement requests accept only clean current work and otherwise stage the candidate", () => {
+  const candidate = { id: "candidate" };
+  assert.equal(decideDatasetReplacement({ candidate, datasetModified: false, pendingUserWork: false }).action, "accept");
+  for (const [datasetModified, pendingUserWork] of [[true, false], [false, true], [true, true]] as const) {
+    const decision = decideDatasetReplacement({ candidate, datasetModified, pendingUserWork });
+    assert.equal(decision.action, "stage");
+    assert.equal(decision.refreshBaseline, false);
+  }
+});
+
+test("cancel and discard transitions preserve or accept only the staged candidate", () => {
+  const candidate = { id: "candidate" };
+  assert.deepEqual(cancelStagedDatasetReplacement(candidate), { stagedCandidate: null, refreshBaseline: false });
+  assert.deepEqual(discardAndContinueStagedDatasetReplacement(candidate), { candidate, stagedCandidate: null, refreshBaseline: true });
+});
+
+test("invalid JSON and schema-invalid loads generate no replacement candidate", () => {
+  assert.equal(candidateFromLoadResult(loadDataset("{ invalid")), null);
+  assert.equal(candidateFromLoadResult(loadDataset(JSON.stringify({ version: "1.0", entities: [], events: [] }))), null);
 });
