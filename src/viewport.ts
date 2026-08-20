@@ -2,6 +2,12 @@ export const MIN_SCALE = 0.1;
 export const MAX_SCALE = 2.5;
 const RELATION_ROUTE_NODE_INFLUENCE_RADIUS = 60;
 const RELATION_LABEL_NODE_RECOVERY_CLEARANCE = 60;
+const ENTITY_ATTACHMENT_SHAPE: EntityAttachmentShape = {
+  kind: "rounded-rectangle",
+  halfWidth: 32,
+  halfHeight: 32,
+  cornerRadius: 12,
+};
 
 export function clampScale(value: number): number {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, value));
@@ -39,7 +45,123 @@ export function centeredViewportTransform(
   return `translate(${centerX + pan.x} ${centerY + pan.y}) scale(${scale}) translate(${-centerX} ${-centerY})`;
 }
 
-type Point = { x: number; y: number };
+export type Point = { x: number; y: number };
+export type ArrowheadGeometry = { tip: Point; baseA: Point; baseB: Point };
+export type EntityAttachmentShape = {
+  kind: "rounded-rectangle";
+  halfWidth: number;
+  halfHeight: number;
+  cornerRadius: number;
+};
+export type EntityAttachment = { point: Point; outwardNormal: Point; distance: number };
+
+function validateAttachmentDirection(direction: Point): Point {
+  if (!Number.isFinite(direction.x) || !Number.isFinite(direction.y)) throw new RangeError("Attachment direction must be finite");
+  const length = Math.hypot(direction.x, direction.y);
+  if (length === 0) throw new RangeError("Attachment direction must be non-zero");
+  return { x: direction.x / length, y: direction.y / length };
+}
+
+function roundedRectangleBoundaryIntersection(
+  center: Point,
+  direction: Point,
+  halfWidth: number,
+  halfHeight: number,
+  cornerRadius: number,
+): EntityAttachment {
+  if (![center.x, center.y, halfWidth, halfHeight, cornerRadius].every(Number.isFinite)
+    || halfWidth <= 0 || halfHeight <= 0 || cornerRadius < 0 || cornerRadius > Math.min(halfWidth, halfHeight)) {
+    throw new RangeError("Invalid rounded rectangle attachment shape");
+  }
+  const unit = validateAttachmentDirection(direction);
+  const sx = unit.x < 0 ? -1 : 1;
+  const sy = unit.y < 0 ? -1 : 1;
+  const ax = Math.abs(unit.x);
+  const ay = Math.abs(unit.y);
+  const straightWidth = halfWidth - cornerRadius;
+  const straightHeight = halfHeight - cornerRadius;
+  const candidates: Array<{ distance: number; normal: Point }> = [];
+  if (ax > 0) {
+    const distance = halfWidth / ax;
+    if (distance * ay <= straightHeight + 1e-9) candidates.push({ distance, normal: { x: sx, y: 0 } });
+  }
+  if (ay > 0) {
+    const distance = halfHeight / ay;
+    if (distance * ax <= straightWidth + 1e-9) candidates.push({ distance, normal: { x: 0, y: sy } });
+  }
+  if (cornerRadius > 0) {
+    const corner = { x: straightWidth, y: straightHeight };
+    const dot = ax * corner.x + ay * corner.y;
+    const discriminant = dot * dot - (corner.x * corner.x + corner.y * corner.y - cornerRadius * cornerRadius);
+    if (discriminant >= -1e-9) {
+      const distance = dot + Math.sqrt(Math.max(0, discriminant));
+      const x = distance * ax;
+      const y = distance * ay;
+      if (x >= straightWidth - 1e-9 && y >= straightHeight - 1e-9) {
+        const normalLength = Math.hypot(x - corner.x, y - corner.y);
+        candidates.push({ distance, normal: { x: sx * (x - corner.x) / normalLength, y: sy * (y - corner.y) / normalLength } });
+      }
+    }
+  }
+  const result = candidates.sort((left, right) => left.distance - right.distance)[0];
+  if (!result) throw new RangeError("No rounded rectangle attachment intersection");
+  return {
+    point: { x: center.x + unit.x * result.distance, y: center.y + unit.y * result.distance },
+    outwardNormal: result.normal,
+    distance: result.distance,
+  };
+}
+
+export function getEntityAttachment({
+  center,
+  direction,
+  shape,
+}: {
+  center: Point;
+  direction: Point;
+  shape: EntityAttachmentShape;
+}): EntityAttachment {
+  if (shape.kind !== "rounded-rectangle") throw new RangeError(`Unsupported attachment shape: ${shape.kind}`);
+  return roundedRectangleBoundaryIntersection(center, direction, shape.halfWidth, shape.halfHeight, shape.cornerRadius);
+}
+
+export function pointAtDistanceFromRouteEnd(samples: Point[], distance: number): Point {
+  const end = samples.at(-1) ?? { x: 0, y: 0 };
+  if (samples.length === 0 || !Number.isFinite(distance) || distance <= 0) return { ...end };
+  let remaining = distance;
+  for (let index = samples.length - 1; index > 0; index -= 1) {
+    const current = samples[index]!;
+    const previous = samples[index - 1]!;
+    const segmentLength = Math.hypot(current.x - previous.x, current.y - previous.y);
+    if (segmentLength >= remaining && segmentLength > 0) {
+      const ratio = remaining / segmentLength;
+      return {
+        x: current.x + (previous.x - current.x) * ratio,
+        y: current.y + (previous.y - current.y) * ratio,
+      };
+    }
+    remaining -= segmentLength;
+  }
+  return { ...(samples[0] ?? end) };
+}
+
+export function getArrowheadGeometry(samples: Point[], strokeWidth: number): ArrowheadGeometry {
+  const tip = { ...(samples.at(-1) ?? { x: 0, y: 0 }) };
+  const length = Math.max(0, strokeWidth) * 8;
+  const halfBaseWidth = Math.max(0, strokeWidth) * 3;
+  const behindTip = pointAtDistanceFromRouteEnd(samples, length);
+  const directionLength = Math.hypot(tip.x - behindTip.x, tip.y - behindTip.y);
+  const direction = directionLength > 0
+    ? { x: (tip.x - behindTip.x) / directionLength, y: (tip.y - behindTip.y) / directionLength }
+    : { x: 1, y: 0 };
+  const baseCenter = { x: tip.x - direction.x * length, y: tip.y - direction.y * length };
+  const perpendicular = { x: -direction.y, y: direction.x };
+  return {
+    tip,
+    baseA: { x: baseCenter.x + perpendicular.x * halfBaseWidth, y: baseCenter.y + perpendicular.y * halfBaseWidth },
+    baseB: { x: baseCenter.x - perpendicular.x * halfBaseWidth, y: baseCenter.y - perpendicular.y * halfBaseWidth },
+  };
+}
 export type LabelRect = Point & { width: number; height: number; directionX: number; directionY: number };
 
 function rectOverlapArea(left: LabelRect, right: LabelRect): number {
@@ -293,15 +415,40 @@ export function routeGraphEdge(
     const sidewaysDistance = Math.sin(spread) * 32;
     const radius = manualSelfLoop?.radius ?? 38 + Math.floor(parallelIndex / 3) * 14;
     const centerDistance = outwardDistance + Math.sqrt(Math.max(1, radius * radius - sidewaysDistance * sidewaysDistance));
-    const center = { x: source.x + direction.x * centerDistance, y: source.y + direction.y * centerDistance };
-    const start = {
-      x: source.x + direction.x * outwardDistance + perpendicular.x * sidewaysDistance,
-      y: source.y + direction.y * outwardDistance + perpendicular.y * sidewaysDistance,
+    const provisionalStart = {
+      x: direction.x * outwardDistance + perpendicular.x * sidewaysDistance,
+      y: direction.y * outwardDistance + perpendicular.y * sidewaysDistance,
     };
-    const end = {
-      x: source.x + direction.x * outwardDistance - perpendicular.x * sidewaysDistance,
-      y: source.y + direction.y * outwardDistance - perpendicular.y * sidewaysDistance,
+    const provisionalEnd = {
+      x: direction.x * outwardDistance - perpendicular.x * sidewaysDistance,
+      y: direction.y * outwardDistance - perpendicular.y * sidewaysDistance,
     };
+    const startAttachment = getEntityAttachment({
+      center: source,
+      direction: provisionalStart,
+      shape: ENTITY_ATTACHMENT_SHAPE,
+    });
+    const endAttachment = getEntityAttachment({
+      center: source,
+      direction: provisionalEnd,
+      shape: ENTITY_ATTACHMENT_SHAPE,
+    });
+    const start = startAttachment.point;
+    const end = endAttachment.point;
+    const chordX = end.x - start.x;
+    const chordY = end.y - start.y;
+    const chordLength = Math.hypot(chordX, chordY);
+    if (chordLength > radius * 2) throw new RangeError("Self-loop radius cannot contain attachment chord");
+    const midpoint = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+    const centerOffset = Math.sqrt(Math.max(0, radius * radius - chordLength * chordLength / 4));
+    const normal = { x: -chordY / Math.max(1, chordLength), y: chordX / Math.max(1, chordLength) };
+    const candidateCenters = [
+      { x: midpoint.x + normal.x * centerOffset, y: midpoint.y + normal.y * centerOffset },
+      { x: midpoint.x - normal.x * centerOffset, y: midpoint.y - normal.y * centerOffset },
+    ];
+    const preferredCenter = { x: source.x + direction.x * centerDistance, y: source.y + direction.y * centerDistance };
+    const center = candidateCenters.sort((left, right) =>
+      Math.hypot(left.x - preferredCenter.x, left.y - preferredCenter.y) - Math.hypot(right.x - preferredCenter.x, right.y - preferredCenter.y))[0]!;
     const startAngle = Math.atan2(start.y - center.y, start.x - center.x);
     let endAngle = Math.atan2(end.y - center.y, end.x - center.x);
     while (endAngle >= startAngle) endAngle -= Math.PI * 2;
@@ -339,8 +486,6 @@ export function routeGraphEdge(
   const length = Math.max(1, Math.hypot(dx, dy));
   const unitX = dx / length;
   const unitY = dy / length;
-  const sourceInset = Math.min(32, length * 0.3);
-  const targetInset = Math.min(38, length * 0.3);
   const direction = parallelIndex % 2 === 0 ? 1 : -1;
   const rank = Math.floor(parallelIndex / 2) + 1;
   const baseOffset = parallelCount === 1 ? 0 : direction * (40 + (rank - 1) * 24);
@@ -358,16 +503,26 @@ export function routeGraphEdge(
       x: (source.x + target.x) / 2 - unitY * offset,
       y: (source.y + target.y) / 2 + unitX * offset,
     };
-    const sourceTangentLength = Math.max(1, Math.hypot(control.x - source.x, control.y - source.y));
-    const targetTangentLength = Math.max(1, Math.hypot(target.x - control.x, target.y - control.y));
-    const start = {
-      x: source.x + (control.x - source.x) / sourceTangentLength * sourceInset,
-      y: source.y + (control.y - source.y) / sourceTangentLength * sourceInset,
-    };
-    const end = {
-      x: target.x - (target.x - control.x) / targetTangentLength * targetInset,
-      y: target.y - (target.y - control.y) / targetTangentLength * targetInset,
-    };
+    const sourceAttachment = getEntityAttachment({
+      center: source,
+      direction: { x: control.x - source.x, y: control.y - source.y },
+      shape: ENTITY_ATTACHMENT_SHAPE,
+    });
+    const targetAttachment = getEntityAttachment({
+      center: target,
+      direction: { x: control.x - target.x, y: control.y - target.y },
+      shape: ENTITY_ATTACHMENT_SHAPE,
+    });
+    let start = sourceAttachment.point;
+    let end = targetAttachment.point;
+    // Pathological short edges must not emit an inverted segment.
+    if ((end.x - start.x) * unitX + (end.y - start.y) * unitY <= 0) {
+      const fallbackInset = length * 0.3;
+      const sourceLength = Math.max(1, Math.hypot(control.x - source.x, control.y - source.y));
+      const targetLength = Math.max(1, Math.hypot(target.x - control.x, target.y - control.y));
+      start = { x: source.x + (control.x - source.x) / sourceLength * fallbackInset, y: source.y + (control.y - source.y) / sourceLength * fallbackInset };
+      end = { x: target.x - (target.x - control.x) / targetLength * fallbackInset, y: target.y - (target.y - control.y) / targetLength * fallbackInset };
+    }
     const samples = Array.from({ length: 41 }, (_, step) => {
       const t = step / 40;
       if (offset === 0) {

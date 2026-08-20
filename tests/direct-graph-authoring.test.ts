@@ -9,6 +9,7 @@ import {
   placeTemporaryEntity,
   resolveRelationDrop,
   createCanvasContextMenu,
+  createObjectContextMenu,
   dismissContextMenu,
   shouldSuppressNativeContextMenu,
   type GraphPoint,
@@ -68,6 +69,13 @@ test("canvas context menu preserves the graph position and can be dismissed", ()
   const menu = createCanvasContextMenu(point);
   assert.deepEqual(menu, { kind: "canvas", point });
   assert.equal(dismissContextMenu(menu), null);
+});
+
+test("object context menus preserve target-specific ownership", () => {
+  assert.deepEqual(createObjectContextMenu({ kind: "entity", entityId: "a" }), { kind: "entity", entityId: "a" });
+  assert.deepEqual(createObjectContextMenu({ kind: "node-label", entityId: "a" }), { kind: "node-label", entityId: "a" });
+  assert.deepEqual(createObjectContextMenu({ kind: "relation-path", relationId: "r1" }), { kind: "relation-path", relationId: "r1" });
+  assert.deepEqual(createObjectContextMenu({ kind: "relation-label", relationId: "r1" }), { kind: "relation-label", relationId: "r1" });
 });
 
 test("application-owned canvas context menu suppresses the native menu only for the claimed gesture", () => {

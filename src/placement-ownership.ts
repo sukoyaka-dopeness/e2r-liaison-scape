@@ -13,7 +13,7 @@ export function boundedHoverDescription(value: string, maxLength = 120): string 
 
 export function composeHoverLines(
   kind: "entity" | "node-label" | "relation-label" | "relation-route",
-  values: { name?: string; description?: string; source?: string; target?: string; ownership: string },
+  values: { name?: string; description?: string; source?: string; target?: string; ownership: string; self?: boolean },
 ): string[] {
   const bound = (value: string | undefined, max = 56) => boundedHoverDescription(value ?? "", max);
   if (kind === "entity") return bound(values.name) ? [bound(values.name)] : [];
@@ -25,5 +25,6 @@ export function composeHoverLines(
     const name = bound(values.name);
     return name ? [name, values.ownership] : [values.ownership];
   }
+  if (values.self) return [bound(values.source), values.ownership].filter(Boolean);
   return [bound(values.source), bound(values.target), values.ownership].filter(Boolean);
 }

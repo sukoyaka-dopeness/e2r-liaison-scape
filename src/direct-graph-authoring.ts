@@ -4,13 +4,26 @@ export type SvgRect = { left: number; top: number; width: number; height: number
 export type ViewBoxSize = { width: number; height: number };
 export type Pan = { x: number; y: number };
 export type RelationDrop = { sourceId: string; targetId: string };
-export type CanvasContextMenu = { kind: "canvas"; point: GraphPoint };
+export type ContextMenuTarget =
+  | { kind: "canvas"; point: GraphPoint }
+  | { kind: "entity"; entityId: string }
+  | { kind: "node-label"; entityId: string }
+  | { kind: "relation-path"; relationId: string }
+  | { kind: "relation-label"; relationId: string };
+export type ContextMenu = ContextMenuTarget & { clientX: number; clientY: number };
+export type CanvasContextMenu = Extract<ContextMenuTarget, { kind: "canvas" }>;
 
 export function createCanvasContextMenu(point: GraphPoint): CanvasContextMenu {
   return { kind: "canvas", point };
 }
 
-export function dismissContextMenu(_menu: CanvasContextMenu | null): null {
+export function createObjectContextMenu(
+  target: Exclude<ContextMenuTarget, CanvasContextMenu>,
+): Exclude<ContextMenuTarget, CanvasContextMenu> {
+  return target;
+}
+
+export function dismissContextMenu(_menu: ContextMenu | CanvasContextMenu | null): null {
   return null;
 }
 

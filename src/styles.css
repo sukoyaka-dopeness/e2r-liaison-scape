@@ -101,6 +101,7 @@ li { margin: .35rem 0; }
 .edge-group { color: #6b7280; }
 .edge-group.selected { color: #2563eb; }
 .edge { fill: none; stroke: currentColor; stroke-width: 2; pointer-events: none; }
+.edge-arrowhead { fill: currentColor; pointer-events: none; }
 .edge-group.selected .edge { stroke-width: 2.75; }
 .edge-halo { pointer-events: none; }
 .edge-hit-area { fill: none; stroke: transparent; stroke-width: 24; cursor: pointer; pointer-events: stroke; }

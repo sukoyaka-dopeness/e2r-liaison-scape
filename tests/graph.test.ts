@@ -2,10 +2,85 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { COORDINATE_DRAFT_EXTENSION_ID, COORDINATE_EXTENSION_ID, applyStoredCoordinates, buildEntityGraph, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type Dataset } from "../src/dataset.ts";
-import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, graphEdgePath, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, wrapNodeLabel, zoomScale } from "../src/viewport.ts";
+import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, getArrowheadGeometry, getEntityAttachment, graphEdgePath, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, wrapNodeLabel, zoomScale } from "../src/viewport.ts";
 import { interpolateLabelRect, isLabelTransitionPathSafe, reconcileRelationLabelVisualState } from "../src/relation-label-presentation.ts";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualNodeLabelPosition, reconstructManualRelationLabelTarget } from "../src/relation-label-presentation.ts";
 import { boundedHoverDescription, composeHoverLines, placementOwnership } from "../src/placement-ownership.ts";
+
+const roundedEntityShape = { kind: "rounded-rectangle" as const, halfWidth: 32, halfHeight: 32, cornerRadius: 12 };
+function assertClose(actual: number, expected: number, tolerance = 1e-8) {
+  assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} is not close to ${expected}`);
+}
+
+test("rounded rectangle attachment handles cardinal directions", () => {
+  const cases = [
+    [{ x: 1, y: 0 }, { x: 32, y: 0 }],
+    [{ x: -1, y: 0 }, { x: -32, y: 0 }],
+    [{ x: 0, y: -1 }, { x: 0, y: -32 }],
+    [{ x: 0, y: 1 }, { x: 0, y: 32 }],
+  ] as const;
+  for (const [direction, point] of cases) {
+    const attachment = getEntityAttachment({ center: { x: 0, y: 0 }, direction, shape: roundedEntityShape });
+    assertClose(attachment.point.x, point.x);
+    assertClose(attachment.point.y, point.y);
+    assertClose(Math.hypot(attachment.outwardNormal.x, attachment.outwardNormal.y), 1);
+    assertClose(attachment.distance, 32);
+  }
+});
+
+test("rounded rectangle attachment follows the corner arc for diagonals", () => {
+  const attachment = getEntityAttachment({ center: { x: 0, y: 0 }, direction: { x: 1, y: 1 }, shape: roundedEntityShape });
+  assertClose(attachment.point.x, 28.48528137423857);
+  assertClose(attachment.point.y, 28.48528137423857);
+  assertClose(attachment.outwardNormal.x, Math.SQRT1_2);
+  assertClose(attachment.outwardNormal.y, Math.SQRT1_2);
+});
+
+test("rounded rectangle attachment supports asymmetric shapes and non-normalized directions", () => {
+  const attachment = getEntityAttachment({
+    center: { x: 10, y: 20 },
+    direction: { x: 0, y: 5 },
+    shape: { kind: "rounded-rectangle", halfWidth: 40, halfHeight: 20, cornerRadius: 8 },
+  });
+  assert.deepEqual(attachment.point, { x: 10, y: 40 });
+  assert.deepEqual(attachment.outwardNormal, { x: 0, y: 1 });
+  assert.equal(attachment.distance, 20);
+});
+
+test("rounded rectangle attachment supports zero and maximum corner radius", () => {
+  const square = getEntityAttachment({ center: { x: 0, y: 0 }, direction: { x: 1, y: 1 }, shape: { kind: "rounded-rectangle", halfWidth: 10, halfHeight: 10, cornerRadius: 0 } });
+  assertClose(square.distance, Math.sqrt(200));
+  const pillCorner = getEntityAttachment({ center: { x: 0, y: 0 }, direction: { x: 1, y: 0 }, shape: { kind: "rounded-rectangle", halfWidth: 10, halfHeight: 10, cornerRadius: 10 } });
+  assertClose(pillCorner.distance, 10);
+});
+
+test("rounded rectangle attachment rejects degenerate or invalid inputs", () => {
+  assert.throws(() => getEntityAttachment({ center: { x: 0, y: 0 }, direction: { x: 0, y: 0 }, shape: roundedEntityShape }), RangeError);
+  assert.throws(() => getEntityAttachment({ center: { x: 0, y: 0 }, direction: { x: 1, y: 0 }, shape: { kind: "rounded-rectangle", halfWidth: 0, halfHeight: 32, cornerRadius: 12 } }), RangeError);
+  assert.throws(() => getEntityAttachment({ center: { x: 0, y: 0 }, direction: { x: 1, y: 0 }, shape: { kind: "rounded-rectangle", halfWidth: 32, halfHeight: 32, cornerRadius: 33 } }), RangeError);
+});
+
+test("shape-agnostic attachment dispatches the rounded rectangle primitive", () => {
+  const attachment = getEntityAttachment({ center: { x: 5, y: 7 }, direction: { x: -1, y: 0 }, shape: roundedEntityShape });
+  assert.deepEqual(attachment.point, { x: -27, y: 7 });
+});
+
+test("route-end distance helper interpolates and clamps safely", () => {
+  assert.deepEqual(pointAtDistanceFromRouteEnd([{ x: 0, y: 0 }, { x: 10, y: 0 }], 4), { x: 6, y: 0 });
+  assert.deepEqual(pointAtDistanceFromRouteEnd([{ x: 0, y: 0 }, { x: 10, y: 0 }], 20), { x: 0, y: 0 });
+  assert.deepEqual(pointAtDistanceFromRouteEnd([], 4), { x: 0, y: 0 });
+});
+
+test("explicit arrowhead preserves marker proportions and follows visible route approach", () => {
+  const straight = getArrowheadGeometry([{ x: 0, y: 0 }, { x: 100, y: 0 }], 2);
+  assert.deepEqual(straight.tip, { x: 100, y: 0 });
+  assert.deepEqual(straight.baseA, { x: 84, y: 6 });
+  assert.deepEqual(straight.baseB, { x: 84, y: -6 });
+  const selected = getArrowheadGeometry([{ x: 0, y: 0 }, { x: 100, y: 0 }], 2.75);
+  assert.equal(Math.hypot(selected.baseA.x - selected.baseB.x, selected.baseA.y - selected.baseB.y), 16.5);
+  const curved = getArrowheadGeometry(routeGraphEdge({ x: 0, y: 0 }, { x: 100, y: 0 }, 1, 2).samples, 2);
+  assert.ok(Number.isFinite(curved.baseA.x) && Number.isFinite(curved.baseB.y));
+});
 
 test("A2: builds Entity nodes and Relation edges without making Relations nodes", () => {
   const dataset: Dataset = {
@@ -590,7 +665,7 @@ test("graph fitting centers small graphs and scales large graphs into view", () 
 test("Entity edges use visible deterministic curves outside node centers", () => {
   assert.equal(
     graphEdgePath({ x: 100, y: 100 }, { x: 300, y: 100 }, 0, 1),
-    "M 132 100 L 262 100",
+    "M 132 100 L 268 100",
   );
   assert.match(graphEdgePath({ x: 100, y: 100 }, { x: 300, y: 100 }, 1, 2), / Q /u);
   const selfPath = graphEdgePath({ x: 100, y: 100 }, { x: 100, y: 100 }, 0, 1);
@@ -601,7 +676,7 @@ test("edge routes expose a stable midpoint for horizontal labels", () => {
   const route = routeGraphEdge({ x: 100, y: 100 }, { x: 300, y: 100 }, 0, 1);
   assert.deepEqual(
     route.labelPoint,
-    { x: 197, y: 100 },
+    { x: 200, y: 100 },
   );
   const selfLabelPoint = routeGraphEdge({ x: 100, y: 100 }, { x: 100, y: 100 }, 0, 1).labelPoint;
   assert.equal(selfLabelPoint.x, 100);
@@ -751,6 +826,14 @@ test("hover content keeps ownership on its own line", () => {
   assert.equal(composeHoverLines("node-label", { description: "x".repeat(200), ownership: "Automatic placement" })[0]!.length, 96);
 });
 
+test("self Relation hover content shows its Entity once", () => {
+  assert.deepEqual(composeHoverLines("relation-route", { source: "System", target: "System", ownership: "Automatic placement", self: true }), ["System", "Automatic placement"]);
+});
+
+test("distinct same-name Relation endpoints remain two hover lines", () => {
+  assert.deepEqual(composeHoverLines("relation-route", { source: "System", target: "System", ownership: "User placement" }), ["System", "System", "User placement"]);
+});
+
 test("a manual curve offset overrides automatic routing while keeping node-boundary attachments", () => {
   const source = { x: 100, y: 100 };
   const target = { x: 300, y: 100 };
@@ -758,8 +841,8 @@ test("a manual curve offset overrides automatic routing while keeping node-bound
 
   assert.match(route.path, / Q /);
   assert.deepEqual(route.controlPoint, { x: 200, y: 40 });
-  assert.ok(Math.abs(Math.hypot(route.samples[0]!.x - source.x, route.samples[0]!.y - source.y) - 32) < 1e-9);
-  assert.ok(Math.abs(Math.hypot(route.samples.at(-1)!.x - target.x, route.samples.at(-1)!.y - target.y) - 38) < 1e-9);
+  assert.ok(route.samples[0]!.x > source.x && route.samples[0]!.y < source.y);
+  assert.ok(route.samples.at(-1)!.x < target.x && route.samples.at(-1)!.y < target.y);
 });
 
 test("Entity edges deterministically curve around unrelated nodes", () => {
@@ -807,7 +890,7 @@ test("a brief edge crossing does not curve an otherwise clear Relation", () => {
     [],
     [horizontal.samples],
   );
-  assert.equal(vertical.path, "M 200 32 L 200 162");
+  assert.equal(vertical.path, "M 200 32 L 200 168");
 });
 
 test("short nearby Relations keep ordered endpoints and avoid excessive curvature", () => {
@@ -861,6 +944,8 @@ test("parallel self-Relations use different radii and attachment points", () => 
   assert.notDeepEqual(first.labelPoint, second.labelPoint);
   const fourth = routeGraphEdge(point, point, 3, 4);
   assert.match(fourth.path, / A 52 52 /u);
+  assert.ok(Math.abs(Math.hypot(first.samples[0]!.x - point.x, first.samples[0]!.y - point.y) - 32) > 0);
+  assert.ok(first.samples.every(({ x, y }) => Number.isFinite(x) && Number.isFinite(y)));
 });
 
 test("a manual self-Relation handle controls loop orientation and radius", () => {

@@ -7,13 +7,13 @@ import { assessEntityDeletion, createEntity, deleteEntity } from "./services/Ent
 import { getEntityDetail, updateEntityDetails } from "./services/EntityService";
 import { assessRelationDeletion, createRelation, deleteRelation } from "./services/RelationService";
 import { getRelationDetail, updateRelation } from "./services/RelationService";
-import { canCompleteLongPress, createCanvasContextMenu, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, type CanvasContextMenu } from "./direct-graph-authoring";
+import { canCompleteLongPress, createCanvasContextMenu, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, type ContextMenu } from "./direct-graph-authoring";
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
 import { CreditsDialog } from "./components/CreditsDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
-import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
+import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, getArrowheadGeometry, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatLoadedDataset, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
@@ -54,7 +54,7 @@ export default function App() {
   const [creationDescription, setCreationDescription] = useState("");
   const [creationSource, setCreationSource] = useState("");
   const [creationTarget, setCreationTarget] = useState("");
-  const [canvasContextMenu, setCanvasContextMenu] = useState<(CanvasContextMenu & { clientX: number; clientY: number }) | null>(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const [pendingEntityPlacement, setPendingEntityPlacement] = useState<{ x: number; y: number } | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
@@ -66,14 +66,14 @@ export default function App() {
   const relationLabelVisualState = useRef(new Map<string, RelationLabelVisualState>());
   const manualRelationLabelAnchors = useRef(new Map<string, ManualRelationLabelAnchor>());
   const manualNodeLabelOffsets = useRef(new Map<string, { x: number; y: number }>());
-  const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
+  const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string; button: number; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
   const graphRef = useRef<SVGSVGElement>(null);
   const viewportToolbarRef = useRef<HTMLDivElement>(null);
   const viewportToolbarDragRef = useRef<{ offsetX: number; offsetY: number } | null>(null);
   const edgeCurveDragStartRef = useRef<{ id: string; offset?: number; selfLoop?: { orientation: number; radius: number } } | null>(null);
-  const longPressRef = useRef<{ pointerId: number; startX: number; startY: number; timer: number; kind: "canvas" | "entity" | "relation"; id?: string; canceled: boolean } | null>(null);
+  const longPressRef = useRef<{ pointerId: number; startX: number; startY: number; timer: number; kind: "canvas" | "entity" | "node-label" | "relation-path" | "relation-label"; id?: string; canceled: boolean } | null>(null);
   const longPressClaimedRef = useRef<number | null>(null);
   const suppressNextContextMenuRef = useRef(false);
 
@@ -351,14 +351,14 @@ export default function App() {
   }, [creditsOpen]);
 
   useEffect(() => {
-    if (!canvasContextMenu) return;
+    if (!contextMenu) return;
     const dismissOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setCanvasContextMenu(null);
+      if (event.key === "Escape") setContextMenu(null);
     };
     const dismissOnOutsidePointer = (event: PointerEvent) => {
       const target = event.target;
-      if (target instanceof Element && target.closest(".canvas-context-menu")) return;
-      setCanvasContextMenu(null);
+      if (target instanceof Element && target.closest(".context-menu")) return;
+      setContextMenu(null);
     };
     window.addEventListener("keydown", dismissOnEscape);
     window.addEventListener("pointerdown", dismissOnOutsidePointer);
@@ -366,7 +366,7 @@ export default function App() {
       window.removeEventListener("keydown", dismissOnEscape);
       window.removeEventListener("pointerdown", dismissOnOutsidePointer);
     };
-  }, [canvasContextMenu]);
+  }, [contextMenu]);
 
   useEffect(() => {
     if (!viewportToolbarPosition) return;
@@ -388,6 +388,8 @@ export default function App() {
   }, [viewportToolbarPosition]);
 
   function open(raw: string) {
+    setContextMenu(null);
+    setHoveredPlacement(null);
     const result = loadDataset(raw);
     setDiagnostics(result.diagnostics);
     if (result.parseError) {
@@ -443,6 +445,8 @@ export default function App() {
   }
 
   function startNewDataset() {
+    setContextMenu(null);
+    setHoveredPlacement(null);
     resetPreviousLabelPlacements();
     setDataset(structuredClone(emptyDataset));
     setDiagnostics([]);
@@ -543,7 +547,7 @@ export default function App() {
     const entityElement = element?.closest<SVGGElement>(".node");
     const entityLabelElement = element?.closest<SVGGElement>(".node-label-group");
     const relationElement = element?.closest<SVGGElement>(".edge-group, .edge-label-group");
-    const kind: "canvas" | "entity" | "relation" = entityElement || entityLabelElement ? "entity" : relationElement ? "relation" : "canvas";
+    const kind: "canvas" | "entity" | "node-label" | "relation-path" | "relation-label" = entityLabelElement ? "node-label" : entityElement ? "entity" : relationElement?.classList.contains("edge-label-group") ? "relation-label" : relationElement ? "relation-path" : "canvas";
     const id = entityElement?.getAttribute("data-entity-id") ?? entityLabelElement?.getAttribute("data-entity-id") ?? relationElement?.getAttribute("data-relation-id") ?? undefined;
     const pending = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, kind, id, canceled: false, timer: 0 };
     pending.timer = window.setTimeout(() => {
@@ -555,8 +559,7 @@ export default function App() {
       window.setTimeout(() => { suppressNextContextMenuRef.current = false; }, 1000);
       dragRef.current = null;
       if (current.kind === "canvas") openCanvasContextAt(event.clientX, event.clientY);
-      else if (current.kind === "entity" && current.id) openEntityDetail(current.id);
-      else if (current.kind === "relation" && current.id) openRelationDetail(current.id);
+      else if (current.id) openObjectContextMenu(current.kind, current.id, event.clientX, event.clientY);
     }, 500);
     longPressRef.current = pending;
   }
@@ -707,7 +710,7 @@ export default function App() {
       return;
     }
 
-    dragRef.current = { ...drag, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, moved: false };
+    dragRef.current = { ...drag, button: event.button, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, moved: false };
   }
 
   function endGraphPointer(event: React.PointerEvent<SVGSVGElement>) {
@@ -750,8 +753,10 @@ export default function App() {
       && !drag.moved
       && pointersRef.current.size === 1
       && pinchRef.current === null;
-    const isNodeLabelTap = drag?.kind === "node-label" && !drag.moved && pointersRef.current.size === 1 && pinchRef.current === null;
-    const isEdgeLabelTap = drag?.kind === "edge-label" && !drag.moved && pointersRef.current.size === 1 && pinchRef.current === null;
+    const isPrimaryPointer = drag?.button === 0;
+    const isNodeLabelTap = drag?.kind === "node-label" && isPrimaryPointer && !drag.moved && pointersRef.current.size === 1 && pinchRef.current === null;
+    const isEdgeLabelTap = drag?.kind === "edge-label" && isPrimaryPointer && !drag.moved && pointersRef.current.size === 1 && pinchRef.current === null;
+    const isCanvasTap = drag?.kind === "canvas" && !drag.moved && pointersRef.current.size === 1 && pinchRef.current === null && event.button === 0;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
@@ -759,7 +764,7 @@ export default function App() {
       const entity = dataset?.entities.find(({ id }) => id === drag.id);
       setSelectedId(drag.id);
       setSelectedRelationId(null);
-      setDetailOpen(isNodeLabelTap);
+      setDetailOpen(false);
       setEntityNameDraft(typeof entity?.name === "string" ? entity.name : "");
       setEntityDescriptionDraft(typeof entity?.description === "string" ? entity.description : "");
       setNodeLayerOrder((value) => bringToFront(value, drag.id!));
@@ -779,12 +784,16 @@ export default function App() {
       const relation = dataset?.relations.find(({ id }) => id === drag.id);
       setSelectedRelationId(drag.id);
       setSelectedId(null);
-      setDetailOpen(true);
+      setDetailOpen(false);
       setRelationNameDraft(typeof relation?.name === "string" ? relation.name : "");
       setRelationDescriptionDraft(typeof relation?.description === "string" ? relation.description : "");
       setRelationSourceDraft(typeof relation?.sourceId === "string" ? relation.sourceId : "");
       setRelationTargetDraft(typeof relation?.targetId === "string" ? relation.targetId : "");
       setEdgeLayerOrder((value) => bringToFront(value, drag.id!));
+    }
+    if (isCanvasTap) {
+      setSelectedId(null);
+      setSelectedRelationId(null);
     }
     if (wasPinch) {
       pointersRef.current.clear();
@@ -876,7 +885,7 @@ export default function App() {
       scale,
       pan,
     );
-    setCanvasContextMenu({ ...createCanvasContextMenu(point), clientX, clientY });
+    setContextMenu({ ...createCanvasContextMenu(point), clientX, clientY });
   }
 
   function openCanvasContextMenu(event: React.MouseEvent<SVGSVGElement>) {
@@ -887,10 +896,22 @@ export default function App() {
     openCanvasContextAt(event.clientX, event.clientY);
   }
 
+  function openObjectContextMenu(kind: "entity" | "node-label" | "relation-path" | "relation-label", id: string, clientX: number, clientY: number) {
+    setHoveredPlacement(null);
+    setContextMenu({ kind, ...(kind.startsWith("relation") ? { relationId: id } : { entityId: id }), clientX, clientY } as ContextMenu);
+  }
+
+  function openObjectContextFromPointer(kind: "entity" | "node-label" | "relation-path" | "relation-label", id: string, event: React.MouseEvent<SVGGElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (suppressNextContextMenuRef.current) { suppressNextContextMenuRef.current = false; return; }
+    openObjectContextMenu(kind, id, event.clientX, event.clientY);
+  }
+
   function chooseCanvasAddEntity() {
-    if (!canvasContextMenu) return;
-    openCreation("entity", canvasContextMenu.point);
-    setCanvasContextMenu(null);
+    if (!contextMenu || contextMenu.kind !== "canvas") return;
+    openCreation("entity", contextMenu.point);
+    setContextMenu(null);
   }
 
   function saveCreation() {
@@ -982,13 +1003,6 @@ export default function App() {
     setDetailOpen(true);
   }
 
-  function openEntityDetailFromContext(entityId: string, event: React.MouseEvent<SVGGElement>) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (suppressNextContextMenuRef.current) { suppressNextContextMenuRef.current = false; return; }
-    openEntityDetail(entityId);
-  }
-
   function openRelationDetail(relationId: string) {
     const relation = dataset?.relations.find(({ id }) => id === relationId);
     if (!relation) return;
@@ -1001,11 +1015,27 @@ export default function App() {
     setDetailOpen(true);
   }
 
-  function openRelationDetailFromContext(relationId: string, event: React.MouseEvent<SVGGElement>) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (suppressNextContextMenuRef.current) { suppressNextContextMenuRef.current = false; return; }
-    openRelationDetail(relationId);
+  function openContextMenuDetails() {
+    if (!contextMenu) return;
+    if (contextMenu.kind === "entity" || contextMenu.kind === "node-label") openEntityDetail(contextMenu.entityId);
+    else if (contextMenu.kind === "relation-path" || contextMenu.kind === "relation-label") openRelationDetail(contextMenu.relationId);
+    setContextMenu(null);
+  }
+
+  function resetContextMenuPlacement() {
+    if (!contextMenu) return;
+    if (contextMenu.kind === "node-label") {
+      manualNodeLabelOffsets.current.delete(contextMenu.entityId);
+      setManualLabelRevision((value) => value + 1);
+    } else if (contextMenu.kind === "relation-label") {
+      manualRelationLabelAnchors.current.delete(contextMenu.relationId);
+      setEdgeLabelOffsets((value) => { const next = { ...value }; delete next[contextMenu.relationId]; return next; });
+      setManualLabelRevision((value) => value + 1);
+    } else if (contextMenu.kind === "relation-path") {
+      setEdgeCurveOffsets((value) => { const next = { ...value }; delete next[contextMenu.relationId]; return next; });
+      setSelfLoopOverrides((value) => { const next = { ...value }; delete next[contextMenu.relationId]; return next; });
+    }
+    setContextMenu(null);
   }
 
   function resetView() {
@@ -1081,9 +1111,15 @@ export default function App() {
           </div>
         </div>
         {message && <p className="status-message" role="status">{message}</p>}
-      {canvasContextMenu && <div className="canvas-context-menu" role="menu" aria-label={translate(locale, "canvasActions")} style={{ position: "fixed", left: canvasContextMenu.clientX, top: canvasContextMenu.clientY }} onPointerDown={(event) => event.stopPropagation()}>
-        <button type="button" role="menuitem" onClick={chooseCanvasAddEntity}>{translate(locale, "addEntity")}</button>
-        <button type="button" role="menuitem" onClick={() => setCanvasContextMenu(null)}>{translate(locale, "cancel")}</button>
+      {contextMenu && <div className="canvas-context-menu context-menu" role="menu" aria-label={translate(locale, "canvasActions")} style={{ position: "fixed", left: contextMenu.clientX, top: contextMenu.clientY }} onPointerDown={(event) => event.stopPropagation()}>
+        {contextMenu.kind === "canvas" ? <button type="button" role="menuitem" onClick={chooseCanvasAddEntity}>{translate(locale, "addEntity")}</button> : <>
+          <button type="button" role="menuitem" onClick={openContextMenuDetails}>{translate(locale, "openDetails")}</button>
+          {((contextMenu.kind === "node-label" && manualNodeLabelOffsets.current.has(contextMenu.entityId)) ||
+            (contextMenu.kind === "relation-path" && (edgeCurveOffsets[contextMenu.relationId] !== undefined || selfLoopOverrides[contextMenu.relationId] !== undefined)) ||
+            (contextMenu.kind === "relation-label" && manualRelationLabelAnchors.current.has(contextMenu.relationId))) &&
+            <button type="button" role="menuitem" onClick={resetContextMenuPlacement}>{translate(locale, "automaticPlacementReset")}</button>}
+        </>}
+        <button type="button" role="menuitem" onClick={() => setContextMenu(null)}>{translate(locale, "cancel")}</button>
       </div>}
       {dataset && creationMode && (
         <CreationDialog
@@ -1147,7 +1183,7 @@ export default function App() {
             onPointerCancelCapture={finishLongPress}
             onContextMenu={openCanvasContextMenu}
           >
-            <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="currentColor" /></marker></defs>
+            <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="currentColor" /></marker></defs>
             <g transform={centeredViewportTransform(scale, pan, 800, 500)}>
               {relationCreationPreview && (() => {
                 const source = graph.nodes.find(({ id }) => id === relationCreationPreview.sourceId);
@@ -1160,7 +1196,7 @@ export default function App() {
                   key={edge.id}
                   className={`edge-group${selectedRelationId === edge.id ? " selected" : ""}`}
                   data-relation-id={edge.id}
-                  onContextMenu={(event) => openRelationDetailFromContext(edge.id, event)}
+                   onContextMenu={(event) => openObjectContextFromPointer("relation-path", edge.id, event)}
                   onPointerDown={(event) => {
                     event.stopPropagation();
                     setEdgeLayerOrder((value) => bringToFront(value, edge.id));
@@ -1169,7 +1205,14 @@ export default function App() {
                   }}
                 >
                   <path d={edge.path} className="edge-halo" />
-                  <path d={edge.path} className="edge" markerEnd="url(#arrow)" />
+                  <path d={edge.path} className="edge" />
+                  {(() => {
+                    const arrowhead = getArrowheadGeometry(edge.samples, selectedRelationId === edge.id ? 2.75 : 2);
+                    return <polygon
+                      className="edge-arrowhead"
+                      points={`${arrowhead.baseA.x},${arrowhead.baseA.y} ${arrowhead.baseB.x},${arrowhead.baseB.y} ${arrowhead.tip.x},${arrowhead.tip.y}`}
+                    />;
+                  })()}
                   <path
                     d={edge.path}
                     className="edge-hit-area"
@@ -1183,10 +1226,11 @@ export default function App() {
                 const labelPoint = displayedEdgeLabelPlacements.get(edge.id) ?? edge.labelPoint;
                 return <g
                   key={`label-${edge.id}`}
-                  className="edge-label-group"
-                  data-relation-id={edge.id}
-                  transform={`translate(${manualRelationLabelAnchors.current.has(edge.id) ? 0 : (edgeLabelOffsets[edge.id]?.x ?? 0)} ${manualRelationLabelAnchors.current.has(edge.id) ? 0 : (edgeLabelOffsets[edge.id]?.y ?? 0)})`}
-                  onContextMenu={(event) => openRelationDetailFromContext(edge.id, event)}
+                   className="edge-label-group"
+                   data-relation-id={edge.id}
+                   transform={`translate(${manualRelationLabelAnchors.current.has(edge.id) ? 0 : (edgeLabelOffsets[edge.id]?.x ?? 0)} ${manualRelationLabelAnchors.current.has(edge.id) ? 0 : (edgeLabelOffsets[edge.id]?.y ?? 0)})`}
+                   onContextMenuCapture={(event) => openObjectContextFromPointer("relation-label", edge.id, event)}
+                   onContextMenu={(event) => openObjectContextFromPointer("relation-label", edge.id, event)}
                   onPointerDown={(event) => { event.stopPropagation(); startGraphPointer(event, { kind: "edge-label", id: edge.id }); }}
                 >
                   <g transform={`translate(${labelPoint.x} ${labelPoint.y})`}>
@@ -1197,6 +1241,7 @@ export default function App() {
                       width={Math.max(48, edge.label.length * 7)}
                       height="22"
                       rx="3"
+                      onContextMenu={(event) => openObjectContextFromPointer("relation-label", edge.id, event)}
                       onPointerEnter={(event) => setPlacementHover(event, "relation-label", edge.id)}
                       onPointerLeave={() => setHoveredPlacement((value) => value?.target === "relation-label" && value.id === edge.id ? null : value)}
                     />
@@ -1205,7 +1250,7 @@ export default function App() {
                 </g>;
               })}
               {displayedNodes.map((node) => { const position = nodePosition(node); return (
-                <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onContextMenu={(event) => openEntityDetailFromContext(node.id, event)} onPointerDown={(event) => { event.stopPropagation(); setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
+                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onContextMenu={(event) => openObjectContextFromPointer("entity", node.id, event)} onPointerDown={(event) => { event.stopPropagation(); setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
                   <circle className="connection-handle" cx="34" cy="16" r="7" onPointerDown={(event) => startRelationCreation(event, node.id)} />
                   <rect
                     className="entity-body"
@@ -1234,7 +1279,8 @@ export default function App() {
                     return <g
                       className="node-label-group"
                       data-entity-id={node.id}
-                      onContextMenu={(event) => openEntityDetailFromContext(node.id, event)}
+                       onContextMenuCapture={(event) => openObjectContextFromPointer("node-label", node.id, event)}
+                       onContextMenu={(event) => openObjectContextFromPointer("node-label", node.id, event)}
                       onPointerDown={(event) => { event.stopPropagation(); startGraphPointer(event, { kind: "node-label", id: node.id }); }}
                     >
                       {shouldShowNodeLabelConnector({ x: offsetX, y: offsetY }) && (
@@ -1253,6 +1299,7 @@ export default function App() {
                         width={placement.width}
                         height={placement.height}
                         rx="3"
+                        onContextMenu={(event) => openObjectContextFromPointer("node-label", node.id, event)}
                         onPointerEnter={(event) => setPlacementHover(event, "node-label", node.id)}
                         onPointerLeave={() => setHoveredPlacement((value) => value?.target === "node-label" && value.id === node.id ? null : value)}
                       />
@@ -1285,6 +1332,7 @@ export default function App() {
                   source: source?.label,
                   target: target?.label,
                   ownership: kind === "entity" ? "" : placementText(kind, hoveredPlacement.id),
+                  self: kind === "relation-route" && relation?.sourceId === relation?.targetId,
                 });
                 return lines.map((line, index) => <div key={`${hoveredPlacement.id}-${index}`} className={kind === "entity" || index !== lines.length - 1 ? undefined : "placement-hover-popover__ownership"}>{line}</div>);
               })()}
