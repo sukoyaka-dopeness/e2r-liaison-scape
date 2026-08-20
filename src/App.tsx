@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { assessCoordinateDraftMigration, migrateCoordinatePrototypeToDraft } from "./coordinate-migration";
 import { assessLiaisonScapeSpaceMigration, migrateLinkscapeSpaceToLiaisonScape } from "./space-migration";
 import { applyStoredCoordinates, buildEntityGraph, getStoredCoordinates, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
@@ -62,6 +62,8 @@ export default function App() {
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [manualLabelRevision, setManualLabelRevision] = useState(0);
   const [hoveredPlacement, setHoveredPlacement] = useState<{ target: PlacementTarget | "entity"; id: string; clientX: number; clientY: number; entityBounds?: { left: number; bottom: number } } | null>(null);
+  const [popoverPosition, setPopoverPosition] = useState<{ left: number; top: number } | null>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const previousNodeLabelPlacements = useRef(new Map<string, LabelRect>());
   const previousEdgeLabelPlacements = useRef(new Map<string, LabelRect>());
   const relationLabelVisualState = useRef(new Map<string, RelationLabelVisualState>());
@@ -254,9 +256,37 @@ export default function App() {
     return translate(locale, placementOwnership(manual) === "user" ? "userPlacement" : "automaticPlacement");
   }
   function setPlacementHover(event: React.PointerEvent<SVGElement>, target: PlacementTarget | "entity", id: string) {
-    const bounds = target === "entity" ? event.currentTarget.getBoundingClientRect() : null;
+    const bounds = target === "entity" || target === "node-label" || target === "relation-label"
+      ? event.currentTarget.getBoundingClientRect()
+      : null;
+    setPopoverPosition(null);
     setHoveredPlacement({ target, id, clientX: event.clientX, clientY: event.clientY, entityBounds: bounds ? { left: bounds.left, bottom: bounds.bottom } : undefined });
   }
+
+  function preferredPopoverPosition(placement: NonNullable<typeof hoveredPlacement>) {
+    const bounds = placement.entityBounds;
+    return placement.target === "entity" && bounds
+      ? { left: bounds.left, top: bounds.bottom + 8 }
+      : placement.target === "node-label" || placement.target === "relation-label"
+        ? { left: bounds?.left ?? placement.clientX + 12, top: (bounds?.bottom ?? placement.clientY) + 8 }
+        : { left: placement.clientX + 12, top: placement.clientY + 12 };
+  }
+
+  useLayoutEffect(() => {
+    if (!hoveredPlacement || (hoveredPlacement.target === "entity" && !hoveredPlacement.entityBounds)) {
+      setPopoverPosition(null);
+      return;
+    }
+    const preferred = preferredPopoverPosition(hoveredPlacement);
+    const popover = popoverRef.current;
+    const viewport = graphRef.current?.getBoundingClientRect();
+    if (!popover || !viewport) return;
+    const measured = popover.getBoundingClientRect();
+    const margin = 8;
+    const left = Math.max(viewport.left + margin, Math.min(preferred.left, viewport.right - measured.width - margin));
+    const top = Math.max(viewport.top + margin, Math.min(preferred.top, viewport.bottom - measured.height - margin));
+    if (left !== preferred.left || top !== preferred.top) setPopoverPosition({ left, top });
+  }, [hoveredPlacement]);
 
   useEffect(() => {
     const graphElement = graphRef.current;
@@ -1342,14 +1372,10 @@ export default function App() {
           </svg>
           {hoveredPlacement && !(hoveredPlacement.target === "entity" && relationCreationPreview?.sourceId === hoveredPlacement.id) && (
             <div
+              ref={popoverRef}
               className="placement-hover-popover"
               role="status"
-              style={hoveredPlacement.target === "entity" && hoveredPlacement.entityBounds
-                ? {
-                    left: Math.max(12, Math.min(hoveredPlacement.entityBounds.left, window.innerWidth - 252)),
-                    top: Math.max(12, Math.min(hoveredPlacement.entityBounds.bottom + 8, window.innerHeight - 96)),
-                  }
-                : { left: hoveredPlacement.clientX + 12, top: hoveredPlacement.clientY + 12 }}
+              style={popoverPosition ?? preferredPopoverPosition(hoveredPlacement)}
             >
               {(() => {
                 const node = graph.nodes.find(({ id }) => id === hoveredPlacement.id);
