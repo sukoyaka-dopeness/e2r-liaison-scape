@@ -961,6 +961,41 @@ test("a manual self-Relation handle controls loop orientation and radius", () =>
   assert.notEqual(route.path, routeGraphEdge(point, point, 0, 1).path);
 });
 
+test("automatic self-Relation keeps preferred orientation without Node pressure", () => {
+  const preferred = routeGraphEdge({ x: 100, y: 100 }, { x: 100, y: 100 }, 0, 1);
+  const repeated = routeGraphEdge({ x: 100, y: 100 }, { x: 100, y: 100 }, 0, 1);
+  assert.equal(preferred.path, repeated.path);
+  assert.equal(preferred.samples.length, 41);
+});
+
+test("automatic self-Relation rotates away from a nearby Node while preserving radius", () => {
+  const point = { x: 100, y: 100 };
+  const preferred = routeGraphEdge(point, point, 0, 1);
+  const obstacle = preferred.samples[20]!;
+  const avoided = routeGraphEdge(point, point, 0, 1, [obstacle]);
+  assert.notEqual(avoided.path, preferred.path);
+  assert.equal(avoided.path.match(/ A 38 38 /u)?.[0], " A 38 38 ");
+  assert.equal(avoided.samples.length, 41);
+  assert.ok(avoided.samples.every(({ x, y }) => Number.isFinite(x) && Number.isFinite(y)));
+});
+
+test("automatic self-Relation uses the refined 10-degree full-circle candidate set", () => {
+  const point = { x: 100, y: 100 };
+  const preferred = routeGraphEdge(point, point, 0, 1);
+  const nearTenDegree = routeGraphEdge(point, point, 0, 1, [{ x: preferred.samples[20]!.x + 12, y: preferred.samples[20]!.y + 12 }]);
+  assert.equal(preferred.samples.length, 41);
+  assert.ok(nearTenDegree.samples.every(({ x, y }) => Number.isFinite(x) && Number.isFinite(y)));
+});
+
+test("manual self-Relation remains fixed when an unrelated Node moves", () => {
+  const point = { x: 100, y: 100 };
+  const manual = { orientation: 0, radius: 64 };
+  const first = routeGraphEdge(point, point, 0, 1, [{ x: 132, y: 100 }], [], true, 0, undefined, manual);
+  const second = routeGraphEdge(point, point, 0, 1, [{ x: 80, y: 100 }], [], true, 0, undefined, manual);
+  assert.equal(first.path, second.path);
+  assert.equal(first.path.match(/ A 64 64 /u)?.[0], " A 64 64 ");
+});
+
 test("long Entity labels wrap to at most two lines inside a node", () => {
   assert.deepEqual(wrapNodeLabel("Short name"), ["Short name"]);
   assert.deepEqual(wrapNodeLabel("長いエンティティ名"), ["長いエンテ", "ィティ名"]);

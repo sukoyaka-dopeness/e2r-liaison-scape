@@ -2,6 +2,8 @@ export const MIN_SCALE = 0.1;
 export const MAX_SCALE = 2.5;
 const RELATION_ROUTE_NODE_INFLUENCE_RADIUS = 60;
 const RELATION_LABEL_NODE_RECOVERY_CLEARANCE = 60;
+const SELF_LOOP_ORIENTATION_STEP = Math.PI / 18;
+const SELF_LOOP_ORIENTATION_PREFERENCE_WEIGHT = 0.05;
 const ENTITY_ATTACHMENT_SHAPE: EntityAttachmentShape = {
   kind: "rounded-rectangle",
   halfWidth: 32,
@@ -407,6 +409,7 @@ export function routeGraphEdge(
   manualSelfLoop?: { orientation: number; radius: number },
 ): { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point } {
   if (source.x === target.x && source.y === target.y && selfRelation) {
+    if (manualSelfLoop === undefined) return selectAutomaticSelfLoopGeometry(source, parallelIndex, obstacles);
     const orientation = manualSelfLoop?.orientation ?? -Math.PI / 2 + parallelIndex % 3 * Math.PI * 2 / 3;
     const direction = { x: Math.cos(orientation), y: Math.sin(orientation) };
     const perpendicular = { x: -direction.y, y: direction.x };
@@ -582,6 +585,75 @@ export function routeGraphEdge(
     if (score === 0) break;
   }
   return bestGeometry ?? geometryForOffset(baseOffset);
+}
+
+function shortestAngularDistance(left: number, right: number): number {
+  return Math.abs(Math.atan2(Math.sin(left - right), Math.cos(left - right)));
+}
+
+function normalizeAngle(angle: number): number {
+  const normalized = angle % (Math.PI * 2);
+  return normalized < 0 ? normalized + Math.PI * 2 : normalized;
+}
+
+function automaticSelfLoopGeometry(source: Point, orientation: number, radius: number): { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point } {
+  const direction = { x: Math.cos(orientation), y: Math.sin(orientation) };
+  const perpendicular = { x: -direction.y, y: direction.x };
+  const spread = Math.PI / 4;
+  const outwardDistance = Math.cos(spread) * 32;
+  const sidewaysDistance = Math.sin(spread) * 32;
+  const centerDistance = outwardDistance + Math.sqrt(Math.max(1, radius * radius - sidewaysDistance * sidewaysDistance));
+  const provisionalStart = { x: direction.x * outwardDistance + perpendicular.x * sidewaysDistance, y: direction.y * outwardDistance + perpendicular.y * sidewaysDistance };
+  const provisionalEnd = { x: direction.x * outwardDistance - perpendicular.x * sidewaysDistance, y: direction.y * outwardDistance - perpendicular.y * sidewaysDistance };
+  const start = getEntityAttachment({ center: source, direction: provisionalStart, shape: ENTITY_ATTACHMENT_SHAPE }).point;
+  const end = getEntityAttachment({ center: source, direction: provisionalEnd, shape: ENTITY_ATTACHMENT_SHAPE }).point;
+  const chordX = end.x - start.x;
+  const chordY = end.y - start.y;
+  const chordLength = Math.hypot(chordX, chordY);
+  if (chordLength > radius * 2) throw new RangeError("Self-loop radius cannot contain attachment chord");
+  const midpoint = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+  const centerOffset = Math.sqrt(Math.max(0, radius * radius - chordLength * chordLength / 4));
+  const normal = { x: -chordY / Math.max(1, chordLength), y: chordX / Math.max(1, chordLength) };
+  const centers = [
+    { x: midpoint.x + normal.x * centerOffset, y: midpoint.y + normal.y * centerOffset },
+    { x: midpoint.x - normal.x * centerOffset, y: midpoint.y - normal.y * centerOffset },
+  ];
+  const preferredCenter = { x: source.x + direction.x * centerDistance, y: source.y + direction.y * centerDistance };
+  const center = centers.sort((left, right) => Math.hypot(left.x - preferredCenter.x, left.y - preferredCenter.y) - Math.hypot(right.x - preferredCenter.x, right.y - preferredCenter.y))[0]!;
+  const startAngle = Math.atan2(start.y - center.y, start.x - center.x);
+  let endAngle = Math.atan2(end.y - center.y, end.x - center.x);
+  while (endAngle >= startAngle) endAngle -= Math.PI * 2;
+  const samples = Array.from({ length: 41 }, (_, step) => {
+    const angle = startAngle + step / 40 * (endAngle - startAngle);
+    return { x: center.x + Math.cos(angle) * radius, y: center.y + Math.sin(angle) * radius };
+  });
+  return {
+    path: `M ${start.x} ${start.y} A ${radius} ${radius} 0 1 0 ${end.x} ${end.y}`,
+    samples,
+    labelPoint: { x: center.x + direction.x * radius, y: center.y + direction.y * radius },
+    controlPoint: { x: center.x + direction.x * radius, y: center.y + direction.y * radius },
+  };
+}
+
+function selectAutomaticSelfLoopGeometry(source: Point, parallelIndex: number, obstacles: Point[]): ReturnType<typeof automaticSelfLoopGeometry> {
+  const preferred = -Math.PI / 2 + parallelIndex % 3 * Math.PI * 2 / 3;
+  const radius = 38 + Math.floor(parallelIndex / 3) * 14;
+  const candidates = Array.from({ length: 36 }, (_, index) => preferred + (index <= 18 ? index : index - 36) * SELF_LOOP_ORIENTATION_STEP);
+  let best: { geometry: ReturnType<typeof automaticSelfLoopGeometry>; score: number; delta: number; angle: number } | null = null;
+  for (const orientation of candidates) {
+    const geometry = automaticSelfLoopGeometry(source, orientation, radius);
+    const nodePressure = obstacles.reduce((total, obstacle) => total + geometry.samples.reduce((sampleTotal, sample) => {
+      const penetration = Math.max(0, (RELATION_ROUTE_NODE_INFLUENCE_RADIUS - Math.hypot(sample.x - obstacle.x, sample.y - obstacle.y)) / RELATION_ROUTE_NODE_INFLUENCE_RADIUS);
+      return sampleTotal + penetration * penetration;
+    }, 0), 0) / geometry.samples.length;
+    const delta = shortestAngularDistance(orientation, preferred);
+    const score = nodePressure + SELF_LOOP_ORIENTATION_PREFERENCE_WEIGHT * (delta / Math.PI) ** 2;
+    const angle = normalizeAngle(orientation);
+    if (!best || score < best.score - 1e-12 || (Math.abs(score - best.score) <= 1e-12 && (delta < best.delta - 1e-12 || (Math.abs(delta - best.delta) <= 1e-12 && angle < best.angle)))) {
+      best = { geometry, score, delta, angle };
+    }
+  }
+  return best!.geometry;
 }
 
 function labelCharacterWidth(character: string): number {
