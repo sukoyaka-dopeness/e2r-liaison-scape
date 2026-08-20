@@ -17,6 +17,7 @@ import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, getA
 import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatLoadedDataset, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
+import { applyEntityCreationPlacement, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 
@@ -27,6 +28,7 @@ export default function App() {
   ));
   const [view, setView] = useState<"home" | "workspace">("home");
   const [dataset, setDataset] = useState<Dataset | null>(null);
+  const [datasetModified, setDatasetModified] = useState(false);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -64,6 +66,7 @@ export default function App() {
   const [hoveredPlacement, setHoveredPlacement] = useState<{ target: PlacementTarget | "entity"; id: string; clientX: number; clientY: number; entityBounds?: { left: number; bottom: number } } | null>(null);
   const [popoverPosition, setPopoverPosition] = useState<{ left: number; top: number } | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const cleanDatasetBaseline = useRef<Dataset | null>(null);
   const previousNodeLabelPlacements = useRef(new Map<string, LabelRect>());
   const previousEdgeLabelPlacements = useRef(new Map<string, LabelRect>());
   const relationLabelVisualState = useRef(new Map<string, RelationLabelVisualState>());
@@ -241,6 +244,24 @@ export default function App() {
   }
   const selectedDetail = dataset && selectedId ? getEntityDetail(dataset, selectedId) : null;
   const selectedRelationDetail = dataset && selectedRelationId ? getRelationDetail(dataset, selectedRelationId) : null;
+  const pendingUserWork = hasPendingUserWork({
+    unsavedCoordinates: coordinatesDirty,
+    manualRelationRoute: Object.keys(edgeCurveOffsets).length > 0 || Object.keys(selfLoopOverrides).length > 0,
+    manualRelationLabel: manualRelationLabelAnchors.current.size > 0,
+    manualNodeLabel: manualNodeLabelOffsets.current.size > 0,
+    meaningfulCreationDraft: creationMode !== null && [creationName, creationDescription, creationSource, creationTarget].some((value) => value.trim().length > 0),
+    meaningfulEntityDetailDraft: detailOpen && selectedDetail !== null && (
+      entityNameDraft !== (typeof selectedDetail.entity.name === "string" ? selectedDetail.entity.name : "")
+      || entityDescriptionDraft !== (typeof selectedDetail.entity.description === "string" ? selectedDetail.entity.description : "")
+    ),
+    meaningfulRelationDetailDraft: detailOpen && selectedRelationDetail !== null && (
+      relationNameDraft !== (typeof selectedRelationDetail.relation.name === "string" ? selectedRelationDetail.relation.name : "")
+      || relationDescriptionDraft !== (typeof selectedRelationDetail.relation.description === "string" ? selectedRelationDetail.relation.description : "")
+      || relationSourceDraft !== selectedRelationDetail.sourceId
+      || relationTargetDraft !== selectedRelationDetail.targetId
+    ),
+  });
+  const replacementLossRisk = datasetModified || pendingUserWork;
   const edgeLayerIndexes = new Map(edgeLayerOrder.map((id, index) => [id, index]));
   const nodeLayerIndexes = new Map(nodeLayerOrder.map((id, index) => [id, index]));
   const displayedEdges = [...routedEdges].sort((left, right) =>
@@ -435,6 +456,17 @@ export default function App() {
     return () => observer.disconnect();
   }, [viewportToolbarPosition]);
 
+  function acceptDataset(nextDataset: Dataset) {
+    cleanDatasetBaseline.current = structuredClone(nextDataset);
+    setDataset(nextDataset);
+    setDatasetModified(false);
+  }
+
+  function updateDataset(nextDataset: Dataset) {
+    setDataset(nextDataset);
+    setDatasetModified(isDatasetModified(cleanDatasetBaseline.current ?? nextDataset, nextDataset));
+  }
+
   function open(raw: string) {
     setContextMenu(null);
     setHoveredPlacement(null);
@@ -453,7 +485,7 @@ export default function App() {
       return;
     }
     resetPreviousLabelPlacements();
-    setDataset(result.dataset);
+    acceptDataset(result.dataset);
     enterWorkspace();
     setSelectedId(null);
     setSelectedRelationId(null);
@@ -496,7 +528,7 @@ export default function App() {
     setContextMenu(null);
     setHoveredPlacement(null);
     resetPreviousLabelPlacements();
-    setDataset(structuredClone(emptyDataset));
+    acceptDataset(structuredClone(emptyDataset));
     setDiagnostics([]);
     setMessage("");
     setSelectedId(null);
@@ -866,7 +898,7 @@ export default function App() {
       setMessage(translate(locale, "coordinatePayloadWriteRefusal"));
       return;
     }
-    setDataset(saved);
+    updateDataset(saved);
     setCoordinatesDirty(false);
     setMessage(translate(locale, "coordinateSaveSuccess"));
   }
@@ -880,9 +912,10 @@ export default function App() {
       setMessage(translate(locale, "coordinateDraftMigrationRefusal"));
       return;
     }
-    setDataset(result.dataset);
-    setPositions(getStoredCoordinates(result.dataset));
-    setCoordinatesDirty(false);
+    updateDataset(result.dataset);
+    const coordinateState = preservePendingCoordinates({ positions, coordinatesDirty, storedPositions: getStoredCoordinates(result.dataset) });
+    setPositions(coordinateState.positions);
+    setCoordinatesDirty(coordinateState.coordinatesDirty);
     setMessage(translate(locale, "coordinateDraftMigrationSuccess"));
   }
 
@@ -894,9 +927,10 @@ export default function App() {
       setMessage(translate(locale, "spaceMigrationRefusal"));
       return;
     }
-    setDataset(result.dataset);
-    setPositions(getStoredCoordinates(result.dataset));
-    setCoordinatesDirty(false);
+    updateDataset(result.dataset);
+    const coordinateState = preservePendingCoordinates({ positions, coordinatesDirty, storedPositions: getStoredCoordinates(result.dataset) });
+    setPositions(coordinateState.positions);
+    setCoordinatesDirty(coordinateState.coordinatesDirty);
     setMessage(translate(locale, "spaceMigrationSuccess"));
   }
 
@@ -911,7 +945,7 @@ export default function App() {
       description: relationDescriptionDraft,
     });
     if ("refusal" in result) { setMessage(formatRelationUpdateRefusal(locale, result.refusal)); return; }
-    setDataset(result.dataset);
+    updateDataset(result.dataset);
     setDetailOpen(false);
     setMessage("");
   }
@@ -968,15 +1002,23 @@ export default function App() {
       const placement = pendingEntityPlacement;
       const result = createEntity(dataset, { name: creationName, description: creationDescription });
       const created = result.dataset.entities.find(({ id }) => id === result.entityId)!;
-      setDataset(result.dataset); setSelectedId(result.entityId); setSelectedRelationId(null); setCreationMode(null); setPendingEntityPlacement(null);
-      setPositions((value) => ({ ...value, [result.entityId]: placement ?? graphPointFromViewportCenter({ width: 800, height: 500 }, scale, pan) }));
+      updateDataset(result.dataset); setSelectedId(result.entityId); setSelectedRelationId(null); setCreationMode(null); setPendingEntityPlacement(null);
+      const automaticPlacement = graphPointFromViewportCenter({ width: 800, height: 500 }, scale, pan);
+      setPositions((value) => applyEntityCreationPlacement({
+        positions: value,
+        entityId: result.entityId,
+        explicitPlacement: placement,
+        automaticPlacement,
+        coordinatesDirty,
+      }).positions);
+      if (placement !== null) setCoordinatesDirty(true);
       setNodeLayerOrder((value) => bringToFront(value, result.entityId));
       setEntityNameDraft(typeof created.name === "string" ? created.name : ""); setEntityDescriptionDraft(typeof created.description === "string" ? created.description : "");
       setMessage(""); return;
     }
     const result = createRelation(dataset, { sourceId: creationSource, targetId: creationTarget, name: creationName, description: creationDescription });
     if (!("relationId" in result)) { setMessage(formatRelationCreationRefusal(locale, result.refusal)); return; }
-    setDataset(result.dataset); setSelectedRelationId(result.relationId); setSelectedId(null); setCreationMode(null); setMessage("");
+    updateDataset(result.dataset); setSelectedRelationId(result.relationId); setSelectedId(null); setCreationMode(null); setMessage("");
   }
 
   function removeSelectedRelation() {
@@ -1008,19 +1050,19 @@ export default function App() {
       const result = deleteRelation(dataset, deleteConfirmationId);
       if (!result.deleted) { setMessage(formatRelationDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); return; }
       manualRelationLabelAnchors.current.delete(result.deletedId);
-      setDataset(result.dataset); setSelectedRelationId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage(""); return;
+      updateDataset(result.dataset); setSelectedRelationId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage(""); return;
     }
     if (deleteConfirmation === "entity") {
       const result = deleteEntity(dataset, deleteConfirmationId);
       if (!result.deleted) { setMessage(formatEntityDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); return; }
       manualNodeLabelOffsets.current.delete(result.deletedId);
-      setDataset(result.dataset); setPositions((value) => { const next = { ...value }; delete next[result.deletedId]; return next; }); setSelectedId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage("");
+      updateDataset(result.dataset); setPositions((value) => { const next = { ...value }; delete next[result.deletedId]; return next; }); setSelectedId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage("");
     }
   }
 
   function saveEntityDetails() {
     if (!dataset || !selectedId) return;
-    setDataset(updateEntityDetails(dataset, selectedId, {
+    updateDataset(updateEntityDetails(dataset, selectedId, {
       name: entityNameDraft,
       description: entityDescriptionDraft,
     }));
@@ -1080,8 +1122,8 @@ export default function App() {
       setEdgeLabelOffsets((value) => { const next = { ...value }; delete next[contextMenu.relationId]; return next; });
       setManualLabelRevision((value) => value + 1);
     } else if (contextMenu.kind === "relation-path") {
-      setEdgeCurveOffsets((value) => { const next = { ...value }; delete next[contextMenu.relationId]; return next; });
-      setSelfLoopOverrides((value) => { const next = { ...value }; delete next[contextMenu.relationId]; return next; });
+      setEdgeCurveOffsets((value) => resetManualRelationRoute(value, contextMenu.relationId));
+      setSelfLoopOverrides((value) => resetManualRelationRoute(value, contextMenu.relationId));
     }
     setContextMenu(null);
   }
@@ -1094,8 +1136,6 @@ export default function App() {
     setSelectedRelationId(null);
     setDetailOpen(false);
     setEdgeLabelOffsets({});
-    setEdgeCurveOffsets({});
-    setSelfLoopOverrides({});
   }
 
   function exportDataset() {
@@ -1114,6 +1154,7 @@ export default function App() {
     anchor.download = "e2r-dataset.json";
     anchor.click();
     URL.revokeObjectURL(url);
+    acceptDataset(dataset);
   }
 
   return (
