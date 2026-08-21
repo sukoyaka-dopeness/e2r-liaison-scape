@@ -1,5 +1,12 @@
 # LiaisonScape Development Guidance
 
+## Reusable knowledge
+
+The central workspace knowledge base is `C:\Users\extra\E2R\ai-knowledge`.
+Before routing, layout, geometry, labels, placement, Dataset safety, or
+Handoff work, search its `INDEX.md` by topic. Apply entries only within their
+stated scope; hypotheses are not accepted decisions.
+
 LiaisonScape is an E2R application for relationship-oriented exploration and
 editing. Preserve compatibility with the sibling `../e2r-spec` repository and
 keep application behavior separate from E2R Core semantics.
