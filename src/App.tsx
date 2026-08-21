@@ -20,8 +20,11 @@ import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstru
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
 import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
 import { canRestoreReplacementTrigger } from "./replacement-focus";
+import { parseDatasetHandoffFragment } from "./dataset-handoff";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
+type StartupHandoffFailure = "invalid-fragment" | "fetch-failed" | "parse-failed" | "validation-failed";
+type OpenDatasetResult = { status: "accepted-or-staged" } | { status: "parse-error" } | { status: "validation-error" };
 
 export default function App() {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
@@ -32,6 +35,7 @@ export default function App() {
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [datasetModified, setDatasetModified] = useState(false);
   const [pendingDatasetReplacement, setPendingDatasetReplacement] = useState<Dataset | null>(null);
+  const [startupHandoffFailure, setStartupHandoffFailure] = useState<StartupHandoffFailure | null>(null);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -89,11 +93,35 @@ export default function App() {
   const workspaceOpenFileInputRef = useRef<HTMLInputElement>(null);
   const replacementTriggerRef = useRef<HTMLButtonElement | null>(null);
   const restoreReplacementFocusRef = useRef(false);
+  const startupHandoffStartedRef = useRef(false);
 
   useEffect(() => {
     saveLocale(window.localStorage, locale);
     applyLocale(locale, document);
   }, [locale]);
+
+  useEffect(() => {
+    if (startupHandoffStartedRef.current) return;
+    startupHandoffStartedRef.current = true;
+    const handoff = parseDatasetHandoffFragment(window.location.hash);
+    if (handoff.kind === "none") return;
+    if (handoff.kind === "invalid") {
+      setStartupHandoffFailure("invalid-fragment");
+      return;
+    }
+    setStartupHandoffFailure(null);
+    void fetch(handoff.datasetUrl, { credentials: "omit" })
+      .then((response) => {
+        if (!response.ok) throw new Error("handoff-fetch-failed");
+        return response.text();
+      })
+      .then((raw) => {
+        const result = open(raw);
+        if (result.status === "parse-error") setStartupHandoffFailure("parse-failed");
+        else if (result.status === "validation-error") setStartupHandoffFailure("validation-failed");
+      })
+      .catch(() => setStartupHandoffFailure("fetch-failed"));
+  }, []);
 
   useEffect(() => {
     window.history.replaceState({ liaisonScapeView: "home" }, "");
@@ -573,20 +601,21 @@ export default function App() {
     exportCurrentDataset();
   }
 
-  function open(raw: string, trigger?: HTMLButtonElement | null) {
+  function open(raw: string, trigger?: HTMLButtonElement | null): OpenDatasetResult {
     const result = loadDataset(raw);
     setDiagnostics(result.diagnostics);
     if (result.parseError) {
       setMessage(translate(locale, "jsonLoadFailure"));
-      return;
+      return { status: "parse-error" };
     }
     const candidate = candidateFromLoadResult(result);
     if (!candidate) {
       setMessage(translate(locale, "datasetValidationFailure"));
-      return;
+      return { status: "validation-error" };
     }
     requestDatasetReplacement(candidate, trigger);
     setMessage(formatLoadedDataset(locale, candidate.entities.length, candidate.relations.length));
+    return { status: "accepted-or-staged" };
   }
 
   async function openSample(trigger?: HTMLButtonElement | null) {
@@ -618,6 +647,7 @@ export default function App() {
       <main className="home-content">
         <h1 tabIndex={-1}>{translate(locale, "getStarted")}</h1>
         <p className="home-description">{translate(locale, "homeDescription")}</p>
+        {startupHandoffFailure && <p className="home-message" role="alert">{translate(locale, startupHandoffFailure === "invalid-fragment" ? "handoffInvalid" : startupHandoffFailure === "fetch-failed" ? "handoffFetchFailure" : startupHandoffFailure === "parse-failed" ? "jsonLoadFailure" : "datasetValidationFailure")}</p>}
         <div className="home-actions">
           {dataset && <button type="button" onClick={enterWorkspace}>{translate(locale, "continueEditing")}</button>}
           <button type="button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => startNewDataset(event.currentTarget)}>{translate(locale, "newDataset")}</button>

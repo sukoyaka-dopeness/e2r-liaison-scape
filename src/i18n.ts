@@ -67,6 +67,8 @@ export const messages = {
     coordinateSaveSuccess: "Entity coordinates saved to the experimental Coordinate payload.",
     jsonLoadFailure: "Could not load the Dataset. Check the JSON format.",
     datasetValidationFailure: "Could not open the Dataset. It has validation errors in the Core or supported Extensions.",
+    handoffInvalid: "The Dataset handoff link is invalid.",
+    handoffFetchFailure: "Could not retrieve the Dataset from the handoff link.",
     exportBlockedValidation: "Could not export the E2R JSON. The Dataset has validation errors.",
     exportWithWarnings: "Exporting the E2R JSON with validation warnings.",
     coordinateDraftWriteRefusal: "Could not save the coordinates. This Dataset's Coordinate Draft is not in a format that LiaisonScape can safely write.",
@@ -108,6 +110,8 @@ export const messages = {
     close: "Close", entityDetail: "Entity Detail", id: "ID", shownRelations: "Shown Relations", datasetRelations: "Dataset Relations", dangerZone: "Danger zone", relatedRelations: "Related Relations:", deleteEntity: "Delete Entity", closeEntityDetail: "Close Entity Detail",
   },
   ja: {
+    handoffInvalid: "Datasetの引き渡しリンクが正しくありません。",
+    handoffFetchFailure: "引き渡しリンクからDatasetを取得できませんでした。",
     cancel: "キャンセル",
     cancelReplacement: "Datasetの置き換えをキャンセル",
     datasetReplacementTitle: "Datasetを置き換えますか？",
