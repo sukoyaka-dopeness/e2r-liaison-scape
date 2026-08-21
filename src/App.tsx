@@ -125,9 +125,11 @@ export default function App() {
 
   useEffect(() => {
     window.history.replaceState({ liaisonScapeView: "home" }, "");
-    const onPopState = () => {
-      setView("home");
-      setMessage(translate(locale, "browserBackDatasetNotice"));
+    const onPopState = (event: PopStateEvent) => {
+      const nextView = event.state?.liaisonScapeView;
+      if (nextView !== "home" && nextView !== "workspace") return;
+      setView(nextView);
+      if (nextView === "home") setMessage(translate(locale, "browserBackDatasetNotice"));
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
