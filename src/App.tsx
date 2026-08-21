@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { MouseEvent } from "react";
 import { assessCoordinateDraftMigration, migrateCoordinatePrototypeToDraft } from "./coordinate-migration";
 import { assessLiaisonScapeSpaceMigration, migrateLinkscapeSpaceToLiaisonScape } from "./space-migration";
 import { applyStoredCoordinates, buildEntityGraph, getStoredCoordinates, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
@@ -644,6 +645,13 @@ export default function App() {
     window.history.pushState({ liaisonScapeView: "workspace" }, "", window.location.href);
   }
 
+  function goHomeFromWorkspace(event: MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+    if (view === "home") return;
+    setView("home");
+    window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href);
+  }
+
   function startNewDataset(trigger?: HTMLButtonElement | null) {
     requestDatasetReplacement(structuredClone(emptyDataset), trigger, "new");
   }
@@ -654,7 +662,7 @@ export default function App() {
 
   if (view === "home") return (
     <div className="app-frame home-page">
-      <header className="app-header"><button className="app-brand app-brand-button" type="button" onClick={() => setView("home")}>LiaisonScape</button></header>
+      <header className="app-header"><a className="app-brand" href={import.meta.env.BASE_URL}>LiaisonScape</a></header>
       <main className="home-content">
         <h1 tabIndex={-1}>{translate(locale, "getStarted")}</h1>
         <p className="home-description">{translate(locale, "homeDescription")}</p>
@@ -1262,8 +1270,8 @@ export default function App() {
   return (
     <div className="app-frame">
       <header className="app-header">
-        <button className="app-brand app-brand-button" type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>LiaisonScape</button>
-        <button className="header-home-button" type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>{translate(locale, "home")}</button>
+        <a className="app-brand" href={import.meta.env.BASE_URL} onClick={goHomeFromWorkspace}>LiaisonScape</a>
+        <a className="header-home-button" href={import.meta.env.BASE_URL} onClick={goHomeFromWorkspace}>{translate(locale, "home")}</a>
       </header>
       <main className="app-content">
         <div className="page-header">
