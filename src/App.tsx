@@ -20,11 +20,12 @@ import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstru
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
 import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
 import { canRestoreReplacementTrigger } from "./replacement-focus";
-import { parseDatasetHandoffFragment } from "./dataset-handoff";
+import { parseDatasetHandoffFragment, updateDatasetHandoffFragment } from "./dataset-handoff";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "fetch-failed" | "parse-failed" | "validation-failed";
 type OpenDatasetResult = { status: "accepted-or-staged" } | { status: "parse-error" } | { status: "validation-error" };
+type DatasetReplacementSource = "handoff" | "local" | "sample" | "new";
 
 export default function App() {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
@@ -35,6 +36,7 @@ export default function App() {
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [datasetModified, setDatasetModified] = useState(false);
   const [pendingDatasetReplacement, setPendingDatasetReplacement] = useState<Dataset | null>(null);
+  const [pendingDatasetReplacementSource, setPendingDatasetReplacementSource] = useState<DatasetReplacementSource | null>(null);
   const [startupHandoffFailure, setStartupHandoffFailure] = useState<StartupHandoffFailure | null>(null);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
@@ -116,7 +118,7 @@ export default function App() {
         return response.text();
       })
       .then((raw) => {
-        const result = open(raw);
+        const result = open(raw, null, "handoff");
         if (result.status === "parse-error") setStartupHandoffFailure("parse-failed");
         else if (result.status === "validation-error") setStartupHandoffFailure("validation-failed");
       })
@@ -514,7 +516,11 @@ export default function App() {
     return () => observer.disconnect();
   }, [viewportToolbarPosition]);
 
-  function acceptDataset(nextDataset: Dataset) {
+  function acceptDataset(nextDataset: Dataset, source: DatasetReplacementSource | null = pendingDatasetReplacementSource) {
+    if (source !== "handoff") {
+      const nextHash = updateDatasetHandoffFragment(window.location.hash, null);
+      window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}${nextHash}`);
+    }
     replacementTriggerRef.current = null;
     restoreReplacementFocusRef.current = false;
     setContextMenu(null);
@@ -524,6 +530,7 @@ export default function App() {
     setDataset(nextDataset);
     setDatasetModified(false);
     setPendingDatasetReplacement(null);
+    setPendingDatasetReplacementSource(null);
     setSelectedId(null);
     setSelectedRelationId(null);
     setDetailOpen(false);
@@ -553,12 +560,14 @@ export default function App() {
     setDatasetModified(isDatasetModified(cleanDatasetBaseline.current ?? nextDataset, nextDataset));
   }
 
-  function requestDatasetReplacement(candidate: Dataset, trigger?: HTMLButtonElement | null) {
+  function requestDatasetReplacement(candidate: Dataset, trigger: HTMLButtonElement | null | undefined, source: DatasetReplacementSource) {
     if (pendingDatasetReplacement) return;
     if (trigger) replacementTriggerRef.current = trigger;
     const decision = decideDatasetReplacement({ candidate, datasetModified, pendingUserWork });
-    if (decision.action === "stage") setPendingDatasetReplacement(decision.candidate);
-    else acceptDataset(decision.candidate);
+    if (decision.action === "stage") {
+      setPendingDatasetReplacement(decision.candidate);
+      setPendingDatasetReplacementSource(source);
+    } else acceptDataset(decision.candidate, source);
   }
 
   function cancelDatasetReplacement() {
@@ -603,7 +612,7 @@ export default function App() {
     exportCurrentDataset();
   }
 
-  function open(raw: string, trigger?: HTMLButtonElement | null): OpenDatasetResult {
+  function open(raw: string, trigger?: HTMLButtonElement | null, source: DatasetReplacementSource = "local"): OpenDatasetResult {
     const result = loadDataset(raw);
     setDiagnostics(result.diagnostics);
     if (result.parseError) {
@@ -615,7 +624,7 @@ export default function App() {
       setMessage(translate(locale, "datasetValidationFailure"));
       return { status: "validation-error" };
     }
-    requestDatasetReplacement(candidate, trigger);
+    requestDatasetReplacement(candidate, trigger, source);
     setMessage(formatLoadedDataset(locale, candidate.entities.length, candidate.relations.length));
     return { status: "accepted-or-staged" };
   }
@@ -624,7 +633,7 @@ export default function App() {
     try {
       const response = await fetch(`${import.meta.env.BASE_URL}lighthouse-restoration-demo.${locale}.e2r.json`);
       if (!response.ok) throw new Error(`Sample request failed: ${response.status}`);
-      open(await response.text(), trigger);
+      open(await response.text(), trigger, "sample");
     } catch {
       setMessage(translate(locale, "sampleDatasetLoadFailure"));
     }
@@ -636,7 +645,7 @@ export default function App() {
   }
 
   function startNewDataset(trigger?: HTMLButtonElement | null) {
-    requestDatasetReplacement(structuredClone(emptyDataset), trigger);
+    requestDatasetReplacement(structuredClone(emptyDataset), trigger, "new");
   }
 
   const replacementDialog = dataset && pendingDatasetReplacement
