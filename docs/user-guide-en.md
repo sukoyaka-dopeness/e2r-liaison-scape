@@ -42,15 +42,12 @@ as an Entity-to-Entity connection in the current graph view.
 
 - Click or tap the body of a node to select its Entity.
 - Click or tap an Entity name or description to select its parent Entity.
-- Click or tap a connection line to select that Relation. Drag a connection
-  line to adjust its route; starting the drag also selects that Relation.
+- Click or tap a connection line to select that Relation.
 - When a connection has a name, that name is shown near the line. This is the
   connection name.
 - Click or tap a connection name to select its parent Relation.
 - The arrow on a connection line shows the connection's direction.
 - Drag the graph background to pan the visible area.
-- Drag an Entity name or description to adjust its displayed label position.
-  This changes the current view only and is not saved as a node Coordinate.
 
 The initial position of a node without a saved position is assigned for
 display. This assignment alone does not modify the Dataset.
