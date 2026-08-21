@@ -22,7 +22,7 @@ Home provides the following actions:
 - `New Dataset`: create an empty Dataset.
 - `Open E2R Dataset`: open an E2R JSON file from your device.
 - `Open sample Dataset`: open the sample for the current locale.
-- `English`: switch the display language.
+- `日本語`: switch the display language.
 - `Credits`: view the application credits.
 
 For a first visit, choose `Open sample Dataset`. In the English locale this
@@ -41,12 +41,12 @@ as an Entity-to-Entity connection in the current graph view.
 ## Explore the graph
 
 - Click or tap the body of a node to select its Entity.
-- Click or tap an Entity name or description to open that Entity's details.
-- Click or tap a connection line to select that Relation. Drag the selected
-  line to temporarily adjust its curve.
+- Click or tap an Entity name or description to select its parent Entity.
+- Click or tap a connection line to select that Relation. Drag a connection
+  line to adjust its route; starting the drag also selects that Relation.
 - When a connection has a name, that name is shown near the line. This is the
   connection name.
-- Click or tap a connection name to open that Relation's details.
+- Click or tap a connection name to select its parent Relation.
 - The arrow on a connection line shows the connection's direction.
 - Drag the graph background to pan the visible area.
 - Drag an Entity name or description to adjust its displayed label position.
@@ -73,10 +73,16 @@ Choose `Add Entity`, enter a name and description, and choose `Create Entity`.
 An empty name is allowed, but a descriptive name makes the graph easier to
 understand.
 
+Alternatively, open the context menu on an empty graph area and choose `Add
+Entity`. Use right-click on a mouse or trackpad, or long-press on touch.
+
 ### Edit an Entity
 
-Select the Entity name or description to open `Entity Detail`. Edit `Name` or
-`Description`, then choose `Save Entity`.
+Select the Entity, then use the available detail action to open `Entity Detail`.
+Edit `Name` or `Description`, then choose `Save Entity`.
+
+Alternatively, open the Entity context menu with right-click or long-press and
+choose `Open details`.
 
 ### Delete an Entity
 
@@ -97,33 +103,21 @@ opposite direction, exchange the source and target selections.
 The same Entity may be selected as both endpoints. Multiple Relations may also
 connect the same pair of Entities.
 
+Alternatively, drag from a node's connection port to another node, release on
+the target, then complete and save the creation form.
+
 ### Edit a Relation
 
-Click or tap a connection name to open `Relation Detail`. For an
-Entity-to-Entity Relation, edit `Source Entity` or `Target Entity` as needed.
-You can also edit `Name` and `Description`, then choose `Save Relation`.
+Select the Relation, then use the available detail action to open `Relation
+Detail`. For an Entity-to-Entity Relation, edit `Source Entity` or `Target
+Entity` as needed. You can also edit `Name` and `Description`, then choose
+`Save Relation`.
+A Relation can be selected from its path or label. Open its context menu with
+right-click or long-press and choose `Open details` when needed.
 
 ### Delete a Relation
 
 Delete a Relation from `Relation Detail`.
-
-## Direct graph authoring
-
-The graph also provides direct authoring actions:
-
-- On a mouse or trackpad, right-click an empty graph area and choose `Add
-  Entity` from the context menu.
-- On a touch device, long-press an empty graph area to open the same action
-  menu.
-- Drag from the small connection port at the edge of one node to another node
-  to begin creating a Relation. Release on the target node, enter the name and
-  description, and save it.
-- Right-click a node or connection to open its detail view. On a touch device,
-  long-press the node or connection for the equivalent action where supported.
-
-Direct authoring is confirmed only when the creation or detail action is
-completed and saved. Temporary in-progress operations do not immediately
-become Dataset data.
 
 ## Move nodes and save positions
 
@@ -137,7 +131,17 @@ were not saved. Follow that message rather than assuming that the move was
 persisted.
 
 Connection curves and displayed label positions are view settings separate
-from saved node positions.
+from saved node positions. Manual route and label placement is pending view
+work and is not saved by `Save node coordinates`.
+
+## Adjust labels and connection routes
+
+Drag a node label to place that label manually. Drag a connection line to
+adjust its route; the drag starts by selecting that Relation, so prior
+selection is not required. Drag a connection name to place its label manually.
+These are pending view-placement work and are not saved by `Save node
+coordinates`. Open the relevant context menu with right-click or long-press
+and choose `Return to automatic placement` to reset manual placement.
 
 ## Export a Dataset
 
@@ -150,6 +154,67 @@ Saved Entity and Relation edits and saved node coordinates are included in the
 export. Temporary unsaved node positions, zoom, pan, selection, connection
 curves, label positions, and other view state are not exported as Dataset data.
 
+## Replace a Dataset safely
+
+When you open a local Dataset, open the sample, or create a New Dataset, the
+current Dataset is replaced only after the operation has produced a valid
+candidate. If the current Dataset contains work that could be lost, a
+replacement confirmation is shown.
+
+The available actions depend on the current work:
+
+- `Cancel` keeps the current Dataset and work.
+- `Discard and Continue` discards unsaved work and opens the candidate.
+- `Export and Continue` is available for modified Dataset content. It exports
+  the current Dataset successfully before opening the candidate.
+- `Export Dataset` is available when modified content and pending work are
+  both present. It exports the current Dataset's exportable content, but does
+  not commit pending work or open the staged candidate. The current Dataset,
+  pending work, and candidate remain in place.
+
+If there is no work at risk, replacement can proceed immediately. Invalid
+JSON or a Dataset that fails validation does not replace the current Dataset.
+
+## Browser reload and close protection
+
+When unsaved Dataset changes or pending work could be lost, the browser may
+show its native warning when you reload, close the page, or leave the document.
+The exact wording and controls depend on the browser. This warning does not
+mean that every temporary view change is saved; it indicates that work may
+still need to be exported or completed.
+
+## Open a Dataset from a handoff URL
+
+LiaisonScape can open a public Dataset at startup when the URL contains a
+fragment in this form:
+
+```text
+#datasetUrl=<percent-encoded absolute HTTPS URL>
+```
+
+The remote resource must be publicly reachable over HTTPS and allow the
+browser request through CORS. Private or authenticated resources are outside
+this v0 behavior. Handoff is processed at startup only; changing the fragment
+later does not switch the open Dataset.
+
+If the handoff URL is invalid, cannot be fetched, contains invalid JSON, or
+contains a Dataset that fails validation, LiaisonScape shows a failure on Home
+and does not silently open a sample or another Dataset.
+
+After a successful handoff, the `datasetUrl` fragment remains as a reference
+to where the Dataset was obtained. It is not the Dataset's identity and does
+not represent current unexported edits or view state. If you successfully
+replace the handed-off Dataset with a local Dataset, the sample, or a New
+Dataset, LiaisonScape removes only `datasetUrl` and preserves unrelated
+fragment parameters.
+
+## Validation messages
+
+When opening or exporting a Dataset, LiaisonScape checks its consistency.
+If there is a problem, review the displayed message and correct the relevant
+Entity or Relation. Information that LiaisonScape does not use for display is
+preserved as far as possible when the Dataset is loaded and saved.
+
 ## Current MVP scope
 
 The current MVP supports:
@@ -159,7 +224,7 @@ The current MVP supports:
 - changing Relation source and target endpoints;
 - a Relation from an Entity to itself;
 - multiple Relations between the same pair of Entities;
-- direct graph authoring;
+- creating Entities and Relations directly from the graph;
 - moving nodes and explicitly saving node coordinates; and
 - exporting the Dataset.
 
@@ -169,3 +234,19 @@ The following are outside the current graph-authoring scope:
 - creating, editing, or deleting Events;
 - Undo and Redo; and
 - advanced Relation appearance or other post-MVP features.
+
+## Future directions
+
+The following are areas under consideration or planned exploration, not
+committed features:
+
+- organizing related Entities into groups to make large graphs easier to read;
+- comparing multiple Datasets and making related Datasets easier to handle;
+- strengthening connections with the Hub and other E2R applications;
+- improving readability of larger graphs through automatic placement and
+  richer visual presentation such as colors or icons; and
+- supporting richer Dataset information, such as time expressions, sources,
+  citations, and external identifiers.
+
+AI-assisted analysis, validation, and authoring support are also research
+topics for the future.
