@@ -1,13 +1,16 @@
 # LiaisonScape User Guide
 
-LiaisonScape is an application for viewing and editing the Entities and
-connections in an E2R Dataset as a graph. This guide explains the basic
-operations from a user's point of view without requiring prior knowledge of
-the E2R specification.
+LiaisonScape is an application for viewing and editing the relationships in an
+E2R Dataset as a graph. You can explore a relationship map, add and edit the
+people, organizations, places, and other things in it, and save the result as
+an E2R Dataset. This guide is organized around those user goals rather than
+screen names.
 
-## Terms used in this guide
+## What are Entities and Relations?
 
-- Dataset: a collection of Entities and connections.
+- Dataset: E2R data that can include Events, Entities, and Relations. In
+  LiaisonScape, the current graph view focuses on Entities and
+  Entity-to-Entity Relations.
 - Entity: a person, organization, place, object, or other thing represented in
   the graph as a node.
 - Relation: a connection from one Entity to another. A Relation has a
@@ -38,7 +41,7 @@ The English sample is available from Home through the current locale. A
 Relation connected to an Event remains in the Dataset, but it is not displayed
 as an Entity-to-Entity connection in the current graph view.
 
-## Explore the graph
+## Explore the relationship map
 
 - Click or tap the body of a node to select its Entity.
 - Click or tap an Entity name or description to select its parent Entity.
@@ -140,6 +143,10 @@ These are pending view-placement work and are not saved by `Save node
 coordinates`. Open the relevant context menu with right-click or long-press
 and choose `Return to automatic placement` to reset manual placement.
 
+For Entity labels, connection routes, and connection labels, LiaisonScape can
+indicate whether the placement is automatic or user-placed. This helps you
+tell which parts of the map you have arranged yourself.
+
 ## Export a Dataset
 
 Choose `Export E2R JSON` to validate and download the current Dataset.
@@ -180,7 +187,18 @@ The exact wording and controls depend on the browser. This warning does not
 mean that every temporary view change is saved; it indicates that work may
 still need to be exported or completed.
 
-## Open a Dataset from a handoff URL
+## Share a relationship map with a link
+
+Dataset Handoff lets you share a relationship map you created as a link. You
+can publish the link on social media or a website so other people can open and
+explore the map without first downloading a JSON file and importing it
+manually. LiaisonScape does not host the Dataset or post to social media; the
+Dataset must already be available at a public HTTPS URL.
+
+When someone opens the link, LiaisonScape obtains the published Dataset at
+startup and opens the relationship map.
+
+### Requirements for creating a Handoff link
 
 LiaisonScape can open a public Dataset at startup when the URL contains a
 fragment in this form:
@@ -212,27 +230,7 @@ If there is a problem, review the displayed message and correct the relevant
 Entity or Relation. Information that LiaisonScape does not use for display is
 preserved as far as possible when the Dataset is loaded and saved.
 
-## Current MVP scope
-
-The current MVP supports:
-
-- creating, editing, and deleting Entities;
-- creating, editing, and deleting Entity-to-Entity Relations;
-- changing Relation source and target endpoints;
-- a Relation from an Entity to itself;
-- multiple Relations between the same pair of Entities;
-- creating Entities and Relations directly from the graph;
-- moving nodes and explicitly saving node coordinates; and
-- exporting the Dataset.
-
-The following are outside the current graph-authoring scope:
-
-- Event nodes;
-- creating, editing, or deleting Events;
-- Undo and Redo; and
-- advanced Relation appearance or other post-MVP features.
-
-## Future directions
+## Future possibilities
 
 The following are areas under consideration or planned exploration, not
 committed features:
