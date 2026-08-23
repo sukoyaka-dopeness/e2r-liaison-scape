@@ -72,6 +72,7 @@ export default function App() {
   const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [creditsOpen, setCreditsOpen] = useState(false);
+  const creditsTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [manualLabelRevision, setManualLabelRevision] = useState(0);
   const [hoveredPlacement, setHoveredPlacement] = useState<{ target: PlacementTarget | "entity"; id: string; clientX: number; clientY: number; entityBounds?: { left: number; bottom: number } } | null>(null);
   const [popoverPosition, setPopoverPosition] = useState<{ left: number; top: number } | null>(null);
@@ -481,6 +482,16 @@ export default function App() {
   }, [creditsOpen]);
 
   useEffect(() => {
+    if (creditsOpen || !creditsTriggerRef.current) return;
+    const frame = window.requestAnimationFrame(() => {
+      const trigger = creditsTriggerRef.current;
+      if (trigger?.isConnected && !trigger.disabled) trigger.focus();
+      creditsTriggerRef.current = null;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [creditsOpen]);
+
+  useEffect(() => {
     if (!contextMenu) return;
     const dismissOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setContextMenu(null);
@@ -662,7 +673,14 @@ export default function App() {
 
   if (view === "home") return (
     <div className="app-frame home-page">
-      <header className="app-header"><a className="app-brand" href={import.meta.env.BASE_URL}>LiaisonScape</a></header>
+      <header className="app-header">
+        <a className="app-brand" href={import.meta.env.BASE_URL}>LiaisonScape</a>
+        <div className="header-actions">
+          {locale === "ja"
+            ? <button type="button" className="locale-button" onClick={() => setLocale("en")}>English</button>
+            : <button type="button" className="locale-button" onClick={() => setLocale("ja")}>日本語</button>}
+        </div>
+      </header>
       <main className="home-content">
         <h1 tabIndex={-1}>{translate(locale, "getStarted")}</h1>
         <p className="home-description">{translate(locale, "homeDescription")}</p>
@@ -695,10 +713,7 @@ export default function App() {
       </main>
       <footer className="app-footer home-footer">
         <small>{translate(locale, "footerDescriptor")}</small>
-        {locale === "ja"
-          ? <button type="button" onClick={() => setLocale("en")}>English</button>
-          : <button type="button" onClick={() => setLocale("ja")}>日本語</button>}
-        <button type="button" className="credits-button" onClick={() => setCreditsOpen(true)}>{translate(locale, "credits")}</button>
+        <button type="button" className="credits-button" onClick={(event) => { creditsTriggerRef.current = event.currentTarget; setCreditsOpen(true); }}>{translate(locale, "credits")}</button>
       </footer>
       {creditsOpen && <CreditsDialog locale={locale} onClose={() => setCreditsOpen(false)} />}
       {replacementDialog}
@@ -1271,7 +1286,12 @@ export default function App() {
     <div className="app-frame">
       <header className="app-header">
         <a className="app-brand" href={import.meta.env.BASE_URL} onClick={goHomeFromWorkspace}>LiaisonScape</a>
-        <a className="header-home-button" href={import.meta.env.BASE_URL} onClick={goHomeFromWorkspace}>{translate(locale, "home")}</a>
+        <div className="header-actions">
+          <a className="header-home-button" href={import.meta.env.BASE_URL} onClick={goHomeFromWorkspace}>{translate(locale, "home")}</a>
+          {locale === "ja"
+            ? <button type="button" className="locale-button" onClick={() => setLocale("en")}>English</button>
+            : <button type="button" className="locale-button" onClick={() => setLocale("ja")}>日本語</button>}
+        </div>
       </header>
       <main className="app-content">
         <div className="page-header">
@@ -1657,8 +1677,10 @@ export default function App() {
       )}
       </main>
       <footer className="app-footer workspace-footer">
-        <button type="button" onClick={() => { setView("home"); window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href); }}>{translate(locale, "home")}</button>
+        <small>{translate(locale, "footerDescriptor")}</small>
+        <button type="button" className="credits-button" onClick={(event) => { creditsTriggerRef.current = event.currentTarget; setCreditsOpen(true); }}>{translate(locale, "credits")}</button>
       </footer>
+      {creditsOpen && <CreditsDialog locale={locale} onClose={() => setCreditsOpen(false)} />}
     </div>
   );
 }
