@@ -134,6 +134,28 @@ test("preserves the target-reference research fixture through a save round trip"
   assert.deepEqual(JSON.parse(serializeDataset(result.dataset)), original);
 });
 
+test("preserves the unsupported Lineage Draft through LiaisonScape load, edit, and export", async () => {
+  const source = await readFile(
+    new URL("../../e2r-spec/research/exploratory/fixtures/lineage-extension-candidate.json", import.meta.url),
+    "utf8",
+  );
+  const original = JSON.parse(source) as Record<string, any>;
+  const lineageId = "draft.github.sukoyaka-dopeness.lineage";
+  original.extensions[lineageId].futureSentinel = { token: "preserve-me" };
+
+  const loaded = loadDataset(JSON.stringify(original));
+  assert.ok(loaded.dataset);
+  assert.deepEqual(loaded.dataset.extensions?.[lineageId], original.extensions[lineageId]);
+
+  const edited = updateEntityDetails(loaded.dataset, "open-e2r-2", {
+    name: "Edited unrelated Entity name",
+    description: "",
+  });
+  const saved = JSON.parse(serializeDataset(edited)) as Record<string, any>;
+  assert.equal(saved.entities[0].name, "Edited unrelated Entity name");
+  assert.deepEqual(saved.extensions[lineageId], original.extensions[lineageId]);
+});
+
 test("Validator 0.2.0 distinguishes undeclared and exactly declared Extension versions", () => {
   const undeclared = {
     version: "1.0",
