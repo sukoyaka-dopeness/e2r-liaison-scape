@@ -96,8 +96,38 @@ export default function App() {
   const homeOpenFileInputRef = useRef<HTMLInputElement>(null);
   const workspaceOpenFileInputRef = useRef<HTMLInputElement>(null);
   const replacementTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const maintenanceMenuRef = useRef<HTMLDetailsElement>(null);
+  const maintenanceMenuSummaryRef = useRef<HTMLElement>(null);
   const restoreReplacementFocusRef = useRef(false);
   const startupHandoffStartedRef = useRef(false);
+
+  useEffect(() => {
+    function closeMaintenanceMenu() {
+      const menu = maintenanceMenuRef.current;
+      if (menu?.open) menu.open = false;
+    }
+
+    function handleDocumentPointerDown(event: PointerEvent) {
+      const menu = maintenanceMenuRef.current;
+      if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) closeMaintenanceMenu();
+    }
+
+    function handleDocumentKeyDown(event: KeyboardEvent) {
+      const menu = maintenanceMenuRef.current;
+      if (event.key === "Escape" && menu?.open) {
+        event.preventDefault();
+        closeMaintenanceMenu();
+        maintenanceMenuSummaryRef.current?.focus();
+      }
+    }
+
+    document.addEventListener("pointerdown", handleDocumentPointerDown);
+    document.addEventListener("keydown", handleDocumentKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handleDocumentPointerDown);
+      document.removeEventListener("keydown", handleDocumentKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     saveLocale(window.localStorage, locale);
@@ -1282,6 +1312,10 @@ export default function App() {
 
   function exportDataset() { exportCurrentDataset(); }
 
+  function closeMaintenanceMenu() {
+    if (maintenanceMenuRef.current?.open) maintenanceMenuRef.current.open = false;
+  }
+
   return (
     <div className="app-frame">
       <header className="app-header">
@@ -1299,7 +1333,6 @@ export default function App() {
           <p>Entity-first E2R relationship graph.</p>
         </div>
         <div className="dataset-actions">
-          <button type="button" className="open-dataset-button mobile-hide" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; workspaceOpenFileInputRef.current?.click(); }}>{translate(locale, "openWorkspaceDataset")}</button>
           <input
             ref={workspaceOpenFileInputRef}
             className="file-input-hidden"
@@ -1312,15 +1345,15 @@ export default function App() {
             }}
           />
           <div className="dataset-actions__buttons">
-            <button type="button" className="desktop-secondary-action" disabled={!dataset || Boolean(pendingDatasetReplacement)} onClick={exportDataset}>{translate(locale, "exportDataset")}</button>
             <button type="button" disabled={!dataset} onClick={() => openCreation("entity")}>{translate(locale, "addEntity")}</button>
             <button type="button" disabled={!dataset} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
             <button type="button" className="desktop-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
-            <details className="maintenance-menu">
-              <summary>{translate(locale, "more")}</summary>
+            <details ref={maintenanceMenuRef} className="maintenance-menu">
+              <summary ref={maintenanceMenuSummaryRef}>{translate(locale, "more")}</summary>
               <div className="maintenance-menu__items">
-                <button type="button" className="mobile-secondary-action" disabled={!dataset} onClick={exportDataset}>{translate(locale, "exportDataset")}</button>
-                <button type="button" className="mobile-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
+                <button type="button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; closeMaintenanceMenu(); workspaceOpenFileInputRef.current?.click(); }}>{translate(locale, "openWorkspaceDataset")}</button>
+                <button type="button" disabled={!dataset} onClick={() => { closeMaintenanceMenu(); exportDataset(); }}>{translate(locale, "exportDataset")}</button>
+                <button type="button" className="mobile-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={() => { closeMaintenanceMenu(); saveCoordinates(); }}>{translate(locale, "saveCoordinates")}</button>
                 <button type="button" disabled={!dataset || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>{translate(locale, "migrateCoordinateDraft")}</button>
                 <button type="button" disabled={!dataset || spaceMigrationReadiness?.ready !== true} onClick={migrateSpaceToLiaisonScape}>{translate(locale, "migrateLinkscapeCoordinates")}</button>
                 <div className="mobile-secondary-action mobile-viewport-menu" aria-label={translate(locale, "graphViewControls")}>
