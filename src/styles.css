@@ -46,6 +46,7 @@ body { margin: 0; }
 .open-dataset-button:hover { border-color: rgba(170, 59, 255, .5); background: #f5e9ff; }
 .file-input-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .dataset-actions__buttons, .viewport-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.dataset-actions__buttons { width: 100%; }
 .status-message { margin: 6px 0; min-height: 1.45em; font-size: .9rem; }
 .dataset-metadata { display: flex; gap: 8px; align-items: center; margin: 0 0 4px; padding: 0; border: 0; font-size: .86rem; }
 .dataset-metadata dt { font-weight: 650; color: #08060d; }
