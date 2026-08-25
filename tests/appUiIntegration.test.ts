@@ -52,5 +52,8 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.match(source, /className="graph-summary toolbar-graph-summary"/);
   assert.equal((source.match(/className="graph-summary/g) ?? []).length, 1);
   assert.doesNotMatch(source, /formatLoadedDataset/);
+  assert.doesNotMatch(source, /translate\(locale, "selectEntityOrRelation"\)/);
   assert.match(source, /formatUnsupportedEventRelations/);
+  assert.ok(source.indexOf("</svg>") < source.lastIndexOf("{graph.unsupportedEdges"));
+  assert.match(readFileSync("src/styles.css", "utf8"), /@media \(max-width: 720px\)/);
 });

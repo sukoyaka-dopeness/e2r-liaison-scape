@@ -83,6 +83,16 @@ button {
 button:hover:not(:disabled) { border-color: rgba(170, 59, 255, .5); background: #f5e9ff; }
 :focus-visible { outline: 3px solid #aa3bff; outline-offset: 3px; }
 button:disabled { opacity: .55; cursor: not-allowed; }
+@media (max-width: 720px) {
+  .dataset-actions { flex-wrap: wrap; }
+  .toolbar-graph-summary { flex-basis: 100%; }
+  .dataset-actions__buttons { display: grid; width: 100%; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 6px; }
+  .dataset-actions__buttons > button { min-width: 0; }
+  .dataset-actions__buttons > .maintenance-menu { min-width: max-content; margin-inline-start: 0; }
+  .desktop-secondary-action { display: none !important; }
+  .mobile-secondary-action { display: block; }
+  .mobile-viewport-menu { display: flex; }
+}
 li { margin: .35rem 0; }
 .graph {
   display: block;

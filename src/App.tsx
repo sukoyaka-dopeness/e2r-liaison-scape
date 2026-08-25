@@ -1462,7 +1462,6 @@ export default function App() {
             <button type="button" onClick={() => setScale((value) => zoomScale(value, "in"))}>{translate(locale, "zoomIn")}</button>
             <button type="button" onClick={resetView}>{translate(locale, "resetView")}</button>
           </div>
-          {graph.unsupportedEdges > 0 && <p role="status">{formatUnsupportedEventRelations(locale, graph.unsupportedEdges)}</p>}
           <svg
             ref={graphRef}
             className="graph"
@@ -1618,6 +1617,7 @@ export default function App() {
               ); })}
             </g>
           </svg>
+          {graph.unsupportedEdges > 0 && <p role="status">{formatUnsupportedEventRelations(locale, graph.unsupportedEdges)}</p>}
           {hoveredPlacement && !(hoveredPlacement.target === "entity" && relationCreationPreview?.sourceId === hoveredPlacement.id) && (
             <div
               ref={popoverRef}
@@ -1644,11 +1644,9 @@ export default function App() {
               })()}
             </div>
           )}
-          <p role="status">{selectedId
+          {(selectedId || selectedRelationId) && <p role="status">{selectedId
             ? formatSelectedEntity(locale, selectedId)
-            : selectedRelationId
-              ? formatSelectedRelation(locale, selectedRelationId)
-              : translate(locale, "selectEntityOrRelation")}</p>
+            : formatSelectedRelation(locale, selectedRelationId!)}</p>}
           {selectedRelationDetail && !detailOpen && (
             <div className="graph-selection-actions">
               <p className="relation-curvature-hint" role="status">{translate(locale, "selectedRelationCurvatureHint")}</p>
