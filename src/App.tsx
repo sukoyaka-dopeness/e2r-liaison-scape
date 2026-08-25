@@ -72,6 +72,7 @@ export default function App() {
   const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [creditsOpen, setCreditsOpen] = useState(false);
+  const [maintenanceMenuOpen, setMaintenanceMenuOpen] = useState(false);
   const creditsTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [manualLabelRevision, setManualLabelRevision] = useState(0);
   const [hoveredPlacement, setHoveredPlacement] = useState<{ target: PlacementTarget | "entity"; id: string; clientX: number; clientY: number; entityBounds?: { left: number; bottom: number } } | null>(null);
@@ -100,6 +101,12 @@ export default function App() {
   const maintenanceMenuSummaryRef = useRef<HTMLElement>(null);
   const restoreReplacementFocusRef = useRef(false);
   const startupHandoffStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (!maintenanceMenuOpen) return;
+    const firstItem = maintenanceMenuRef.current?.querySelector<HTMLButtonElement>(".maintenance-menu__items > button:not(:disabled)");
+    firstItem?.focus();
+  }, [maintenanceMenuOpen]);
 
   useEffect(() => {
     function closeMaintenanceMenu() {
@@ -1314,6 +1321,37 @@ export default function App() {
 
   function closeMaintenanceMenu() {
     if (maintenanceMenuRef.current?.open) maintenanceMenuRef.current.open = false;
+    setMaintenanceMenuOpen(false);
+  }
+
+  function handleMaintenanceMenuKeyDown(event: React.KeyboardEvent<HTMLDetailsElement>) {
+    const items = Array.from(
+      maintenanceMenuRef.current?.querySelectorAll<HTMLButtonElement>(".maintenance-menu__items > button:not(:disabled)") ?? [],
+    );
+    const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+
+    if (event.key === "Tab") {
+      closeMaintenanceMenu();
+      return;
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMaintenanceMenu();
+      maintenanceMenuSummaryRef.current?.focus();
+      return;
+    }
+
+    if (items.length === 0) return;
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowDown") nextIndex = (currentIndex + 1) % items.length;
+    if (event.key === "ArrowUp") nextIndex = (currentIndex - 1 + items.length) % items.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = items.length - 1;
+    if (nextIndex !== null) {
+      event.preventDefault();
+      items[nextIndex]?.focus();
+    }
   }
 
   return (
@@ -1348,7 +1386,7 @@ export default function App() {
             <button type="button" disabled={!dataset} onClick={() => openCreation("entity")}>{translate(locale, "addEntity")}</button>
             <button type="button" disabled={!dataset} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
             <button type="button" className="desktop-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
-            <details ref={maintenanceMenuRef} className="maintenance-menu">
+            <details ref={maintenanceMenuRef} className="maintenance-menu" onToggle={(event) => setMaintenanceMenuOpen(event.currentTarget.open)} onKeyDown={handleMaintenanceMenuKeyDown}>
               <summary ref={maintenanceMenuSummaryRef}>{translate(locale, "more")}</summary>
               <div className="maintenance-menu__items">
                 <button type="button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; closeMaintenanceMenu(); workspaceOpenFileInputRef.current?.click(); }}>{translate(locale, "openWorkspaceDataset")}</button>
