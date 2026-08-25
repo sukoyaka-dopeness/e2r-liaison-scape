@@ -16,7 +16,7 @@ import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, getArrowheadGeometry, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
-import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatLoadedDataset, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
+import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
 import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
@@ -674,7 +674,7 @@ export default function App() {
       return { status: "validation-error" };
     }
     requestDatasetReplacement(candidate, trigger, source);
-    setMessage(formatLoadedDataset(locale, candidate.entities.length, candidate.relations.length));
+    setMessage("");
     return { status: "accepted-or-staged" };
   }
 
@@ -1382,6 +1382,7 @@ export default function App() {
               if (file) void file.text().then((raw) => open(raw, trigger));
             }}
           />
+          {dataset && <p className="graph-summary toolbar-graph-summary">{formatGraphSummary(locale, graph.nodes.length, graph.edges.length)}</p>}
           <div className="dataset-actions__buttons">
             <button type="button" disabled={!dataset} onClick={() => openCreation("entity")}>{translate(locale, "addEntity")}</button>
             <button type="button" disabled={!dataset} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
@@ -1693,7 +1694,6 @@ export default function App() {
               <button type="button" onClick={() => setDetailOpen(true)}>{translate(locale, "editEntity")}</button>
             </div>
           )}
-          <p className="graph-summary">{formatGraphSummary(locale, graph.nodes.length, graph.edges.length)}</p>
           {dataset && coordinateMigrationReadiness && !coordinateMigrationReadiness.ready && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_no_source" && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_target_exists" && (
             <p className="status-message" role="status">
               {translate(locale, "coordinateDraftMigrationRefusal")}

@@ -43,10 +43,14 @@ test("renders the production LiaisonScape Home surface", async () => {
   }
 });
 
-test("keeps the Workspace More keyboard contract local to the native disclosure", () => {
+test("keeps the Workspace More keyboard contract and toolbar count local to the app", () => {
   const source = readFileSync("src/App.tsx", "utf8");
   assert.match(source, /firstItem\?\.focus\(\)/);
   for (const key of ["ArrowDown", "ArrowUp", "Home", "End", "Escape", "Tab"]) assert.match(source, new RegExp(`event\\.key === "${key}"`));
   assert.match(source, /onToggle=\{\(event\) => setMaintenanceMenuOpen\(event\.currentTarget\.open\)\}/);
   assert.match(source, /document\.addEventListener\("pointerdown"/);
+  assert.match(source, /className="graph-summary toolbar-graph-summary"/);
+  assert.equal((source.match(/className="graph-summary/g) ?? []).length, 1);
+  assert.doesNotMatch(source, /formatLoadedDataset/);
+  assert.match(source, /formatUnsupportedEventRelations/);
 });
