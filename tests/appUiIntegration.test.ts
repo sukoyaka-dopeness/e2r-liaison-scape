@@ -144,3 +144,17 @@ test("keeps object IDs behind collapsed technical detail disclosures", () => {
   assert.match(relation, /translate\(locale, "relationDetailSave"\)/);
   assert.match(styles, /\.detail-fields select \{ box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0;/);
 });
+
+test("keeps Entity endpoint identity presentation shared across relation surfaces", () => {
+  const creation = readFileSync("src/components/CreationDialog.tsx", "utf8");
+  const relation = readFileSync("src/components/RelationDetailDialog.tsx", "utf8");
+  const app = readFileSync("src/App.tsx", "utf8");
+  assert.match(creation, /buildEntityEndpointLabels/);
+  assert.match(relation, /buildEntityEndpointLabels/);
+  assert.match(creation, /value=\{entity\.id\}/);
+  assert.match(relation, /value=\{endpointEditing\.sourceId\}/);
+  assert.match(relation, /value=\{endpointEditing\.targetId\}/);
+  assert.match(relation, /endpointLabel\(source, sourceId\)/);
+  assert.match(relation, /endpointLabel\(target, targetId\)/);
+  assert.match(app, /entities=\{dataset\.entities\}/);
+});

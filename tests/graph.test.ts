@@ -7,6 +7,7 @@ import { interpolateLabelRect, isLabelTransitionPathSafe, reconcileRelationLabel
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualNodeLabelPosition, reconstructManualRelationLabelTarget } from "../src/relation-label-presentation.ts";
 import { boundedHoverDescription, composeHoverLines, placementOwnership } from "../src/placement-ownership.ts";
 import { buildRelatedRelationDisplay } from "../src/related-relation-display.ts";
+import { buildEntityEndpointLabels } from "../src/entity-endpoint-display.ts";
 
 const roundedEntityShape = { kind: "rounded-rectangle" as const, halfWidth: 32, halfHeight: 32, cornerRadius: 12 };
 function assertClose(actual: number, expected: number, tolerance = 1e-8) {
@@ -215,6 +216,29 @@ test("Related Relation display uses trimmed names and structured endpoint labels
 test("Related Relation display falls back to IDs and disambiguates duplicate names", () => {
   const dataset: Dataset = { version: "1.0", entities: [{ id: "12345678-a", name: "Alex" }, { id: "12345678-b", name: " Alex " }], events: [{ id: "event-missing-name", name: "   " }], relations: [] };
   assert.deepEqual(buildRelatedRelationDisplay(dataset, { id: "relation", name: "   ", sourceId: "12345678-a", targetId: "event-missing-name" }), { relationId: "relation", relationName: null, source: "Alex (12345678-a)", target: "event-missing-name" });
+});
+
+test("Entity endpoint labels keep unique names quiet and disambiguate duplicate names", () => {
+  const labels = buildEntityEndpointLabels([
+    { id: "alice", name: " Alice " },
+    { id: "alex-entity-001", name: "Alex" },
+    { id: "alex-entity-002", name: " Alex " },
+    { id: "abcdefgh-111111111111", name: "Chris" },
+    { id: "abcdefgh-222222222222", name: "Chris" },
+    { id: "abcdefgh-333333333333", name: "Chris" },
+    { id: "blank", name: "" },
+    { id: "space", name: "   " },
+  ]);
+  assert.deepEqual(Object.fromEntries(labels), {
+    alice: "Alice",
+    "alex-entity-001": "Alex (alex-entity-001)",
+    "alex-entity-002": "Alex (alex-entity-002)",
+    "abcdefgh-111111111111": "Chris (abcdefgh-1)",
+    "abcdefgh-222222222222": "Chris (abcdefgh-2)",
+    "abcdefgh-333333333333": "Chris (abcdefgh-3)",
+    blank: "blank",
+    space: "space",
+  });
 });
 
 test("Entity Detail editing preserves unknown fields and Extensions", () => {

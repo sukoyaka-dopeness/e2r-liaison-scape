@@ -1922,6 +1922,7 @@ export default function App() {
               targetId={selectedRelationDetail.targetId}
               source={selectedRelationDetail.source}
               target={selectedRelationDetail.target}
+              entities={dataset.entities}
               name={relationNameDraft}
               description={relationDescriptionDraft}
               endpointEditing={dataset.entities.some(({ id }) => id === selectedRelationDetail.sourceId)
