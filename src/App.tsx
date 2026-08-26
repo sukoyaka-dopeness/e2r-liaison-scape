@@ -1258,6 +1258,7 @@ export default function App() {
       pan,
     );
     if (!point) return;
+    setHoveredPlacement(null);
     setContextMenu({ ...createCanvasContextMenu(point), clientX, clientY });
   }
 
@@ -1796,7 +1797,7 @@ export default function App() {
             </g>
           </svg>
           {graph.eventRelatedHiddenEdges > 0 && <p>{formatUnsupportedEventRelations(locale, graph.eventRelatedHiddenEdges)}</p>}
-          {hoveredPlacement && !(hoveredPlacement.target === "entity" && relationCreationPreview?.sourceId === hoveredPlacement.id) && (
+          {!contextMenu && hoveredPlacement && !(hoveredPlacement.target === "entity" && relationCreationPreview?.sourceId === hoveredPlacement.id) && (
             <div
               ref={popoverRef}
               className="placement-hover-popover"

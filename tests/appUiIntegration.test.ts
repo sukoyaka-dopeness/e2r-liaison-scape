@@ -55,6 +55,8 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.doesNotMatch(source, /translate\(locale, "selectEntityOrRelation"\)/);
   assert.match(source, /formatUnsupportedEventRelations/);
   assert.ok(source.indexOf("</svg>") < source.lastIndexOf("graph.eventRelatedHiddenEdges"));
+  assert.match(source, /setHoveredPlacement\(null\);\s*setContextMenu\(\{ \.\.\.createCanvasContextMenu/s);
+  assert.match(source, /!contextMenu && hoveredPlacement &&/);
   const styles = readFileSync("src/styles.css", "utf8");
   assert.match(styles, /@media \(max-width: 720px\)/);
   assert.match(styles, /\.desktop-secondary-action \{ display: none !important; \}/);
