@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: sukoyaka-dopeness/e2r-spec
-          ref: 97c899ff4ca8c7b134fac4ec17cdaf534cf950df
+          ref: 11126d635de7d8d26f4989e744aa96f952d881bb
           path: e2r-spec
 
       - name: Set up Node.js
