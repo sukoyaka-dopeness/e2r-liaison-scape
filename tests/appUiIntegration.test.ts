@@ -61,8 +61,8 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.match(source, /event\.pointerType !== "mouse" \|\| event\.button !== 0/);
   assert.match(source, /contextMenuPosition/);
   assert.match(source, /contextMenuRef/);
-  assert.match(source, /window\.innerWidth - measured\.width - margin/);
-  assert.match(source, /window\.innerHeight - measured\.height - margin/);
+  assert.match(source, /document\.documentElement\.clientWidth/);
+  assert.match(source, /document\.documentElement\.clientHeight/);
   const styles = readFileSync("src/styles.css", "utf8");
   assert.match(styles, /@media \(max-width: 720px\)/);
   assert.match(styles, /\.desktop-secondary-action \{ display: none !important; \}/);

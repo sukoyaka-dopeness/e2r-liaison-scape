@@ -477,8 +477,10 @@ export default function App() {
     if (!menu) return;
     const measured = menu.getBoundingClientRect();
     const margin = 8;
-    const left = Math.max(margin, Math.min(contextMenu.clientX, window.innerWidth - measured.width - margin));
-    const top = Math.max(margin, Math.min(contextMenu.clientY, window.innerHeight - measured.height - margin));
+    const usableWidth = document.documentElement.clientWidth;
+    const usableHeight = document.documentElement.clientHeight;
+    const left = Math.max(margin, Math.min(contextMenu.clientX, usableWidth - measured.width - margin));
+    const top = Math.max(margin, Math.min(contextMenu.clientY, usableHeight - measured.height - margin));
     setContextMenuPosition({ left, top });
   }, [contextMenu]);
 
