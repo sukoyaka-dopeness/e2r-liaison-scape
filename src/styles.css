@@ -48,7 +48,7 @@ body { margin: 0; }
 .dataset-actions__buttons, .viewport-controls { display: flex; align-items: center; flex-wrap: nowrap; gap: 8px; }
 .toolbar-graph-summary { margin: 0; white-space: nowrap; }
 .status-message { margin: 6px 0; min-height: 1.45em; font-size: .9rem; }
-.dataset-metadata { display: flex; gap: 8px; align-items: center; margin: 0 0 4px; padding: 0; border: 0; font-size: .86rem; }
+.dataset-metadata { display: flex; gap: 8px; align-items: center; margin: 12px 0 4px; padding: 0; border: 0; font-size: .86rem; }
 .dataset-metadata dt { font-weight: 650; color: #08060d; }
 .dataset-metadata dd { margin: 0; overflow-wrap: anywhere; }
 .dataset-metadata > dt:first-of-type { flex: 0 0 auto; }
