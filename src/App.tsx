@@ -70,6 +70,8 @@ export default function App() {
   const [creationSource, setCreationSource] = useState("");
   const [creationTarget, setCreationTarget] = useState("");
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
+  const [contextMenuPosition, setContextMenuPosition] = useState<{ left: number; top: number } | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
   const [pendingEntityPlacement, setPendingEntityPlacement] = useState<{ x: number; y: number } | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
@@ -465,6 +467,20 @@ export default function App() {
     const top = Math.max(viewport.top + margin, Math.min(preferred.top, viewport.bottom - measured.height - margin));
     if (left !== preferred.left || top !== preferred.top) setPopoverPosition({ left, top });
   }, [hoveredPlacement]);
+
+  useLayoutEffect(() => {
+    if (!contextMenu) {
+      setContextMenuPosition(null);
+      return;
+    }
+    const menu = contextMenuRef.current;
+    if (!menu) return;
+    const measured = menu.getBoundingClientRect();
+    const margin = 8;
+    const left = Math.max(margin, Math.min(contextMenu.clientX, window.innerWidth - measured.width - margin));
+    const top = Math.max(margin, Math.min(contextMenu.clientY, window.innerHeight - measured.height - margin));
+    setContextMenuPosition({ left, top });
+  }, [contextMenu]);
 
   useEffect(() => {
     const graphElement = graphRef.current;
@@ -1571,7 +1587,7 @@ export default function App() {
           </div>
         </div>
         {message && <p className="status-message" role="status">{message}</p>}
-      {contextMenu && <div className="canvas-context-menu context-menu" role="menu" aria-label={translate(locale, "canvasActions")} style={{ position: "fixed", left: contextMenu.clientX, top: contextMenu.clientY }} onPointerDown={(event) => event.stopPropagation()}>
+      {contextMenu && <div ref={contextMenuRef} className="canvas-context-menu context-menu" role="menu" aria-label={translate(locale, "canvasActions")} style={{ position: "fixed", left: contextMenuPosition?.left ?? contextMenu.clientX, top: contextMenuPosition?.top ?? contextMenu.clientY }} onPointerDown={(event) => event.stopPropagation()}>
         {contextMenu.kind === "canvas" ? <button type="button" role="menuitem" onClick={chooseCanvasAddEntity}>{translate(locale, "addEntity")}</button> : <>
           <button type="button" role="menuitem" onClick={openContextMenuDetails}>{translate(locale, "openDetails")}</button>
           {((contextMenu.kind === "node-label" && manualNodeLabelOffsets.current.has(contextMenu.entityId)) ||
