@@ -864,7 +864,7 @@ export default function App() {
   }
 
   function startRelationCreation(event: React.PointerEvent<SVGCircleElement>, sourceId: string) {
-    if (event.pointerType !== "mouse") return;
+    if (event.pointerType !== "mouse" || event.button !== 0) return;
     event.preventDefault();
     event.stopPropagation();
     const point = graphPointForPointer(event.clientX, event.clientY);
@@ -1040,6 +1040,7 @@ export default function App() {
     event: React.PointerEvent<SVGElement>,
     drag: { kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string },
   ) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
     event.preventDefault();
     const svg = event.currentTarget instanceof SVGSVGElement
       ? event.currentTarget
@@ -1673,6 +1674,7 @@ export default function App() {
                    onContextMenu={(event) => openObjectContextFromPointer("relation-path", edge.id, event)}
                   onPointerDown={(event) => {
                     event.stopPropagation();
+                    if (event.pointerType === "mouse" && event.button !== 0) return;
                     setEdgeLayerOrder((value) => bringToFront(value, edge.id));
                     if (event.button === 0) {
                       if (selectedRelationId !== edge.id) {
@@ -1731,7 +1733,7 @@ export default function App() {
                 </g>;
               })}
               {displayedNodes.map((node) => { const position = nodePosition(node); return (
-                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}${selectedId === node.id || hoveredEntityId === node.id || relationCreationPreview?.sourceId === node.id ? " handle-visible" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onPointerEnter={(event) => { if (event.pointerType === "mouse") setHoveredEntityId(node.id); }} onPointerLeave={(event) => { if (event.pointerType === "mouse") setHoveredEntityId((value) => value === node.id ? null : value); }} onContextMenu={(event) => openObjectContextFromPointer("entity", node.id, event)} onPointerDown={(event) => { event.stopPropagation(); setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
+                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}${selectedId === node.id || hoveredEntityId === node.id || relationCreationPreview?.sourceId === node.id ? " handle-visible" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onPointerEnter={(event) => { if (event.pointerType === "mouse") setHoveredEntityId(node.id); }} onPointerLeave={(event) => { if (event.pointerType === "mouse") setHoveredEntityId((value) => value === node.id ? null : value); }} onContextMenu={(event) => openObjectContextFromPointer("entity", node.id, event)} onPointerDown={(event) => { event.stopPropagation(); if (event.pointerType === "mouse" && event.button !== 0) return; setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
                   <rect className="connection-handle-corridor" x="24" y="4" width="20" height="28" onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }} />
                   <circle className="connection-hit-target" cx="34" cy="16" r="12" onPointerDown={(event) => startRelationCreation(event, node.id)} />
                   <circle className="connection-handle" cx="34" cy="16" r="8.5" onPointerDown={(event) => startRelationCreation(event, node.id)} />
