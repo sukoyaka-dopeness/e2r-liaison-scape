@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { applyStoredCoordinates, assessEntityDeletion, assessRelationDeletion, createCoreObjectId, createEntity, createRelation, deleteEntity, deleteRelation, getDatasetMetadata, loadDataset, serializeDataset, updateEntityDetails, validateDatasetForExport, LIAISONSCAPE_SPACE_ID, type Dataset } from "../src/dataset.ts";
+import { applyStoredCoordinates, assessEntityDeletion, assessRelationDeletion, createCoreObjectId, createEntity, createRelation, deleteEntity, deleteRelation, getDatasetMetadata, loadDataset, serializeDataset, updateDatasetTitle, updateEntityDetails, validateDatasetForExport, LIAISONSCAPE_SPACE_ID, type Dataset } from "../src/dataset.ts";
 
 const empty = JSON.stringify({ version: "1.0", entities: [], events: [], relations: [] });
 
@@ -265,6 +265,63 @@ test("Metadata title and Dataset ID are read without inventing missing values", 
     title: "Example",
     unknown: true,
   });
+});
+
+test("updates Dataset title immutably while preserving Metadata, Extensions, and Core data", () => {
+  const dataset = {
+    version: "1.0",
+    entities: [{ id: "entity-1", name: "Keep" }],
+    events: [{ id: "event-1", future: true }],
+    relations: [{ id: "relation-1", sourceId: "entity-1", targetId: "entity-1" }],
+    extensions: {
+      metadata: { datasetId: "dataset-1", title: "Old", unknown: { keep: true } },
+      "vendor.example": { opaque: ["keep"] },
+    },
+  } as Dataset;
+
+  const updated = updateDatasetTitle(dataset, "  My Dataset  ");
+
+  assert.equal(updated.extensions.metadata.title, "My Dataset");
+  assert.equal(updated.extensions.metadata.datasetId, "dataset-1");
+  assert.deepEqual(updated.extensions.metadata.unknown, { keep: true });
+  assert.deepEqual(updated.extensions["vendor.example"], { opaque: ["keep"] });
+  assert.deepEqual(updated.entities, dataset.entities);
+  assert.deepEqual(updated.events, dataset.events);
+  assert.deepEqual(updated.relations, dataset.relations);
+  assert.equal(dataset.extensions.metadata.title, "Old");
+});
+
+test("removes an empty Dataset title without removing other Metadata or Extensions", () => {
+  const dataset = {
+    version: "1.0",
+    entities: [],
+    events: [],
+    relations: [],
+    extensions: {
+      metadata: { datasetId: "dataset-1", title: "Old", unknown: "keep" },
+      "vendor.example": { opaque: true },
+    },
+  } as Dataset;
+
+  const updated = updateDatasetTitle(dataset, "   ");
+
+  assert.deepEqual(updated.extensions.metadata, { datasetId: "dataset-1", unknown: "keep" });
+  assert.deepEqual(updated.extensions["vendor.example"], { opaque: true });
+  assert.equal("title" in updated.extensions.metadata, false);
+});
+
+test("removes empty Metadata and Extensions containers when title was their only content", () => {
+  const dataset = {
+    version: "1.0",
+    entities: [],
+    events: [],
+    relations: [],
+    extensions: { metadata: { title: "Old" } },
+  } as Dataset;
+
+  const updated = updateDatasetTitle(dataset, "");
+
+  assert.equal("extensions" in updated, false);
 });
 
 test("preserves opaque P1 Names research data through an unrelated Core edit and two saves", () => {

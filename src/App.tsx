@@ -2,20 +2,20 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { assessCoordinateDraftMigration, migrateCoordinatePrototypeToDraft } from "./coordinate-migration";
 import { assessLiaisonScapeSpaceMigration, migrateLinkscapeSpaceToLiaisonScape } from "./space-migration";
-import { applyStoredCoordinates, buildEntityGraph, getStoredCoordinates, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
+import { applyStoredCoordinates, buildEntityGraph, getStoredCoordinates, updateDatasetTitle, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
 import { getDatasetMetadata, loadDataset, serializeDataset, validateDatasetForExport } from "./services/DatasetService";
 import { assessEntityDeletion, createEntity, deleteEntity } from "./services/EntityService";
 import { getEntityDetail, updateEntityDetails } from "./services/EntityService";
 import { assessRelationDeletion, createRelation, deleteRelation } from "./services/RelationService";
 import { getRelationDetail, updateRelation } from "./services/RelationService";
-import { canCompleteLongPress, createCanvasContextMenu, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, type ContextMenu } from "./direct-graph-authoring";
+import { canCompleteLongPress, createCanvasContextMenu, draggedPointFromOrigin, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, svgPointFromPointer, type ContextMenu } from "./direct-graph-authoring";
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
 import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
 import { CreditsDialog } from "./components/CreditsDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
-import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, getArrowheadGeometry, placeEdgeLabel, placeNodeLabel, pinchZoomScale, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
@@ -35,6 +35,8 @@ export default function App() {
   ));
   const [view, setView] = useState<"home" | "workspace">("home");
   const [dataset, setDataset] = useState<Dataset | null>(null);
+  const [datasetTitleEditing, setDatasetTitleEditing] = useState(false);
+  const [datasetTitleDraft, setDatasetTitleDraft] = useState("");
   const [datasetModified, setDatasetModified] = useState(false);
   const [pendingDatasetReplacement, setPendingDatasetReplacement] = useState<Dataset | null>(null);
   const [pendingDatasetReplacementSource, setPendingDatasetReplacementSource] = useState<DatasetReplacementSource | null>(null);
@@ -84,7 +86,7 @@ export default function App() {
   const relationLabelVisualState = useRef(new Map<string, RelationLabelVisualState>());
   const manualRelationLabelAnchors = useRef(new Map<string, ManualRelationLabelAnchor>());
   const manualNodeLabelOffsets = useRef(new Map<string, { x: number; y: number }>());
-  const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string; button: number; x: number; y: number; startX: number; startY: number; moved: boolean } | null>(null);
+  const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string; button: number; x: number; y: number; startX: number; startY: number; moved: boolean; startGraphPoint?: { x: number; y: number }; startNodePosition?: { x: number; y: number }; startLabelPosition?: { x: number; y: number }; startCurveOffset?: number; startCurveNormal?: { x: number; y: number }; startControlPoint?: { x: number; y: number }; startGrabFraction?: number; startRouteSamples?: Array<{ x: number; y: number }>; lastDesiredNormalDelta?: number; lastValidOffset?: number; lastValidGain?: number } | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
   const graphRef = useRef<SVGSVGElement>(null);
@@ -97,6 +99,9 @@ export default function App() {
   const homeOpenFileInputRef = useRef<HTMLInputElement>(null);
   const workspaceOpenFileInputRef = useRef<HTMLInputElement>(null);
   const replacementTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const datasetTitleInputRef = useRef<HTMLInputElement | null>(null);
+  const datasetTitleEditTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const restoreDatasetTitleFocusRef = useRef(false);
   const maintenanceMenuRef = useRef<HTMLDetailsElement>(null);
   const maintenanceMenuSummaryRef = useRef<HTMLElement>(null);
   const restoreReplacementFocusRef = useRef(false);
@@ -187,16 +192,26 @@ export default function App() {
     });
     return () => window.cancelAnimationFrame(frame);
   }, [pendingDatasetReplacement]);
+  useEffect(() => {
+    if (!datasetTitleEditing) {
+      if (!restoreDatasetTitleFocusRef.current) return;
+      restoreDatasetTitleFocusRef.current = false;
+      const frame = window.requestAnimationFrame(() => datasetTitleEditTriggerRef.current?.focus());
+      return () => window.cancelAnimationFrame(frame);
+    }
+    const frame = window.requestAnimationFrame(() => datasetTitleInputRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [datasetTitleEditing]);
   const metadata = dataset ? getDatasetMetadata(dataset) : null;
   const coordinateMigrationReadiness = dataset ? assessCoordinateDraftMigration(dataset) : null;
   const spaceMigrationReadiness = dataset ? assessLiaisonScapeSpaceMigration(dataset) : null;
-  const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [], unsupportedEdges: 0 }, [dataset]);
+  const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [], unsupportedEdges: 0, eventRelatedHiddenEdges: 0, otherUnsupportedEdges: 0 }, [dataset]);
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
   const relationMap = useMemo(() => new Map(dataset?.relations.map((relation) => [relation.id, relation]) ?? []), [dataset]);
   const routedEdges = useMemo(() => {
     const occupiedPaths: Array<Array<{ x: number; y: number }>> = [];
     const overlapCounts = new Map<string, number>();
-    const routedById = new Map<string, ReturnType<typeof routeGraphEdge> & { label: string }>();
+    const routedById = new Map<string, ReturnType<typeof routeGraphEdge> & { label: string; parallelSolverEligible: boolean }>();
     const compareRoutingPriority = (left: typeof graph.edges[number], right: typeof graph.edges[number]) =>
       left.sourceId.localeCompare(right.sourceId)
       || left.targetId.localeCompare(right.targetId)
@@ -238,6 +253,47 @@ export default function App() {
         edgeCurveOffsets[edge.id],
         selfLoopOverrides[edge.id],
       );
+      const routeWithoutObstacles = edge.parallelCount > 1
+        && edge.sourceId !== edge.targetId
+        && !isOverlappingPair
+        ? routeGraphEdge(
+          source,
+          target,
+          edge.parallelIndex,
+          edge.parallelCount,
+          [],
+          occupiedPaths,
+          false,
+          overlapIndex,
+          edgeCurveOffsets[edge.id],
+          selfLoopOverrides[edge.id],
+        )
+        : null;
+      const routeWithoutObstaclesOrOccupiedPaths = routeWithoutObstacles !== null
+        ? routeGraphEdge(
+          source,
+          target,
+          edge.parallelIndex,
+          edge.parallelCount,
+          [],
+          [],
+          false,
+          overlapIndex,
+          edgeCurveOffsets[edge.id],
+          selfLoopOverrides[edge.id],
+        )
+        : null;
+      const obstacleComparison = routeWithoutObstacles === null
+        ? null
+        : compareRouteGeometry(routeWithoutObstacles.samples, route.samples);
+      const occupiedPathComparison = routeWithoutObstacles === null || routeWithoutObstaclesOrOccupiedPaths === null
+        ? null
+        : compareRouteGeometry(routeWithoutObstaclesOrOccupiedPaths.samples, routeWithoutObstacles.samples);
+      const parallelSolverEligible = edge.parallelCount > 1
+        && edge.sourceId !== edge.targetId
+        && !isOverlappingPair
+        && obstacleComparison?.equivalent === true
+        && occupiedPathComparison?.equivalent === true;
       occupiedPaths.push(route.samples);
       const relation = relationMap.get(edge.id);
       routedById.set(edge.id, {
@@ -246,6 +302,7 @@ export default function App() {
         labelPoint: route.labelPoint,
         controlPoint: route.controlPoint,
         label: typeof relation?.name === "string" ? relation.name : "",
+        parallelSolverEligible,
       });
     }
     return graph.edges.map((edge) => ({ ...edge, ...routedById.get(edge.id)! }));
@@ -350,6 +407,7 @@ export default function App() {
       || relationSourceDraft !== selectedRelationDetail.sourceId
       || relationTargetDraft !== selectedRelationDetail.targetId
     ),
+    meaningfulDatasetTitleDraft: datasetTitleEditing && datasetTitleDraft !== (metadata?.title ?? ""),
   });
   const replacementLossRisk = hasDocumentExitLossRisk(datasetModified, pendingUserWork);
   useEffect(() => {
@@ -427,14 +485,15 @@ export default function App() {
         scale,
         pan,
       );
+      if (!graphPoint) return;
       const nextScale = clampScale(scale * (event.deltaY < 0 ? 1.1 : .9));
-      const viewX = (event.clientX - rect.left) * 800 / rect.width;
-      const viewY = (event.clientY - rect.top) * 500 / rect.height;
+      const view = svgPointFromPointer(pointer, { left: rect.left, top: rect.top, width: rect.width, height: rect.height }, { x: 0, y: 0, width: 800, height: 500 });
+      if (!view) return;
       event.preventDefault();
       setScale(nextScale);
       setPan({
-        x: viewX - 400 - nextScale * (graphPoint.x - 400),
-        y: viewY - 250 - nextScale * (graphPoint.y - 250),
+        x: view.x - 400 - nextScale * (graphPoint.x - 400),
+        y: view.y - 250 - nextScale * (graphPoint.y - 250),
       });
     };
 
@@ -578,6 +637,9 @@ export default function App() {
     cleanDatasetBaseline.current = structuredClone(nextDataset);
     setDataset(nextDataset);
     setDatasetModified(false);
+    setDatasetTitleEditing(false);
+    setDatasetTitleDraft("");
+    restoreDatasetTitleFocusRef.current = false;
     setPendingDatasetReplacement(null);
     setPendingDatasetReplacementSource(null);
     setSelectedId(null);
@@ -607,6 +669,28 @@ export default function App() {
   function updateDataset(nextDataset: Dataset) {
     setDataset(nextDataset);
     setDatasetModified(isDatasetModified(cleanDatasetBaseline.current ?? nextDataset, nextDataset));
+  }
+
+  function beginDatasetTitleEdit(trigger: HTMLButtonElement) {
+    setDatasetTitleDraft(metadata?.title ?? "");
+    datasetTitleEditTriggerRef.current = trigger;
+    setDatasetTitleEditing(true);
+  }
+
+  function finishDatasetTitleEdit() {
+    setDatasetTitleEditing(false);
+    setDatasetTitleDraft("");
+    restoreDatasetTitleFocusRef.current = true;
+  }
+
+  function saveDatasetTitle() {
+    if (!dataset) return;
+    updateDataset(updateDatasetTitle(dataset, datasetTitleDraft));
+    finishDatasetTitleEdit();
+  }
+
+  function cancelDatasetTitleEdit() {
+    finishDatasetTitleEdit();
   }
 
   function requestDatasetReplacement(candidate: Dataset, trigger: HTMLButtonElement | null | undefined, source: DatasetReplacementSource) {
@@ -916,21 +1000,26 @@ export default function App() {
       if (point) setRelationCreationPreview({ sourceId: drag.id, point, targetId: relationTargetAt(point, drag.id) });
       return;
     }
-    const dx = (event.clientX - drag.x) / scale;
-    const dy = (event.clientY - drag.y) / scale;
+    const previousPoint = graphPointForPointer(drag.x, drag.y);
+    const currentPoint = graphPointForPointer(event.clientX, event.clientY);
+    if (!previousPoint || !currentPoint) return;
+    const dx = currentPoint.x - previousPoint.x;
+    const dy = currentPoint.y - previousPoint.y;
     const moved = drag.moved || Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) >= 4;
     dragRef.current = { ...drag, x: event.clientX, y: event.clientY, moved };
     if (drag.kind === "canvas") setPan((value) => ({ x: value.x + dx * scale, y: value.y + dy * scale }));
     else if (drag.kind === "edge" && drag.id && drag.button === 0) {
-      if (moved) { dragRef.current = { ...dragRef.current!, kind: "edge-curve" }; applyEdgeCurveDrag(drag.id, dx, dy); }
+      if (moved) { dragRef.current = { ...dragRef.current!, kind: "edge-curve" }; applyOriginAnchoredEdgeCurveDrag(dragRef.current!, currentPoint); }
     }
-    else if (drag.kind === "node" && drag.id && moved) { setCoordinatesDirty(true); setPositions((value) => ({ ...value, [drag.id!]: { ...nodePosition(nodeMap.get(drag.id!)!), x: nodePosition(nodeMap.get(drag.id!)!).x + dx, y: nodePosition(nodeMap.get(drag.id!)!).y + dy } })); }
+    else if (drag.kind === "node" && drag.id && moved && drag.startNodePosition && drag.startGraphPoint) { setCoordinatesDirty(true); setPositions((value) => ({ ...value, [drag.id!]: { ...drag.startNodePosition!, x: drag.startNodePosition!.x + currentPoint.x - drag.startGraphPoint!.x, y: drag.startNodePosition!.y + currentPoint.y - drag.startGraphPoint!.y } })); }
     else if (drag.kind === "node-label" && drag.id && moved) {
       const node = nodeMap.get(drag.id);
       const current = nodeLabelPlacements.get(drag.id);
       if (node && current) {
         const position = nodePosition(node);
-        manualNodeLabelOffsets.current.set(drag.id, deriveManualNodeLabelOffset(position, { x: current.x + dx, y: current.y + dy }));
+        const origin = drag.startLabelPosition ?? current;
+        const total = drag.startGraphPoint ? { x: origin.x + currentPoint.x - drag.startGraphPoint.x, y: origin.y + currentPoint.y - drag.startGraphPoint.y } : { x: current.x + dx, y: current.y + dy };
+        manualNodeLabelOffsets.current.set(drag.id, deriveManualNodeLabelOffset(position, total));
         setManualLabelRevision((value) => value + 1);
       }
     }
@@ -938,12 +1027,13 @@ export default function App() {
       const edge = routedEdges.find(({ id }) => id === drag.id);
       const current = edgeLabelPlacements.get(drag.id);
       if (edge && current) {
-        const label = { x: current.x + dx, y: current.y + dy };
+        const origin = drag.startLabelPosition ?? current;
+        const label = drag.startGraphPoint ? { x: origin.x + currentPoint.x - drag.startGraphPoint.x, y: origin.y + currentPoint.y - drag.startGraphPoint.y } : { x: current.x + dx, y: current.y + dy };
         manualRelationLabelAnchors.current.set(drag.id, deriveManualRelationLabelAnchor(edge.samples, label));
         setManualLabelRevision((value) => value + 1);
       }
     }
-    else if (drag.kind === "edge-curve" && drag.id && moved) applyEdgeCurveDrag(drag.id, dx, dy);
+    else if (drag.kind === "edge-curve" && drag.id && moved) applyOriginAnchoredEdgeCurveDrag(dragRef.current!, currentPoint);
   }
 
   function startGraphPointer(
@@ -969,7 +1059,28 @@ export default function App() {
       return;
     }
 
-    dragRef.current = { ...drag, button: event.button, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, moved: false };
+    const startGraphPoint = graphPointForPointer(event.clientX, event.clientY) ?? undefined;
+    const startNodePosition = drag.id && drag.kind === "node" ? nodePosition(nodeMap.get(drag.id)!) : undefined;
+    const startLabelPosition = drag.id && drag.kind === "node-label" ? nodeLabelPlacements.get(drag.id) : drag.id && drag.kind === "edge-label" ? edgeLabelPlacements.get(drag.id) : undefined;
+    const startEdge = drag.id ? graph.edges.find(({ id }) => id === drag.id) : undefined;
+    const startSource = startEdge ? nodePosition(nodeMap.get(startEdge.sourceId)!) : undefined;
+    const startTarget = startEdge ? nodePosition(nodeMap.get(startEdge.targetId)!) : undefined;
+    const edgeLength = startSource && startTarget ? Math.max(1, Math.hypot(startTarget.x - startSource.x, startTarget.y - startSource.y)) : 1;
+    const startCurveNormal = startEdge && startSource && startTarget && startEdge.sourceId !== startEdge.targetId
+      ? { x: -(startTarget.y - startSource.y) / edgeLength, y: (startTarget.x - startSource.x) / edgeLength }
+      : undefined;
+    const startControlPoint = drag.id ? routedEdges.find(({ id }) => id === drag.id)?.controlPoint : undefined;
+    const startRouteSamples = drag.id ? routedEdges.find(({ id }) => id === drag.id)?.samples : undefined;
+    const startGrabFraction = startGraphPoint && startRouteSamples ? nearestPolylineArcFraction(startRouteSamples, startGraphPoint) ?? undefined : undefined;
+    const distinctEndpoints = Boolean(startSource && startTarget
+      && (startSource.x !== startTarget.x || startSource.y !== startTarget.y));
+    const automaticParallelRoute = Boolean(startEdge && startEdge.parallelCount > 1 && distinctEndpoints);
+    const startCurveOffset = drag.id && edgeCurveOffsets[drag.id] !== undefined
+      ? edgeCurveOffsets[drag.id]
+      : automaticParallelRoute && startSource && startTarget && startControlPoint
+        ? curveOffsetFromControlPoint(startSource, startTarget, startControlPoint) ?? 0
+        : 0;
+    dragRef.current = { ...drag, button: event.button, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, moved: false, startGraphPoint, startNodePosition, startLabelPosition, startCurveOffset, startCurveNormal, startControlPoint, startGrabFraction, startRouteSamples };
   }
 
   function endGraphPointer(event: React.PointerEvent<SVGSVGElement>) {
@@ -1146,6 +1257,7 @@ export default function App() {
       scale,
       pan,
     );
+    if (!point) return;
     setContextMenu({ ...createCanvasContextMenu(point), clientX, clientY });
   }
 
@@ -1155,6 +1267,57 @@ export default function App() {
     event.preventDefault();
     if (suppressNextContextMenuRef.current) { suppressNextContextMenuRef.current = false; return; }
     openCanvasContextAt(event.clientX, event.clientY);
+  }
+  function applyOriginAnchoredEdgeCurveDrag(drag: NonNullable<typeof dragRef.current>, currentPoint: { x: number; y: number }) {
+    if (!drag.id || !drag.startGraphPoint) return;
+    const total = draggedPointFromOrigin({ x: 0, y: 0 }, drag.startGraphPoint, currentPoint);
+    const edge = graph.edges.find(({ id }) => id === drag.id);
+    if (!edge) return;
+    if (edge.sourceId === edge.targetId && drag.startControlPoint) {
+      const node = nodePosition(nodeMap.get(edge.sourceId)!);
+      const desired = { x: drag.startControlPoint.x + total.x, y: drag.startControlPoint.y + total.y };
+      const distance = Math.max(70, Math.hypot(desired.x - node.x, desired.y - node.y));
+      const sidewaysDistance = Math.sin(Math.PI / 4) * 32;
+      const outwardDistance = Math.cos(Math.PI / 4) * 32;
+      const remaining = Math.max(1, distance - outwardDistance);
+      const radius = Math.max(38, Math.min(180, (remaining * remaining + sidewaysDistance * sidewaysDistance) / (2 * remaining)));
+      setSelfLoopOverrides((value) => ({ ...value, [drag.id!]: { orientation: Math.atan2(desired.y - node.y, desired.x - node.x), radius } }));
+    } else if (drag.startCurveNormal && drag.startGrabFraction !== undefined && drag.startRouteSamples) {
+      const normal = drag.startCurveNormal;
+      const source = nodePosition(nodeMap.get(edge.sourceId)!);
+      const target = nodePosition(nodeMap.get(edge.targetId)!);
+      const length = Math.max(1, Math.hypot(target.x - source.x, target.y - source.y));
+      const hasObstacle = graph.nodes.filter((node) => node.id !== edge.sourceId && node.id !== edge.targetId).some((node) => {
+        const obstacle = positions[node.id] ?? node;
+        const projection = Math.max(0, Math.min(1, ((obstacle.x - source.x) * (target.x - source.x) + (obstacle.y - source.y) * (target.y - source.y)) / (length * length)));
+        return Math.hypot(obstacle.x - (source.x + (target.x - source.x) * projection), obstacle.y - (source.y + (target.y - source.y) * projection)) < 60;
+      });
+      const parallelSolverEligible = routedEdges.find(({ id }) => id === edge.id)?.parallelSolverEligible ?? false;
+      const solved = (edge.parallelCount === 1 && !hasObstacle) || parallelSolverEligible ? solveVisibleRouteOffset({
+        startOffset: drag.startCurveOffset ?? 0,
+        startSamples: drag.startRouteSamples,
+        grabFraction: drag.startGrabFraction,
+        normal,
+        desiredNormalDelta: normal.x * total.x + normal.y * total.y,
+        routeAtOffset: (offset) => routeGraphEdge(source, target, edge.parallelIndex, edge.parallelCount, [], [], false, 0, offset).samples,
+        isCandidateSafe: parallelSolverEligible ? (samples) => !routeSamplesHaveNodeInfluence(samples, graph.nodes
+          .filter((node) => node.id !== edge.sourceId && node.id !== edge.targetId)
+          .map((node) => positions[node.id] ?? node)) : undefined,
+      }) : null;
+      const desiredNormalDelta = normal.x * total.x + normal.y * total.y;
+      const nextOffset = Math.abs(desiredNormalDelta) < 1e-9
+        ? drag.startCurveOffset ?? 0
+        : solved ?? (drag.lastValidOffset !== undefined && drag.lastDesiredNormalDelta !== undefined && drag.lastValidGain !== undefined
+          ? boundedDragContinuationOffset({ lastOffset: drag.lastValidOffset, lastDesiredNormalDelta: drag.lastDesiredNormalDelta, lastGain: drag.lastValidGain, desiredNormalDelta })
+          : null) ?? (drag.startCurveOffset ?? 0) + desiredNormalDelta;
+      const previousDesired = drag.lastDesiredNormalDelta ?? 0;
+      const previousOffset = drag.lastValidOffset ?? drag.startCurveOffset ?? 0;
+      const observedGain = Math.abs(desiredNormalDelta - previousDesired) > 1e-9
+        ? (nextOffset - previousOffset) / (desiredNormalDelta - previousDesired)
+        : drag.lastValidGain;
+      dragRef.current = { ...dragRef.current!, lastDesiredNormalDelta: desiredNormalDelta, lastValidOffset: nextOffset, lastValidGain: Number.isFinite(observedGain ?? NaN) && Math.abs(observedGain!) > 0.05 ? observedGain : drag.lastValidGain };
+      setEdgeCurveOffsets((value) => ({ ...value, [drag.id!]: nextOffset }));
+    }
   }
 
   function openObjectContextMenu(kind: "entity" | "node-label" | "relation-path" | "relation-label", id: string, clientX: number, clientY: number) {
@@ -1437,7 +1600,22 @@ export default function App() {
       {dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
       {dataset && (
         <dl className="dataset-metadata" aria-label={translate(locale, "datasetMetadata")}>
-          <dt>{translate(locale, "datasetTitle")}</dt><dd>{metadata?.title ?? translate(locale, "untitled")}</dd>
+          <dt>{translate(locale, "datasetTitleVisible")}</dt>
+          {datasetTitleEditing ? <dd className="dataset-title-editing">
+            <input
+              ref={datasetTitleInputRef}
+              type="text"
+              value={datasetTitleDraft}
+              aria-label={translate(locale, "datasetTitleInput")}
+              onChange={(event) => setDatasetTitleDraft(event.target.value)}
+              onKeyDown={(event) => { if (event.key === "Escape") { event.preventDefault(); cancelDatasetTitleEdit(); } }}
+            />
+            <button type="button" onClick={saveDatasetTitle}>{translate(locale, "saveDatasetTitleVisible")}</button>
+            <button type="button" onClick={cancelDatasetTitleEdit}>{translate(locale, "cancel")}</button>
+          </dd> : <dd>
+            <span>{metadata?.title ?? translate(locale, "untitled")}</span>
+            <button type="button" onClick={(event) => beginDatasetTitleEdit(event.currentTarget)} aria-label={translate(locale, "editDatasetTitle")}>{translate(locale, "edit")}</button>
+          </dd>}
           <dt>Dataset ID</dt><dd>{metadata?.datasetId ?? translate(locale, "datasetIdNotAssigned")}</dd>
         </dl>
       )}
@@ -1617,7 +1795,7 @@ export default function App() {
               ); })}
             </g>
           </svg>
-          {graph.unsupportedEdges > 0 && <p role="status">{formatUnsupportedEventRelations(locale, graph.unsupportedEdges)}</p>}
+          {graph.eventRelatedHiddenEdges > 0 && <p>{formatUnsupportedEventRelations(locale, graph.eventRelatedHiddenEdges)}</p>}
           {hoveredPlacement && !(hoveredPlacement.target === "entity" && relationCreationPreview?.sourceId === hoveredPlacement.id) && (
             <div
               ref={popoverRef}

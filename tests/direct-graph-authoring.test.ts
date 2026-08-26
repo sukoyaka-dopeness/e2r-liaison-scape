@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { createEntity, createRelation } from "../src/dataset.ts";
 import {
   graphPointFromPointer,
+  draggedPointFromOrigin,
+  svgPointFromPointer,
   graphPointFromViewportCenter,
   isLongPress,
   canCompleteLongPress,
@@ -44,6 +46,23 @@ test("viewport center maps to graph center at the identity transform", () => {
 
 test("viewport center follows pan and scale through the inverse transform", () => {
   assert.deepEqual(graphPointFromViewportCenter({ width: 800, height: 500 }, 2, { x: 40, y: -20 }), { x: 380, y: 260 });
+});
+
+test("svgPointFromPointer follows xMidYMid meet letterboxing", () => {
+  assert.deepEqual(svgPointFromPointer({ clientX: 400, clientY: 400 }, { left: 0, top: 0, width: 800, height: 800 }, { x: 0, y: 0, width: 800, height: 500 }), { x: 400, y: 250 });
+  assert.deepEqual(svgPointFromPointer({ clientX: 400, clientY: 500 }, { left: 0, top: 0, width: 800, height: 800 }, { x: 0, y: 0, width: 800, height: 500 }), { x: 400, y: 350 });
+});
+
+test("svgPointFromPointer rejects invalid geometry safely", () => {
+  assert.equal(svgPointFromPointer({ clientX: 1, clientY: 1 }, { left: 0, top: 0, width: 0, height: 100 }, { x: 0, y: 0, width: 800, height: 500 }), null);
+});
+
+test("origin-anchored drag is invariant to intermediate pointer events", () => {
+  const startValue = { x: 240, y: 180 };
+  const startPointer = { x: 100, y: 100 };
+  assert.deepEqual(draggedPointFromOrigin(startValue, startPointer, { x: 140, y: 80 }), { x: 280, y: 160 });
+  assert.deepEqual(draggedPointFromOrigin(startValue, startPointer, { x: 140, y: 80 }), draggedPointFromOrigin(startValue, startPointer, { x: 140, y: 80 }));
+  assert.deepEqual(draggedPointFromOrigin(startValue, startPointer, startPointer), startValue);
 });
 
 test("creating from a pointer places the new Entity temporarily without Dataset mutation", () => {

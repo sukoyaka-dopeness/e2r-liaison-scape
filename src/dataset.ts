@@ -8,7 +8,7 @@ export { createRelation, assessRelationDeletion, deleteRelation } from "./servic
 export { getEntityDetail, updateEntityDetails } from "./services/EntityService.ts";
 export { getRelationDetail, updateRelation, updateRelationDetails } from "./services/RelationService.ts";
 
-export { loadDataset, serializeDataset, validateDatasetForExport, getDatasetMetadata } from "./services/DatasetService.ts";
+export { loadDataset, serializeDataset, validateDatasetForExport, getDatasetMetadata, updateDatasetTitle } from "./services/DatasetService.ts";
 
 export type GraphNode = { id: string; label: string; description: string; x: number; y: number };
 export type GraphEdge = { id: string; sourceId: string; targetId: string; parallelIndex: number; parallelCount: number };
@@ -439,7 +439,7 @@ export function applyStoredCoordinates(dataset: Dataset, positions: Record<strin
   return copy;
 }
 
-export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges: GraphEdge[]; unsupportedEdges: number } {
+export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges: GraphEdge[]; unsupportedEdges: number; eventRelatedHiddenEdges: number; otherUnsupportedEdges: number } {
   const nodes = dataset.entities.map((entity, index) => ({
     id: entity.id,
     label: typeof entity.name === "string" && entity.name.trim() ? entity.name : entity.id,
@@ -448,11 +448,19 @@ export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges:
     y: 130 + Math.floor(index / 4) * 180,
   }));
   const entityIds = new Set(nodes.map(({ id }) => id));
+  const eventIds = new Set(dataset.events.map(({ id }) => id));
   let unsupportedEdges = 0;
+  let eventRelatedHiddenEdges = 0;
+  let otherUnsupportedEdges = 0;
   const edges = dataset.relations.flatMap((relation) => {
     const sourceId = typeof relation.sourceId === "string" ? relation.sourceId : "";
     const targetId = typeof relation.targetId === "string" ? relation.targetId : "";
-    if (!entityIds.has(sourceId) || !entityIds.has(targetId)) { unsupportedEdges += 1; return []; }
+    const sourceIsEntity = entityIds.has(sourceId);
+    const targetIsEntity = entityIds.has(targetId);
+    const sourceIsEvent = eventIds.has(sourceId);
+    const targetIsEvent = eventIds.has(targetId);
+    if (!sourceIsEntity && !targetIsEntity && !sourceIsEvent && !targetIsEvent || (!sourceIsEntity && !sourceIsEvent) || (!targetIsEntity && !targetIsEvent)) { unsupportedEdges += 1; otherUnsupportedEdges += 1; return []; }
+    if (sourceIsEvent || targetIsEvent) { unsupportedEdges += 1; eventRelatedHiddenEdges += 1; return []; }
     return [{ id: relation.id, sourceId, targetId, parallelIndex: 0, parallelCount: 1 }];
   });
   const groups = new Map<string, typeof edges>();
@@ -466,5 +474,5 @@ export function buildEntityGraph(dataset: Dataset): { nodes: GraphNode[]; edges:
     const canonicalGroup = group.slice().sort((left, right) => left.id.localeCompare(right.id));
     canonicalGroup.forEach((edge, index) => { edge.parallelIndex = index; edge.parallelCount = canonicalGroup.length; });
   }
-  return { nodes, edges, unsupportedEdges };
+  return { nodes, edges, unsupportedEdges, eventRelatedHiddenEdges, otherUnsupportedEdges };
 }

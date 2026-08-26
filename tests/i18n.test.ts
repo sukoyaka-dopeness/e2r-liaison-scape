@@ -92,7 +92,7 @@ test("dictionary contains the foundation messages for both locales", () => {
   assert.equal(translate("en", "relationDeleteAction"), "Delete Relation");
   assert.equal(translate("ja", "relationDeleteAction"), "つながりを削除");
   assert.equal(translate("ja", "entityShownRelations"), "表示中のつながり");
-  assert.equal(translate("ja", "entityDatasetRelations"), "Datasetのつながり");
+  assert.equal(translate("ja", "entityDatasetRelations"), "Dataset内のつながり");
   assert.equal(translate("ja", "entityDeleteAction"), "エンティティを削除");
   assert.equal(translate("en", "entityDetailTitle"), "Entity Detail");
   assert.equal(translate("en", "relationDetailTitle"), "Relation Detail");
@@ -135,8 +135,8 @@ test("dictionary contains the foundation messages for both locales", () => {
   assert.equal(formatLoadedDataset("ja", 9, 8), "9 件のエンティティと 8 件のつながりを読み込みました。");
   assert.equal(formatUnsupportedEventRelations("en", 1), "1 relation involving an Event is not shown in this graph.");
   assert.equal(formatUnsupportedEventRelations("en", 3), "3 relations involving an Event are not shown in this graph.");
-  assert.equal(formatUnsupportedEventRelations("ja", 1), "できごとに関係するつながりが 1 件あります。このアプリでは表示されません。");
-  assert.equal(formatUnsupportedEventRelations("ja", 3), "できごとに関係するつながりが 3 件あります。このアプリでは表示されません。");
+  assert.equal(formatUnsupportedEventRelations("ja", 1), "できごとに関係するつながりが 1 件あります。このグラフには表示されません。");
+  assert.equal(formatUnsupportedEventRelations("ja", 3), "できごとに関係するつながりが 3 件あります。このグラフには表示されません。");
   assert.equal(formatRelationUpdateRefusal("en", "relation_not_found"), "The relation could not be updated. The relation could not be found.");
   assert.equal(formatRelationUpdateRefusal("ja", "relation_not_found"), "つながりを更新できませんでした。 対象のつながりが見つかりません。");
   assert.equal(formatRelationCreationRefusal("en", "relation_endpoint_required"), "The relation could not be created. Select both a source and a target.");

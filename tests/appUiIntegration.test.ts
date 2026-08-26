@@ -54,9 +54,85 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.doesNotMatch(source, /formatLoadedDataset/);
   assert.doesNotMatch(source, /translate\(locale, "selectEntityOrRelation"\)/);
   assert.match(source, /formatUnsupportedEventRelations/);
-  assert.ok(source.indexOf("</svg>") < source.lastIndexOf("{graph.unsupportedEdges"));
+  assert.ok(source.indexOf("</svg>") < source.lastIndexOf("graph.eventRelatedHiddenEdges"));
   const styles = readFileSync("src/styles.css", "utf8");
   assert.match(styles, /@media \(max-width: 720px\)/);
   assert.match(styles, /\.desktop-secondary-action \{ display: none !important; \}/);
   assert.match(styles, /\.mobile-secondary-action \{ display: block; \}/);
+  assert.match(styles, /\.viewport-controls\.mobile-hide \{ display: none !important; \}/);
+  assert.match(styles, /\.dataset-actions \{[^}]*flex-wrap: wrap;/);
+  assert.match(styles, /\.dataset-actions__buttons, \.viewport-controls \{[^}]*flex-wrap: nowrap;/);
+  assert.match(styles, /@media \(max-width: 600px\)/);
+});
+
+test("keeps Dataset title editing connected to existing Dataset safety state", () => {
+  const source = readFileSync("src/App.tsx", "utf8");
+  const i18n = readFileSync("src/i18n.ts", "utf8");
+  const styles = readFileSync("src/styles.css", "utf8");
+
+  assert.match(i18n, /editDatasetTitle:/);
+  assert.match(i18n, /saveDatasetTitle:/);
+  assert.match(i18n, /datasetTitleVisible:/);
+  assert.match(i18n, /saveDatasetTitleVisible:/);
+  assert.match(i18n, /datasetTitleInput:/);
+  assert.match(i18n, /datasetTitleInput: "Dataset title"/);
+  assert.match(i18n, /datasetTitleVisible: "Title"/);
+  assert.match(i18n, /saveDatasetTitleVisible: "Save"/);
+  assert.match(source, /updateDatasetTitle\(dataset, datasetTitleDraft\)/);
+  assert.match(source, /updateDataset\(updateDatasetTitle\(dataset, datasetTitleDraft\)\)/);
+  assert.match(source, /meaningfulDatasetTitleDraft: datasetTitleEditing/);
+  assert.match(source, /event\.key === "Escape"/);
+  assert.match(source, /restoreDatasetTitleFocusRef/);
+  assert.match(source, /setDatasetTitleEditing\(false\);\s*setDatasetTitleDraft\(""\)/s);
+  assert.match(source, /ref=\{datasetTitleInputRef\}/);
+  assert.doesNotMatch(source, /ref=\{datasetTitleEditTriggerRef\}/);
+  const exportFunction = source.slice(source.indexOf("function exportCurrentDataset"), source.indexOf("function exportAndContinueDatasetReplacement"));
+  assert.doesNotMatch(exportFunction, /datasetTitleDraft/);
+  assert.match(styles, /\.dataset-metadata \.dataset-title-editing/);
+  assert.match(styles, /\.dataset-metadata > dt:first-of-type \+ dd > span \{ min-width: 0;/);
+  assert.match(styles, /@media \(max-width: 600px\)/);
+  assert.match(styles, /\.dataset-metadata \.dataset-title-editing input \{ flex-basis: 100%; \}/);
+  assert.doesNotMatch(styles, /\.dataset-metadata \{ grid-template-columns:/);
+});
+
+test("keeps object IDs behind collapsed technical detail disclosures", () => {
+  const entity = readFileSync("src/components/EntityDetailDialog.tsx", "utf8");
+  const relation = readFileSync("src/components/RelationDetailDialog.tsx", "utf8");
+  const i18n = readFileSync("src/i18n.ts", "utf8");
+  const styles = readFileSync("src/styles.css", "utf8");
+  for (const source of [entity, relation]) {
+    assert.match(source, /<details className="detail-technical-details">/);
+    assert.match(source, /<summary>\{translate\(locale, "technicalDetails"\)\}<\/summary>/);
+    assert.match(source, /translate\(locale, "objectId"\)/);
+    assert.match(source, /className="detail-object-id"/);
+    assert.doesNotMatch(source, /<dt>\{translate\(locale, "id"\)\}<\/dt>/);
+  }
+  assert.doesNotMatch(entity, /dangerZone/);
+  assert.match(entity, /formatEntityIncidentWarning/);
+  assert.match(entity, /related-relations/);
+  assert.doesNotMatch(relation, /dangerZone/);
+  assert.match(relation, /className="detail-danger relation-danger"/);
+  assert.match(styles, /\.detail-danger\.relation-danger \{ justify-content: flex-end; \}/);
+  assert.match(styles, /\.detail-danger\.relation-danger button \{ width: 100%; \}/);
+  assert.match(i18n, /technicalDetails: "Technical details"/);
+  assert.match(i18n, /objectId: "Object ID"/);
+  assert.match(i18n, /technicalDetails: "技術情報"/);
+  assert.match(i18n, /entityDatasetRelations: "Relations in Dataset"/);
+  assert.match(i18n, /entityDatasetRelations:/);
+  assert.match(entity, /autoComplete="off"/);
+  assert.match(relation, /autoComplete="off"/);
+  assert.match(readFileSync("src/components/CreationDialog.tsx", "utf8"), /creation-name.*autoComplete="off"/s);
+  assert.ok(entity.indexOf("detail-fields") < entity.indexOf("entityShownRelations"));
+  assert.ok(entity.indexOf("entityShownRelations") < entity.indexOf("detail-technical-details"));
+  assert.ok(relation.indexOf("detail-fields") < relation.indexOf("detail-technical-details"));
+  assert.match(styles, /\.detail-technical-details/);
+  assert.match(styles, /\.detail-object-id \{ overflow-wrap: anywhere; word-break: break-word; \}/);
+  assert.match(styles, /container-type: inline-size/);
+  assert.match(styles, /\.detail > dl:first-of-type \{ grid-template-columns: max-content minmax\(0, 1fr\)/);
+  assert.match(styles, /@container \(max-width: 300px\)/);
+  assert.match(i18n, /entityDetailSave: "Save Entity"/);
+  assert.match(i18n, /relationDetailSave: "Save Relation"/);
+  assert.match(entity, /translate\(locale, "entityDetailSave"\)/);
+  assert.match(relation, /translate\(locale, "relationDetailSave"\)/);
+  assert.match(styles, /\.detail-fields select \{ box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0;/);
 });

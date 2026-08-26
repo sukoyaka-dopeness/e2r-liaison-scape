@@ -6,6 +6,7 @@ export type PendingUserWorkSources = {
   meaningfulCreationDraft: boolean;
   meaningfulEntityDetailDraft: boolean;
   meaningfulRelationDetailDraft: boolean;
+  meaningfulDatasetTitleDraft?: boolean;
 };
 
 export type ReplacementSafetyState = {

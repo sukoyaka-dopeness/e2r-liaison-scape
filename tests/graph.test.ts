@@ -2,10 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { COORDINATE_DRAFT_EXTENSION_ID, COORDINATE_EXTENSION_ID, applyStoredCoordinates, buildEntityGraph, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type Dataset, type GraphEdge } from "../src/dataset.ts";
-import { bringToFront, centeredViewportTransform, clampScale, fitGraphView, getArrowheadGeometry, getEntityAttachment, graphEdgePath, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, routeGraphEdge, shouldShowNodeLabelConnector, truncateNodeText, wrapNodeLabel, zoomScale } from "../src/viewport.ts";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, getEntityAttachment, graphEdgePath, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, wrapNodeLabel, zoomScale } from "../src/viewport.ts";
 import { interpolateLabelRect, isLabelTransitionPathSafe, reconcileRelationLabelVisualState } from "../src/relation-label-presentation.ts";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualNodeLabelPosition, reconstructManualRelationLabelTarget } from "../src/relation-label-presentation.ts";
 import { boundedHoverDescription, composeHoverLines, placementOwnership } from "../src/placement-ownership.ts";
+import { buildRelatedRelationDisplay } from "../src/related-relation-display.ts";
 
 const roundedEntityShape = { kind: "rounded-rectangle" as const, halfWidth: 32, halfHeight: 32, cornerRadius: 12 };
 function assertClose(actual: number, expected: number, tolerance = 1e-8) {
@@ -140,6 +141,27 @@ test("A3/A8: omits Event endpoint edges from Entity graph and preserves directio
   assert.equal(graph.edges[0]?.sourceId, "entity");
   assert.equal(graph.edges[0]?.targetId, "entity");
   assert.equal(graph.unsupportedEdges, 1);
+  assert.equal(graph.eventRelatedHiddenEdges, 1);
+  assert.equal(graph.otherUnsupportedEdges, 0);
+});
+
+test("counts only resolvable Event-related Relations in the hidden notice", () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [{ id: "entity" }],
+    events: [{ id: "event" }],
+    relations: [
+      { id: "entity-event", sourceId: "entity", targetId: "event" },
+      { id: "event-entity", sourceId: "event", targetId: "entity" },
+      { id: "event-event", sourceId: "event", targetId: "event" },
+      { id: "missing-source", sourceId: "missing", targetId: "entity" },
+      { id: "event-missing", sourceId: "event", targetId: "missing" },
+    ],
+  };
+  const graph = buildEntityGraph(dataset);
+  assert.equal(graph.eventRelatedHiddenEdges, 3);
+  assert.equal(graph.otherUnsupportedEdges, 2);
+  assert.equal(graph.unsupportedEdges, 5);
 });
 
 test("A9: retains self-relations and distinguishes multiple edges", () => {
@@ -183,6 +205,16 @@ test("Entity Detail distinguishes shown Entity Relations from Event Relations", 
   const detail = getEntityDetail(dataset, "entity-1");
   assert.deepEqual(detail?.relationIds, ["shown", "hidden", "self"]);
   assert.deepEqual(detail?.visibleRelationIds, ["shown", "self"]);
+});
+
+test("Related Relation display uses trimmed names and structured endpoint labels", () => {
+  const dataset: Dataset = { version: "1.0", entities: [{ id: "entity-a", name: " Alice " }, { id: "entity-b", name: "Bob" }], events: [{ id: "event-a", name: " Launch " }], relations: [] };
+  assert.deepEqual(buildRelatedRelationDisplay(dataset, { id: "relation", name: " Friends ", sourceId: "entity-a", targetId: "event-a" }), { relationId: "relation", relationName: "Friends", source: "Alice", target: "Launch" });
+});
+
+test("Related Relation display falls back to IDs and disambiguates duplicate names", () => {
+  const dataset: Dataset = { version: "1.0", entities: [{ id: "12345678-a", name: "Alex" }, { id: "12345678-b", name: " Alex " }], events: [{ id: "event-missing-name", name: "   " }], relations: [] };
+  assert.deepEqual(buildRelatedRelationDisplay(dataset, { id: "relation", name: "   ", sourceId: "12345678-a", targetId: "event-missing-name" }), { relationId: "relation", relationName: null, source: "Alex (12345678-a)", target: "event-missing-name" });
 });
 
 test("Entity Detail editing preserves unknown fields and Extensions", () => {
@@ -1134,4 +1166,154 @@ test("node label connectors appear only when labels are outside the icon", () =>
   assert.equal(shouldShowNodeLabelConnector({ x: 0, y: 0 }), false);
   assert.equal(shouldShowNodeLabelConnector({ x: 32, y: 0 }), false);
   assert.equal(shouldShowNodeLabelConnector({ x: 47, y: 0 }), true);
+});
+
+test("polyline grab helpers use arc length and project onto segments", () => {
+  const samples = [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 100 }];
+  assert.equal(nearestPolylineArcFraction(samples, { x: 50, y: 8 }), 0.25);
+  assert.deepEqual(pointAtPolylineArcFraction(samples, 0.75), { x: 100, y: 50 });
+  assert.equal(nearestPolylineArcFraction([{ x: 1, y: 1 }, { x: 1, y: 1 }], { x: 2, y: 2 }), null);
+});
+
+test("visible route solver follows the grabbed point within one graph unit", () => {
+  const source = { x: 0, y: 0 };
+  const target = { x: 400, y: 0 };
+  const routeAtOffset = (offset: number) => routeGraphEdge(source, target, 0, 1, [], [], false, 0, offset).samples;
+  const startSamples = routeAtOffset(0);
+  const solved = solveVisibleRouteOffset({
+    startOffset: 0,
+    startSamples,
+    grabFraction: 0.5,
+    normal: { x: 0, y: 1 },
+    desiredNormalDelta: 50,
+    routeAtOffset,
+  });
+  assert.ok(solved !== null);
+  const start = pointAtPolylineArcFraction(startSamples, 0.5)!;
+  const end = pointAtPolylineArcFraction(routeAtOffset(solved!), 0.5)!;
+  assert.ok(Math.abs(end.y - start.y - 50) <= 1);
+  assert.equal(solveVisibleRouteOffset({ startOffset: 0, startSamples, grabFraction: 0.5, normal: { x: 0, y: 1 }, desiredNormalDelta: 0, routeAtOffset }), 0);
+});
+
+test("solver failure continuation stays near the last valid offset", () => {
+  assert.equal(boundedDragContinuationOffset({ lastOffset: 318, lastDesiredNormalDelta: 175, lastGain: 1 / 0.58, desiredNormalDelta: 180 }), 320.9);
+  assert.equal(boundedDragContinuationOffset({ lastOffset: 318, lastDesiredNormalDelta: 175, lastGain: 0, desiredNormalDelta: 180 }), null);
+});
+
+test("parallel automatic routes retain their equivalent manual baseline", () => {
+  const source = { x: 0, y: 0 };
+  const target = { x: 400, y: 0 };
+  for (const parallelCount of [2, 3]) {
+    for (const index of Array.from({ length: parallelCount }, (_, value) => value)) {
+      const automatic = routeGraphEdge(source, target, index, parallelCount);
+      const offset = curveOffsetFromControlPoint(source, target, automatic.controlPoint);
+      const expectedOffset = (index % 2 === 0 ? 1 : -1) * (40 + Math.floor(index / 2) * 24);
+      assert.equal(offset, expectedOffset);
+      const equivalent = routeGraphEdge(source, target, index, parallelCount, [], [], false, 0, offset!);
+      assert.deepEqual(equivalent.samples, automatic.samples);
+      for (const fraction of [0, 0.25, 0.5, 0.75, 1]) {
+        assert.deepEqual(
+          pointAtPolylineArcFraction(equivalent.samples, fraction),
+          pointAtPolylineArcFraction(automatic.samples, fraction),
+        );
+      }
+      assert.deepEqual(
+        routeGraphEdge(source, target, index, parallelCount, [], [], false, 0, offset!).samples,
+        automatic.samples,
+        "a zero desired drag delta keeps the automatic geometry",
+      );
+    }
+  }
+  assert.equal(curveOffsetFromControlPoint(source, source, source), null);
+});
+
+test("parallel solver eligibility follows obstacle route effect for distant and active obstacles", () => {
+  const source = { x: 0, y: 0 };
+  const target = { x: 400, y: 0 };
+  for (const parallelIndex of [0, 1]) {
+    const occupiedPaths = Array.from({ length: parallelIndex }, (_, value) =>
+      routeGraphEdge(source, target, value, 2).samples);
+    const reference = routeGraphEdge(source, target, parallelIndex, 2, [], occupiedPaths);
+    const distant = routeGraphEdge(source, target, parallelIndex, 2, [{ x: 0, y: 300 }, { x: 400, y: 300 }], occupiedPaths);
+    const distantComparison = compareRouteGeometry(reference.samples, distant.samples);
+    assert.equal(distantComparison.sampleCountEqual, true);
+    assert.equal(distantComparison.maxDeviation, 0);
+    assert.equal(distantComparison.equivalent, true);
+
+    const active = routeGraphEdge(source, target, parallelIndex, 2, [{ x: 200, y: parallelIndex === 0 ? 40 : -40 }], occupiedPaths);
+    const activeComparison = compareRouteGeometry(reference.samples, active.samples);
+    assert.equal(activeComparison.sampleCountEqual, true);
+    assert.ok(activeComparison.maxDeviation > 1);
+    assert.equal(activeComparison.equivalent, false);
+  }
+});
+
+test("route geometry equivalence tolerates floating point noise but rejects meaningful changes", () => {
+  const reference = routeGraphEdge({ x: 0, y: 0 }, { x: 400, y: 0 }, 0, 1).samples;
+  const noisy = reference.map((point) => ({ x: point.x + 1e-7, y: point.y - 1e-7 }));
+  const changed = reference.map((point) => ({ x: point.x + 1, y: point.y }));
+  assert.equal(compareRouteGeometry(reference, noisy).equivalent, true);
+  assert.equal(compareRouteGeometry(reference, changed).equivalent, false);
+});
+
+test("parallel solver rejects candidates that enter Node influence", () => {
+  const source = { x: 0, y: 0 };
+  const target = { x: 400, y: 0 };
+  const obstacle = { x: 200, y: 100 };
+  const routeAtOffset = (offset: number) => routeGraphEdge(source, target, 0, 2, [], [], false, 0, offset).samples;
+  const isCandidateSafe = (samples: ReturnType<typeof routeAtOffset>) => !routeSamplesHaveNodeInfluence(samples, [obstacle]);
+  assert.equal(isCandidateSafe(routeAtOffset(40)), true);
+  assert.equal(isCandidateSafe(routeAtOffset(100)), false);
+  assert.equal(solveVisibleRouteOffset({
+    startOffset: 40,
+    startSamples: routeAtOffset(40),
+    grabFraction: 0.5,
+    normal: { x: 0, y: 1 },
+    desiredNormalDelta: 60,
+    routeAtOffset,
+    isCandidateSafe,
+  }), null);
+});
+
+test("clean parallel routes satisfy the visible-response solver contract", () => {
+  const source = { x: 0, y: 0 };
+  const target = { x: 400, y: 0 };
+  const normal = { x: 0, y: 1 };
+  for (const parallelCount of [2, 3]) {
+    for (const parallelIndex of Array.from({ length: parallelCount }, (_, value) => value)) {
+      const precedingPaths = Array.from({ length: parallelIndex }, (_, value) =>
+        routeGraphEdge(source, target, value, parallelCount).samples);
+      const automatic = routeGraphEdge(source, target, parallelIndex, parallelCount, [], precedingPaths);
+      const withoutOccupiedPaths = routeGraphEdge(source, target, parallelIndex, parallelCount);
+      assert.deepEqual(automatic.samples, withoutOccupiedPaths.samples, `${parallelIndex} clean slot changed by occupied paths`);
+      const baseline = curveOffsetFromControlPoint(source, target, automatic.controlPoint)!;
+      const routeAtOffset = (offset: number) => routeGraphEdge(source, target, parallelIndex, parallelCount, [], [], false, 0, offset).samples;
+      const baselinePoint = pointAtPolylineArcFraction(automatic.samples, 0.5)!;
+      let previousDisplacement = -Infinity;
+      for (let offset = baseline - 200; offset <= baseline + 200; offset += 25) {
+        const point = pointAtPolylineArcFraction(routeAtOffset(offset), 0.5)!;
+        const displacement = (point.y - baselinePoint.y) * normal.y;
+        assert.ok(Number.isFinite(displacement));
+        assert.ok(displacement >= previousDisplacement - 1e-8, `${parallelIndex}:${offset} is not monotonic`);
+        previousDisplacement = displacement;
+      }
+      for (const fraction of [0.25, 0.5, 0.75]) {
+        const startSamples = automatic.samples;
+        for (const desiredNormalDelta of [10, 20, 50, 100, -10, -20, -50]) {
+          const solved = solveVisibleRouteOffset({
+            startOffset: baseline,
+            startSamples,
+            grabFraction: fraction,
+            normal,
+            desiredNormalDelta,
+            routeAtOffset,
+          });
+          assert.ok(solved !== null, `${parallelIndex}:${fraction}:${desiredNormalDelta} did not converge`);
+          const start = pointAtPolylineArcFraction(startSamples, fraction)!;
+          const end = pointAtPolylineArcFraction(routeAtOffset(solved!), fraction)!;
+          assert.ok(Math.abs((end.y - start.y) - desiredNormalDelta) <= 1, `${parallelIndex}:${fraction}:${desiredNormalDelta} exceeded error budget`);
+        }
+      }
+    }
+  }
 });

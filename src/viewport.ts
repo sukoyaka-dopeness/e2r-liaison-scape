@@ -51,6 +51,168 @@ export function centeredViewportTransform(
 }
 
 export type Point = { x: number; y: number };
+export function curveOffsetFromControlPoint(source: Point, target: Point, control: Point): number | null {
+  const dx = target.x - source.x;
+  const dy = target.y - source.y;
+  const length = Math.hypot(dx, dy);
+  if (![source.x, source.y, target.x, target.y, control.x, control.y].every(Number.isFinite) || length <= 0) return null;
+  return (control.x - (source.x + target.x) / 2) * (-dy / length)
+    + (control.y - (source.y + target.y) / 2) * (dx / length);
+}
+export function nearestPolylineArcFraction(samples: Point[], point: Point): number | null {
+  if (samples.length === 0 || ![point.x, point.y].every(Number.isFinite)) return null;
+  const lengths = samples.slice(1).map((sample, index) => Math.hypot(sample.x - samples[index]!.x, sample.y - samples[index]!.y));
+  const total = lengths.reduce((sum, length) => sum + length, 0);
+  if (total <= 0) return samples.length === 1 ? 0 : null;
+  let travelled = 0;
+  let bestDistance = Infinity;
+  let bestDistanceAlong = 0;
+  for (let index = 0; index < lengths.length; index += 1) {
+    const start = samples[index]!;
+    const end = samples[index + 1]!;
+    const length = lengths[index]!;
+    const ratio = length > 0 ? Math.max(0, Math.min(1, ((point.x - start.x) * (end.x - start.x) + (point.y - start.y) * (end.y - start.y)) / (length * length))) : 0;
+    const candidate = { x: start.x + (end.x - start.x) * ratio, y: start.y + (end.y - start.y) * ratio };
+    const distance = Math.hypot(point.x - candidate.x, point.y - candidate.y);
+    if (distance < bestDistance) { bestDistance = distance; bestDistanceAlong = travelled + length * ratio; }
+    travelled += length;
+  }
+  return bestDistanceAlong / total;
+}
+
+export function pointAtPolylineArcFraction(samples: Point[], fraction: number): Point | null {
+  if (samples.length === 0 || !Number.isFinite(fraction)) return null;
+  if (samples.length === 1) return { ...samples[0]! };
+  const lengths = samples.slice(1).map((sample, index) => Math.hypot(sample.x - samples[index]!.x, sample.y - samples[index]!.y));
+  const total = lengths.reduce((sum, length) => sum + length, 0);
+  if (total <= 0) return { ...samples[0]! };
+  const target = Math.max(0, Math.min(1, fraction)) * total;
+  let travelled = 0;
+  for (let index = 0; index < lengths.length; index += 1) {
+    const length = lengths[index]!;
+    if (travelled + length >= target || index === lengths.length - 1) {
+      const ratio = length > 0 ? (target - travelled) / length : 0;
+      const start = samples[index]!;
+      const end = samples[index + 1]!;
+      return { x: start.x + (end.x - start.x) * ratio, y: start.y + (end.y - start.y) * ratio };
+    }
+    travelled += length;
+  }
+  return { ...samples.at(-1)! };
+}
+
+const ROUTE_GEOMETRY_EQUIVALENCE_TOLERANCE = 1e-6;
+const ROUTE_GEOMETRY_CHECKPOINTS = [0.25, 0.5, 0.75] as const;
+export type RouteGeometryComparison = {
+  equivalent: boolean;
+  sampleCountEqual: boolean;
+  checkpointDistances: number[];
+  maxDeviation: number;
+};
+
+export function compareRouteGeometry(reference: Point[], actual: Point[]): RouteGeometryComparison {
+  const sampleCountEqual = reference.length === actual.length;
+  const distanceAtFraction = (fraction: number) => {
+    const referencePoint = pointAtPolylineArcFraction(reference, fraction);
+    const actualPoint = pointAtPolylineArcFraction(actual, fraction);
+    return referencePoint && actualPoint
+      ? Math.hypot(actualPoint.x - referencePoint.x, actualPoint.y - referencePoint.y)
+      : Infinity;
+  };
+  const checkpointDistances = ROUTE_GEOMETRY_CHECKPOINTS.map(distanceAtFraction);
+  const comparisonSampleCount = Math.max(reference.length, actual.length);
+  let maxDeviation = 0;
+  for (let index = 0; index < comparisonSampleCount; index += 1) {
+    const fraction = comparisonSampleCount <= 1 ? 0 : index / (comparisonSampleCount - 1);
+    maxDeviation = Math.max(maxDeviation, distanceAtFraction(fraction));
+  }
+  return {
+    equivalent: sampleCountEqual
+      && checkpointDistances.every((distance) => distance <= ROUTE_GEOMETRY_EQUIVALENCE_TOLERANCE)
+      && maxDeviation <= ROUTE_GEOMETRY_EQUIVALENCE_TOLERANCE,
+    sampleCountEqual,
+    checkpointDistances,
+    maxDeviation,
+  };
+}
+
+export function routeSamplesHaveNodeInfluence(samples: Point[], obstacles: Point[]): boolean {
+  return samples.some((sample) => obstacles.some((obstacle) =>
+    Math.hypot(sample.x - obstacle.x, sample.y - obstacle.y) < RELATION_ROUTE_NODE_INFLUENCE_RADIUS));
+}
+
+export function solveVisibleRouteOffset({
+  startOffset,
+  startSamples,
+  grabFraction,
+  normal,
+  desiredNormalDelta,
+  routeAtOffset,
+  isCandidateSafe,
+  maxOffsetDelta = 320,
+  iterations = 8,
+}: {
+  startOffset: number;
+  startSamples: Point[];
+  grabFraction: number;
+  normal: Point;
+  desiredNormalDelta: number;
+  routeAtOffset: (offset: number) => Point[];
+  isCandidateSafe?: (samples: Point[]) => boolean;
+  maxOffsetDelta?: number;
+  iterations?: number;
+}): number | null {
+  const startPoint = pointAtPolylineArcFraction(startSamples, grabFraction);
+  if (!startPoint || ![startOffset, normal.x, normal.y, desiredNormalDelta].every(Number.isFinite) || Math.hypot(normal.x, normal.y) === 0) return null;
+  const evaluate = (offset: number) => {
+    const samples = routeAtOffset(offset);
+    if (isCandidateSafe && !isCandidateSafe(samples)) return null;
+    const point = pointAtPolylineArcFraction(samples, grabFraction);
+    if (!point) return null;
+    return (point.x - startPoint.x) * normal.x + (point.y - startPoint.y) * normal.y;
+  };
+  const initial = evaluate(startOffset);
+  if (initial === null) return null;
+  if (Math.abs(desiredNormalDelta) < 1e-9) return startOffset;
+  const bound = Math.max(1, Math.abs(maxOffsetDelta));
+  const low = startOffset - bound;
+  const high = startOffset + bound;
+  let candidate = startOffset;
+  for (let iteration = 0; iteration < Math.max(1, iterations); iteration += 1) {
+    const value = evaluate(candidate);
+    if (value === null) return null;
+    const epsilon = 0.5;
+    const before = evaluate(Math.max(low, candidate - epsilon));
+    const after = evaluate(Math.min(high, candidate + epsilon));
+    if (before === null || after === null) return null;
+    const gain = (after - before) / (Math.min(high, candidate + epsilon) - Math.max(low, candidate - epsilon));
+    if (iteration > 0 && Math.abs(value - desiredNormalDelta) <= 1) return candidate;
+    if (!Number.isFinite(gain) || Math.abs(gain) < 0.05) return null;
+    candidate = Math.max(low, Math.min(high, candidate + (desiredNormalDelta - value) / gain));
+  }
+  const finalValue = evaluate(candidate);
+  return finalValue !== null && Math.abs(finalValue - desiredNormalDelta) <= 1 ? candidate : null;
+}
+
+export function boundedDragContinuationOffset({
+  lastOffset,
+  lastDesiredNormalDelta,
+  lastGain,
+  desiredNormalDelta,
+  maxStep = 24,
+}: {
+  lastOffset: number;
+  lastDesiredNormalDelta: number;
+  lastGain: number;
+  desiredNormalDelta: number;
+  maxStep?: number;
+}): number | null {
+  if (![lastOffset, lastDesiredNormalDelta, lastGain, desiredNormalDelta, maxStep].every(Number.isFinite)
+    || Math.abs(lastGain) < 0.05 || maxStep < 0 || Math.sign(lastGain) === 0) return null;
+  const step = Math.max(-maxStep, Math.min(maxStep, (desiredNormalDelta - lastDesiredNormalDelta) / lastGain));
+  const result = lastOffset + step;
+  return Number.isFinite(result) ? result : null;
+}
 export type ArrowheadGeometry = { tip: Point; baseA: Point; baseB: Point };
 export type EntityAttachmentShape = {
   kind: "rounded-rectangle";
