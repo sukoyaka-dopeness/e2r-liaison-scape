@@ -201,3 +201,11 @@ test("focuses the safe action when Delete Confirmation opens", () => {
   assert.match(confirmation, /Cancel/);
   assert.match(confirmation, /danger-confirm/);
 });
+
+test("autofocuses only the Entity creation Name field", () => {
+  const creation = readFileSync("src/components/CreationDialog.tsx", "utf8");
+  assert.match(creation, /id="creation-name" autoFocus=\{mode === "entity"\}/);
+  assert.doesNotMatch(creation, /id="creation-source"[^>]*autoFocus/);
+  assert.doesNotMatch(creation, /id="creation-target"[^>]*autoFocus/);
+  assert.doesNotMatch(creation, /id="creation-name" autoFocus=\{true\}/);
+});
