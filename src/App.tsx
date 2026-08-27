@@ -4,10 +4,8 @@ import { assessCoordinateDraftMigration, migrateCoordinatePrototypeToDraft } fro
 import { assessLiaisonScapeSpaceMigration, migrateLinkscapeSpaceToLiaisonScape } from "./space-migration";
 import { applyStoredCoordinates, buildEntityGraph, getStoredCoordinates, updateDatasetTitle, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
 import { getDatasetMetadata, loadDataset, serializeDataset, validateDatasetForExport } from "./services/DatasetService";
-import { assessEntityDeletion, createEntity, deleteEntity } from "./services/EntityService";
-import { getEntityDetail, updateEntityDetails } from "./services/EntityService";
-import { assessRelationDeletion, createRelation, deleteRelation } from "./services/RelationService";
-import { getRelationDetail, updateRelation } from "./services/RelationService";
+import { createEntity } from "./services/EntityService";
+import { createRelation } from "./services/RelationService";
 import { canCompleteLongPress, createCanvasContextMenu, draggedPointFromOrigin, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, svgPointFromPointer, type ContextMenu } from "./direct-graph-authoring";
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
 import { DetailDismissalConfirmation } from "./components/DetailDismissalConfirmation";
@@ -18,12 +16,13 @@ import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
-import { applyLocale, formatDiagnosticSeverity, formatEntityDeletionRefusal, formatEntityIncidentWarning, formatGraphSummary, formatRelationCreationRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
+import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
 import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
 import { canRestoreReplacementTrigger } from "./replacement-focus";
 import { parseDatasetHandoffFragment, updateDatasetHandoffFragment } from "./dataset-handoff";
+import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "fetch-failed" | "parse-failed" | "validation-failed";
@@ -47,15 +46,7 @@ export default function App() {
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredEntityId, setHoveredEntityId] = useState<string | null>(null);
-  const [entityNameDraft, setEntityNameDraft] = useState("");
-  const [entityDescriptionDraft, setEntityDescriptionDraft] = useState("");
   const [selectedRelationId, setSelectedRelationId] = useState<string | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [detailDismissal, setDetailDismissal] = useState<"entity" | "relation" | null>(null);
-  const [relationNameDraft, setRelationNameDraft] = useState("");
-  const [relationDescriptionDraft, setRelationDescriptionDraft] = useState("");
-  const [relationSourceDraft, setRelationSourceDraft] = useState("");
-  const [relationTargetDraft, setRelationTargetDraft] = useState("");
   const [nodeLayerOrder, setNodeLayerOrder] = useState<string[]>([]);
   const [edgeLayerOrder, setEdgeLayerOrder] = useState<string[]>([]);
   const [edgeLabelOffsets, setEdgeLabelOffsets] = useState<Record<string, { x: number; y: number }>>({});
@@ -77,8 +68,6 @@ export default function App() {
   const [contextMenuPosition, setContextMenuPosition] = useState<{ left: number; top: number } | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const [pendingEntityPlacement, setPendingEntityPlacement] = useState<{ x: number; y: number } | null>(null);
-  const [deleteConfirmation, setDeleteConfirmation] = useState<"entity" | "relation" | null>(null);
-  const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [maintenanceMenuOpen, setMaintenanceMenuOpen] = useState(false);
   const creditsTriggerRef = useRef<HTMLButtonElement | null>(null);
@@ -112,6 +101,61 @@ export default function App() {
   const maintenanceMenuSummaryRef = useRef<HTMLElement>(null);
   const restoreReplacementFocusRef = useRef(false);
   const startupHandoffStartedRef = useRef(false);
+
+  const {
+    selectedDetail,
+    selectedRelationDetail,
+    entityNameDraft,
+    setEntityNameDraft,
+    entityDescriptionDraft,
+    setEntityDescriptionDraft,
+    relationNameDraft,
+    setRelationNameDraft,
+    relationDescriptionDraft,
+    setRelationDescriptionDraft,
+    relationSourceDraft,
+    setRelationSourceDraft,
+    relationTargetDraft,
+    setRelationTargetDraft,
+    detailOpen,
+    detailDismissal,
+    deleteConfirmation,
+    meaningfulEntityDetailDraft,
+    meaningfulRelationDetailDraft,
+    closeDetail,
+    cancelDetailDismissal,
+    discardDetailDraft,
+    requestDetailDismissal,
+    saveEntityDetails,
+    saveRelationDetails,
+    removeSelectedEntity,
+    removeSelectedRelation,
+    cancelDeletion,
+    confirmDeletion,
+    openEntityDetail,
+    openRelationDetail,
+    openRelatedRelation,
+  } = useDetailDeletionWorkflow({
+    dataset,
+    locale,
+    selectedId,
+    selectedRelationId,
+    onDatasetUpdate: updateDataset,
+    onMessage: setMessage,
+    onSelectEntity: setSelectedId,
+    onSelectRelation: setSelectedRelationId,
+    onEntityDeleted: (id) => {
+      manualNodeLabelOffsets.current.delete(id);
+      setPositions((value) => {
+        const next = { ...value };
+        delete next[id];
+        return next;
+      });
+    },
+    onRelationDeleted: (id) => {
+      manualRelationLabelAnchors.current.delete(id);
+    },
+  });
 
   useEffect(() => {
     if (!maintenanceMenuOpen) return;
@@ -395,8 +439,6 @@ export default function App() {
     manualNodeLabelOffsets.current.clear();
     setManualLabelRevision((value) => value + 1);
   }
-  const selectedDetail = dataset && selectedId ? getEntityDetail(dataset, selectedId) : null;
-  const selectedRelationDetail = dataset && selectedRelationId ? getRelationDetail(dataset, selectedRelationId) : null;
   const meaningfulCreationDraft = creationMode !== null && [creationName, creationDescription, creationSource, creationTarget].some((value) => value.trim().length > 0);
   const pendingUserWork = hasPendingUserWork({
     unsavedCoordinates: coordinatesDirty,
@@ -404,31 +446,10 @@ export default function App() {
     manualRelationLabel: manualRelationLabelAnchors.current.size > 0,
     manualNodeLabel: manualNodeLabelOffsets.current.size > 0,
     meaningfulCreationDraft,
-    meaningfulEntityDetailDraft: detailOpen && selectedDetail !== null && (
-      entityNameDraft !== (typeof selectedDetail.entity.name === "string" ? selectedDetail.entity.name : "")
-      || entityDescriptionDraft !== (typeof selectedDetail.entity.description === "string" ? selectedDetail.entity.description : "")
-    ),
-    meaningfulRelationDetailDraft: detailOpen && selectedRelationDetail !== null && (
-      relationNameDraft !== (typeof selectedRelationDetail.relation.name === "string" ? selectedRelationDetail.relation.name : "")
-      || relationDescriptionDraft !== (typeof selectedRelationDetail.relation.description === "string" ? selectedRelationDetail.relation.description : "")
-      || relationSourceDraft !== selectedRelationDetail.sourceId
-      || relationTargetDraft !== selectedRelationDetail.targetId
-    ),
+    meaningfulEntityDetailDraft,
+    meaningfulRelationDetailDraft,
     meaningfulDatasetTitleDraft: datasetTitleEditing && datasetTitleDraft !== (metadata?.title ?? ""),
   });
-  function requestDetailDismissal() {
-    const kind = selectedDetail ? "entity" : selectedRelationDetail ? "relation" : null;
-    if (!kind) { setDetailOpen(false); return; }
-    const dirty = kind === "entity"
-      ? entityNameDraft !== (typeof selectedDetail?.entity.name === "string" ? selectedDetail.entity.name : "")
-        || entityDescriptionDraft !== (typeof selectedDetail?.entity.description === "string" ? selectedDetail.entity.description : "")
-      : relationNameDraft !== (typeof selectedRelationDetail?.relation.name === "string" ? selectedRelationDetail.relation.name : "")
-        || relationDescriptionDraft !== (typeof selectedRelationDetail?.relation.description === "string" ? selectedRelationDetail.relation.description : "")
-        || relationSourceDraft !== selectedRelationDetail?.sourceId
-        || relationTargetDraft !== selectedRelationDetail?.targetId;
-    if (dirty) setDetailDismissal(kind);
-    else setDetailOpen(false);
-  }
   function discardCreationDraft() {
     setCreationMode(null);
     setCreationDismissal(false);
@@ -701,7 +722,7 @@ export default function App() {
     setPendingDatasetReplacementSource(null);
     setSelectedId(null);
     setSelectedRelationId(null);
-    setDetailOpen(false);
+    closeDetail();
     const storedPositions = getStoredCoordinates(nextDataset);
     const openedGraph = buildEntityGraph(nextDataset);
     setNodeLayerOrder(openedGraph.nodes.map(({ id }) => id));
@@ -1192,7 +1213,7 @@ export default function App() {
       const entity = dataset?.entities.find(({ id }) => id === drag.id);
       setSelectedId(drag.id);
       setSelectedRelationId(null);
-      setDetailOpen(false);
+      closeDetail();
       setEntityNameDraft(typeof entity?.name === "string" ? entity.name : "");
       setEntityDescriptionDraft(typeof entity?.description === "string" ? entity.description : "");
       setNodeLayerOrder((value) => bringToFront(value, drag.id!));
@@ -1201,7 +1222,7 @@ export default function App() {
       const relation = dataset?.relations.find(({ id }) => id === drag.id);
       setSelectedRelationId(drag.id);
       setSelectedId(null);
-      setDetailOpen(false);
+      closeDetail();
       setRelationNameDraft(typeof relation?.name === "string" ? relation.name : "");
       setRelationDescriptionDraft(typeof relation?.description === "string" ? relation.description : "");
       setRelationSourceDraft(typeof relation?.sourceId === "string" ? relation.sourceId : "");
@@ -1212,7 +1233,7 @@ export default function App() {
       const relation = dataset?.relations.find(({ id }) => id === drag.id);
       setSelectedRelationId(drag.id);
       setSelectedId(null);
-      setDetailOpen(false);
+      closeDetail();
       setRelationNameDraft(typeof relation?.name === "string" ? relation.name : "");
       setRelationDescriptionDraft(typeof relation?.description === "string" ? relation.description : "");
       setRelationSourceDraft(typeof relation?.sourceId === "string" ? relation.sourceId : "");
@@ -1282,26 +1303,10 @@ export default function App() {
     setMessage(translate(locale, "spaceMigrationSuccess"));
   }
 
-  function saveRelationDetails() {
-    if (!dataset || !selectedRelationId) return;
-    const current = getRelationDetail(dataset, selectedRelationId);
-    if (!current) { setMessage(formatRelationUpdateRefusal(locale, "relation_not_found")); return; }
-    const result = updateRelation(dataset, selectedRelationId, {
-      sourceId: relationSourceDraft,
-      targetId: relationTargetDraft,
-      name: relationNameDraft,
-      description: relationDescriptionDraft,
-    });
-    if ("refusal" in result) { setMessage(formatRelationUpdateRefusal(locale, result.refusal)); return; }
-    updateDataset(result.dataset);
-    setDetailOpen(false);
-    setMessage("");
-  }
-
   function openCreation(mode: "entity" | "relation", placement: { x: number; y: number } | null = null, endpoints: { sourceId: string; targetId: string } | null = null) {
     const selectedEntity = mode === "relation" ? endpoints?.sourceId ?? selectedId ?? "" : "";
     setPendingEntityPlacement(mode === "entity" ? placement : null);
-    setCreationMode(mode); setCreationName(""); setCreationDescription(""); setCreationSource(selectedEntity); setCreationTarget(mode === "relation" ? endpoints?.targetId ?? selectedEntity : ""); setDetailOpen(false);
+    setCreationMode(mode); setCreationName(""); setCreationDescription(""); setCreationSource(selectedEntity); setCreationTarget(mode === "relation" ? endpoints?.targetId ?? selectedEntity : ""); closeDetail();
   }
 
   function openCanvasContextAt(clientX: number, clientY: number) {
@@ -1422,90 +1427,6 @@ export default function App() {
     updateDataset(result.dataset); setSelectedRelationId(result.relationId); setSelectedId(null); setCreationMode(null); setMessage("");
   }
 
-  function removeSelectedRelation() {
-    if (!dataset || !selectedRelationId) return;
-    const assessment = assessRelationDeletion(dataset, selectedRelationId);
-    if (!assessment.ready) { setMessage(formatRelationDeletionRefusal(locale, assessment.reason)); return; }
-    setDeleteConfirmationId(selectedRelationId);
-    setDetailOpen(false);
-    setDeleteConfirmation("relation");
-  }
-
-  function removeSelectedEntity() {
-    const entityId = selectedId ?? selectedDetail?.entity.id;
-    if (!dataset || !entityId) return;
-    const assessment = assessEntityDeletion(dataset, entityId);
-    if (!assessment.ready) {
-      setMessage(assessment.incidentRelationCount ? formatEntityIncidentWarning(locale, assessment.incidentRelationCount) : formatEntityDeletionRefusal(locale, assessment.reason));
-      return;
-    }
-    setDeleteConfirmationId(entityId);
-    if (!selectedId) setSelectedId(entityId);
-    setDetailOpen(false);
-    setDeleteConfirmation("entity");
-  }
-
-  function confirmDeletion() {
-    if (!dataset || !deleteConfirmation || !deleteConfirmationId) return;
-    if (deleteConfirmation === "relation") {
-      const result = deleteRelation(dataset, deleteConfirmationId);
-      if (!result.deleted) { setMessage(formatRelationDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); return; }
-      manualRelationLabelAnchors.current.delete(result.deletedId);
-      updateDataset(result.dataset); setSelectedRelationId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage(""); return;
-    }
-    if (deleteConfirmation === "entity") {
-      const result = deleteEntity(dataset, deleteConfirmationId);
-      if (!result.deleted) { setMessage(formatEntityDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); return; }
-      manualNodeLabelOffsets.current.delete(result.deletedId);
-      updateDataset(result.dataset); setPositions((value) => { const next = { ...value }; delete next[result.deletedId]; return next; }); setSelectedId(null); setDetailOpen(false); setDeleteConfirmation(null); setMessage("");
-    }
-  }
-
-  function saveEntityDetails() {
-    if (!dataset || !selectedId) return;
-    updateDataset(updateEntityDetails(dataset, selectedId, {
-      name: entityNameDraft,
-      description: entityDescriptionDraft,
-    }));
-    setDetailOpen(false);
-    setMessage("");
-  }
-
-  function openRelatedRelation(relationId: string) {
-    if (!dataset) return;
-    const relation = dataset.relations.find(({ id }) => id === relationId);
-    if (!relation) return;
-    setSelectedRelationId(relationId);
-    setSelectedId(null);
-    setRelationNameDraft(typeof relation.name === "string" ? relation.name : "");
-    setRelationDescriptionDraft(typeof relation.description === "string" ? relation.description : "");
-    setRelationSourceDraft(typeof relation.sourceId === "string" ? relation.sourceId : "");
-    setRelationTargetDraft(typeof relation.targetId === "string" ? relation.targetId : "");
-    setDetailOpen(true);
-  }
-
-  function openEntityDetail(entityId: string) {
-    const entity = dataset?.entities.find(({ id }) => id === entityId);
-    if (!entity) return;
-    setSelectedId(entityId);
-    setSelectedRelationId(null);
-    setEntityNameDraft(typeof entity.name === "string" ? entity.name : "");
-    setEntityDescriptionDraft(typeof entity.description === "string" ? entity.description : "");
-    setDetailOpen(true);
-  }
-
-  function openRelationDetail(relationId: string) {
-    const relation = dataset?.relations.find(({ id }) => id === relationId);
-    if (!relation) return;
-    setSelectedRelationId(relationId);
-    setSelectedId(null);
-    setRelationNameDraft(typeof relation.name === "string" ? relation.name : "");
-    setRelationDescriptionDraft(typeof relation.description === "string" ? relation.description : "");
-    setRelationSourceDraft(typeof relation.sourceId === "string" ? relation.sourceId : "");
-    setRelationTargetDraft(typeof relation.targetId === "string" ? relation.targetId : "");
-    setDetailOpen(true);
-  }
-
   function openContextMenuDetails() {
     if (!contextMenu) return;
     if (contextMenu.kind === "entity" || contextMenu.kind === "node-label") openEntityDetail(contextMenu.entityId);
@@ -1535,7 +1456,7 @@ export default function App() {
     setPan(fittedView.pan);
     setSelectedId(null);
     setSelectedRelationId(null);
-    setDetailOpen(false);
+    closeDetail();
     setEdgeLabelOffsets({});
   }
 
@@ -1657,7 +1578,7 @@ export default function App() {
       )}
       {dataset && creationDismissal && <CreationDismissalConfirmation locale={locale} onCancel={() => setCreationDismissal(false)} onDiscard={discardCreationDraft} />}
       {replacementDialog}
-      {dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
+      {dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={cancelDeletion} onConfirm={confirmDeletion} />}
       {dataset && (
         <dl className="dataset-metadata" aria-label={translate(locale, "datasetMetadata")}>
           <dt>{translate(locale, "datasetTitleVisible")}</dt>
@@ -1738,7 +1659,7 @@ export default function App() {
                       if (selectedRelationId !== edge.id) {
                         setSelectedRelationId(edge.id);
                         setSelectedId(null);
-                        setDetailOpen(false);
+                        closeDetail();
                       }
                       edgeCurveDragStartRef.current = { id: edge.id, offset: edgeCurveOffsets[edge.id], selfLoop: selfLoopOverrides[edge.id] };
                     }
@@ -1889,7 +1810,7 @@ export default function App() {
           {selectedRelationDetail && !detailOpen && (
             <div className="graph-selection-actions">
               <p className="relation-curvature-hint" role="status">{translate(locale, "selectedRelationCurvatureHint")}</p>
-              <button type="button" onClick={() => setDetailOpen(true)}>{translate(locale, "editRelation")}</button>
+              <button type="button" onClick={() => openRelationDetail(selectedRelationDetail.relation.id)}>{translate(locale, "editRelation")}</button>
               <button
                 type="button"
                 disabled={edgeCurveOffsets[selectedRelationDetail.relation.id] === undefined
@@ -1928,7 +1849,7 @@ export default function App() {
           )}
           {selectedDetail && !detailOpen && (
             <div className="graph-selection-actions">
-              <button type="button" onClick={() => setDetailOpen(true)}>{translate(locale, "editEntity")}</button>
+              <button type="button" onClick={() => openEntityDetail(selectedDetail.entity.id)}>{translate(locale, "editEntity")}</button>
             </div>
           )}
           {dataset && coordinateMigrationReadiness && !coordinateMigrationReadiness.ready && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_no_source" && coordinateMigrationReadiness.code !== "linkscape_coordinate_draft_migration_target_exists" && (
@@ -1984,7 +1905,7 @@ export default function App() {
           )}
         </section>
       )}
-      {detailDismissal && <DetailDismissalConfirmation locale={locale} onCancel={() => setDetailDismissal(null)} onDiscard={() => { setDetailDismissal(null); setDetailOpen(false); }} />}
+      {detailDismissal && <DetailDismissalConfirmation locale={locale} onCancel={cancelDetailDismissal} onDiscard={discardDetailDraft} />}
       </main>
       <footer className="app-footer workspace-footer">
         <small>{translate(locale, "footerDescriptor")}</small>

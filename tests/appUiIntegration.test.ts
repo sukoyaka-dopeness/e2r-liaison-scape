@@ -161,11 +161,12 @@ test("keeps Entity endpoint identity presentation shared across relation surface
 
 test("guards dirty Entity and Relation Detail dismissal without changing draft semantics", () => {
   const app = readFileSync("src/App.tsx", "utf8");
+  const workflow = readFileSync("src/hooks/useDetailDeletionWorkflow.ts", "utf8");
   const confirmation = readFileSync("src/components/DetailDismissalConfirmation.tsx", "utf8");
   const i18n = readFileSync("src/i18n.ts", "utf8");
-  assert.match(app, /function requestDetailDismissal\(\)/);
-  assert.match(app, /meaningfulEntityDetailDraft/);
-  assert.match(app, /meaningfulRelationDetailDraft/);
+  assert.match(workflow, /function requestDetailDismissal\(\)/);
+  assert.match(workflow, /const meaningfulEntityDetailDraft/);
+  assert.match(workflow, /const meaningfulRelationDetailDraft/);
   assert.match(app, /onClose=\{requestDetailDismissal\}/);
   assert.match(app, /<DetailDismissalConfirmation/);
   assert.match(confirmation, /event\.key === "Escape"/);
@@ -191,6 +192,25 @@ test("guards dirty Creation Escape while preserving explicit Cancel semantics", 
   assert.match(confirmation, /discardCreationDraft/);
   assert.match(i18n, /creationDismissalMessage: "You have unsaved changes for this new object\./);
   assert.match(i18n, /discardCreationDraft: "Discard and Close"/);
+});
+
+test("keeps Detail and deletion orchestration behind the bounded workflow controller", () => {
+  const app = readFileSync("src/App.tsx", "utf8");
+  const workflow = readFileSync("src/hooks/useDetailDeletionWorkflow.ts", "utf8");
+  assert.match(workflow, /export function useDetailDeletionWorkflow/);
+  assert.match(workflow, /const \[deleteConfirmation,/);
+  assert.match(workflow, /assessEntityDeletion/);
+  assert.match(workflow, /assessRelationDeletion/);
+  assert.match(workflow, /function confirmDeletion\(\)/);
+  assert.match(workflow, /onDatasetUpdate\(result\.dataset\)/);
+  assert.match(workflow, /onEntityDeleted\(result\.deletedId\)/);
+  assert.match(workflow, /onRelationDeleted\(result\.deletedId\)/);
+  assert.match(app, /const \[selectedId, setSelectedId\]/);
+  assert.match(app, /onDatasetUpdate: updateDataset/);
+  assert.match(app, /onEntityDeleted: \(id\)/);
+  assert.match(app, /onRelationDeleted: \(id\)/);
+  assert.doesNotMatch(app, /assessEntityDeletion/);
+  assert.doesNotMatch(app, /assessRelationDeletion/);
 });
 
 test("focuses the safe action when Delete Confirmation opens", () => {
