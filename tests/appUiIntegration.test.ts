@@ -158,3 +158,20 @@ test("keeps Entity endpoint identity presentation shared across relation surface
   assert.match(relation, /endpointLabel\(target, targetId\)/);
   assert.match(app, /entities=\{dataset\.entities\}/);
 });
+
+test("guards dirty Entity and Relation Detail dismissal without changing draft semantics", () => {
+  const app = readFileSync("src/App.tsx", "utf8");
+  const confirmation = readFileSync("src/components/DetailDismissalConfirmation.tsx", "utf8");
+  const i18n = readFileSync("src/i18n.ts", "utf8");
+  assert.match(app, /function requestDetailDismissal\(\)/);
+  assert.match(app, /meaningfulEntityDetailDraft/);
+  assert.match(app, /meaningfulRelationDetailDraft/);
+  assert.match(app, /onClose=\{requestDetailDismissal\}/);
+  assert.match(app, /<DetailDismissalConfirmation/);
+  assert.match(confirmation, /event\.key === "Escape"/);
+  assert.match(confirmation, /cancelRef\.current\?\.focus\(\)/);
+  assert.match(confirmation, /onDiscard/);
+  assert.match(i18n, /detailDismissalTitle: "Discard unsaved changes\?"/);
+  assert.match(i18n, /discardDetailDraft: "Discard Changes"/);
+  assert.match(i18n, /detailDismissalTitle: "未保存の変更を破棄しますか？"/);
+});

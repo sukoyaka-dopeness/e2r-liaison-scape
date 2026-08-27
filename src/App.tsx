@@ -10,6 +10,7 @@ import { assessRelationDeletion, createRelation, deleteRelation } from "./servic
 import { getRelationDetail, updateRelation } from "./services/RelationService";
 import { canCompleteLongPress, createCanvasContextMenu, draggedPointFromOrigin, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, svgPointFromPointer, type ContextMenu } from "./direct-graph-authoring";
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
+import { DetailDismissalConfirmation } from "./components/DetailDismissalConfirmation";
 import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
 import { CreditsDialog } from "./components/CreditsDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
@@ -49,6 +50,7 @@ export default function App() {
   const [entityDescriptionDraft, setEntityDescriptionDraft] = useState("");
   const [selectedRelationId, setSelectedRelationId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [detailDismissal, setDetailDismissal] = useState<"entity" | "relation" | null>(null);
   const [relationNameDraft, setRelationNameDraft] = useState("");
   const [relationDescriptionDraft, setRelationDescriptionDraft] = useState("");
   const [relationSourceDraft, setRelationSourceDraft] = useState("");
@@ -411,6 +413,19 @@ export default function App() {
     ),
     meaningfulDatasetTitleDraft: datasetTitleEditing && datasetTitleDraft !== (metadata?.title ?? ""),
   });
+  function requestDetailDismissal() {
+    const kind = selectedDetail ? "entity" : selectedRelationDetail ? "relation" : null;
+    if (!kind) { setDetailOpen(false); return; }
+    const dirty = kind === "entity"
+      ? entityNameDraft !== (typeof selectedDetail?.entity.name === "string" ? selectedDetail.entity.name : "")
+        || entityDescriptionDraft !== (typeof selectedDetail?.entity.description === "string" ? selectedDetail.entity.description : "")
+      : relationNameDraft !== (typeof selectedRelationDetail?.relation.name === "string" ? selectedRelationDetail.relation.name : "")
+        || relationDescriptionDraft !== (typeof selectedRelationDetail?.relation.description === "string" ? selectedRelationDetail.relation.description : "")
+        || relationSourceDraft !== selectedRelationDetail?.sourceId
+        || relationTargetDraft !== selectedRelationDetail?.targetId;
+    if (dirty) setDetailDismissal(kind);
+    else setDetailOpen(false);
+  }
   const replacementLossRisk = hasDocumentExitLossRisk(datasetModified, pendingUserWork);
   useEffect(() => {
     if (!replacementLossRisk) return;
@@ -533,11 +548,11 @@ export default function App() {
   useEffect(() => {
     if (!detailOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setDetailOpen(false);
+      if (event.key === "Escape" && !deleteConfirmation && !detailDismissal) requestDetailDismissal();
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [detailOpen]);
+  }, [deleteConfirmation, detailDismissal, detailOpen]);
 
   useEffect(() => {
     if (!relationCreationPreview) return;
@@ -566,7 +581,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (!detailOpen && !creationMode && !deleteConfirmation && !creditsOpen) return;
+    if (!detailOpen && !creationMode && !deleteConfirmation && !detailDismissal && !creditsOpen) return;
     const trapFocus = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return;
       const dialogs = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"]'));
@@ -586,7 +601,7 @@ export default function App() {
     };
     document.addEventListener("keydown", trapFocus, true);
     return () => document.removeEventListener("keydown", trapFocus, true);
-  }, [creationMode, deleteConfirmation, detailOpen, creditsOpen]);
+  }, [creationMode, deleteConfirmation, detailDismissal, detailOpen, creditsOpen]);
 
   useEffect(() => {
     if (!creditsOpen) return;
@@ -1911,7 +1926,7 @@ export default function App() {
               onSave={saveEntityDetails}
               onDelete={removeSelectedEntity}
               onRelated={openRelatedRelation}
-              onClose={() => setDetailOpen(false)}
+              onClose={requestDetailDismissal}
             />
           )}
           {detailOpen && selectedRelationDetail && (
@@ -1939,11 +1954,12 @@ export default function App() {
               onDescriptionChange={setRelationDescriptionDraft}
               onSave={saveRelationDetails}
               onDelete={removeSelectedRelation}
-              onClose={() => setDetailOpen(false)}
+              onClose={requestDetailDismissal}
             />
           )}
         </section>
       )}
+      {detailDismissal && <DetailDismissalConfirmation locale={locale} onCancel={() => setDetailDismissal(null)} onDiscard={() => { setDetailDismissal(null); setDetailOpen(false); }} />}
       </main>
       <footer className="app-footer workspace-footer">
         <small>{translate(locale, "footerDescriptor")}</small>
