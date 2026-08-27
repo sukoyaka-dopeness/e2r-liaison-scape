@@ -49,7 +49,6 @@ export function EntityDeletionResolutionDialog({ locale, dataset, entity, relati
     <aside className="detail entity-deletion-resolution" role="dialog" aria-modal="true" aria-labelledby="entity-deletion-resolution-title">
       <div className="detail-header">
         <h3 id="entity-deletion-resolution-title">{translate(locale, "entityDeletionResolutionTitle")}</h3>
-        <button type="button" onClick={onKeepEntity}>{translate(locale, "entityDeletionResolutionKeep")}</button>
       </div>
       <p className="entity-deletion-resolution__entity">{entityName}</p>
       {relations.length > 0 ? <>
@@ -75,7 +74,7 @@ export function EntityDeletionResolutionDialog({ locale, dataset, entity, relati
           })}
         </div>
       </> : <p role="status">{translate(locale, "entityDeletionResolutionResolved")}</p>}
-      <div className="detail-actions">
+      <div className="detail-actions entity-deletion-resolution__actions">
         <button ref={keepEntityRef} type="button" onClick={onKeepEntity}>{translate(locale, "entityDeletionResolutionKeep")}</button>
         {relations.length === 0 && <button type="button" className="danger-action" onClick={onDeleteEntity}>{translate(locale, "entityDeleteAction")}</button>}
       </div>

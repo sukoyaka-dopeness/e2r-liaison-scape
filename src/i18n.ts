@@ -110,11 +110,11 @@ export const messages = {
     footerDescriptor: "E2R relationship editor", credits: "Credits", closeCredits: "Close Credits", application: "Application", creator: "Creator", releaseDate: "Release date", releaseDatePending: "2026-08-16", aiAcknowledgement: "With gratitude to all the AI systems that contributed to this project.", creditsLinks: "Credits links", liaisonScapeRepository: "LiaisonScape repository", e2rSpecificationRepository: "E2R specification repository",
     languageEnglish: "English",
     entityDeletionResolutionTitle: "Review connections before deleting",
-    entityDeletionResolutionConnections: "Connections to resolve",
+    entityDeletionResolutionConnections: "Connected Relations",
     entityDeletionResolutionHidden: "Some connections are not normally shown in this graph. Review them individually first.",
     entityDeletionResolutionInspect: "Inspect Relation",
     entityDeletionResolutionKeep: "Keep Entity",
-    entityDeletionResolutionResolved: "All blocking Relations have been resolved. You can now delete this Entity.",
+    entityDeletionResolutionResolved: "All Relations connected to this Entity have been removed. You can now delete the Entity.",
     languageJapanese: "日本語",
     saveRelation: "Save Relation",
     relationDetail: "Relation Detail",
@@ -195,11 +195,11 @@ export const messages = {
     footerDescriptor: "E2Rリレーションシップエディター", credits: "クレジット", closeCredits: "クレジットを閉じる", application: "アプリケーション", creator: "作成者", releaseDate: "リリース日", releaseDatePending: "2026-08-16", aiAcknowledgement: "With gratitude to all the AI systems that contributed to this project.", creditsLinks: "Credits links", liaisonScapeRepository: "LiaisonScape repository", e2rSpecificationRepository: "E2R specification repository",
     languageEnglish: "English",
     entityDeletionResolutionTitle: "削除前につながりを確認してください",
-    entityDeletionResolutionConnections: "解決するつながり",
+    entityDeletionResolutionConnections: "接続しているつながり",
     entityDeletionResolutionHidden: "このグラフには通常表示されないつながりもあります。個別に確認してください。",
     entityDeletionResolutionInspect: "つながりを確認",
     entityDeletionResolutionKeep: "エンティティを残す",
-    entityDeletionResolutionResolved: "すべてのブロッカーが解決されました。このエンティティを削除できます。",
+    entityDeletionResolutionResolved: "このエンティティに接続しているつながりはすべて削除されました。このエンティティを削除できます。",
     languageJapanese: "日本語",
     saveRelation: "つながりを作成",
     close: "閉じる", entityDetail: "Entity 詳細", id: "ID", shownRelations: "表示中の Relation", datasetRelations: "Dataset の Relation", dangerZone: "危険な操作", relatedRelations: "関連する Relation:", deleteEntity: "Entity を削除", closeEntityDetail: "Entity 詳細を閉じる",
@@ -316,10 +316,10 @@ function formatLegacyEntityIncidentWarning(locale: Locale, count: number): strin
     : `This Entity is connected by ${count} Relation${count === 1 ? "" : "s"}. Delete those Relations before deleting this Entity.`;
 }
 
-export function formatEntityIncidentWarning(locale: Locale, count: number): string {
+export function formatEntityIncidentWarning(locale: Locale, _count: number): string {
   return locale === "ja"
-    ? `\u3053\u306e\u30a8\u30f3\u30c6\u30a3\u30c6\u30a3\u306b\u306f ${count} \u4ef6\u306e\u3064\u306a\u304c\u308a\u304c\u3042\u308a\u307e\u3059\u3002\u30a8\u30f3\u30c6\u30a3\u30c6\u30a3\u3092\u524a\u9664\u3059\u308b\u524d\u306b\u3064\u306a\u304c\u308a\u3092\u524a\u9664\u3057\u3066\u304f\u3060\u3055\u3044\u3002`
-    : `This Entity is connected by ${count} Relation${count === 1 ? "" : "s"}. Delete those Relations before deleting this Entity.`;
+    ? "このエンティティに接続しているつながりがあります。エンティティを削除する前に、これらのつながりを削除してください。"
+    : "This Entity has connected Relations. Remove these Relations before deleting the Entity.";
 }
 
 export type ConfirmationSubject = "Entity" | "Relation";

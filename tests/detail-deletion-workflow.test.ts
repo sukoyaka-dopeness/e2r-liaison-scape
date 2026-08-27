@@ -38,12 +38,12 @@ function WorkflowHarness({ useWorkflow }: { useWorkflow: (options: any) => any }
   return React.createElement(React.Fragment, null,
     React.createElement("button", { "data-testid": "delete-entity", type: "button", onClick: workflow.removeSelectedEntity }, "Delete selected Entity"),
     resolution?.entity && !workflow.detailOpen ? React.createElement("section", { "data-testid": "resolution", className: "entity-deletion-resolution" },
-      resolution.relations.length === 0 ? React.createElement("p", null, "All blocking Relations have been resolved") : null,
+      resolution.relations.length === 0 ? React.createElement("p", null, "All Relations connected to this Entity have been removed") : null,
       resolution.relations.map((relation) => React.createElement("article", { "data-relation-id": relation.id, key: relation.id },
         React.createElement("button", { type: "button", onClick: () => workflow.inspectBlockingRelation(relation.id) }, "Inspect Relation"),
       )),
-      resolution.relations.length === 0 ? React.createElement("button", { type: "button", className: "danger-action", onClick: workflow.removeSelectedEntity }, "Delete Entity") : null,
       React.createElement("button", { type: "button", onClick: workflow.cancelEntityDeletionResolution }, "Keep Entity"),
+      resolution.relations.length === 0 ? React.createElement("button", { type: "button", className: "danger-action", onClick: workflow.removeSelectedEntity }, "Delete Entity") : null,
     ) : null,
     workflow.detailOpen && workflow.selectedRelationDetail ? React.createElement("button", { "data-testid": "delete-relation", type: "button", onClick: workflow.removeSelectedRelation }, "Delete inspected Relation") : null,
     workflow.deleteConfirmation ? React.createElement("div", { className: `confirmation-${workflow.deleteConfirmation}` },
@@ -102,7 +102,7 @@ test("resolves each incident Relation before explicit Entity deletion", async ()
     await deleteInspected("event-relation");
 
     assert.equal(container.querySelectorAll("[data-relation-id]").length, 0);
-    assert.match(container.textContent ?? "", /All blocking Relations have been resolved/);
+    assert.match(container.textContent ?? "", /All Relations connected to this Entity have been removed/);
     assert.equal(container.querySelector('[data-testid="entity-count"]')?.textContent, "2");
 
     await act(async () => button(container, ".entity-deletion-resolution .danger-action").click());

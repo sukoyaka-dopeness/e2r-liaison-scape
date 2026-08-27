@@ -240,6 +240,25 @@ test("keeps Entity deletion blocker resolution explicit and Relation-scoped", ()
   assert.match(i18n, /entityDeletionResolutionInspect:/);
 });
 
+test("keeps Entity deletion presentation safe-first and human-facing", () => {
+  const resolution = readFileSync("src/components/EntityDeletionResolutionDialog.tsx", "utf8");
+  const i18n = readFileSync("src/i18n.ts", "utf8");
+  const styles = readFileSync("src/styles.css", "utf8");
+
+  const header = resolution.slice(resolution.indexOf('<div className="detail-header">'), resolution.indexOf("</div>", resolution.indexOf('<div className="detail-header">')));
+  assert.doesNotMatch(header, /entityDeletionResolutionKeep/);
+  assert.match(resolution, /className="detail-actions entity-deletion-resolution__actions"/);
+  assert.ok(resolution.indexOf('translate(locale, "entityDeletionResolutionKeep")') < resolution.indexOf('translate(locale, "entityDeleteAction")'));
+  assert.doesNotMatch(i18n, /blocker/i);
+  assert.match(i18n, /This Entity has connected Relations\. Remove these Relations before deleting the Entity\./);
+  assert.match(i18n, /このエンティティに接続しているつながりがあります。エンティティを削除する前に、これらのつながりを削除してください。/);
+  assert.match(i18n, /All Relations connected to this Entity have been removed\. You can now delete the Entity\./);
+  assert.match(i18n, /このエンティティに接続しているつながりはすべて削除されました。このエンティティを削除できます。/);
+  assert.match(styles, /\.entity-deletion-resolution__actions \{ gap: 12px; \}/);
+  assert.match(styles, /\.entity-deletion-resolution__actions \{ align-items: stretch; flex-direction: column; gap: 8px; \}/);
+  assert.match(styles, /\.entity-deletion-resolution__actions button \{ width: 100%; \}/);
+});
+
 test("contains Entity deletion focus and restores safe workflow targets", () => {
   const app = readFileSync("src/App.tsx", "utf8");
   const workflow = readFileSync("src/hooks/useDetailDeletionWorkflow.ts", "utf8");

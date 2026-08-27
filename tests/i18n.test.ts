@@ -100,8 +100,8 @@ test("dictionary contains the foundation messages for both locales", () => {
   assert.equal(translate("ja", "entityDetailTitle"), "エンティティの詳細");
   assert.equal(translate("ja", "relationDetailTitle"), "つながりの詳細");
   assert.equal(translate("ja", "detailSaveChanges"), "変更を保存");
-  assert.equal(formatEntityIncidentWarning("ja", 1), "このエンティティには 1 件のつながりがあります。エンティティを削除する前につながりを削除してください。");
-  assert.equal(formatEntityIncidentWarning("ja", 2), "このエンティティには 2 件のつながりがあります。エンティティを削除する前につながりを削除してください。");
+  assert.equal(formatEntityIncidentWarning("en", 1), "This Entity has connected Relations. Remove these Relations before deleting the Entity.");
+  assert.equal(formatEntityIncidentWarning("ja", 2), "このエンティティに接続しているつながりがあります。エンティティを削除する前に、これらのつながりを削除してください。");
   assert.equal(translate("en", "automaticRoute"), "Use automatic route");
   assert.equal(translate("en", "automaticLabelPosition"), "Use automatic label position");
   assert.equal(translate("ja", "automaticRoute"), "自動ルートに戻す");
