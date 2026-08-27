@@ -11,6 +11,15 @@ LiaisonScape is an E2R application for relationship-oriented exploration and
 editing. Preserve compatibility with the sibling `../e2r-spec` repository and
 keep application behavior separate from E2R Core semantics.
 
+## Application modularization policy
+
+Apply the workspace Decision in
+`ai-knowledge/decisions/application-modularization-and-incremental-extraction.md`.
+Prefer bounded, responsibility-based extraction when new workflow would
+otherwise enlarge `src/App.tsx`, especially around Detail and deletion
+orchestration. Do not perform a wholesale rewrite, split files mechanically,
+or change accepted graph interaction and Dataset semantics for modularization.
+
 ## Git Checkpoint Policy
 
 Codex may create local commits for one bounded logical checkpoint when it is
