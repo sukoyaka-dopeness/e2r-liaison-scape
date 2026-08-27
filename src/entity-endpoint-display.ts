@@ -1,5 +1,7 @@
 import type { E2RObject } from "./models";
 
+const MIN_ENTITY_ENDPOINT_ID_HINT_LENGTH = 8;
+
 function trimmedName(entity: E2RObject): string | null {
   if (typeof entity.name !== "string") return null;
   const name = entity.name.trim();
@@ -7,7 +9,7 @@ function trimmedName(entity: E2RObject): string | null {
 }
 
 function minimumUniquePrefix(id: string, duplicateIds: string[]): string {
-  for (let length = 1; length <= id.length; length += 1) {
+  for (let length = Math.min(MIN_ENTITY_ENDPOINT_ID_HINT_LENGTH, id.length); length <= id.length; length += 1) {
     const prefix = id.slice(0, length);
     if (duplicateIds.every((duplicateId) => duplicateId === id || !duplicateId.startsWith(prefix))) return prefix;
   }
