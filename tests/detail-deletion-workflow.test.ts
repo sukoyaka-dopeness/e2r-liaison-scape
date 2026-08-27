@@ -52,6 +52,7 @@ function WorkflowHarness({ useWorkflow }: { useWorkflow: (options: any) => any }
     ) : null,
     React.createElement("output", { "data-testid": "entity-count" }, dataset.entities.length),
     React.createElement("output", { "data-testid": "relation-count" }, dataset.relations.length),
+    React.createElement("output", { "data-testid": "resolution-focus-request" }, JSON.stringify(workflow.entityDeletionResolutionFocusRequest)),
   );
 }
 
@@ -93,6 +94,7 @@ test("resolves each incident Relation before explicit Entity deletion", async ()
     assert.ok(container.querySelector(".confirmation-relation"));
     await act(async () => button(container, ".confirmation-relation .cancel").click());
     assert.equal(container.querySelector('[data-relation-id="self-relation"]') !== null, true);
+    assert.deepEqual(JSON.parse(container.querySelector('[data-testid="resolution-focus-request"]')?.textContent ?? "{}"), { relationId: "self-relation", requestId: 1 });
 
     await deleteInspected("self-relation");
     assert.equal(container.querySelectorAll("[data-relation-id]").length, 2);
@@ -105,6 +107,10 @@ test("resolves each incident Relation before explicit Entity deletion", async ()
 
     await act(async () => button(container, ".entity-deletion-resolution .danger-action").click());
     assert.ok(container.querySelector(".confirmation-entity"));
+    await act(async () => button(container, ".confirmation-entity .cancel").click());
+    assert.equal(container.querySelector('[data-testid="entity-count"]')?.textContent, "2");
+    assert.deepEqual(JSON.parse(container.querySelector('[data-testid="resolution-focus-request"]')?.textContent ?? "{}"), { relationId: null, requestId: 2 });
+    await act(async () => button(container, ".entity-deletion-resolution .danger-action").click());
     await act(async () => button(container, ".confirmation-entity .danger-confirm").click());
     assert.equal(container.querySelector('[data-testid="entity-count"]')?.textContent, "1");
     assert.equal(container.querySelector('[data-testid="relation-count"]')?.textContent, "0");

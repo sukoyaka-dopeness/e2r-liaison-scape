@@ -240,6 +240,22 @@ test("keeps Entity deletion blocker resolution explicit and Relation-scoped", ()
   assert.match(i18n, /entityDeletionResolutionInspect:/);
 });
 
+test("contains Entity deletion focus and restores safe workflow targets", () => {
+  const app = readFileSync("src/App.tsx", "utf8");
+  const workflow = readFileSync("src/hooks/useDetailDeletionWorkflow.ts", "utf8");
+  const resolution = readFileSync("src/components/EntityDeletionResolutionDialog.tsx", "utf8");
+
+  assert.match(app, /!entityDeletionResolution\) return/);
+  assert.match(app, /dialogs\.at\(-1\)/);
+  assert.match(app, /event\.shiftKey/);
+  assert.match(app, /focusRequest=\{entityDeletionResolutionFocusRequest\}/);
+  assert.match(workflow, /setEntityDeletionResolutionFocusRequest/);
+  assert.match(workflow, /relationId: deleteConfirmation === "relation" \? selectedRelationId : null/);
+  assert.match(resolution, /focusRequest\.requestId === 0/);
+  assert.match(resolution, /relationTriggerRefs\.current\.get\(focusRequest\.relationId\)\?\.focus\(\)/);
+  assert.match(resolution, /keepEntityRef\.current\?\.focus\(\)/);
+});
+
 test("focuses the safe action when Delete Confirmation opens", () => {
   const confirmation = readFileSync("src/components/ConfirmationDialog.tsx", "utf8");
   assert.match(confirmation, /useRef/);

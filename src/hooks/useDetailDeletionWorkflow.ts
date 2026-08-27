@@ -5,6 +5,7 @@ import { assessEntityDeletion, deleteEntity, getEntityDetail, updateEntityDetail
 import { assessRelationDeletion, deleteRelation, getRelationDetail, updateRelation } from "../services/RelationService";
 
 type DetailKind = "entity" | "relation";
+type EntityDeletionResolutionFocusRequest = { relationId: string | null; requestId: number };
 
 type DetailDeletionWorkflowOptions = {
   dataset: Dataset | null;
@@ -42,6 +43,7 @@ export function useDetailDeletionWorkflow({
   const [deleteConfirmation, setDeleteConfirmation] = useState<DetailKind | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
   const [entityDeletionResolutionId, setEntityDeletionResolutionId] = useState<string | null>(null);
+  const [entityDeletionResolutionFocusRequest, setEntityDeletionResolutionFocusRequest] = useState<EntityDeletionResolutionFocusRequest>({ relationId: null, requestId: 0 });
 
   const selectedDetail = dataset && selectedId ? getEntityDetail(dataset, selectedId) : null;
   const selectedRelationDetail = dataset && selectedRelationId ? getRelationDetail(dataset, selectedRelationId) : null;
@@ -146,6 +148,12 @@ export function useDetailDeletionWorkflow({
   }
 
   function cancelDeletion() {
+    if (entityDeletionResolutionId !== null) {
+      setEntityDeletionResolutionFocusRequest(({ requestId }) => ({
+        relationId: deleteConfirmation === "relation" ? selectedRelationId : null,
+        requestId: requestId + 1,
+      }));
+    }
     setDeleteConfirmation(null);
     if (entityDeletionResolutionId !== null && selectedRelationId !== null) returnToEntityDeletionResolution();
   }
@@ -262,6 +270,7 @@ export function useDetailDeletionWorkflow({
     detailDismissal,
     deleteConfirmation,
     entityDeletionResolution,
+    entityDeletionResolutionFocusRequest,
     meaningfulEntityDetailDraft,
     meaningfulRelationDetailDraft,
     closeDetail,

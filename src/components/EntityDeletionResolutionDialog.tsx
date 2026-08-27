@@ -11,9 +11,10 @@ type Props = {
   onInspectRelation: (relationId: string) => void;
   onKeepEntity: () => void;
   onDeleteEntity: () => void;
+  focusRequest: { relationId: string | null; requestId: number };
 };
 
-export function EntityDeletionResolutionDialog({ locale, dataset, entity, relations, onInspectRelation, onKeepEntity, onDeleteEntity }: Props) {
+export function EntityDeletionResolutionDialog({ locale, dataset, entity, relations, onInspectRelation, onKeepEntity, onDeleteEntity, focusRequest }: Props) {
   const keepEntityRef = useRef<HTMLButtonElement>(null);
   const relationTriggerRefs = useRef(new Map<string, HTMLButtonElement>());
   const previousRelationIds = useRef(relations.map(({ id }) => id));
@@ -36,6 +37,12 @@ export function EntityDeletionResolutionDialog({ locale, dataset, entity, relati
     }
     previousRelationIds.current = currentIds;
   }, [relations]);
+
+  useEffect(() => {
+    if (focusRequest.requestId === 0) return;
+    if (focusRequest.relationId) relationTriggerRefs.current.get(focusRequest.relationId)?.focus();
+    else keepEntityRef.current?.focus();
+  }, [focusRequest]);
 
   return <>
     <button className="detail-backdrop entity-deletion-resolution-backdrop" type="button" aria-label={translate(locale, "entityDeletionResolutionKeep")} onClick={onKeepEntity} />

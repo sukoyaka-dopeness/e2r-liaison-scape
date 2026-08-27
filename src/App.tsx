@@ -122,6 +122,7 @@ export default function App() {
     detailDismissal,
     deleteConfirmation,
     entityDeletionResolution,
+    entityDeletionResolutionFocusRequest,
     meaningfulEntityDetailDraft,
     meaningfulRelationDetailDraft,
     closeDetail,
@@ -630,7 +631,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (!detailOpen && !creationMode && !deleteConfirmation && !detailDismissal && !creditsOpen) return;
+    if (!detailOpen && !creationMode && !deleteConfirmation && !detailDismissal && !creditsOpen && !entityDeletionResolution) return;
     const trapFocus = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return;
       const dialogs = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"]'));
@@ -650,7 +651,7 @@ export default function App() {
     };
     document.addEventListener("keydown", trapFocus, true);
     return () => document.removeEventListener("keydown", trapFocus, true);
-  }, [creationMode, deleteConfirmation, detailDismissal, detailOpen, creditsOpen]);
+  }, [creationMode, deleteConfirmation, detailDismissal, detailOpen, creditsOpen, entityDeletionResolution]);
 
   useEffect(() => {
     if (!creditsOpen) return;
@@ -1590,6 +1591,7 @@ export default function App() {
         onInspectRelation={inspectBlockingRelation}
         onKeepEntity={cancelEntityDeletionResolution}
         onDeleteEntity={removeSelectedEntity}
+        focusRequest={entityDeletionResolutionFocusRequest}
       />}
       {dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={cancelDeletion} onConfirm={confirmDeletion} />}
       {dataset && (
