@@ -175,3 +175,20 @@ test("guards dirty Entity and Relation Detail dismissal without changing draft s
   assert.match(i18n, /discardDetailDraft: "Discard Changes"/);
   assert.match(i18n, /detailDismissalTitle: "未保存の変更を破棄しますか？"/);
 });
+
+test("guards dirty Creation Escape while preserving explicit Cancel semantics", () => {
+  const app = readFileSync("src/App.tsx", "utf8");
+  const creation = readFileSync("src/components/CreationDialog.tsx", "utf8");
+  const confirmation = readFileSync("src/components/CreationDismissalConfirmation.tsx", "utf8");
+  const i18n = readFileSync("src/i18n.ts", "utf8");
+  assert.match(app, /const meaningfulCreationDraft = creationMode !== null/);
+  assert.match(app, /if \(meaningfulCreationDraft\) setCreationDismissal\(true\)/);
+  assert.match(app, /onCancel=\{discardCreationDraft\}/);
+  assert.match(app, /<CreationDismissalConfirmation/);
+  assert.match(creation, /onCancel: \(\) => void/);
+  assert.match(confirmation, /event\.key === "Escape"/);
+  assert.match(confirmation, /cancelRef\.current\?\.focus\(\)/);
+  assert.match(confirmation, /discardCreationDraft/);
+  assert.match(i18n, /creationDismissalMessage: "You have unsaved changes for this new object\./);
+  assert.match(i18n, /discardCreationDraft: "Discard and Close"/);
+});

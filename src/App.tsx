@@ -11,6 +11,7 @@ import { getRelationDetail, updateRelation } from "./services/RelationService";
 import { canCompleteLongPress, createCanvasContextMenu, draggedPointFromOrigin, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, svgPointFromPointer, type ContextMenu } from "./direct-graph-authoring";
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
 import { DetailDismissalConfirmation } from "./components/DetailDismissalConfirmation";
+import { CreationDismissalConfirmation } from "./components/CreationDismissalConfirmation";
 import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
 import { CreditsDialog } from "./components/CreditsDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
@@ -71,6 +72,7 @@ export default function App() {
   const [creationDescription, setCreationDescription] = useState("");
   const [creationSource, setCreationSource] = useState("");
   const [creationTarget, setCreationTarget] = useState("");
+  const [creationDismissal, setCreationDismissal] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const [contextMenuPosition, setContextMenuPosition] = useState<{ left: number; top: number } | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
@@ -395,12 +397,13 @@ export default function App() {
   }
   const selectedDetail = dataset && selectedId ? getEntityDetail(dataset, selectedId) : null;
   const selectedRelationDetail = dataset && selectedRelationId ? getRelationDetail(dataset, selectedRelationId) : null;
+  const meaningfulCreationDraft = creationMode !== null && [creationName, creationDescription, creationSource, creationTarget].some((value) => value.trim().length > 0);
   const pendingUserWork = hasPendingUserWork({
     unsavedCoordinates: coordinatesDirty,
     manualRelationRoute: Object.keys(edgeCurveOffsets).length > 0 || Object.keys(selfLoopOverrides).length > 0,
     manualRelationLabel: manualRelationLabelAnchors.current.size > 0,
     manualNodeLabel: manualNodeLabelOffsets.current.size > 0,
-    meaningfulCreationDraft: creationMode !== null && [creationName, creationDescription, creationSource, creationTarget].some((value) => value.trim().length > 0),
+    meaningfulCreationDraft,
     meaningfulEntityDetailDraft: detailOpen && selectedDetail !== null && (
       entityNameDraft !== (typeof selectedDetail.entity.name === "string" ? selectedDetail.entity.name : "")
       || entityDescriptionDraft !== (typeof selectedDetail.entity.description === "string" ? selectedDetail.entity.description : "")
@@ -425,6 +428,15 @@ export default function App() {
         || relationTargetDraft !== selectedRelationDetail?.targetId;
     if (dirty) setDetailDismissal(kind);
     else setDetailOpen(false);
+  }
+  function discardCreationDraft() {
+    setCreationMode(null);
+    setCreationDismissal(false);
+    setPendingEntityPlacement(null);
+    setCreationName("");
+    setCreationDescription("");
+    setCreationSource("");
+    setCreationTarget("");
   }
   const replacementLossRisk = hasDocumentExitLossRisk(datasetModified, pendingUserWork);
   useEffect(() => {
@@ -553,6 +565,18 @@ export default function App() {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [deleteConfirmation, detailDismissal, detailOpen]);
+
+  useEffect(() => {
+    if (!creationMode || creationDismissal) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      if (meaningfulCreationDraft) setCreationDismissal(true);
+      else discardCreationDraft();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [creationDismissal, creationMode, meaningfulCreationDraft]);
 
   useEffect(() => {
     if (!relationCreationPreview) return;
@@ -1628,9 +1652,10 @@ export default function App() {
           onSourceChange={setCreationSource}
           onTargetChange={setCreationTarget}
           onSave={saveCreation}
-          onCancel={() => { setCreationMode(null); setPendingEntityPlacement(null); }}
+          onCancel={discardCreationDraft}
         />
       )}
+      {dataset && creationDismissal && <CreationDismissalConfirmation locale={locale} onCancel={() => setCreationDismissal(false)} onDiscard={discardCreationDraft} />}
       {replacementDialog}
       {dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={() => setDeleteConfirmation(null)} onConfirm={confirmDeletion} />}
       {dataset && (
