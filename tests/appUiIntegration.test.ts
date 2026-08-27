@@ -192,3 +192,12 @@ test("guards dirty Creation Escape while preserving explicit Cancel semantics", 
   assert.match(i18n, /creationDismissalMessage: "You have unsaved changes for this new object\./);
   assert.match(i18n, /discardCreationDraft: "Discard and Close"/);
 });
+
+test("focuses the safe action when Delete Confirmation opens", () => {
+  const confirmation = readFileSync("src/components/ConfirmationDialog.tsx", "utf8");
+  assert.match(confirmation, /useRef/);
+  assert.match(confirmation, /cancelRef\.current\?\.focus\(\)/);
+  assert.match(confirmation, /<button ref=\{cancelRef\} type="button"/);
+  assert.match(confirmation, /Cancel/);
+  assert.match(confirmation, /danger-confirm/);
+});
