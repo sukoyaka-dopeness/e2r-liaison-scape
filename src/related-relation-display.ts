@@ -1,6 +1,7 @@
 import type { Dataset, E2RObject } from "./models";
 
 export type RelatedRelationDisplay = { relationName: string | null; source: string; target: string; relationId: string };
+export type RelationBlockerDisplay = RelatedRelationDisplay & { relationIdHint?: string; hiddenFromGraph: boolean };
 
 function trimmedName(object: E2RObject | undefined): string | null {
   if (typeof object?.name !== "string") return null;
@@ -33,4 +34,29 @@ export function buildRelatedRelationDisplay(dataset: Dataset, relation: E2RObjec
     if (name) names.set(name, [...(names.get(name) ?? []), object.id]);
   }
   return { relationName: trimmedName(relation), source: endpointDisplay(relation.sourceId, objects, names), target: endpointDisplay(relation.targetId, objects, names), relationId: relation.id };
+}
+
+function shortRelationId(id: string, ids: string[]): string {
+  for (let length = 8; length <= id.length; length += 1) {
+    const candidate = id.slice(0, length);
+    if (ids.every((other) => other === id || !other.startsWith(candidate))) return candidate;
+  }
+  return id;
+}
+
+export function buildRelationBlockerDisplays(dataset: Dataset, relations: E2RObject[]): Map<string, RelationBlockerDisplay> {
+  const displays = relations.map((relation) => buildRelatedRelationDisplay(dataset, relation));
+  const keys = displays.map((display) => `${display.relationName ?? ""}\u0000${display.source}\u0000${display.target}`);
+  const duplicateIds = new Map<string, string[]>();
+  keys.forEach((key, index) => duplicateIds.set(key, [...(duplicateIds.get(key) ?? []), relations[index].id]));
+  return new Map(relations.map((relation, index) => {
+    const display = displays[index];
+    const ids = duplicateIds.get(keys[index]) ?? [];
+    return [relation.id, {
+      ...display,
+      ...(ids.length > 1 ? { relationIdHint: shortRelationId(relation.id, ids) } : {}),
+      hiddenFromGraph: !dataset.entities.some(({ id }) => id === relation.sourceId)
+        || !dataset.entities.some(({ id }) => id === relation.targetId),
+    }];
+  }));
 }

@@ -213,6 +213,33 @@ test("keeps Detail and deletion orchestration behind the bounded workflow contro
   assert.doesNotMatch(app, /assessRelationDeletion/);
 });
 
+test("keeps Entity deletion blocker resolution explicit and Relation-scoped", () => {
+  const app = readFileSync("src/App.tsx", "utf8");
+  const workflow = readFileSync("src/hooks/useDetailDeletionWorkflow.ts", "utf8");
+  const resolution = readFileSync("src/components/EntityDeletionResolutionDialog.tsx", "utf8");
+  const entity = readFileSync("src/components/EntityDetailDialog.tsx", "utf8");
+  const relationDisplay = readFileSync("src/related-relation-display.ts", "utf8");
+  const i18n = readFileSync("src/i18n.ts", "utf8");
+
+  assert.match(app, /<EntityDeletionResolutionDialog/);
+  assert.match(app, /!detailOpen/);
+  assert.match(workflow, /entityDeletionResolutionId/);
+  assert.match(workflow, /function inspectBlockingRelation/);
+  assert.match(workflow, /function returnToEntityDeletionResolution/);
+  assert.match(workflow, /onRelationDeleted\(result\.deletedId\)/);
+  assert.match(resolution, /buildRelationBlockerDisplays/);
+  assert.match(resolution, /onInspectRelation/);
+  assert.match(resolution, /onDeleteEntity/);
+  assert.match(resolution, /keepEntityRef\.current\?\.focus\(\)/);
+  assert.match(resolution, /previousRelationIds/);
+  assert.match(entity, /incidents\.length > 0/);
+  assert.match(entity, /onClick=\{onDelete\}/);
+  assert.match(relationDisplay, /hiddenFromGraph/);
+  assert.match(relationDisplay, /relationIdHint/);
+  assert.match(i18n, /entityDeletionResolutionTitle:/);
+  assert.match(i18n, /entityDeletionResolutionInspect:/);
+});
+
 test("focuses the safe action when Delete Confirmation opens", () => {
   const confirmation = readFileSync("src/components/ConfirmationDialog.tsx", "utf8");
   assert.match(confirmation, /useRef/);

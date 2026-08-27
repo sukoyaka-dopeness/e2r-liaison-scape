@@ -41,13 +41,21 @@ export function useDetailDeletionWorkflow({
   const [detailDismissal, setDetailDismissal] = useState<DetailKind | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<DetailKind | null>(null);
   const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
+  const [entityDeletionResolutionId, setEntityDeletionResolutionId] = useState<string | null>(null);
 
   const selectedDetail = dataset && selectedId ? getEntityDetail(dataset, selectedId) : null;
   const selectedRelationDetail = dataset && selectedRelationId ? getRelationDetail(dataset, selectedRelationId) : null;
+  const entityDeletionResolution = dataset && entityDeletionResolutionId
+    ? {
+      entity: dataset.entities.find(({ id }) => id === entityDeletionResolutionId) ?? null,
+      relations: dataset.relations.filter(({ sourceId, targetId }) => sourceId === entityDeletionResolutionId || targetId === entityDeletionResolutionId),
+    }
+    : null;
+  const entityDraftObject = selectedDetail?.entity ?? entityDeletionResolution?.entity ?? null;
 
-  const meaningfulEntityDetailDraft = detailOpen && selectedDetail !== null && (
-    entityNameDraft !== (typeof selectedDetail.entity.name === "string" ? selectedDetail.entity.name : "")
-    || entityDescriptionDraft !== (typeof selectedDetail.entity.description === "string" ? selectedDetail.entity.description : "")
+  const meaningfulEntityDetailDraft = (detailOpen || (entityDeletionResolution !== null && entityDeletionResolution.entity !== null)) && entityDraftObject !== null && (
+    entityNameDraft !== (typeof entityDraftObject.name === "string" ? entityDraftObject.name : "")
+    || entityDescriptionDraft !== (typeof entityDraftObject.description === "string" ? entityDraftObject.description : "")
   );
   const meaningfulRelationDetailDraft = detailOpen && selectedRelationDetail !== null && (
     relationNameDraft !== (typeof selectedRelationDetail.relation.name === "string" ? selectedRelationDetail.relation.name : "")
@@ -65,8 +73,17 @@ export function useDetailDeletionWorkflow({
   }
 
   function discardDetailDraft() {
+    const returnToResolution = detailDismissal === "relation" && entityDeletionResolutionId !== null;
     setDetailDismissal(null);
     setDetailOpen(false);
+    if (returnToResolution) returnToEntityDeletionResolution();
+  }
+
+  function returnToEntityDeletionResolution() {
+    if (!entityDeletionResolutionId) return;
+    setDetailOpen(false);
+    onSelectRelation(null);
+    onSelectEntity(entityDeletionResolutionId);
   }
 
   function requestDetailDismissal() {
@@ -80,6 +97,7 @@ export function useDetailDeletionWorkflow({
         || relationSourceDraft !== selectedRelationDetail?.sourceId
         || relationTargetDraft !== selectedRelationDetail?.targetId;
     if (dirty) setDetailDismissal(kind);
+    else if (kind === "relation" && entityDeletionResolutionId !== null) returnToEntityDeletionResolution();
     else setDetailOpen(false);
   }
 
@@ -95,7 +113,8 @@ export function useDetailDeletionWorkflow({
     });
     if ("refusal" in result) { onMessage(formatRelationUpdateRefusal(locale, result.refusal)); return; }
     onDatasetUpdate(result.dataset);
-    setDetailOpen(false);
+    if (entityDeletionResolutionId !== null) returnToEntityDeletionResolution();
+    else setDetailOpen(false);
     onMessage("");
   }
 
@@ -114,6 +133,10 @@ export function useDetailDeletionWorkflow({
     const assessment = assessEntityDeletion(dataset, entityId);
     if (!assessment.ready) {
       onMessage(assessment.incidentRelationCount ? formatEntityIncidentWarning(locale, assessment.incidentRelationCount) : formatEntityDeletionRefusal(locale, assessment.reason));
+      if (assessment.incidentRelationCount) {
+        setEntityDeletionResolutionId(entityId);
+        setDetailOpen(false);
+      }
       return;
     }
     setDeleteConfirmationId(entityId);
@@ -124,18 +147,19 @@ export function useDetailDeletionWorkflow({
 
   function cancelDeletion() {
     setDeleteConfirmation(null);
+    if (entityDeletionResolutionId !== null && selectedRelationId !== null) returnToEntityDeletionResolution();
   }
 
   function confirmDeletion() {
     if (!dataset || !deleteConfirmation || !deleteConfirmationId) return;
     if (deleteConfirmation === "relation") {
       const result = deleteRelation(dataset, deleteConfirmationId);
-      if (!result.deleted) { onMessage(formatRelationDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); return; }
+      if (!result.deleted) { onMessage(formatRelationDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); if (entityDeletionResolutionId !== null) returnToEntityDeletionResolution(); return; }
       onRelationDeleted(result.deletedId);
       onDatasetUpdate(result.dataset);
-      onSelectRelation(null);
-      setDetailOpen(false);
       setDeleteConfirmation(null);
+      if (entityDeletionResolutionId !== null) returnToEntityDeletionResolution();
+      else { onSelectRelation(null); setDetailOpen(false); }
       onMessage("");
       return;
     }
@@ -145,6 +169,7 @@ export function useDetailDeletionWorkflow({
       onEntityDeleted(result.deletedId);
       onDatasetUpdate(result.dataset);
       onSelectEntity(null);
+      setEntityDeletionResolutionId(null);
       setDetailOpen(false);
       setDeleteConfirmation(null);
       onMessage("");
@@ -171,6 +196,28 @@ export function useDetailDeletionWorkflow({
     setRelationDescriptionDraft(typeof relation.description === "string" ? relation.description : "");
     setRelationSourceDraft(typeof relation.sourceId === "string" ? relation.sourceId : "");
     setRelationTargetDraft(typeof relation.targetId === "string" ? relation.targetId : "");
+    setDetailOpen(true);
+  }
+
+  function inspectBlockingRelation(relationId: string) {
+    if (!entityDeletionResolutionId) return;
+    const relation = dataset?.relations.find(({ id }) => id === relationId);
+    if (!relation) return;
+    onSelectRelation(relationId);
+    onSelectEntity(null);
+    setRelationNameDraft(typeof relation.name === "string" ? relation.name : "");
+    setRelationDescriptionDraft(typeof relation.description === "string" ? relation.description : "");
+    setRelationSourceDraft(typeof relation.sourceId === "string" ? relation.sourceId : "");
+    setRelationTargetDraft(typeof relation.targetId === "string" ? relation.targetId : "");
+    setDetailOpen(true);
+  }
+
+  function cancelEntityDeletionResolution() {
+    const entityId = entityDeletionResolutionId;
+    if (!entityId) return;
+    setEntityDeletionResolutionId(null);
+    onSelectRelation(null);
+    onSelectEntity(entityId);
     setDetailOpen(true);
   }
 
@@ -214,6 +261,7 @@ export function useDetailDeletionWorkflow({
     detailOpen,
     detailDismissal,
     deleteConfirmation,
+    entityDeletionResolution,
     meaningfulEntityDetailDraft,
     meaningfulRelationDetailDraft,
     closeDetail,
@@ -229,5 +277,7 @@ export function useDetailDeletionWorkflow({
     openEntityDetail,
     openRelationDetail,
     openRelatedRelation,
+    inspectBlockingRelation,
+    cancelEntityDeletionResolution,
   };
 }

@@ -13,6 +13,7 @@ import { CreationDismissalConfirmation } from "./components/CreationDismissalCon
 import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
 import { CreditsDialog } from "./components/CreditsDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
+import { EntityDeletionResolutionDialog } from "./components/EntityDeletionResolutionDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
@@ -120,6 +121,7 @@ export default function App() {
     detailOpen,
     detailDismissal,
     deleteConfirmation,
+    entityDeletionResolution,
     meaningfulEntityDetailDraft,
     meaningfulRelationDetailDraft,
     closeDetail,
@@ -135,6 +137,8 @@ export default function App() {
     openEntityDetail,
     openRelationDetail,
     openRelatedRelation,
+    inspectBlockingRelation,
+    cancelEntityDeletionResolution,
   } = useDetailDeletionWorkflow({
     dataset,
     locale,
@@ -1578,6 +1582,15 @@ export default function App() {
       )}
       {dataset && creationDismissal && <CreationDismissalConfirmation locale={locale} onCancel={() => setCreationDismissal(false)} onDiscard={discardCreationDraft} />}
       {replacementDialog}
+      {dataset && entityDeletionResolution?.entity && !detailOpen && <EntityDeletionResolutionDialog
+        locale={locale}
+        dataset={dataset}
+        entity={entityDeletionResolution.entity}
+        relations={entityDeletionResolution.relations}
+        onInspectRelation={inspectBlockingRelation}
+        onKeepEntity={cancelEntityDeletionResolution}
+        onDeleteEntity={removeSelectedEntity}
+      />}
       {dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={cancelDeletion} onConfirm={confirmDeletion} />}
       {dataset && (
         <dl className="dataset-metadata" aria-label={translate(locale, "datasetMetadata")}>

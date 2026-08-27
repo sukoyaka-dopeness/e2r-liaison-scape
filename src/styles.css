@@ -241,6 +241,14 @@ li { margin: .35rem 0; }
 .detail-danger button { border-color: #fca5a5; color: #991b1b; background: #fff7f7; }
 .detail-danger button:hover:not(:disabled) { border-color: #dc2626; background: #fee2e2; }
 .detail-danger.relation-danger { justify-content: flex-end; }
+.entity-deletion-resolution-backdrop { z-index: 20; }
+.detail.entity-deletion-resolution { z-index: 22; width: min(46rem, calc(100% - 32px)); }
+.entity-deletion-resolution__entity { margin: 16px 0 0; color: #08060d; font-weight: 650; }
+.entity-deletion-resolution__relations { display: grid; gap: 8px; margin-top: 16px; }
+.entity-deletion-resolution__relation { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #e5e4e7; border-radius: 6px; background: #fafafa; }
+.entity-deletion-resolution__identity { display: grid; min-width: 0; gap: 2px; }
+.entity-deletion-resolution__identity span { overflow-wrap: anywhere; }
+.entity-deletion-resolution__id-hint { color: #6b6375; font-size: .78rem; }
 .confirmation { width: min(42rem, calc(100% - 32px)); }
 .replacement-confirmation .detail-actions { flex-wrap: nowrap; gap: 8px; }
 .replacement-confirmation .detail-actions button { white-space: nowrap; }
@@ -302,6 +310,8 @@ li { margin: .35rem 0; }
   .detail dd { margin-bottom: 8px; }
   .detail-danger.relation-danger { justify-content: stretch; }
   .detail-danger.relation-danger button { width: 100%; }
+  .entity-deletion-resolution__relation { grid-template-columns: 1fr; }
+  .entity-deletion-resolution__relation > button { width: 100%; }
   .dataset-metadata dd { margin-bottom: 6px; }
 }
 @container (max-width: 300px) {
