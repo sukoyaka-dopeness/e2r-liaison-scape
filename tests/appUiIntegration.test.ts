@@ -155,6 +155,9 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.match(styles, /\.viewport-controls \{[^}]*width: max-content;/);
   assert.match(styles, /\.viewport-toolbar-actions \{[^}]*flex: 0 0 auto;[^}]*flex-wrap: nowrap;/);
   assert.match(styles, /\.viewport-toolbar-actions > button,\s*\.viewport-toolbar-actions > span \{[^}]*white-space: nowrap;/);
+  assert.match(styles, /\.viewport-toolbar-handle-tooltip \{[^}]*position: absolute;[^}]*display: none;[^}]*pointer-events: none;/);
+  assert.match(styles, /\.viewport-toolbar-handle-tooltip \{[^}]*font-weight: 600;[^}]*white-space: pre-line;/);
+  assert.match(styles, /\.viewport-toolbar-handle:hover \+ \.viewport-toolbar-handle-tooltip,\s*\.viewport-toolbar-handle:focus \+ \.viewport-toolbar-handle-tooltip \{[^}]*display: block;/);
   assert.match(styles, /@media \(max-width: 600px\)/);
 });
 
@@ -205,15 +208,21 @@ test("implements the collapsible viewport toolbar interaction contract", async (
     const toolbar = environment.document.querySelector(".viewport-controls") as HTMLDivElement;
     const graph = environment.document.querySelector(".graph") as SVGSVGElement;
     const handle = environment.document.querySelector(".viewport-toolbar-handle") as HTMLButtonElement;
+    const tooltip = environment.document.querySelector(".viewport-toolbar-handle-tooltip") as HTMLSpanElement;
     const actions = environment.document.querySelector("#viewport-toolbar-actions") as HTMLDivElement;
     assert.ok(toolbar);
     assert.ok(graph);
     assert.ok(handle);
+    assert.ok(tooltip);
     assert.ok(actions);
+    assert.equal(handle.hasAttribute("title"), false);
+    assert.equal(tooltip.getAttribute("role"), "tooltip");
+    assert.equal(tooltip.getAttribute("aria-hidden"), "true");
+    assert.equal(tooltip.textContent, "Move\nCollapse");
     assert.equal(handle.getAttribute("aria-expanded"), "true");
     assert.equal(actions.hidden, false);
     assert.equal(handle.getAttribute("aria-label"), "Move or collapse viewport controls");
-    assert.equal(handle.title, "Move\nCollapse");
+    assert.equal(handle.getAttribute("aria-controls"), "viewport-toolbar-actions");
 
     let toolbarWidth = 360;
     Object.defineProperty(graph, "getBoundingClientRect", { configurable: true, value: () => ({ left: 0, top: 0, width: 800, height: 500 }) });
@@ -241,11 +250,12 @@ test("implements the collapsible viewport toolbar interaction contract", async (
     assert.equal(actions.hidden, true);
     assert.equal(actions.querySelectorAll("button").length, 3);
     assert.equal(handle.getAttribute("aria-label"), "Move or expand viewport controls");
-    assert.equal(handle.title, "Move\nExpand");
+    assert.equal(tooltip.textContent, "Move\nExpand");
 
     await act(async () => { handle.click(); });
     assert.equal(handle.getAttribute("aria-expanded"), "true");
     assert.equal(handle.getAttribute("aria-label"), "Move or collapse viewport controls");
+    assert.equal(tooltip.textContent, "Move\nCollapse");
 
     await dispatchPointer("pointerdown", 2, 10, 10);
     await dispatchPointer("pointermove", 2, 410, 10);
@@ -268,13 +278,13 @@ test("implements the collapsible viewport toolbar interaction contract", async (
     const localeButton = environment.document.querySelector(".locale-button") as HTMLButtonElement;
     await act(async () => { localeButton.click(); });
     assert.equal(handle.getAttribute("aria-label"), "表示操作を移動またはたたむ");
-    assert.equal(handle.title, "移動\nたたむ");
+    assert.equal(tooltip.textContent, "移動\nたたむ");
     assert.equal(toolbar.style.left, "300px");
 
     await act(async () => { handle.click(); });
     assert.equal(handle.getAttribute("aria-expanded"), "false");
     assert.equal(handle.getAttribute("aria-label"), "表示操作を移動または広げる");
-    assert.equal(handle.title, "移動\n広げる");
+    assert.equal(tooltip.textContent, "移動\n広げる");
   } finally {
     await environment.cleanup();
   }
