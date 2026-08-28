@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveRelationTarget } from "../src/capability-handoff.ts";
+import { resolveRelationTarget, supportsRelationHandoffCapability } from "../src/capability-handoff.ts";
 import type { Dataset } from "../src/models.ts";
 
 const dataset: Dataset = {
@@ -19,6 +19,12 @@ test("resolves the exact canonical Relation ID, including graph-hidden Relations
   const hidden = resolveRelationTarget(dataset, "relation-2");
   assert.equal(hidden.kind, "resolved");
   if (hidden.kind === "resolved") assert.equal(hidden.relation.id, "relation-2");
+});
+
+test("supports only the bounded Relation inspection and deletion Handoff capabilities", () => {
+  assert.equal(supportsRelationHandoffCapability("relation.inspect"), true);
+  assert.equal(supportsRelationHandoffCapability("relation.delete"), true);
+  assert.equal(supportsRelationHandoffCapability("relation.archive"), false);
 });
 
 test("refuses missing and type-mismatched targets without selecting a substitute", () => {

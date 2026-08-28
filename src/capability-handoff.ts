@@ -1,5 +1,11 @@
 import type { Dataset, E2RObject } from "./models";
-import type { TargetObjectType } from "./dataset-handoff";
+import type { RequiredCapability, TargetObjectType } from "./dataset-handoff";
+
+const supportedRelationHandoffCapabilities = ["relation.inspect", "relation.delete"] as const satisfies readonly RequiredCapability[];
+
+export function supportsRelationHandoffCapability(capability: string): capability is RequiredCapability {
+  return (supportedRelationHandoffCapabilities as readonly string[]).includes(capability);
+}
 
 export type RelationTargetResolution =
   | { kind: "resolved"; relation: E2RObject }

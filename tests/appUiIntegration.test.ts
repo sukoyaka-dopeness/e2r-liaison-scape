@@ -81,6 +81,50 @@ test("opens an exact targeted Relation inspection request on the existing Detail
   }
 });
 
+test("opens a targeted Relation deletion intent on the existing Detail surface without auto-confirming", async () => {
+  const relationDataset = {
+    version: "1.0",
+    entities: [{ id: "entity-1", name: "Source" }, { id: "entity-2", name: "Target" }],
+    events: [],
+    relations: [{ id: "relation-delete-target", sourceId: "entity-1", targetId: "entity-2", name: "Delete intentionally" }],
+  };
+  const environment = createDomTestEnvironment({
+    url: "https://liaisonscape.test/?handoff=delete#locale=ja&datasetUrl=https%3A%2F%2Fdata.example%2Fdataset.json&targetObjectId=relation-delete-target&targetObjectType=Relation&requiredCapability=relation.delete&targetContractVersion=1",
+  });
+  environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  environment.window.requestAnimationFrame = (callback: FrameRequestCallback) => { callback(0); return 0; };
+  environment.window.cancelAnimationFrame = () => {};
+  environment.window.scrollTo = () => {};
+  environment.window.HTMLElement.prototype.scrollIntoView = () => {};
+  environment.installGlobal("fetch", async () => ({ ok: true, text: async () => JSON.stringify(relationDataset) }));
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+
+  try {
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    environment.addCleanup(() => server.close());
+    const root = createRoot(container);
+    environment.addCleanup(() => act(async () => root.unmount()));
+    const { default: App } = await server.ssrLoadModule("/src/App.tsx");
+    await act(async () => root.render(React.createElement(App)));
+    await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+
+    assert.ok(environment.document.querySelector("#relation-detail-title"));
+    assert.match(environment.document.querySelector(".detail-object-id")?.textContent ?? "", /relation-delete-target/);
+    assert.equal(environment.document.querySelector(".confirmation-relation"), null);
+    assert.equal(environment.document.querySelector(".confirmation-entity"), null);
+    const deleteButton = environment.document.querySelector(".relation-danger button");
+    assert.ok(deleteButton);
+    assert.notEqual(environment.document.activeElement, deleteButton);
+    assert.match(environment.window.location.hash, /locale=ja/);
+
+    await act(async () => (deleteButton as HTMLButtonElement).click());
+    assert.ok(environment.document.querySelector(".confirmation-relation"));
+  } finally {
+    await environment.cleanup();
+  }
+});
+
 test("keeps the Workspace More keyboard contract and toolbar count local to the app", () => {
   const source = readFileSync("src/App.tsx", "utf8");
   assert.match(source, /firstItem\?\.focus\(\)/);

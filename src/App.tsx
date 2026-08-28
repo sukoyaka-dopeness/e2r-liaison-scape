@@ -23,7 +23,7 @@ import { composeHoverLines, placementOwnership, type PlacementTarget } from "./p
 import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
 import { canRestoreReplacementTrigger } from "./replacement-focus";
 import { clearDatasetHandoffFragment, parseTargetedDatasetHandoffFragment, type DatasetHandoffFragment } from "./dataset-handoff";
-import { resolveRelationTarget } from "./capability-handoff";
+import { resolveRelationTarget, supportsRelationHandoffCapability } from "./capability-handoff";
 import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
@@ -877,7 +877,7 @@ export default function App() {
         setMessage(translate(locale, "targetedHandoffTargetTypeMismatch"));
         return { status: "target-error" };
       }
-      if (target.requiredCapability !== "relation.inspect") {
+      if (!supportsRelationHandoffCapability(target.requiredCapability)) {
         requestDatasetReplacement(candidate, trigger, source);
         setMessage(translate(locale, "targetedHandoffCapabilityUnsupported"));
         return { status: "target-error" };
