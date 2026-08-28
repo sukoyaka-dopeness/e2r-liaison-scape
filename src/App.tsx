@@ -22,13 +22,15 @@ import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstru
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
 import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
 import { canRestoreReplacementTrigger } from "./replacement-focus";
-import { parseDatasetHandoffFragment, updateDatasetHandoffFragment } from "./dataset-handoff";
+import { clearDatasetHandoffFragment, parseTargetedDatasetHandoffFragment, type DatasetHandoffFragment } from "./dataset-handoff";
+import { resolveRelationTarget } from "./capability-handoff";
 import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
-type StartupHandoffFailure = "invalid-fragment" | "fetch-failed" | "parse-failed" | "validation-failed";
-type OpenDatasetResult = { status: "accepted-or-staged" } | { status: "parse-error" } | { status: "validation-error" };
+type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
+type OpenDatasetResult = { status: "accepted-or-staged" } | { status: "parse-error" } | { status: "validation-error" } | { status: "target-error" };
 type DatasetReplacementSource = "handoff" | "local" | "sample" | "new";
+type TargetedHandoff = Extract<DatasetHandoffFragment, { kind: "targeted" }>;
 
 export default function App() {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
@@ -42,6 +44,7 @@ export default function App() {
   const [datasetModified, setDatasetModified] = useState(false);
   const [pendingDatasetReplacement, setPendingDatasetReplacement] = useState<Dataset | null>(null);
   const [pendingDatasetReplacementSource, setPendingDatasetReplacementSource] = useState<DatasetReplacementSource | null>(null);
+  const [pendingTargetLanding, setPendingTargetLanding] = useState<{ dataset: Dataset; relationId: string } | null>(null);
   const [startupHandoffFailure, setStartupHandoffFailure] = useState<StartupHandoffFailure | null>(null);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
@@ -204,10 +207,24 @@ export default function App() {
   useEffect(() => {
     if (startupHandoffStartedRef.current) return;
     startupHandoffStartedRef.current = true;
-    const handoff = parseDatasetHandoffFragment(window.location.hash);
+    const handoff = parseTargetedDatasetHandoffFragment(window.location.hash);
     if (handoff.kind === "none") return;
     if (handoff.kind === "invalid") {
-      setStartupHandoffFailure("invalid-fragment");
+      setStartupHandoffFailure(handoff.reason === "missing-dataset-url"
+        || handoff.reason === "malformed-target-encoding"
+        || handoff.reason === "duplicate-target-object-id"
+        || handoff.reason === "empty-target-object-id"
+        || handoff.reason === "duplicate-target-object-type"
+        || handoff.reason === "unsupported-target-object-type"
+        || handoff.reason === "duplicate-required-capability"
+        || handoff.reason === "missing-required-capability"
+        || handoff.reason === "unsupported-capability"
+        || handoff.reason === "duplicate-target-contract-version"
+        || handoff.reason === "missing-target-contract-version"
+        || handoff.reason === "invalid-target-contract-version"
+        || handoff.reason === "unsupported-target-contract-version"
+        ? "targeted-invalid"
+        : "invalid-fragment");
       return;
     }
     setStartupHandoffFailure(null);
@@ -217,12 +234,18 @@ export default function App() {
         return response.text();
       })
       .then((raw) => {
-        const result = open(raw, null, "handoff");
+        const result = open(raw, null, "handoff", handoff.kind === "targeted" ? handoff : undefined);
         if (result.status === "parse-error") setStartupHandoffFailure("parse-failed");
         else if (result.status === "validation-error") setStartupHandoffFailure("validation-failed");
       })
       .catch(() => setStartupHandoffFailure("fetch-failed"));
   }, []);
+
+  useEffect(() => {
+    if (!dataset || !pendingTargetLanding || dataset !== pendingTargetLanding.dataset) return;
+    openRelationDetail(pendingTargetLanding.relationId);
+    setPendingTargetLanding(null);
+  }, [dataset, pendingTargetLanding]);
 
   useEffect(() => {
     window.history.replaceState({ liaisonScapeView: "home" }, "");
@@ -709,8 +732,9 @@ export default function App() {
 
   function acceptDataset(nextDataset: Dataset, source: DatasetReplacementSource | null = pendingDatasetReplacementSource) {
     if (source !== "handoff") {
-      const nextHash = updateDatasetHandoffFragment(window.location.hash, null);
+      const nextHash = clearDatasetHandoffFragment(window.location.hash);
       window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}${nextHash}`);
+      setPendingTargetLanding(null);
     }
     replacementTriggerRef.current = null;
     restoreReplacementFocusRef.current = false;
@@ -828,7 +852,7 @@ export default function App() {
     exportCurrentDataset();
   }
 
-  function open(raw: string, trigger?: HTMLButtonElement | null, source: DatasetReplacementSource = "local"): OpenDatasetResult {
+  function open(raw: string, trigger?: HTMLButtonElement | null, source: DatasetReplacementSource = "local", target?: TargetedHandoff): OpenDatasetResult {
     const result = loadDataset(raw);
     setDiagnostics(result.diagnostics);
     if (result.parseError) {
@@ -839,6 +863,26 @@ export default function App() {
     if (!candidate) {
       setMessage(translate(locale, "datasetValidationFailure"));
       return { status: "validation-error" };
+    }
+    setPendingTargetLanding(null);
+    if (target) {
+      const resolution = resolveRelationTarget(candidate, target.targetObjectId, target.targetObjectType);
+      if (resolution.kind === "target-not-found") {
+        requestDatasetReplacement(candidate, trigger, source);
+        setMessage(translate(locale, "targetedHandoffTargetNotFound"));
+        return { status: "target-error" };
+      }
+      if (resolution.kind === "target-type-mismatch") {
+        requestDatasetReplacement(candidate, trigger, source);
+        setMessage(translate(locale, "targetedHandoffTargetTypeMismatch"));
+        return { status: "target-error" };
+      }
+      if (target.requiredCapability !== "relation.inspect") {
+        requestDatasetReplacement(candidate, trigger, source);
+        setMessage(translate(locale, "targetedHandoffCapabilityUnsupported"));
+        return { status: "target-error" };
+      }
+      setPendingTargetLanding({ dataset: candidate, relationId: resolution.relation.id });
     }
     requestDatasetReplacement(candidate, trigger, source);
     setMessage("");
@@ -888,7 +932,7 @@ export default function App() {
       <main className="home-content">
         <h1 tabIndex={-1}>{translate(locale, "getStarted")}</h1>
         <p className="home-description">{translate(locale, "homeDescription")}</p>
-        {startupHandoffFailure && <p className="home-message" role="alert">{translate(locale, startupHandoffFailure === "invalid-fragment" ? "handoffInvalid" : startupHandoffFailure === "fetch-failed" ? "handoffFetchFailure" : startupHandoffFailure === "parse-failed" ? "jsonLoadFailure" : "datasetValidationFailure")}</p>}
+        {startupHandoffFailure && <p className="home-message" role="alert">{translate(locale, startupHandoffFailure === "invalid-fragment" ? "handoffInvalid" : startupHandoffFailure === "targeted-invalid" ? "targetedHandoffInvalid" : startupHandoffFailure === "fetch-failed" ? "handoffFetchFailure" : startupHandoffFailure === "parse-failed" ? "jsonLoadFailure" : "datasetValidationFailure")}</p>}
         <div className="home-actions">
           {dataset && <button type="button" onClick={enterWorkspace}>{translate(locale, "continueEditing")}</button>}
           <button type="button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => startNewDataset(event.currentTarget)}>{translate(locale, "newDataset")}</button>

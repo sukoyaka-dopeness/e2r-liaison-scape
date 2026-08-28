@@ -43,6 +43,44 @@ test("renders the production LiaisonScape Home surface", async () => {
   }
 });
 
+test("opens an exact targeted Relation inspection request on the existing Detail surface", async () => {
+  const relationDataset = {
+    version: "1.0",
+    entities: [{ id: "entity-1", name: "Source" }, { id: "entity-2", name: "Target" }],
+    events: [],
+    relations: [{ id: "relation-target", sourceId: "entity-1", targetId: "entity-2", name: "Inspect me" }],
+  };
+  const environment = createDomTestEnvironment({
+    url: "https://liaisonscape.test/#locale=ja&datasetUrl=https%3A%2F%2Fdata.example%2Fdataset.json&targetObjectId=relation-target&targetObjectType=Relation&requiredCapability=relation.inspect&targetContractVersion=1",
+  });
+  environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  environment.window.requestAnimationFrame = (callback: FrameRequestCallback) => { callback(0); return 0; };
+  environment.window.cancelAnimationFrame = () => {};
+  environment.window.scrollTo = () => {};
+  environment.window.HTMLElement.prototype.scrollIntoView = () => {};
+  environment.installGlobal("fetch", async () => ({ ok: true, text: async () => JSON.stringify(relationDataset) }));
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+
+  try {
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    environment.addCleanup(() => server.close());
+    const root = createRoot(container);
+    environment.addCleanup(() => act(async () => root.unmount()));
+    const { default: App } = await server.ssrLoadModule("/src/App.tsx");
+    await act(async () => root.render(React.createElement(App)));
+    await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+
+    assert.ok(environment.document.querySelector("#relation-detail-title"));
+    assert.match(environment.document.querySelector(".detail-object-id")?.textContent ?? "", /relation-target/);
+    assert.equal(environment.document.querySelector(".confirmation-relation"), null);
+    assert.equal(environment.document.querySelector(".confirmation-entity"), null);
+    assert.match(environment.window.location.hash, /locale=ja/);
+  } finally {
+    await environment.cleanup();
+  }
+});
+
 test("keeps the Workspace More keyboard contract and toolbar count local to the app", () => {
   const source = readFileSync("src/App.tsx", "utf8");
   assert.match(source, /firstItem\?\.focus\(\)/);
