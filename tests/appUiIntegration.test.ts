@@ -155,6 +155,117 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.match(styles, /@media \(max-width: 600px\)/);
 });
 
+test("implements the collapsible viewport toolbar interaction contract", async () => {
+  const relationDataset = {
+    version: "1.0",
+    entities: [{ id: "entity-1", name: "Source" }, { id: "entity-2", name: "Target" }],
+    events: [],
+    relations: [{ id: "relation-toolbar", sourceId: "entity-1", targetId: "entity-2", name: "Toolbar" }],
+  };
+  const environment = createDomTestEnvironment({
+    url: "https://liaisonscape.test/#locale=en&datasetUrl=https%3A%2F%2Fdata.example%2Fdataset.json",
+  });
+  environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  environment.window.requestAnimationFrame = (callback: FrameRequestCallback) => { callback(0); return 0; };
+  environment.window.cancelAnimationFrame = () => {};
+  environment.window.scrollTo = () => {};
+  environment.window.HTMLElement.prototype.scrollIntoView = () => {};
+  environment.window.HTMLElement.prototype.setPointerCapture = function setPointerCapture() {};
+  environment.window.HTMLElement.prototype.releasePointerCapture = function releasePointerCapture() {};
+  environment.window.HTMLElement.prototype.hasPointerCapture = function hasPointerCapture() { return true; };
+  environment.installGlobal("fetch", async () => ({ ok: true, text: async () => JSON.stringify(relationDataset) }));
+  const resizeCallbacks = new Set<() => void>();
+  class TestResizeObserver {
+    private readonly callback: () => void;
+
+    constructor(callback: () => void) {
+      this.callback = callback;
+      resizeCallbacks.add(callback);
+    }
+
+    observe() {}
+    disconnect() { resizeCallbacks.delete(this.callback); }
+  }
+  environment.installGlobal("ResizeObserver", TestResizeObserver);
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+
+  try {
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    environment.addCleanup(() => server.close());
+    const root = createRoot(container);
+    environment.addCleanup(() => act(async () => root.unmount()));
+    const { default: App } = await server.ssrLoadModule("/src/App.tsx");
+    await act(async () => root.render(React.createElement(App)));
+    await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+
+    const toolbar = environment.document.querySelector(".viewport-controls") as HTMLDivElement;
+    const graph = environment.document.querySelector(".graph") as SVGSVGElement;
+    const handle = environment.document.querySelector(".viewport-toolbar-handle") as HTMLButtonElement;
+    const actions = environment.document.querySelector("#viewport-toolbar-actions") as HTMLDivElement;
+    assert.ok(toolbar);
+    assert.ok(graph);
+    assert.ok(handle);
+    assert.ok(actions);
+    assert.equal(handle.getAttribute("aria-expanded"), "true");
+    assert.equal(actions.hidden, false);
+
+    let toolbarWidth = 360;
+    Object.defineProperty(graph, "getBoundingClientRect", { configurable: true, value: () => ({ left: 0, top: 0, width: 800, height: 500 }) });
+    Object.defineProperty(toolbar, "getBoundingClientRect", { configurable: true, value: () => ({ left: 0, top: 0, width: toolbarWidth, height: 50 }) });
+    const dispatchPointer = async (type: string, pointerId: number, clientX: number, clientY: number) => {
+      const event = new environment.window.Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperties(event, {
+        button: { value: 0 },
+        clientX: { value: clientX },
+        clientY: { value: clientY },
+        isPrimary: { value: true },
+        pointerId: { value: pointerId },
+      });
+      await act(async () => { handle.dispatchEvent(event); });
+    };
+    const consumePointerClick = async () => {
+      await act(async () => { handle.dispatchEvent(new environment.window.MouseEvent("click", { bubbles: true, detail: 1 })); });
+    };
+
+    await dispatchPointer("pointerdown", 1, 10, 10);
+    await dispatchPointer("pointermove", 1, 18, 10);
+    await dispatchPointer("pointerup", 1, 18, 10);
+    await consumePointerClick();
+    assert.equal(handle.getAttribute("aria-expanded"), "false");
+    assert.equal(actions.hidden, true);
+    assert.equal(actions.querySelectorAll("button").length, 3);
+
+    await act(async () => { handle.click(); });
+    assert.equal(handle.getAttribute("aria-expanded"), "true");
+
+    await dispatchPointer("pointerdown", 2, 10, 10);
+    await dispatchPointer("pointermove", 2, 410, 10);
+    await dispatchPointer("pointerup", 2, 410, 10);
+    await consumePointerClick();
+    assert.equal(handle.getAttribute("aria-expanded"), "true");
+    assert.equal(toolbar.style.left, "400px");
+
+    await dispatchPointer("pointerdown", 3, 410, 10);
+    await dispatchPointer("pointercancel", 3, 410, 10);
+    await consumePointerClick();
+    assert.equal(handle.getAttribute("aria-expanded"), "true");
+
+    toolbarWidth = 500;
+    await act(async () => {
+      for (const callback of resizeCallbacks) callback();
+    });
+    assert.equal(toolbar.style.left, "300px");
+
+    const localeButton = environment.document.querySelector(".locale-button") as HTMLButtonElement;
+    await act(async () => { localeButton.click(); });
+    assert.match(handle.getAttribute("aria-label") ?? "", /表示操作を折りたたむ/);
+    assert.equal(toolbar.style.left, "300px");
+  } finally {
+    await environment.cleanup();
+  }
+});
+
 test("keeps Dataset title editing connected to existing Dataset safety state", () => {
   const source = readFileSync("src/App.tsx", "utf8");
   const i18n = readFileSync("src/i18n.ts", "utf8");

@@ -58,6 +58,7 @@ export default function App() {
   const [selfLoopOverrides, setSelfLoopOverrides] = useState<Record<string, { orientation: number; radius: number }>>({});
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [viewportToolbarCollapsed, setViewportToolbarCollapsed] = useState(false);
   const [viewportToolbarPosition, setViewportToolbarPosition] = useState<{ x: number; y: number } | null>(null);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
   const [coordinatesDirty, setCoordinatesDirty] = useState(false);
@@ -90,7 +91,8 @@ export default function App() {
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
   const graphRef = useRef<SVGSVGElement>(null);
   const viewportToolbarRef = useRef<HTMLDivElement>(null);
-  const viewportToolbarDragRef = useRef<{ offsetX: number; offsetY: number } | null>(null);
+  const viewportToolbarDragRef = useRef<{ offsetX: number; offsetY: number; pointerId: number; startClientX: number; startClientY: number; dragging: boolean; canceled: boolean } | null>(null);
+  const suppressNextViewportToolbarClickRef = useRef(false);
   const edgeCurveDragStartRef = useRef<{ id: string; offset?: number; selfLoop?: { orientation: number; radius: number } } | null>(null);
   const longPressRef = useRef<{ pointerId: number; startX: number; startY: number; timer: number; kind: "canvas" | "entity" | "node-label" | "relation-path" | "relation-label"; id?: string; canceled: boolean } | null>(null);
   const longPressClaimedRef = useRef<number | null>(null);
@@ -712,23 +714,37 @@ export default function App() {
   }, [contextMenu]);
 
   useEffect(() => {
-    if (!viewportToolbarPosition) return;
+    if (!dataset) return;
     const graphElement = graphRef.current;
     const toolbar = viewportToolbarRef.current;
     if (!graphElement || !toolbar) return;
     const clampToolbar = () => {
       const graphRect = graphElement.getBoundingClientRect();
       const toolbarRect = toolbar.getBoundingClientRect();
-      setViewportToolbarPosition((value) => value ? {
-        x: Math.max(0, Math.min(value.x, graphRect.width - toolbarRect.width)),
-        y: Math.max(0, Math.min(value.y, graphRect.height - toolbarRect.height)),
-      } : value);
+      const fallbackPosition = {
+        x: toolbarRect.left - graphRect.left,
+        y: toolbarRect.top - graphRect.top,
+      };
+      setViewportToolbarPosition((value) => {
+        const position = value ?? fallbackPosition;
+        const nextPosition = {
+          x: Math.max(0, Math.min(position.x, graphRect.width - toolbarRect.width)),
+          y: Math.max(0, Math.min(position.y, graphRect.height - toolbarRect.height)),
+        };
+        if (value && value.x === nextPosition.x && value.y === nextPosition.y) return value;
+        return nextPosition;
+      });
     };
-    const observer = new ResizeObserver(clampToolbar);
-    observer.observe(graphElement);
-    observer.observe(toolbar);
-    return () => observer.disconnect();
-  }, [viewportToolbarPosition]);
+    clampToolbar();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(clampToolbar);
+    observer?.observe(graphElement);
+    observer?.observe(toolbar);
+    window.addEventListener("resize", clampToolbar);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", clampToolbar);
+    };
+  }, [dataset, locale, viewportToolbarCollapsed, viewportToolbarPosition]);
 
   function acceptDataset(nextDataset: Dataset, source: DatasetReplacementSource | null = pendingDatasetReplacementSource) {
     if (source !== "handoff") {
@@ -1048,7 +1064,9 @@ export default function App() {
     const graphElement = graphRef.current;
     const toolbar = viewportToolbarRef.current;
     const drag = viewportToolbarDragRef.current;
-    if (!graphElement || !toolbar || !drag) return;
+    if (!graphElement || !toolbar || !drag || drag.pointerId !== event.pointerId || drag.canceled) return;
+    if (!drag.dragging && Math.hypot(event.clientX - drag.startClientX, event.clientY - drag.startClientY) > 8) drag.dragging = true;
+    if (!drag.dragging) return;
     const graphRect = graphElement.getBoundingClientRect();
     const toolbarRect = toolbar.getBoundingClientRect();
     setViewportToolbarPosition({
@@ -1059,19 +1077,42 @@ export default function App() {
   function startViewportToolbarDrag(event: React.PointerEvent<HTMLButtonElement>) {
     const toolbar = viewportToolbarRef.current;
     const graphElement = graphRef.current;
-    if (!toolbar || !graphElement) return;
-    event.preventDefault();
+    if (!toolbar || !graphElement || event.button !== 0 || event.isPrimary === false) return;
     event.stopPropagation();
     const graphRect = graphElement.getBoundingClientRect();
     const toolbarRect = toolbar.getBoundingClientRect();
     const currentPosition = viewportToolbarPosition ?? { x: toolbarRect.left - graphRect.left, y: toolbarRect.top - graphRect.top };
     setViewportToolbarPosition(currentPosition);
-    viewportToolbarDragRef.current = { offsetX: event.clientX - graphRect.left - currentPosition.x, offsetY: event.clientY - graphRect.top - currentPosition.y };
+    suppressNextViewportToolbarClickRef.current = false;
+    viewportToolbarDragRef.current = {
+      offsetX: event.clientX - graphRect.left - currentPosition.x,
+      offsetY: event.clientY - graphRect.top - currentPosition.y,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      dragging: false,
+      canceled: false,
+    };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
-  function endViewportToolbarDrag(event: React.PointerEvent<HTMLButtonElement>) {
+  function endViewportToolbarDrag(event: React.PointerEvent<HTMLButtonElement>, canceled = false) {
+    const drag = viewportToolbarDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const moved = drag.dragging || Math.hypot(event.clientX - drag.startClientX, event.clientY - drag.startClientY) > 8;
+    drag.canceled = canceled;
+    suppressNextViewportToolbarClickRef.current = canceled || moved;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     viewportToolbarDragRef.current = null;
+  }
+  function toggleViewportToolbar(event?: React.MouseEvent<HTMLButtonElement>) {
+    if (event && suppressNextViewportToolbarClickRef.current) {
+      suppressNextViewportToolbarClickRef.current = false;
+      if (event.detail > 0) {
+        event.preventDefault();
+        return;
+      }
+    }
+    setViewportToolbarCollapsed((value) => !value);
   }
   function applyEdgeCurveDrag(id: string, dx: number, dy: number) {
     const edge = graph.edges.find(({ id: edgeId }) => edgeId === id);
@@ -1674,11 +1715,13 @@ export default function App() {
         <section className="graph-section">
           <h2>Graph</h2>
           <div ref={viewportToolbarRef} className="viewport-controls mobile-hide" aria-label={translate(locale, "graphViewControls")} style={viewportToolbarPosition ? { left: viewportToolbarPosition.x, top: viewportToolbarPosition.y, right: "auto" } : undefined}>
-            <button type="button" className="viewport-toolbar-handle" aria-label={translate(locale, "moveZoomControls")} title={translate(locale, "moveZoomControls")} onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={endViewportToolbarDrag}>⠿</button>
-            <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>{translate(locale, "zoomOut")}</button>
-            <span aria-live="polite">{Math.round(scale * 100)}%</span>
-            <button type="button" onClick={() => setScale((value) => zoomScale(value, "in"))}>{translate(locale, "zoomIn")}</button>
-            <button type="button" onClick={resetView}>{translate(locale, "resetView")}</button>
+            <button type="button" className="viewport-toolbar-handle" aria-expanded={!viewportToolbarCollapsed} aria-controls="viewport-toolbar-actions" aria-label={translate(locale, viewportToolbarCollapsed ? "expandViewportControls" : "collapseViewportControls")} title={translate(locale, viewportToolbarCollapsed ? "expandViewportControls" : "collapseViewportControls")} onClick={toggleViewportToolbar} onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={(event) => endViewportToolbarDrag(event, true)}>⠿</button>
+            <div id="viewport-toolbar-actions" className="viewport-toolbar-actions" hidden={viewportToolbarCollapsed}>
+              <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>{translate(locale, "zoomOut")}</button>
+              <span aria-live="polite">{Math.round(scale * 100)}%</span>
+              <button type="button" onClick={() => setScale((value) => zoomScale(value, "in"))}>{translate(locale, "zoomIn")}</button>
+              <button type="button" onClick={resetView}>{translate(locale, "resetView")}</button>
+            </div>
           </div>
           <svg
             ref={graphRef}
