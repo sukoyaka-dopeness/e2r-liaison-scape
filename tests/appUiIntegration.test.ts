@@ -152,6 +152,9 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.match(styles, /\.viewport-controls\.mobile-hide \{ display: none !important; \}/);
   assert.match(styles, /\.dataset-actions \{[^}]*flex-wrap: wrap;/);
   assert.match(styles, /\.dataset-actions__buttons, \.viewport-controls \{[^}]*flex-wrap: nowrap;/);
+  assert.match(styles, /\.viewport-controls \{[^}]*width: max-content;/);
+  assert.match(styles, /\.viewport-toolbar-actions \{[^}]*flex: 0 0 auto;[^}]*flex-wrap: nowrap;/);
+  assert.match(styles, /\.viewport-toolbar-actions > button,\s*\.viewport-toolbar-actions > span \{[^}]*white-space: nowrap;/);
   assert.match(styles, /@media \(max-width: 600px\)/);
 });
 
@@ -209,6 +212,8 @@ test("implements the collapsible viewport toolbar interaction contract", async (
     assert.ok(actions);
     assert.equal(handle.getAttribute("aria-expanded"), "true");
     assert.equal(actions.hidden, false);
+    assert.equal(handle.getAttribute("aria-label"), "Move or collapse viewport controls");
+    assert.equal(handle.title, "Move\nCollapse");
 
     let toolbarWidth = 360;
     Object.defineProperty(graph, "getBoundingClientRect", { configurable: true, value: () => ({ left: 0, top: 0, width: 800, height: 500 }) });
@@ -235,9 +240,12 @@ test("implements the collapsible viewport toolbar interaction contract", async (
     assert.equal(handle.getAttribute("aria-expanded"), "false");
     assert.equal(actions.hidden, true);
     assert.equal(actions.querySelectorAll("button").length, 3);
+    assert.equal(handle.getAttribute("aria-label"), "Move or expand viewport controls");
+    assert.equal(handle.title, "Move\nExpand");
 
     await act(async () => { handle.click(); });
     assert.equal(handle.getAttribute("aria-expanded"), "true");
+    assert.equal(handle.getAttribute("aria-label"), "Move or collapse viewport controls");
 
     await dispatchPointer("pointerdown", 2, 10, 10);
     await dispatchPointer("pointermove", 2, 410, 10);
@@ -259,8 +267,14 @@ test("implements the collapsible viewport toolbar interaction contract", async (
 
     const localeButton = environment.document.querySelector(".locale-button") as HTMLButtonElement;
     await act(async () => { localeButton.click(); });
-    assert.match(handle.getAttribute("aria-label") ?? "", /表示操作を折りたたむ/);
+    assert.equal(handle.getAttribute("aria-label"), "表示操作を移動またはたたむ");
+    assert.equal(handle.title, "移動\nたたむ");
     assert.equal(toolbar.style.left, "300px");
+
+    await act(async () => { handle.click(); });
+    assert.equal(handle.getAttribute("aria-expanded"), "false");
+    assert.equal(handle.getAttribute("aria-label"), "表示操作を移動または広げる");
+    assert.equal(handle.title, "移動\n広げる");
   } finally {
     await environment.cleanup();
   }
