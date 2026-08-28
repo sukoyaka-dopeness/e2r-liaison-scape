@@ -221,6 +221,7 @@ li { margin: .35rem 0; }
 .detail-fields textarea,
 .detail-fields select { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; padding: 8px 12px; border: 1px solid #e5e4e7; border-radius: 6px; color: #08060d; background: #fff; }
 .detail-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+.detail.confirmation .detail-actions { gap: 8px; }
 .creation-dialog { gap: 8px; }
 .creation-dialog > label { margin-top: 4px; }
 .creation-dialog > input,
