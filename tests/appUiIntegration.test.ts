@@ -157,7 +157,7 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.match(styles, /\.viewport-toolbar-actions > button,\s*\.viewport-toolbar-actions > span \{[^}]*white-space: nowrap;/);
   assert.match(styles, /\.viewport-toolbar-handle-tooltip \{[^}]*position: absolute;[^}]*display: none;[^}]*pointer-events: none;/);
   assert.match(styles, /\.viewport-toolbar-handle-tooltip \{[^}]*font-weight: 600;[^}]*white-space: pre-line;/);
-  assert.match(styles, /\.viewport-toolbar-handle:hover \+ \.viewport-toolbar-handle-tooltip,\s*\.viewport-toolbar-handle:focus \+ \.viewport-toolbar-handle-tooltip \{[^}]*display: block;/);
+  assert.match(styles, /\.viewport-toolbar-handle:hover \+ \.viewport-toolbar-handle-tooltip,\s*\.viewport-toolbar-handle:focus-visible \+ \.viewport-toolbar-handle-tooltip \{[^}]*display: block;/);
   assert.match(styles, /@media \(max-width: 600px\)/);
 });
 

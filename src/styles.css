@@ -277,7 +277,7 @@ li { margin: .35rem 0; }
 .viewport-toolbar-handle { flex: 0 0 auto; white-space: nowrap; }
 .viewport-controls .viewport-toolbar-handle-tooltip { position: absolute; z-index: 4; left: 0; bottom: calc(100% + 6px); display: none; width: max-content; min-width: 0; max-width: min(12rem, calc(100vw - 16px)); padding: 4px 6px; border: 1px solid #d9d5df; border-radius: 6px; color: #08060d; background: rgba(255,255,255,.96); box-shadow: 0 4px 14px rgba(8,6,13,.16); font-size: .75rem; font-weight: 600; line-height: 1.2; text-align: left; white-space: pre-line; pointer-events: none; }
 .viewport-toolbar-handle:hover + .viewport-toolbar-handle-tooltip,
-.viewport-toolbar-handle:focus + .viewport-toolbar-handle-tooltip { display: block; }
+.viewport-toolbar-handle:focus-visible + .viewport-toolbar-handle-tooltip { display: block; }
 .viewport-toolbar-actions { display: flex; align-items: center; flex: 0 0 auto; flex-wrap: nowrap; gap: 8px; }
 .viewport-toolbar-actions > button,
 .viewport-toolbar-actions > span { flex: 0 0 auto; white-space: nowrap; }
