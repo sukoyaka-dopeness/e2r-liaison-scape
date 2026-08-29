@@ -3,7 +3,7 @@ import type { Dataset } from "../models";
 import { formatEntityDeletionRefusal, formatEntityIncidentWarning, formatPresentationWriteRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, type Locale } from "../i18n";
 import { assessEntityDeletion, deleteEntity, getEntityDetail, updateEntityDetails } from "../services/EntityService";
 import { assessRelationDeletion, deleteRelation, getRelationDetail, updateRelation } from "../services/RelationService";
-import { readRelationArrowDisplay, readRelationLineStyle, writeRelationArrowDisplay, writeRelationLineStyle, type RelationArrowDisplay, type RelationLineStyle } from "../presentation-extension";
+import { readRelationArrowDisplay, readRelationLineStyle, removeRelationPresentationRecord, writeRelationArrowDisplay, writeRelationLineStyle, type RelationArrowDisplay, type RelationLineStyle } from "../presentation-extension";
 
 type DetailKind = "entity" | "relation";
 type EntityDeletionResolutionFocusRequest = { relationId: string | null; requestId: number };
@@ -204,8 +204,10 @@ export function useDetailDeletionWorkflow({
     if (deleteConfirmation === "relation") {
       const result = deleteRelation(dataset, deleteConfirmationId);
       if (!result.deleted) { onMessage(formatRelationDeletionRefusal(locale, result.reason)); setDeleteConfirmation(null); if (entityDeletionResolutionId !== null) returnToEntityDeletionResolution(); return; }
+      const presentationResult = removeRelationPresentationRecord(result.dataset, result.deletedId);
+      if ("refusal" in presentationResult) { onMessage(formatPresentationWriteRefusal(locale, presentationResult.refusal)); setDeleteConfirmation(null); return; }
       onRelationDeleted(result.deletedId);
-      onDatasetUpdate(result.dataset);
+      onDatasetUpdate(presentationResult.dataset);
       setDeleteConfirmation(null);
       if (entityDeletionResolutionId !== null) returnToEntityDeletionResolution();
       else { onSelectRelation(null); setDetailOpen(false); }

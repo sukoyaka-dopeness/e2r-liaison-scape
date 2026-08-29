@@ -5,6 +5,7 @@ import {
   PRESENTATION_EXTENSION_ID,
   readRelationArrowDisplay,
   readRelationLineStyle,
+  removeRelationPresentationRecord,
   writeRelationArrowDisplay,
   writeRelationLineStyle,
   type PresentationWriteResult,
@@ -74,6 +75,45 @@ test("unknown arrow token falls back to Normal without exposing a fifth mode", (
     },
   };
   assert.equal(readRelationArrowDisplay(dataset, "r1"), "normal");
+});
+
+test("removes only the deleted Relation presentation record and preserves siblings", () => {
+  const source = {
+    ...datasetWithRelations(),
+    extensions: {
+      [PRESENTATION_EXTENSION_ID]: {
+        specVersion: "0.1.0",
+        relations: {
+          r1: { arrowDisplay: "reverse", lineStyle: "dashed", future: { keep: true } },
+          r2: { arrowDisplay: "future-arrow", lineStyle: "future-line", sibling: true },
+          orphan: { lineStyle: "dotted" },
+        },
+        futurePayload: { keep: true },
+      },
+      unknown: { keep: true },
+    },
+  } as Dataset;
+  const result = removeRelationPresentationRecord(source, "r1");
+  const saved = writeSuccess(result);
+  assert.equal(saved.changed, true);
+  const payload = saved.dataset.extensions?.[PRESENTATION_EXTENSION_ID] as Record<string, unknown>;
+  assert.equal((payload.relations as Record<string, unknown>).r1, undefined);
+  assert.deepEqual((payload.relations as Record<string, unknown>).r2, source.extensions?.[PRESENTATION_EXTENSION_ID] && (source.extensions[PRESENTATION_EXTENSION_ID] as Record<string, unknown>).relations && ((source.extensions[PRESENTATION_EXTENSION_ID] as Record<string, unknown>).relations as Record<string, unknown>).r2);
+  assert.deepEqual((payload.relations as Record<string, unknown>).orphan, { lineStyle: "dotted" });
+  assert.deepEqual(payload.futurePayload, { keep: true });
+  assert.deepEqual(saved.dataset.extensions?.unknown, { keep: true });
+  assert.ok(source.extensions?.[PRESENTATION_EXTENSION_ID]);
+});
+
+test("Presentation cleanup is a no-op without a target record and omits an empty envelope", () => {
+  const absent = removeRelationPresentationRecord(datasetWithRelations(), "r1");
+  assert.equal(absent.changed, false);
+  const last = {
+    ...datasetWithRelations(),
+    extensions: { [PRESENTATION_EXTENSION_ID]: { specVersion: "0.1.0", relations: { r1: { lineStyle: "dotted" } } } },
+  } as Dataset;
+  const removed = writeSuccess(removeRelationPresentationRecord(last, "r1"));
+  assert.equal(removed.dataset.extensions, undefined);
 });
 
 test("creates, updates, and preserves the Dataset-contained Presentation Extension", () => {

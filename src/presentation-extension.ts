@@ -186,3 +186,23 @@ export function writeRelationLineStyle(
 ): PresentationWriteResult {
   return writeRelationPresentationProperty(dataset, relationId, "lineStyle", "solid", style);
 }
+
+export function removeRelationPresentationRecord(dataset: Dataset, relationId: string): PresentationWriteResult {
+  const validationRefusal = validateExistingPresentation(dataset);
+  if (validationRefusal) return refusal(dataset, validationRefusal);
+  const payload = presentationPayload(dataset);
+  if (!payload || !isRecord(payload.relations) || !isRecord(payload.relations[relationId])) return { dataset, changed: false };
+
+  const copy = structuredClone(dataset) as Dataset;
+  const extensions = copy.extensions as Record<string, unknown>;
+  const nextPayload = extensions[PRESENTATION_EXTENSION_ID] as Record<string, unknown>;
+  const relations = { ...(nextPayload.relations as Record<string, unknown>) };
+  delete relations[relationId];
+  if (Object.keys(relations).length === 0) delete nextPayload.relations;
+  else nextPayload.relations = relations;
+  if (Object.keys(nextPayload).length === 1 && nextPayload.specVersion === PRESENTATION_SPEC_VERSION) {
+    delete extensions[PRESENTATION_EXTENSION_ID];
+    if (Object.keys(extensions).length === 0) delete copy.extensions;
+  }
+  return { dataset: copy, changed: true };
+}
