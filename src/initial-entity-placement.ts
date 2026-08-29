@@ -9,7 +9,6 @@ export const INITIAL_ENTITY_MAX_RING = 8;
 function finitePoint(point: GraphPoint): boolean {
   return Number.isFinite(point.x) && Number.isFinite(point.y);
 }
-
 function overlaps(left: GraphPoint, right: GraphPoint, clearance: number): boolean {
   return Math.abs(left.x - right.x) < clearance && Math.abs(left.y - right.y) < clearance;
 }
@@ -49,4 +48,3 @@ export function placeInitialEntity(
   }
   return { ...desired };
 }
-
