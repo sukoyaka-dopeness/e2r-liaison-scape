@@ -61,7 +61,11 @@ test("Lighthouse samples are valid, positioned, connected, and round-trip unchan
     assert.equal(presentation?.relations?.["clara-thomas-supervises"], undefined);
     assert.deepEqual(presentation?.relations?.["thomas-maya-friends"], { arrowDisplay: "undirected", lineStyle: "dotted" });
     assert.deepEqual(presentation?.relations?.["clara-maya"], { arrowDisplay: "bidirectional" });
-    assert.equal(Object.values(presentation?.relations ?? {}).some((value: any) => value.lineStyle === "dashed"), false);
+    assert.deepEqual(presentation?.relations?.["sofia-elias"], { lineStyle: "dashed" });
+    const dashedRelationIds = Object.entries(presentation?.relations ?? {}).filter(([, value]: any) => value.lineStyle === "dashed").map(([relationId]) => relationId);
+    assert.deepEqual(dashedRelationIds, ["sofia-elias"]);
+    const dottedRelationIds = Object.entries(presentation?.relations ?? {}).filter(([, value]: any) => value.lineStyle === "dotted").map(([relationId]) => relationId);
+    assert.deepEqual(dottedRelationIds, ["thomas-maya-friends"]);
     assert.equal(presentation?.relations?.["beacon-lighthouse-installed-in"], undefined);
     for (const record of Object.values(presentation?.relations ?? {}) as any[]) {
       assert.notEqual(record.arrowDisplay, "normal");

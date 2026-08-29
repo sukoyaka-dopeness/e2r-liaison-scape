@@ -552,6 +552,9 @@
         },
         "clara-maya": {
           "arrowDisplay": "bidirectional"
+        },
+        "sofia-elias": {
+          "lineStyle": "dashed"
         }
       }
     }
