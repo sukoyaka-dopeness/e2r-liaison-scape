@@ -122,6 +122,36 @@ async function setProbeName(environment: ReturnType<typeof createDomTestEnvironm
   await act(async () => { (environment.document.querySelector(`#${id}`) as HTMLButtonElement).click(); });
 }
 
+async function withProductionApp({ locale = "en", dataset, callback }: { locale?: "en" | "ja"; dataset?: Dataset; callback: (environment: ReturnType<typeof createDomTestEnvironment>) => Promise<void> }) {
+  const environment = createDomTestEnvironment({
+    url: dataset
+      ? "https://liaisonscape.test/#datasetUrl=https%3A%2F%2Fdata.example%2Fdataset.json"
+      : "https://liaisonscape.test/",
+  });
+  environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  environment.window.localStorage.setItem("liaisonscape.locale", locale);
+  environment.window.requestAnimationFrame = (frame: FrameRequestCallback) => { frame(0); return 0; };
+  environment.window.cancelAnimationFrame = () => {};
+  environment.window.scrollTo = () => {};
+  environment.window.HTMLElement.prototype.scrollIntoView = () => {};
+  if (dataset) environment.installGlobal("fetch", async () => ({ ok: true, text: async () => JSON.stringify(dataset) }));
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+
+  try {
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    environment.addCleanup(() => server.close());
+    const root = createRoot(container);
+    environment.addCleanup(() => act(async () => root.unmount()));
+    const { default: App } = await server.ssrLoadModule("/src/App.tsx");
+    await act(async () => root.render(React.createElement(App)));
+    await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+    await callback(environment);
+  } finally {
+    await environment.cleanup();
+  }
+}
+
 test("renders the production LiaisonScape Home surface", async () => {
   const environment = createDomTestEnvironment();
   environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -157,6 +187,81 @@ test("renders the production LiaisonScape Home surface", async () => {
   } finally {
     await environment.cleanup();
   }
+});
+
+test("localizes the Home Credits surface while preserving identity and dismissal focus", async () => {
+  await withProductionApp({ locale: "en", callback: async (environment) => {
+    const opener = environment.document.querySelector(".home-footer .credits-button") as HTMLButtonElement;
+    opener.focus();
+    await act(async () => opener.click());
+    const dialog = environment.document.querySelector(".credits-dialog");
+    assert.ok(dialog);
+    assert.equal(dialog.querySelector("#credits-title")?.textContent, "Credits");
+    assert.equal(dialog.querySelector(".credits-actions button")?.textContent, "Close");
+    assert.match(dialog.textContent ?? "", /Application: LiaisonScape 0\.1\.0/);
+    assert.match(dialog.textContent ?? "", /Creator: sukoyaka-dopeness/);
+    assert.match(dialog.textContent ?? "", /Release date: 2026-08-16/);
+    assert.match(dialog.textContent ?? "", /With gratitude to all the AI systems that contributed to this project\./);
+    assert.equal(dialog.querySelector('a[href="https://github.com/sukoyaka-dopeness/e2r-liaison-scape"]')?.textContent, "LiaisonScape repository");
+    assert.equal(dialog.querySelector('a[href="https://github.com/sukoyaka-dopeness/e2r-spec"]')?.textContent, "E2R specification repository");
+
+    await act(async () => (dialog.querySelector(".credits-actions button") as HTMLButtonElement).click());
+    assert.equal(environment.document.querySelector(".credits-dialog"), null);
+    assert.equal(environment.document.activeElement, opener);
+  }});
+});
+
+test("localizes the Japanese Credits surface and preserves every dismissal path", async () => {
+  await withProductionApp({ locale: "ja", callback: async (environment) => {
+    const opener = environment.document.querySelector(".home-footer .credits-button") as HTMLButtonElement;
+    opener.focus();
+    await act(async () => opener.click());
+    let dialog = environment.document.querySelector(".credits-dialog");
+    assert.ok(dialog);
+    assert.equal(dialog.querySelector("#credits-title")?.textContent, "クレジット");
+    assert.equal(dialog.querySelector(".credits-actions button")?.textContent, "閉じる");
+    assert.equal(environment.document.querySelector(".credits-backdrop")?.getAttribute("aria-label"), "クレジットを閉じる");
+    assert.match(dialog.textContent ?? "", /アプリケーション: LiaisonScape 0\.1\.0/);
+    assert.match(dialog.textContent ?? "", /作成者: sukoyaka-dopeness/);
+    assert.match(dialog.textContent ?? "", /リリース日: 2026-08-16/);
+    assert.match(dialog.textContent ?? "", /このプロジェクトに貢献したすべてのAIシステムに感謝します。/);
+    assert.match(dialog.textContent ?? "", /LiaisonScapeリポジトリ/);
+    assert.match(dialog.textContent ?? "", /E2R仕様リポジトリ/);
+    assert.doesNotMatch(dialog.textContent ?? "", /With gratitude to all the AI systems/);
+    assert.equal(environment.window.localStorage.getItem("liaisonscape.locale"), "ja");
+    assert.equal(environment.window.localStorage.getItem("liaisonscape.credits"), null);
+
+    await act(async () => environment.window.dispatchEvent(new environment.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+    assert.equal(environment.document.querySelector(".credits-dialog"), null);
+    assert.equal(environment.document.activeElement, opener);
+
+    await act(async () => opener.click());
+    dialog = environment.document.querySelector(".credits-dialog");
+    assert.ok(dialog);
+    await act(async () => (environment.document.querySelector(".credits-backdrop") as HTMLButtonElement).click());
+    assert.equal(environment.document.querySelector(".credits-dialog"), null);
+    assert.equal(environment.document.activeElement, opener);
+  }});
+});
+
+test("uses the same localized Credits surface from Workspace", async () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [{ id: "credits-entity", name: "Credits entity" }],
+    events: [],
+    relations: [],
+  };
+  await withProductionApp({ locale: "ja", dataset, callback: async (environment) => {
+    const opener = environment.document.querySelector(".workspace-footer .credits-button") as HTMLButtonElement;
+    assert.ok(opener);
+    await act(async () => opener.click());
+    const dialog = environment.document.querySelector(".credits-dialog");
+    assert.ok(dialog);
+    assert.equal(dialog.querySelector("#credits-title")?.textContent, "クレジット");
+    assert.equal(dialog.querySelector(".credits-actions button")?.textContent, "閉じる");
+    assert.match(dialog.textContent ?? "", /LiaisonScape 0\.1\.0/);
+    assert.match(dialog.textContent ?? "", /このプロジェクトに貢献したすべてのAIシステムに感謝します。/);
+  }});
 });
 
 test("opens an exact targeted Relation inspection request on the existing Detail surface", async () => {
@@ -225,9 +330,11 @@ test("renders type-neutral Relation Detail roles for Event endpoints in both dir
         name: relation.name,
         description: "",
         arrowDisplay: "normal",
+        lineStyle: "solid",
         onNameChange: () => {},
         onDescriptionChange: () => {},
         onArrowDisplayChange: () => {},
+        onLineStyleChange: () => {},
         saveDisabled: true,
         onSave: () => {},
         onDelete: () => {},

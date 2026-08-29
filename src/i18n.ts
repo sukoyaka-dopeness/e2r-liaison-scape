@@ -210,7 +210,7 @@ export const messages = {
     openDataset: "E2R Datasetを開く",
     continueEditing: "編集を続ける",
     userGuide: "日本語ユーザーガイド",
-    footerDescriptor: "E2Rリレーションシップエディター", credits: "クレジット", closeCredits: "クレジットを閉じる", application: "アプリケーション", creator: "作成者", releaseDate: "リリース日", releaseDatePending: "2026-08-16", aiAcknowledgement: "With gratitude to all the AI systems that contributed to this project.", creditsLinks: "Credits links", liaisonScapeRepository: "LiaisonScape repository", e2rSpecificationRepository: "E2R specification repository",
+    footerDescriptor: "E2Rリレーションシップエディター", credits: "クレジット", closeCredits: "クレジットを閉じる", application: "アプリケーション", creator: "作成者", releaseDate: "リリース日", releaseDatePending: "2026-08-16", aiAcknowledgement: "このプロジェクトに貢献したすべてのAIシステムに感謝します。", creditsLinks: "クレジット関連リンク", liaisonScapeRepository: "LiaisonScapeリポジトリ", e2rSpecificationRepository: "E2R仕様リポジトリ",
     languageEnglish: "English",
     entityDeletionResolutionTitle: "削除前につながりを確認してください",
     entityDeletionResolutionConnections: "接続しているつながり",
