@@ -42,7 +42,7 @@ test("Lighthouse samples are valid, positioned, connected, and round-trip unchan
     assert.equal(friendship.length, 1);
     assert.deepEqual(friendship[0], {
       id: "thomas-maya-friends",
-      name: sample === english ? "friends with" : "友人である",
+      name: sample === english ? "friends with" : "友人",
       sourceId: "thomas",
       targetId: "maya",
     });
@@ -58,14 +58,14 @@ test("Lighthouse samples are valid, positioned, connected, and round-trip unchan
     const presentation = sample.extensions?.["draft.github.sukoyaka-dopeness.liaisonscape-presentation"];
     assert.equal(presentation?.specVersion, "0.1.0");
     assert.deepEqual(presentation?.relations?.["clara-lighthouse"], { arrowDisplay: "reverse" });
-    assert.deepEqual(presentation?.relations?.["clara-thomas-supervises"], { lineStyle: "dashed" });
-    assert.deepEqual(presentation?.relations?.["thomas-maya-friends"], { arrowDisplay: "undirected" });
+    assert.equal(presentation?.relations?.["clara-thomas-supervises"], undefined);
+    assert.deepEqual(presentation?.relations?.["thomas-maya-friends"], { arrowDisplay: "undirected", lineStyle: "dotted" });
+    assert.deepEqual(presentation?.relations?.["clara-maya"], { arrowDisplay: "bidirectional" });
+    assert.equal(Object.values(presentation?.relations ?? {}).some((value: any) => value.lineStyle === "dashed"), false);
     assert.equal(presentation?.relations?.["beacon-lighthouse-installed-in"], undefined);
     for (const record of Object.values(presentation?.relations ?? {}) as any[]) {
       assert.notEqual(record.arrowDisplay, "normal");
       assert.notEqual(record.lineStyle, "solid");
-      assert.notEqual(record.arrowDisplay, "bidirectional");
-      assert.notEqual(record.lineStyle, "dotted");
     }
 
     const specification = sample.extensions?.["draft.github.sukoyaka-dopeness.specification"];

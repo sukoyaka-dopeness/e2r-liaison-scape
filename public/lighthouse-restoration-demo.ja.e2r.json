@@ -481,7 +481,7 @@
     },
     {
       "id": "thomas-maya-friends",
-      "name": "友人である",
+      "name": "友人",
       "sourceId": "thomas",
       "targetId": "maya"
     },
@@ -544,11 +544,12 @@
         "clara-lighthouse": {
           "arrowDisplay": "reverse"
         },
-        "clara-thomas-supervises": {
-          "lineStyle": "dashed"
-        },
         "thomas-maya-friends": {
-          "arrowDisplay": "undirected"
+          "arrowDisplay": "undirected",
+          "lineStyle": "dotted"
+        },
+        "clara-maya": {
+          "arrowDisplay": "bidirectional"
         }
       }
     }

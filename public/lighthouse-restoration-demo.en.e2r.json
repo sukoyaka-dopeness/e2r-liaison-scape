@@ -546,11 +546,12 @@
         "clara-lighthouse": {
           "arrowDisplay": "reverse"
         },
-        "clara-thomas-supervises": {
-          "lineStyle": "dashed"
-        },
         "thomas-maya-friends": {
-          "arrowDisplay": "undirected"
+          "arrowDisplay": "undirected",
+          "lineStyle": "dotted"
+        },
+        "clara-maya": {
+          "arrowDisplay": "bidirectional"
         }
       }
     }
