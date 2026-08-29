@@ -1,3 +1,5 @@
+import type { PresentationWriteRefusal } from "./presentation-extension";
+
 export type Locale = "en" | "ja";
 export type DiagnosticSeverity = "error" | "warning";
 
@@ -135,6 +137,7 @@ export const messages = {
     objectId: "Object ID",
     relatedRelationName: "Relation name",
     connectedObject: "Connected object",
+    arrowDisplay: "Arrow display",
     relatedRelationSource: "Source",
     relatedRelationTarget: "Target",
     entityShownRelations: "Shown Relations",
@@ -247,6 +250,7 @@ export const messages = {
     objectId: "Object ID",
     relatedRelationName: "つながりの名前",
     connectedObject: "つながり先",
+    arrowDisplay: "矢印の表示",
     relatedRelationSource: "始点",
     relatedRelationTarget: "終点",
     automaticRoute: "自動ルートに戻す",
@@ -396,6 +400,12 @@ function refusalReason(locale: Locale, reason: AuthoringRefusal): string {
 export function formatRelationUpdateRefusal(locale: Locale, reason: AuthoringRefusal): string {
   const prefix = locale === "ja" ? "つながりを更新できませんでした。" : "The relation could not be updated.";
   return `${prefix} ${refusalReason(locale, reason)}`;
+}
+
+export function formatPresentationWriteRefusal(locale: Locale, _reason: PresentationWriteRefusal): string {
+  return locale === "ja"
+    ? "このDatasetの表示設定を安全に更新できないため、矢印の表示を保存できませんでした。"
+    : "Could not save the arrow display because this Dataset's display settings cannot be safely updated.";
 }
 
 export function formatRelationCreationRefusal(locale: Locale, reason: AuthoringRefusal): string {

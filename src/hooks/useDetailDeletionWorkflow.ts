@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { Dataset } from "../models";
-import { formatEntityDeletionRefusal, formatEntityIncidentWarning, formatRelationDeletionRefusal, formatRelationUpdateRefusal, type Locale } from "../i18n";
+import { formatEntityDeletionRefusal, formatEntityIncidentWarning, formatPresentationWriteRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, type Locale } from "../i18n";
 import { assessEntityDeletion, deleteEntity, getEntityDetail, updateEntityDetails } from "../services/EntityService";
 import { assessRelationDeletion, deleteRelation, getRelationDetail, updateRelation } from "../services/RelationService";
+import { readRelationArrowDisplay, writeRelationArrowDisplay, type RelationArrowDisplay } from "../presentation-extension";
 
 type DetailKind = "entity" | "relation";
 type EntityDeletionResolutionFocusRequest = { relationId: string | null; requestId: number };
@@ -38,6 +39,8 @@ export function useDetailDeletionWorkflow({
   const [relationDescriptionDraft, setRelationDescriptionDraft] = useState("");
   const [relationSourceDraft, setRelationSourceDraft] = useState("");
   const [relationTargetDraft, setRelationTargetDraft] = useState("");
+  const [relationArrowDisplayDraft, setRelationArrowDisplayDraft] = useState<RelationArrowDisplay>("normal");
+  const [relationArrowDisplayTouched, setRelationArrowDisplayTouched] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailDismissal, setDetailDismissal] = useState<DetailKind | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<DetailKind | null>(null);
@@ -59,11 +62,18 @@ export function useDetailDeletionWorkflow({
     entityNameDraft !== (typeof entityDraftObject.name === "string" ? entityDraftObject.name : "")
     || entityDescriptionDraft !== (typeof entityDraftObject.description === "string" ? entityDraftObject.description : "")
   );
+  const arrowDisplayWriteResult = relationArrowDisplayTouched && dataset && selectedRelationId
+    ? writeRelationArrowDisplay(dataset, selectedRelationId, relationArrowDisplayDraft)
+    : null;
+  const meaningfulArrowDisplayDraft = arrowDisplayWriteResult !== null && (
+    "refusal" in arrowDisplayWriteResult || arrowDisplayWriteResult.changed
+  );
   const meaningfulRelationDetailDraft = detailOpen && selectedRelationDetail !== null && (
     relationNameDraft !== (typeof selectedRelationDetail.relation.name === "string" ? selectedRelationDetail.relation.name : "")
     || relationDescriptionDraft !== (typeof selectedRelationDetail.relation.description === "string" ? selectedRelationDetail.relation.description : "")
     || relationSourceDraft !== selectedRelationDetail.sourceId
     || relationTargetDraft !== selectedRelationDetail.targetId
+    || meaningfulArrowDisplayDraft
   );
 
   function closeDetail() {
@@ -76,6 +86,8 @@ export function useDetailDeletionWorkflow({
 
   function discardDetailDraft() {
     const returnToResolution = detailDismissal === "relation" && entityDeletionResolutionId !== null;
+    if (dataset && selectedRelationId) setRelationArrowDisplayDraft(readRelationArrowDisplay(dataset, selectedRelationId));
+    setRelationArrowDisplayTouched(false);
     setDetailDismissal(null);
     setDetailOpen(false);
     if (returnToResolution) returnToEntityDeletionResolution();
@@ -94,10 +106,7 @@ export function useDetailDeletionWorkflow({
     const dirty = kind === "entity"
       ? entityNameDraft !== (typeof selectedDetail?.entity.name === "string" ? selectedDetail.entity.name : "")
         || entityDescriptionDraft !== (typeof selectedDetail?.entity.description === "string" ? selectedDetail.entity.description : "")
-      : relationNameDraft !== (typeof selectedRelationDetail?.relation.name === "string" ? selectedRelationDetail.relation.name : "")
-        || relationDescriptionDraft !== (typeof selectedRelationDetail?.relation.description === "string" ? selectedRelationDetail.relation.description : "")
-        || relationSourceDraft !== selectedRelationDetail?.sourceId
-        || relationTargetDraft !== selectedRelationDetail?.targetId;
+      : meaningfulRelationDetailDraft;
     if (dirty) setDetailDismissal(kind);
     else if (kind === "relation" && entityDeletionResolutionId !== null) returnToEntityDeletionResolution();
     else setDetailOpen(false);
@@ -114,7 +123,18 @@ export function useDetailDeletionWorkflow({
       description: relationDescriptionDraft,
     });
     if ("refusal" in result) { onMessage(formatRelationUpdateRefusal(locale, result.refusal)); return; }
-    onDatasetUpdate(result.dataset);
+    let finalDataset = result.dataset;
+    if (relationArrowDisplayTouched) {
+      const presentationResult = writeRelationArrowDisplay(finalDataset, selectedRelationId, relationArrowDisplayDraft);
+      if ("refusal" in presentationResult) {
+        onMessage(formatPresentationWriteRefusal(locale, presentationResult.refusal));
+        return;
+      }
+      finalDataset = presentationResult.dataset;
+    }
+    if (finalDataset !== dataset) onDatasetUpdate(finalDataset);
+    setRelationArrowDisplayDraft(readRelationArrowDisplay(finalDataset, selectedRelationId));
+    setRelationArrowDisplayTouched(false);
     if (entityDeletionResolutionId !== null) returnToEntityDeletionResolution();
     else setDetailOpen(false);
     onMessage("");
@@ -200,24 +220,17 @@ export function useDetailDeletionWorkflow({
     if (!relation) return;
     onSelectRelation(relationId);
     onSelectEntity(null);
-    setRelationNameDraft(typeof relation.name === "string" ? relation.name : "");
-    setRelationDescriptionDraft(typeof relation.description === "string" ? relation.description : "");
-    setRelationSourceDraft(typeof relation.sourceId === "string" ? relation.sourceId : "");
-    setRelationTargetDraft(typeof relation.targetId === "string" ? relation.targetId : "");
-    setDetailOpen(true);
+    initializeRelationDetail(relation, dataset);
   }
 
   function inspectBlockingRelation(relationId: string) {
     if (!entityDeletionResolutionId) return;
-    const relation = dataset?.relations.find(({ id }) => id === relationId);
+    if (!dataset) return;
+    const relation = dataset.relations.find(({ id }) => id === relationId);
     if (!relation) return;
     onSelectRelation(relationId);
     onSelectEntity(null);
-    setRelationNameDraft(typeof relation.name === "string" ? relation.name : "");
-    setRelationDescriptionDraft(typeof relation.description === "string" ? relation.description : "");
-    setRelationSourceDraft(typeof relation.sourceId === "string" ? relation.sourceId : "");
-    setRelationTargetDraft(typeof relation.targetId === "string" ? relation.targetId : "");
-    setDetailOpen(true);
+    initializeRelationDetail(relation, dataset);
   }
 
   function cancelEntityDeletionResolution() {
@@ -240,14 +253,21 @@ export function useDetailDeletionWorkflow({
   }
 
   function openRelationDetail(relationId: string) {
-    const relation = dataset?.relations.find(({ id }) => id === relationId);
+    if (!dataset) return;
+    const relation = dataset.relations.find(({ id }) => id === relationId);
     if (!relation) return;
     onSelectRelation(relationId);
     onSelectEntity(null);
+    initializeRelationDetail(relation, dataset);
+  }
+
+  function initializeRelationDetail(relation: Dataset["relations"][number], sourceDataset: Dataset) {
     setRelationNameDraft(typeof relation.name === "string" ? relation.name : "");
     setRelationDescriptionDraft(typeof relation.description === "string" ? relation.description : "");
     setRelationSourceDraft(typeof relation.sourceId === "string" ? relation.sourceId : "");
     setRelationTargetDraft(typeof relation.targetId === "string" ? relation.targetId : "");
+    setRelationArrowDisplayDraft(readRelationArrowDisplay(sourceDataset, relation.id));
+    setRelationArrowDisplayTouched(false);
     setDetailOpen(true);
   }
 
@@ -266,6 +286,11 @@ export function useDetailDeletionWorkflow({
     setRelationSourceDraft,
     relationTargetDraft,
     setRelationTargetDraft,
+    relationArrowDisplayDraft,
+    changeRelationArrowDisplay: (mode: RelationArrowDisplay) => {
+      setRelationArrowDisplayDraft(mode);
+      setRelationArrowDisplayTouched(true);
+    },
     detailOpen,
     detailDismissal,
     deleteConfirmation,

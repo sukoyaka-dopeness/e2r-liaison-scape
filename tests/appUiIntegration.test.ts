@@ -5,6 +5,111 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { createServer } from "vite";
 import { createDomTestEnvironment } from "./helpers/dom-test-environment.ts";
+import type { Dataset } from "../src/models.ts";
+
+const presentationExtensionId = "draft.github.sukoyaka-dopeness.liaisonscape-presentation";
+
+function RelationDetailWorkflowProbe({ initialDataset, Dialog, useWorkflow, initialLocale = "en" }: { initialDataset: Dataset; Dialog: (props: Record<string, unknown>) => React.ReactElement; useWorkflow: (options: Record<string, unknown>) => Record<string, any>; initialLocale?: "en" | "ja" }) {
+  const [dataset, setDataset] = React.useState(initialDataset);
+  const [locale, setLocale] = React.useState<"en" | "ja">(initialLocale);
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [selectedRelationId, setSelectedRelationId] = React.useState<string | null>(null);
+  const [message, setMessage] = React.useState("");
+  const [updateCount, setUpdateCount] = React.useState(0);
+  const workflow = useWorkflow({
+    dataset,
+    locale,
+    selectedId,
+    selectedRelationId,
+    onDatasetUpdate: (nextDataset) => { setDataset(nextDataset); setUpdateCount((value) => value + 1); },
+    onMessage: setMessage,
+    onSelectEntity: setSelectedId,
+    onSelectRelation: setSelectedRelationId,
+    onEntityDeleted: () => {},
+    onRelationDeleted: () => {},
+  });
+  const detail = workflow.selectedRelationDetail;
+  const entityEndpoints = detail !== null
+    && dataset.entities.some(({ id }) => id === detail.sourceId)
+    && dataset.entities.some(({ id }) => id === detail.targetId);
+  const dialog = workflow.detailOpen && detail
+    ? React.createElement(Dialog, {
+      locale,
+      relation: detail.relation,
+      sourceId: detail.sourceId,
+      targetId: detail.targetId,
+      source: detail.source,
+      target: detail.target,
+      entities: dataset.entities,
+      name: workflow.relationNameDraft,
+      description: workflow.relationDescriptionDraft,
+      arrowDisplay: workflow.relationArrowDisplayDraft,
+      onArrowDisplayChange: workflow.changeRelationArrowDisplay,
+      saveDisabled: !workflow.meaningfulRelationDetailDraft,
+      endpointEditing: entityEndpoints ? {
+        entities: dataset.entities,
+        sourceId: workflow.relationSourceDraft,
+        targetId: workflow.relationTargetDraft,
+        onSourceChange: workflow.setRelationSourceDraft,
+        onTargetChange: workflow.setRelationTargetDraft,
+      } : undefined,
+      onNameChange: workflow.setRelationNameDraft,
+      onDescriptionChange: workflow.setRelationDescriptionDraft,
+      onSave: workflow.saveRelationDetails,
+      onDelete: () => {},
+      onClose: workflow.requestDetailDismissal,
+    })
+    : null;
+  return React.createElement("div", null,
+    React.createElement("button", { id: "probe-open", type: "button", onClick: () => workflow.openRelationDetail("relation") }, "Open"),
+    React.createElement("button", { id: "probe-locale", type: "button", onClick: () => setLocale((value) => value === "en" ? "ja" : "en") }, "Locale"),
+    React.createElement("button", { id: "probe-name-only", type: "button", onClick: () => workflow.setRelationNameDraft("Name only") }, "Name only"),
+    React.createElement("button", { id: "probe-core-name", type: "button", onClick: () => workflow.setRelationNameDraft("Core changed") }, "Core changed"),
+    React.createElement("button", { id: "probe-blocked-name", type: "button", onClick: () => workflow.setRelationNameDraft("Must not partially save") }, "Blocked name"),
+    React.createElement("output", { id: "probe-state" }, JSON.stringify({ dataset, detailOpen: workflow.detailOpen, message, updateCount })),
+    dialog,
+    workflow.detailDismissal && React.createElement("div", { id: "probe-dismissal" },
+      React.createElement("button", { type: "button", onClick: workflow.cancelDetailDismissal }, "Cancel"),
+      React.createElement("button", { type: "button", onClick: workflow.discardDetailDraft }, "Discard")),
+  );
+}
+
+async function withRelationDetailProbe(dataset: Dataset, callback: (environment: ReturnType<typeof createDomTestEnvironment>) => Promise<void>) {
+  const environment = createDomTestEnvironment();
+  environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+  const root = createRoot(container);
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+  try {
+    const [{ RelationDetailDialog }, { useDetailDeletionWorkflow }] = await Promise.all([
+      server.ssrLoadModule("/src/components/RelationDetailDialog.tsx"),
+      server.ssrLoadModule("/src/hooks/useDetailDeletionWorkflow.ts"),
+    ]);
+    await act(async () => root.render(React.createElement(RelationDetailWorkflowProbe, { initialDataset: dataset, Dialog: RelationDetailDialog, useWorkflow: useDetailDeletionWorkflow })));
+    await callback(environment);
+  } finally {
+    await act(async () => root.unmount());
+    await server.close();
+    await environment.cleanup();
+  }
+}
+
+function probeSnapshot(environment: ReturnType<typeof createDomTestEnvironment>) {
+  return JSON.parse(environment.document.querySelector("#probe-state")?.textContent ?? "{}") as { dataset: Dataset; detailOpen: boolean; message: string; updateCount: number };
+}
+
+async function changeProbeSelect(environment: ReturnType<typeof createDomTestEnvironment>, value: string) {
+  const select = environment.document.querySelector("#relation-arrow-display") as HTMLSelectElement;
+  await act(async () => {
+    select.value = value;
+    select.dispatchEvent(new environment.window.Event("change", { bubbles: true }));
+  });
+}
+
+async function setProbeName(environment: ReturnType<typeof createDomTestEnvironment>, id: string) {
+  await act(async () => { (environment.document.querySelector(`#${id}`) as HTMLButtonElement).click(); });
+}
 
 test("renders the production LiaisonScape Home surface", async () => {
   const environment = createDomTestEnvironment();
@@ -73,7 +178,7 @@ test("opens an exact targeted Relation inspection request on the existing Detail
 
     assert.ok(environment.document.querySelector("#relation-detail-title"));
     assert.match(environment.document.querySelector(".detail-object-id")?.textContent ?? "", /relation-target/);
-    assert.deepEqual([environment.document.querySelector('label[for="relation-source"]')?.textContent, environment.document.querySelector('label[for="relation-target"]')?.textContent], ["Source", "Target"]);
+    assert.deepEqual([environment.document.querySelector('label[for="relation-source"]')?.textContent, environment.document.querySelector('label[for="relation-target"]')?.textContent], ["Connected object", "Connected object"]);
     assert.equal(environment.document.querySelector(".confirmation-relation"), null);
     assert.equal(environment.document.querySelector(".confirmation-entity"), null);
     assert.match(environment.window.location.hash, /locale=ja/);
@@ -108,21 +213,24 @@ test("renders type-neutral Relation Detail roles for Event endpoints in both dir
         entities: [entity],
         name: relation.name,
         description: "",
+        arrowDisplay: "normal",
         onNameChange: () => {},
         onDescriptionChange: () => {},
+        onArrowDisplayChange: () => {},
+        saveDisabled: true,
         onSave: () => {},
         onDelete: () => {},
         onClose: () => {},
       })));
-      return [...environment.document.querySelectorAll(".detail > dl:first-of-type dt")].map((element) => element.textContent);
+      return [...environment.document.querySelectorAll(".detail-fields > span > strong")].map((element) => element.textContent);
     };
 
-    assert.deepEqual(await renderDetail("en", event, entity), ["Source", "Target"]);
-    assert.match(environment.document.querySelector(".detail > dl:first-of-type")?.textContent ?? "", /Event endpoint.*Entity endpoint/s);
-    assert.doesNotMatch([...environment.document.querySelectorAll(".detail > dl:first-of-type dt")].map((element) => element.textContent).join(" "), /Entity/);
-    assert.deepEqual(await renderDetail("ja", entity, event), ["始点", "終点"]);
-    assert.match(environment.document.querySelector(".detail > dl:first-of-type")?.textContent ?? "", /Entity endpoint.*Event endpoint/s);
-    assert.doesNotMatch([...environment.document.querySelectorAll(".detail > dl:first-of-type dt")].map((element) => element.textContent).join(" "), /エンティティ/);
+    assert.deepEqual(await renderDetail("en", event, entity), ["Connected object", "Connected object"]);
+    assert.match(environment.document.querySelector(".detail-fields")?.textContent ?? "", /Event endpoint.*Entity endpoint/s);
+    assert.doesNotMatch([...environment.document.querySelectorAll(".detail-fields > span > strong")].map((element) => element.textContent).join(" "), /Entity/);
+    assert.deepEqual(await renderDetail("ja", entity, event), ["つながり先", "つながり先"]);
+    assert.match(environment.document.querySelector(".detail-fields")?.textContent ?? "", /Entity endpoint.*Event endpoint/s);
+    assert.doesNotMatch([...environment.document.querySelectorAll(".detail-fields > span > strong")].map((element) => element.textContent).join(" "), /エンティティ/);
   } finally {
     await environment.cleanup();
   }
@@ -620,4 +728,169 @@ test("autofocuses only the Entity creation Name field", () => {
   assert.doesNotMatch(creation, /id="creation-source"[^>]*autoFocus/);
   assert.doesNotMatch(creation, /id="creation-target"[^>]*autoFocus/);
   assert.doesNotMatch(creation, /id="creation-name" autoFocus=\{true\}/);
+});
+
+const relationDetailDataset: Dataset = {
+  version: "1.0",
+  entities: [{ id: "source", name: "Source" }, { id: "target", name: "Target" }],
+  events: [],
+  relations: [{ id: "relation", sourceId: "source", targetId: "target", name: "Original", description: "Description" }],
+};
+
+test("integrates the Relation Detail Arrow display control and field hierarchy", async () => {
+  await withRelationDetailProbe(relationDetailDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    assert.deepEqual([...environment.document.querySelectorAll(".detail-fields > label")].map((element) => element.textContent), ["Name", "Connected object", "Arrow display", "Connected object", "Description"]);
+    assert.deepEqual([...environment.document.querySelectorAll("#relation-arrow-display option")].map((element) => [element.getAttribute("value"), element.textContent]), [["normal", "→"], ["reverse", "←"], ["undirected", "—"], ["bidirectional", "↔"]]);
+    assert.equal((environment.document.querySelector(".detail-actions button") as HTMLButtonElement).disabled, true);
+
+    await changeProbeSelect(environment, "reverse");
+    assert.equal((environment.document.querySelector(".detail-actions button") as HTMLButtonElement).disabled, false);
+    await act(async () => { (environment.document.querySelector("#probe-locale") as HTMLButtonElement).click(); });
+    assert.deepEqual([...environment.document.querySelectorAll(".detail-fields > label")].map((element) => element.textContent), ["名前", "つながり先", "矢印の表示", "つながり先", "説明"]);
+    assert.equal((environment.document.querySelector("#relation-arrow-display") as HTMLSelectElement).value, "reverse");
+  });
+});
+
+test("saves Arrow display through one atomic workflow transaction and preserves its safety semantics", async () => {
+  await withRelationDetailProbe(relationDetailDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeSelect(environment, "reverse");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    let snapshot = probeSnapshot(environment);
+    assert.equal(snapshot.updateCount, 1);
+    assert.equal(snapshot.detailOpen, false);
+    assert.equal(snapshot.dataset.relations[0]?.name, "Original");
+    assert.equal((snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, { arrowDisplay: string }> }).relations.relation.arrowDisplay, "reverse");
+
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeSelect(environment, "undirected");
+    await act(async () => { (environment.document.querySelector("#probe-locale") as HTMLButtonElement).click(); });
+    assert.equal((environment.document.querySelector("#relation-arrow-display") as HTMLSelectElement).value, "undirected");
+    await act(async () => { (environment.document.querySelector(".detail-header button") as HTMLButtonElement).click(); });
+    assert.ok(environment.document.querySelector("#probe-dismissal"));
+    await act(async () => { (environment.document.querySelector("#probe-dismissal button") as HTMLButtonElement).click(); });
+    assert.equal((environment.document.querySelector("#relation-arrow-display") as HTMLSelectElement).value, "undirected");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    snapshot = probeSnapshot(environment);
+    assert.equal(snapshot.updateCount, 2);
+    assert.equal(snapshot.detailOpen, false);
+    assert.equal((snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, { arrowDisplay: string }> }).relations.relation.arrowDisplay, "undirected");
+  });
+
+  const unknownDataset: Dataset = {
+    ...relationDetailDataset,
+    relations: [{ ...relationDetailDataset.relations[0], name: "Unknown original" }],
+    extensions: {
+      [presentationExtensionId]: {
+        specVersion: "0.1.0",
+        relations: { relation: { arrowDisplay: "future-mode", unknownField: "keep" } },
+      },
+    },
+  };
+  await withRelationDetailProbe(unknownDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await setProbeName(environment, "probe-name-only");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    let snapshot = probeSnapshot(environment);
+    const record = (snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, Record<string, string>> }).relations.relation;
+    assert.equal(record.arrowDisplay, "future-mode");
+    assert.equal(record.unknownField, "keep");
+
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeSelect(environment, "reverse");
+    await changeProbeSelect(environment, "normal");
+    assert.equal((environment.document.querySelector(".detail-actions button") as HTMLButtonElement).disabled, false);
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    snapshot = probeSnapshot(environment);
+    const normalizedRecord = (snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, Record<string, string>> }).relations.relation;
+    assert.equal(normalizedRecord.arrowDisplay, undefined);
+    assert.equal(normalizedRecord.unknownField, "keep");
+  });
+
+  const reverseDataset: Dataset = {
+    ...relationDetailDataset,
+    extensions: { [presentationExtensionId]: { specVersion: "0.1.0", relations: { relation: { arrowDisplay: "reverse" } } } },
+  };
+  await withRelationDetailProbe(reverseDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeSelect(environment, "reverse");
+    assert.equal((environment.document.querySelector(".detail-actions button") as HTMLButtonElement).disabled, true);
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    assert.equal(probeSnapshot(environment).updateCount, 0);
+  });
+});
+
+test("refuses unsafe Arrow display writes atomically and protects unsaved Arrow dismissal", async () => {
+  const unsupportedDataset: Dataset = {
+    ...relationDetailDataset,
+    extensions: { [presentationExtensionId]: { specVersion: "9.9.9", relations: { relation: { arrowDisplay: "reverse" } } } },
+  };
+  await withRelationDetailProbe(unsupportedDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await setProbeName(environment, "probe-core-name");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    let snapshot = probeSnapshot(environment);
+    assert.equal(snapshot.updateCount, 1);
+    assert.equal(snapshot.dataset.relations[0]?.name, "Core changed");
+    assert.equal((snapshot.dataset.extensions?.[presentationExtensionId] as { specVersion: string }).specVersion, "9.9.9");
+
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await setProbeName(environment, "probe-blocked-name");
+    await changeProbeSelect(environment, "reverse");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    snapshot = probeSnapshot(environment);
+    assert.equal(snapshot.updateCount, 1);
+    assert.equal(snapshot.detailOpen, true);
+    assert.equal(snapshot.dataset.relations[0]?.name, "Core changed");
+    assert.match(snapshot.message, /Could not save the arrow display because this Dataset's display settings cannot be safely updated\./);
+
+    await act(async () => { (environment.document.querySelector(".detail-header button") as HTMLButtonElement).click(); });
+    assert.ok(environment.document.querySelector("#probe-dismissal"));
+    await act(async () => { (environment.document.querySelector("#probe-dismissal button") as HTMLButtonElement).click(); });
+    assert.equal((environment.document.querySelector("#relation-arrow-display") as HTMLSelectElement).value, "reverse");
+    await act(async () => { (environment.document.querySelector(".detail-header button") as HTMLButtonElement).click(); });
+    await act(async () => { (environment.document.querySelectorAll("#probe-dismissal button")[1] as HTMLButtonElement).click(); });
+    assert.equal(probeSnapshot(environment).updateCount, 1);
+  });
+});
+
+test("routes a real Relation Detail Arrow save through App updateDataset and the dirty baseline", async () => {
+  const environment = createDomTestEnvironment({
+    url: "https://liaisonscape.test/#locale=en&datasetUrl=https%3A%2F%2Fdata.example%2Fdataset.json&targetObjectId=relation&targetObjectType=Relation&requiredCapability=relation.inspect&targetContractVersion=1",
+  });
+  environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  environment.window.requestAnimationFrame = (callback: FrameRequestCallback) => { callback(0); return 0; };
+  environment.window.cancelAnimationFrame = () => {};
+  environment.window.scrollTo = () => {};
+  environment.window.HTMLElement.prototype.scrollIntoView = () => {};
+  environment.installGlobal("fetch", async () => ({ ok: true, text: async () => JSON.stringify(relationDetailDataset) }));
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+
+  try {
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    environment.addCleanup(() => server.close());
+    const root = createRoot(container);
+    environment.addCleanup(() => act(async () => root.unmount()));
+    const { default: App } = await server.ssrLoadModule("/src/App.tsx");
+    await act(async () => root.render(React.createElement(App)));
+    await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+
+    assert.deepEqual([...environment.document.querySelectorAll(".detail-fields > label")].map((element) => element.textContent), ["Name", "Connected object", "Arrow display", "Connected object", "Description"]);
+    const arrowDisplay = environment.document.querySelector("#relation-arrow-display") as HTMLSelectElement;
+    arrowDisplay.value = "reverse";
+    await act(async () => { arrowDisplay.dispatchEvent(new environment.window.Event("change", { bubbles: true })); });
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    assert.equal(environment.document.querySelector("#relation-detail-title"), null);
+    assert.equal(environment.document.querySelectorAll('.edge-group[data-relation-id="relation"] .edge-arrowhead').length, 1);
+
+    await act(async () => { (environment.document.querySelector(".header-home-button") as HTMLAnchorElement).click(); });
+    const newDatasetButton = [...environment.document.querySelectorAll("button")].find((button) => button.textContent === "New Dataset");
+    assert.ok(newDatasetButton);
+    await act(async () => { newDatasetButton?.click(); });
+    assert.ok(environment.document.querySelector(".replacement-confirmation"));
+  } finally {
+    await environment.cleanup();
+  }
 });
