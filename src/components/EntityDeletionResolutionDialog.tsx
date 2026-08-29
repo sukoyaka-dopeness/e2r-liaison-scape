@@ -59,8 +59,9 @@ export function EntityDeletionResolutionDialog({ locale, dataset, entity, relati
             const display = displays.get(relation.id)!;
             return <article className="entity-deletion-resolution__relation" key={relation.id} data-relation-id={relation.id}>
               <div className="entity-deletion-resolution__identity">
-                {display.relationName && <strong>{display.relationName}</strong>}
-                <span>{display.source} → {display.target}</span>
+                {display.relationName && <span className="related-relation-field"><span className="related-relation-label">{translate(locale, "name")}</span><span className="related-relation-value">{display.relationName}</span></span>}
+                <span className="related-relation-field"><span className="related-relation-label">{translate(locale, "connectedObject")}</span><span className="related-relation-value">{display.source}</span></span>
+                <span className="related-relation-field"><span className="related-relation-label">{translate(locale, "connectedObject")}</span><span className="related-relation-value">{display.target}</span></span>
                 {display.relationIdHint && <span className="entity-deletion-resolution__id-hint">{display.relationIdHint}</span>}
               </div>
               <button

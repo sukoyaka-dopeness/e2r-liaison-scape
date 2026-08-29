@@ -523,6 +523,72 @@ test("keeps Entity deletion presentation safe-first and human-facing", () => {
   assert.match(styles, /\.entity-deletion-resolution__actions button \{ width: 100%; \}/);
 });
 
+test("renders Entity deletion blockers as labeled connected-object rows in both locales", async () => {
+  const environment = createDomTestEnvironment();
+  environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+  const dataset = {
+    version: "1.0",
+    entities: [{ id: "entity-a", name: "A" }, { id: "entity-b", name: "B" }],
+    events: [{ id: "event-1", name: "An event" }],
+    relations: [
+      { id: "self-relation", sourceId: "entity-a", targetId: "entity-a", name: "Self" },
+      { id: "parallel-alpha", sourceId: "entity-a", targetId: "entity-b", name: "Parallel" },
+      { id: "parallel-beta", sourceId: "entity-a", targetId: "entity-b", name: "Parallel" },
+      { id: "event-relation", sourceId: "event-1", targetId: "entity-a", name: "Event link" },
+    ],
+  };
+
+  try {
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    environment.addCleanup(() => server.close());
+    const root = createRoot(container);
+    environment.addCleanup(() => act(async () => root.unmount()));
+    const { EntityDeletionResolutionDialog } = await server.ssrLoadModule("/src/components/EntityDeletionResolutionDialog.tsx");
+    const render = async (locale: "en" | "ja") => {
+      await act(async () => root.render(React.createElement(EntityDeletionResolutionDialog, {
+        locale,
+        dataset,
+        entity: dataset.entities[0],
+        relations: dataset.relations,
+        onInspectRelation: () => {},
+        onKeepEntity: () => {},
+        onDeleteEntity: () => {},
+        focusRequest: { relationId: null, requestId: 0 },
+      })));
+      return [...environment.document.querySelectorAll(".entity-deletion-resolution__relation")].map((card) => ({
+        rows: [...card.querySelectorAll(".related-relation-field")].map((row) => [
+          row.querySelector(".related-relation-label")?.textContent,
+          row.querySelector(".related-relation-value")?.textContent,
+        ]),
+        text: card.textContent ?? "",
+      }));
+    };
+
+    const english = await render("en");
+    assert.equal(english.length, 4);
+    assert.deepEqual(english[0]?.rows, [["Name", "Self"], ["Connected object", "A"], ["Connected object", "A"]]);
+    assert.deepEqual(english[3]?.rows, [["Name", "Event link"], ["Connected object", "An event"], ["Connected object", "A"]]);
+    assert.deepEqual(english.slice(1, 3).map(({ rows }) => rows.map(([label]) => label)), [
+      ["Name", "Connected object", "Connected object"],
+      ["Name", "Connected object", "Connected object"],
+    ]);
+    assert.ok(english.slice(1, 3).every(({ text }) => !text.includes("→")));
+    assert.deepEqual(english.slice(1, 3).map(({ text }) => text.match(/parallel-[ab]/)?.[0]), ["parallel-a", "parallel-b"]);
+    assert.match(environment.document.querySelector(".entity-deletion-resolution__actions")?.textContent ?? "", /Keep Entity/);
+    assert.match(environment.document.querySelector('[data-relation-id="event-relation"]')?.textContent ?? "", /Inspect Relation/);
+
+    const japanese = await render("ja");
+    assert.equal(japanese.length, 4);
+    assert.deepEqual(japanese[3]?.rows, [["名前", "Event link"], ["つながり先", "An event"], ["つながり先", "A"]]);
+    assert.ok(japanese.every(({ rows }) => rows.every(([label]) => label === "名前" || label === "つながり先")));
+    assert.ok(japanese.every(({ text }) => !text.includes("→")));
+  } finally {
+    await environment.cleanup();
+  }
+});
+
 test("contains Entity deletion focus and restores safe workflow targets", () => {
   const app = readFileSync("src/App.tsx", "utf8");
   const workflow = readFileSync("src/hooks/useDetailDeletionWorkflow.ts", "utf8");
