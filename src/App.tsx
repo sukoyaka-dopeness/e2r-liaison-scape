@@ -301,6 +301,19 @@ export default function App() {
     const occupiedPaths: Array<Array<{ x: number; y: number }>> = [];
     const overlapCounts = new Map<string, number>();
     const routedById = new Map<string, ReturnType<typeof routeGraphEdge> & { label: string; parallelSolverEligible: boolean }>();
+    const provisionalNodeLabels = graph.nodes.map((node) => {
+      const position = positions[node.id] ?? node;
+      const automatic = placeNodeLabel(
+        position,
+        node.label,
+        node.description,
+        [],
+        graph.nodes.filter(({ id }) => id !== node.id).map((other) => positions[other.id] ?? other),
+        [],
+      );
+      const manual = manualNodeLabelOffsets.current.get(node.id);
+      return manual ? { ...automatic, x: position.x + manual.x, y: position.y + manual.y } : automatic;
+    });
     const compareRoutingPriority = (left: typeof graph.edges[number], right: typeof graph.edges[number]) =>
       left.sourceId.localeCompare(right.sourceId)
       || left.targetId.localeCompare(right.targetId)
@@ -341,6 +354,7 @@ export default function App() {
         overlapIndex,
         edgeCurveOffsets[edge.id],
         selfLoopOverrides[edge.id],
+        provisionalNodeLabels,
       );
       const routeWithoutObstacles = edge.parallelCount > 1
         && edge.sourceId !== edge.targetId

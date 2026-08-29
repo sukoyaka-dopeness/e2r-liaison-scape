@@ -2,8 +2,26 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { COORDINATE_DRAFT_EXTENSION_ID, COORDINATE_EXTENSION_ID, applyStoredCoordinates, buildEntityGraph, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type Dataset, type GraphEdge } from "../src/dataset.ts";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, getEntityAttachment, graphEdgePath, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, wrapNodeLabel, zoomScale } from "../src/viewport.ts";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, getEntityAttachment, graphEdgePath, minimumPathToLabelRectDistance, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, wrapNodeLabel, zoomScale } from "../src/viewport.ts";
 import { interpolateLabelRect, isLabelTransitionPathSafe, reconcileRelationLabelVisualState } from "../src/relation-label-presentation.ts";
+
+test("automatic Relation routing treats node labels as rectangular obstacles", () => {
+  const label = { x: 150, y: 100, width: 120, height: 48, directionX: 0, directionY: 1 };
+  const base = routeGraphEdge({ x: 0, y: 100 }, { x: 300, y: 100 }, 0, 1, [], []);
+  const avoided = routeGraphEdge({ x: 0, y: 100 }, { x: 300, y: 100 }, 0, 1, [], [], false, 0, undefined, undefined, [label]);
+  assert.equal(minimumPathToLabelRectDistance(base.samples, label), 0);
+  assert.ok(minimumPathToLabelRectDistance(avoided.samples, label) > 0);
+  assert.equal(minimumPathToLabelRectDistance(avoided.samples, label), minimumPathToLabelRectDistance(
+    routeGraphEdge({ x: 0, y: 100 }, { x: 300, y: 100 }, 0, 1, [], [], false, 0, undefined, undefined, [label]).samples,
+    label,
+  ));
+});
+
+test("manual Relation route remains authoritative with node-label obstacles", () => {
+  const label = { x: 150, y: 100, width: 120, height: 48, directionX: 0, directionY: 1 };
+  const manual = routeGraphEdge({ x: 0, y: 100 }, { x: 300, y: 100 }, 0, 1, [], [], false, 0, 0, undefined, [label]);
+  assert.equal(minimumPathToLabelRectDistance(manual.samples, label), 0);
+});
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualNodeLabelPosition, reconstructManualRelationLabelTarget } from "../src/relation-label-presentation.ts";
 import { boundedHoverDescription, composeHoverLines, placementOwnership } from "../src/placement-ownership.ts";
 import { buildRelatedRelationDisplay } from "../src/related-relation-display.ts";

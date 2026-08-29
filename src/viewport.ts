@@ -331,6 +331,20 @@ export function getArrowheadGeometry(samples: Point[], strokeWidth: number): Arr
 }
 export type LabelRect = Point & { width: number; height: number; directionX: number; directionY: number };
 
+export function minimumPathToLabelRectDistance(samples: Point[], rect: LabelRect): number {
+  if (!samples.length || !Number.isFinite(rect.x) || !Number.isFinite(rect.y) || !Number.isFinite(rect.width) || !Number.isFinite(rect.height)) return Infinity;
+  const left = rect.x - rect.width / 2;
+  const right = rect.x + rect.width / 2;
+  const top = rect.y - rect.height / 2;
+  const bottom = rect.y + rect.height / 2;
+  return samples.reduce((minimum, point) => {
+    if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return minimum;
+    const dx = Math.max(left - point.x, 0, point.x - right);
+    const dy = Math.max(top - point.y, 0, point.y - bottom);
+    return Math.min(minimum, Math.hypot(dx, dy));
+  }, Infinity);
+}
+
 function rectOverlapArea(left: LabelRect, right: LabelRect): number {
   const overlapWidth = Math.max(0, Math.min(left.x + left.width / 2, right.x + right.width / 2)
     - Math.max(left.x - left.width / 2, right.x - right.width / 2));
@@ -585,6 +599,7 @@ export function routeGraphEdge(
   overlapIndex = occupiedPaths.length,
   manualOffset?: number,
   manualSelfLoop?: { orientation: number; radius: number },
+  labelRects: LabelRect[] = [],
 ): { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point } {
   if (source.x === target.x && source.y === target.y && selfRelation) {
     if (manualSelfLoop === undefined) return selectAutomaticSelfLoopGeometry(source, parallelIndex, obstacles);
@@ -755,7 +770,13 @@ export function routeGraphEdge(
       }
       return false;
     });
-    const score = nodeOverlapScore * 100 + (overlapsEdge ? 10000 : 0) + Math.abs(candidateOffset) * .01;
+    const labelPressure = labelRects.reduce((total, rect) => {
+      const distance = minimumPathToLabelRectDistance(samples, rect);
+      if (distance === 0) return total + 100000;
+      const halo = 20;
+      return total + (distance < halo ? (halo - distance) ** 2 * 20 : 0);
+    }, 0);
+    const score = nodeOverlapScore * 100 + (overlapsEdge ? 10000 : 0) + labelPressure + Math.abs(candidateOffset) * .01;
     if (score < bestScore) {
       bestGeometry = geometry;
       bestScore = score;
