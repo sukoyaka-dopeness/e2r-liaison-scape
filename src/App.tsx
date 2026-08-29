@@ -28,6 +28,7 @@ import { clearDatasetHandoffFragment, parseTargetedDatasetHandoffFragment, type 
 import { resolveRelationTarget, supportsRelationHandoffCapability } from "./capability-handoff";
 import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
+import { placeInitialEntities } from "./entity-placement";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
@@ -793,13 +794,14 @@ export default function App() {
     closeDetail();
     const storedPositions = getStoredCoordinates(nextDataset);
     const openedGraph = buildEntityGraph(nextDataset);
+    const initialPositions = placeInitialEntities(openedGraph.nodes, openedGraph.edges, storedPositions);
     setNodeLayerOrder(openedGraph.nodes.map(({ id }) => id));
     setEdgeLayerOrder(openedGraph.edges.map(({ id }) => id));
     setEdgeLabelOffsets({});
     setEdgeCurveOffsets({});
     setSelfLoopOverrides({});
-    const fittedView = fitGraphView(openedGraph.nodes.map((node) => storedPositions[node.id] ?? node), 800, 500);
-    setPositions(storedPositions);
+    const fittedView = fitGraphView(openedGraph.nodes.map((node) => initialPositions[node.id] ?? node), 800, 500);
+    setPositions(initialPositions);
     setCoordinatesDirty(false);
     adoptedCoordinateEntityIdsRef.current.clear();
     setPan(fittedView.pan);
