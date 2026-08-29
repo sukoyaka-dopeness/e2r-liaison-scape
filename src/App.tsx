@@ -16,7 +16,7 @@ import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { EntityDeletionResolutionDialog } from "./components/EntityDeletionResolutionDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
-import { readRelationArrowDisplay } from "./presentation-extension";
+import { readRelationArrowDisplay, readRelationLineStyle } from "./presentation-extension";
 import { getRelationArrowheadGeometries } from "./relation-arrow-presentation";
 import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
@@ -1753,6 +1753,7 @@ export default function App() {
                 return <line className={`relation-creation-preview${relationCreationPreview.targetId ? " valid" : ""}`} x1={sourcePoint.x} y1={sourcePoint.y} x2={relationCreationPreview.point.x} y2={relationCreationPreview.point.y} />;
               })()}
               {displayedEdges.map((edge) => {
+                const lineStyle = readRelationLineStyle(dataset, edge.id);
                 return <g
                   key={edge.id}
                   className={`edge-group${selectedRelationId === edge.id ? " selected" : ""}`}
@@ -1774,7 +1775,7 @@ export default function App() {
                   }}
                 >
                   <path d={edge.path} className="edge-halo" />
-                  <path d={edge.path} className="edge" />
+                  <path d={edge.path} className={`edge line-style-${lineStyle}`} />
                   {getRelationArrowheadGeometries(
                     edge.samples,
                     readRelationArrowDisplay(dataset, edge.id),

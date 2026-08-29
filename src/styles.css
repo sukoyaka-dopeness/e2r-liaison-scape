@@ -125,6 +125,8 @@ li { margin: .35rem 0; }
 .edge-group { color: #6b7280; }
 .edge-group.selected { color: #2563eb; }
 .edge { fill: none; stroke: currentColor; stroke-width: 2; pointer-events: none; }
+.edge.line-style-dashed { stroke-dasharray: 8 5; }
+.edge.line-style-dotted { stroke-dasharray: 1 5; stroke-linecap: round; }
 .edge-arrowhead { fill: currentColor; pointer-events: none; }
 .edge-group.selected .edge { stroke-width: 2.75; }
 .edge-halo { pointer-events: none; }

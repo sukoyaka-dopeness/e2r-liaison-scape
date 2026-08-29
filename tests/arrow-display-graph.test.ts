@@ -6,7 +6,7 @@ import { createServer } from "vite";
 
 import { createDomTestEnvironment } from "./helpers/dom-test-environment.ts";
 
-test("renders Dataset-contained arrow display modes by Relation ID", async () => {
+test("renders Dataset-contained arrow display modes and line styles by Relation ID", async () => {
   const dataset = {
     version: "1.0",
     entities: [
@@ -18,23 +18,31 @@ test("renders Dataset-contained arrow display modes by Relation ID", async () =>
     events: [],
     relations: [
       { id: "r-normal", sourceId: "a", targetId: "b", name: "Normal" },
+      { id: "r-explicit-solid", sourceId: "b", targetId: "a", name: "Explicit solid" },
+      { id: "r-normal-dashed", sourceId: "a", targetId: "d", name: "Normal dashed" },
+      { id: "r-normal-dotted", sourceId: "c", targetId: "b", name: "Normal dotted" },
       { id: "r-reverse", sourceId: "b", targetId: "c", name: "Reverse" },
       { id: "r-undirected", sourceId: "c", targetId: "d", name: "Undirected" },
       { id: "r-bidirectional", sourceId: "d", targetId: "a", name: "Bidirectional" },
       { id: "r-unknown", sourceId: "a", targetId: "c", name: "Unknown" },
       { id: "r-parallel-reverse", sourceId: "b", targetId: "d", name: "Parallel reverse" },
       { id: "r-parallel-bidirectional", sourceId: "b", targetId: "d", name: "Parallel bidirectional" },
+      { id: "r-self", sourceId: "a", targetId: "a", name: "Self" },
     ],
     extensions: {
       "draft.github.sukoyaka-dopeness.liaisonscape-presentation": {
         specVersion: "0.1.0",
         relations: {
-          "r-reverse": { arrowDisplay: "reverse" },
-          "r-undirected": { arrowDisplay: "undirected" },
-          "r-bidirectional": { arrowDisplay: "bidirectional" },
+          "r-explicit-solid": { lineStyle: "solid" },
+          "r-normal-dashed": { lineStyle: "dashed" },
+          "r-normal-dotted": { lineStyle: "dotted" },
+          "r-reverse": { arrowDisplay: "reverse", lineStyle: "dashed" },
+          "r-undirected": { arrowDisplay: "undirected", lineStyle: "dotted" },
+          "r-bidirectional": { arrowDisplay: "bidirectional", lineStyle: "dashed" },
           "r-unknown": { arrowDisplay: "future-mode" },
-          "r-parallel-reverse": { arrowDisplay: "reverse" },
-          "r-parallel-bidirectional": { arrowDisplay: "bidirectional" },
+          "r-parallel-reverse": { arrowDisplay: "reverse", lineStyle: "solid" },
+          "r-parallel-bidirectional": { arrowDisplay: "bidirectional", lineStyle: "dotted" },
+          "r-self": { arrowDisplay: "bidirectional", lineStyle: "dotted" },
         },
       },
     },
@@ -64,17 +72,40 @@ test("renders Dataset-contained arrow display modes by Relation ID", async () =>
       environment.document.querySelectorAll(`.edge-group[data-relation-id="${relationId}"] .edge-arrowhead`).length;
     const edgeGroup = (relationId: string) => environment.document.querySelector(`.edge-group[data-relation-id="${relationId}"]`);
     assert.equal(arrowheadCount("r-normal"), 1);
+    assert.equal(arrowheadCount("r-explicit-solid"), 1);
+    assert.equal(arrowheadCount("r-normal-dashed"), 1);
+    assert.equal(arrowheadCount("r-normal-dotted"), 1);
     assert.equal(arrowheadCount("r-reverse"), 1);
     assert.equal(arrowheadCount("r-undirected"), 0);
     assert.equal(arrowheadCount("r-bidirectional"), 2);
     assert.equal(arrowheadCount("r-unknown"), 1);
     assert.equal(arrowheadCount("r-parallel-reverse"), 1);
     assert.equal(arrowheadCount("r-parallel-bidirectional"), 2);
+    assert.equal(arrowheadCount("r-self"), 2);
 
-    for (const relationId of ["r-normal", "r-reverse", "r-undirected", "r-bidirectional", "r-unknown"]) {
-      assert.equal(edgeGroup(relationId)?.querySelectorAll(".edge").length, 1);
-      assert.equal(edgeGroup(relationId)?.querySelectorAll(".edge-hit-area").length, 1);
+    const edgeClass = (relationId: string) => edgeGroup(relationId)?.querySelector(".edge")?.getAttribute("class");
+    assert.equal(edgeClass("r-normal"), "edge line-style-solid");
+    assert.equal(edgeClass("r-explicit-solid"), "edge line-style-solid");
+    assert.equal(edgeClass("r-normal-dashed"), "edge line-style-dashed");
+    assert.equal(edgeClass("r-normal-dotted"), "edge line-style-dotted");
+    assert.equal(edgeClass("r-reverse"), "edge line-style-dashed");
+    assert.equal(edgeClass("r-undirected"), "edge line-style-dotted");
+    assert.equal(edgeClass("r-bidirectional"), "edge line-style-dashed");
+    assert.equal(edgeClass("r-unknown"), "edge line-style-solid");
+    assert.equal(edgeClass("r-parallel-reverse"), "edge line-style-solid");
+    assert.equal(edgeClass("r-parallel-bidirectional"), "edge line-style-dotted");
+    assert.equal(edgeClass("r-self"), "edge line-style-dotted");
+
+    for (const relationId of ["r-normal", "r-explicit-solid", "r-normal-dashed", "r-normal-dotted", "r-reverse", "r-undirected", "r-bidirectional", "r-unknown", "r-parallel-reverse", "r-parallel-bidirectional", "r-self"]) {
+      const group = edgeGroup(relationId);
+      assert.equal(group?.querySelectorAll(".edge").length, 1);
+      assert.equal(group?.querySelectorAll(".edge-hit-area").length, 1);
+      assert.equal(group?.querySelectorAll(".edge-halo").length, 1);
+      assert.equal(group?.querySelector(".edge-hit-area")?.getAttribute("class")?.includes("line-style-"), false);
+      assert.equal(group?.querySelector(".edge-halo")?.getAttribute("class")?.includes("line-style-"), false);
+      assert.equal(group?.querySelector(".edge")?.getAttribute("d")?.includes("NaN"), false);
     }
+    assert.notEqual(edgeGroup("r-parallel-reverse")?.querySelector(".edge")?.getAttribute("d"), edgeGroup("r-parallel-bidirectional")?.querySelector(".edge")?.getAttribute("d"));
   } finally {
     await environment.cleanup();
   }
