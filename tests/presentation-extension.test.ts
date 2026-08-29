@@ -4,7 +4,9 @@ import test from "node:test";
 import {
   PRESENTATION_EXTENSION_ID,
   readRelationArrowDisplay,
+  readRelationLineStyle,
   writeRelationArrowDisplay,
+  writeRelationLineStyle,
   type PresentationWriteResult,
 } from "../src/presentation-extension.ts";
 import type { Dataset } from "../src/models.ts";
@@ -208,4 +210,239 @@ test("missing Relations refuse and cannot create orphan Presentation records", (
   assert.equal(result.dataset, source);
   assert.equal("refusal" in result, true);
   assert.equal((result as Extract<PresentationWriteResult, { refusal: string }>).refusal, "relation_not_found");
+});
+
+test("reads line styles with Solid fallback and preserves Arrow independence", () => {
+  const absent = datasetWithRelations();
+  assert.equal(readRelationLineStyle(absent, "r1"), "solid");
+
+  const noRelations = { ...absent, extensions: { [PRESENTATION_EXTENSION_ID]: { specVersion: "0.1.0" } } };
+  assert.equal(readRelationLineStyle(noRelations, "r1"), "solid");
+
+  const noRecord = { ...absent, extensions: { [PRESENTATION_EXTENSION_ID]: { specVersion: "0.1.0", relations: {} } } };
+  assert.equal(readRelationLineStyle(noRecord, "r1"), "solid");
+  assert.equal(readRelationLineStyle(absent, "missing"), "solid");
+
+  for (const style of ["solid", "dashed", "dotted"] as const) {
+    const document = {
+      ...absent,
+      extensions: { [PRESENTATION_EXTENSION_ID]: { specVersion: "0.1.0", relations: { r1: { lineStyle: style } } } },
+    };
+    assert.equal(readRelationLineStyle(document, "r1"), style);
+  }
+
+  const unknown = {
+    ...absent,
+    extensions: { [PRESENTATION_EXTENSION_ID]: { specVersion: "0.1.0", relations: { r1: { lineStyle: "future-pattern" } } } },
+  };
+  assert.equal(readRelationLineStyle(unknown, "r1"), "solid");
+  assert.equal(readRelationArrowDisplay(unknown, "r1"), "normal");
+});
+
+test("writes non-default line styles into the existing Presentation envelope", () => {
+  const source = datasetWithRelations();
+  const dashed = writeSuccess(writeRelationLineStyle(source, "r1", "dashed"));
+  assert.equal(dashed.changed, true);
+  assert.deepEqual(dashed.dataset.extensions, {
+    [PRESENTATION_EXTENSION_ID]: {
+      specVersion: "0.1.0",
+      relations: { r1: { lineStyle: "dashed" } },
+    },
+  });
+  assert.deepEqual(dashed.dataset.relations, source.relations);
+
+  const dotted = writeSuccess(writeRelationLineStyle(dashed.dataset, "r1", "dotted"));
+  assert.equal(dotted.changed, true);
+  assert.equal(readRelationLineStyle(dotted.dataset, "r1"), "dotted");
+  assert.deepEqual((dotted.dataset.extensions as Record<string, unknown>)[PRESENTATION_EXTENSION_ID], {
+    specVersion: "0.1.0",
+    relations: { r1: { lineStyle: "dotted" } },
+  });
+});
+
+test("canonically omits lineStyle Solid while retaining other Presentation data", () => {
+  const source: Dataset = {
+    ...datasetWithRelations(),
+    extensions: {
+      [PRESENTATION_EXTENSION_ID]: {
+        specVersion: "0.1.0",
+        futureTopLevelField: { opaque: true },
+        relations: {
+          r1: { lineStyle: "dashed", futureVisualProperty: 123 },
+          r2: { arrowDisplay: "reverse", lineStyle: "dashed" },
+        },
+      },
+      futureExtension: { preserved: true },
+      "draft.github.sukoyaka-dopeness.coordinate": { specVersion: "0.1.0", spaces: [{ id: "graph" }] },
+    },
+  };
+  const solid = writeSuccess(writeRelationLineStyle(source, "r1", "solid"));
+  assert.equal(solid.changed, true);
+  const presentation = (solid.dataset.extensions as Record<string, unknown>)[PRESENTATION_EXTENSION_ID] as Record<string, unknown>;
+  assert.deepEqual(presentation.relations, {
+    r1: { futureVisualProperty: 123 },
+    r2: { arrowDisplay: "reverse", lineStyle: "dashed" },
+  });
+  assert.deepEqual(presentation.futureTopLevelField, { opaque: true });
+  assert.deepEqual((solid.dataset.extensions as Record<string, unknown>).futureExtension, { preserved: true });
+  assert.deepEqual((solid.dataset.extensions as Record<string, unknown>)["draft.github.sukoyaka-dopeness.coordinate"], { specVersion: "0.1.0", spaces: [{ id: "graph" }] });
+  assert.deepEqual(solid.dataset.relations, source.relations);
+
+  const onlyStyle = writeSuccess(writeRelationLineStyle({
+    ...datasetWithRelations(),
+    extensions: { [PRESENTATION_EXTENSION_ID]: { specVersion: "0.1.0", relations: { r1: { lineStyle: "dashed" } } } },
+  }, "r1", "solid"));
+  assert.equal(onlyStyle.changed, true);
+  assert.equal(Object.hasOwn(onlyStyle.dataset, "extensions"), false);
+
+  const explicitSolid = writeSuccess(writeRelationLineStyle({
+    ...datasetWithRelations(),
+    extensions: { [PRESENTATION_EXTENSION_ID]: { specVersion: "0.1.0", relations: { r1: { lineStyle: "solid" } } } },
+  }, "r1", "solid"));
+  assert.equal(explicitSolid.changed, true);
+  assert.equal(Object.hasOwn(explicitSolid.dataset, "extensions"), false);
+});
+
+test("preserves both known and unknown Arrow values during line-style writes", () => {
+  const known: Dataset = {
+    ...datasetWithRelations(),
+    extensions: {
+      [PRESENTATION_EXTENSION_ID]: {
+        specVersion: "0.1.0",
+        relations: { r1: { arrowDisplay: "reverse", lineStyle: "dashed" } },
+      },
+    },
+  };
+  const dotted = writeSuccess(writeRelationLineStyle(known, "r1", "dotted"));
+  const dottedRecord = (((dotted.dataset.extensions as Record<string, unknown>)[PRESENTATION_EXTENSION_ID] as Record<string, unknown>).relations as Record<string, Record<string, unknown>>).r1;
+  assert.deepEqual(dottedRecord, { arrowDisplay: "reverse", lineStyle: "dotted" });
+
+  const solid = writeSuccess(writeRelationLineStyle(dotted.dataset, "r1", "solid"));
+  const solidRecord = (((solid.dataset.extensions as Record<string, unknown>)[PRESENTATION_EXTENSION_ID] as Record<string, unknown>).relations as Record<string, Record<string, unknown>>).r1;
+  assert.deepEqual(solidRecord, { arrowDisplay: "reverse" });
+
+  const unknownArrow: Dataset = {
+    ...datasetWithRelations(),
+    extensions: {
+      [PRESENTATION_EXTENSION_ID]: {
+        specVersion: "0.1.0",
+        relations: { r1: { arrowDisplay: "future-arrow-mode", lineStyle: "dashed" } },
+      },
+    },
+  };
+  const unknownArrowResult = writeSuccess(writeRelationLineStyle(unknownArrow, "r1", "dotted"));
+  const unknownArrowRecord = (((unknownArrowResult.dataset.extensions as Record<string, unknown>)[PRESENTATION_EXTENSION_ID] as Record<string, unknown>).relations as Record<string, Record<string, unknown>>).r1;
+  assert.deepEqual(unknownArrowRecord, { arrowDisplay: "future-arrow-mode", lineStyle: "dotted" });
+});
+
+test("Arrow writes preserve known and unknown line styles", () => {
+  const known: Dataset = {
+    ...datasetWithRelations(),
+    extensions: {
+      [PRESENTATION_EXTENSION_ID]: {
+        specVersion: "0.1.0",
+        relations: { r1: { arrowDisplay: "reverse", lineStyle: "dashed" } },
+      },
+    },
+  };
+  const updated = writeSuccess(writeRelationArrowDisplay(known, "r1", "bidirectional"));
+  const updatedRecord = (((updated.dataset.extensions as Record<string, unknown>)[PRESENTATION_EXTENSION_ID] as Record<string, unknown>).relations as Record<string, Record<string, unknown>>).r1;
+  assert.deepEqual(updatedRecord, { arrowDisplay: "bidirectional", lineStyle: "dashed" });
+
+  const normal = writeSuccess(writeRelationArrowDisplay(updated.dataset, "r1", "normal"));
+  const normalRecord = (((normal.dataset.extensions as Record<string, unknown>)[PRESENTATION_EXTENSION_ID] as Record<string, unknown>).relations as Record<string, Record<string, unknown>>).r1;
+  assert.deepEqual(normalRecord, { lineStyle: "dashed" });
+
+  const unknown: Dataset = {
+    ...datasetWithRelations(),
+    extensions: {
+      [PRESENTATION_EXTENSION_ID]: {
+        specVersion: "0.1.0",
+        relations: { r1: { arrowDisplay: "reverse", lineStyle: "future-pattern" } },
+      },
+    },
+  };
+  const unknownUpdated = writeSuccess(writeRelationArrowDisplay(unknown, "r1", "bidirectional"));
+  const unknownRecord = (((unknownUpdated.dataset.extensions as Record<string, unknown>)[PRESENTATION_EXTENSION_ID] as Record<string, unknown>).relations as Record<string, Record<string, unknown>>).r1;
+  assert.deepEqual(unknownRecord, { arrowDisplay: "bidirectional", lineStyle: "future-pattern" });
+});
+
+test("explicitly editing an unknown line style replaces it and Solid removes it", () => {
+  const source: Dataset = {
+    ...datasetWithRelations(),
+    extensions: {
+      [PRESENTATION_EXTENSION_ID]: {
+        specVersion: "0.1.0",
+        relations: { r1: { lineStyle: "future-pattern", futureField: true } },
+      },
+    },
+  };
+  const dashed = writeSuccess(writeRelationLineStyle(source, "r1", "dashed"));
+  const dashedRecord = (((dashed.dataset.extensions as Record<string, unknown>)[PRESENTATION_EXTENSION_ID] as Record<string, unknown>).relations as Record<string, Record<string, unknown>>).r1;
+  assert.deepEqual(dashedRecord, { lineStyle: "dashed", futureField: true });
+  const solid = writeSuccess(writeRelationLineStyle(dashed.dataset, "r1", "solid"));
+  const solidRecord = (((solid.dataset.extensions as Record<string, unknown>)[PRESENTATION_EXTENSION_ID] as Record<string, unknown>).relations as Record<string, Record<string, unknown>>).r1;
+  assert.deepEqual(solidRecord, { futureField: true });
+});
+
+test("line-style same-value writes, safety refusals, self Relations, and parallel IDs remain bounded", () => {
+  const dashed = writeSuccess(writeRelationLineStyle(datasetWithRelations(), "r1", "dashed"));
+  const same = writeSuccess(writeRelationLineStyle(dashed.dataset, "r1", "dashed"));
+  assert.equal(same.changed, false);
+  assert.equal(same.dataset, dashed.dataset);
+
+  const absent = datasetWithRelations();
+  const defaultResult = writeSuccess(writeRelationLineStyle(absent, "r1", "solid"));
+  assert.equal(defaultResult.changed, false);
+  assert.equal(defaultResult.dataset, absent);
+
+  const source: Dataset = {
+    ...datasetWithRelations(),
+    extensions: {
+      [PRESENTATION_EXTENSION_ID]: {
+        specVersion: "0.1.0",
+        relations: {
+          r1: { lineStyle: "dashed" },
+          r2: { lineStyle: "dotted" },
+          self: { lineStyle: "dashed" },
+        },
+      },
+    },
+  };
+  const parallel = writeSuccess(writeRelationLineStyle(source, "r1", "dotted"));
+  assert.equal(readRelationLineStyle(parallel.dataset, "r1"), "dotted");
+  assert.equal(readRelationLineStyle(parallel.dataset, "r2"), "dotted");
+  assert.equal(readRelationLineStyle(parallel.dataset, "self"), "dashed");
+  assert.deepEqual(parallel.dataset.relations.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })), [
+    { id: "r1", sourceId: "a", targetId: "b" },
+    { id: "r2", sourceId: "a", targetId: "b" },
+    { id: "self", sourceId: "a", targetId: "a" },
+  ]);
+
+  const unsupported: Dataset = {
+    ...datasetWithRelations(),
+    extensions: { [PRESENTATION_EXTENSION_ID]: { specVersion: "0.2.0", relations: { r1: { lineStyle: "dashed" } } } },
+  };
+  const unsupportedResult = writeRelationLineStyle(unsupported, "r1", "dotted");
+  assert.equal(unsupportedResult.changed, false);
+  assert.equal(unsupportedResult.dataset, unsupported);
+  assert.equal("refusal" in unsupportedResult, true);
+  assert.equal((unsupportedResult as Extract<PresentationWriteResult, { refusal: string }>).refusal, "presentation_version_unsupported");
+
+  for (const lineStyle of [null, 123, {}]) {
+    const malformed: Dataset = {
+      ...datasetWithRelations(),
+      extensions: { [PRESENTATION_EXTENSION_ID]: { specVersion: "0.1.0", relations: { r1: { lineStyle } } } },
+    };
+    const result = writeRelationLineStyle(malformed, "r1", "dashed");
+    assert.equal(result.changed, false);
+    assert.equal(result.dataset, malformed);
+    assert.equal((result as Extract<PresentationWriteResult, { refusal: string }>).refusal, "presentation_payload_invalid");
+  }
+
+  const missingSource = datasetWithRelations();
+  const missing = writeRelationLineStyle(missingSource, "missing", "dashed");
+  assert.equal(missing.changed, false);
+  assert.equal(missing.dataset, missingSource);
+  assert.equal((missing as Extract<PresentationWriteResult, { refusal: string }>).refusal, "relation_not_found");
 });

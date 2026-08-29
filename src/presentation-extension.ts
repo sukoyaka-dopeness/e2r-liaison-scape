@@ -4,6 +4,7 @@ export const PRESENTATION_EXTENSION_ID = "draft.github.sukoyaka-dopeness.liaison
 export const PRESENTATION_SPEC_VERSION = "0.1.0";
 
 export type RelationArrowDisplay = "normal" | "reverse" | "undirected" | "bidirectional";
+export type RelationLineStyle = "solid" | "dashed" | "dotted";
 export type PresentationWriteRefusal =
   | "relation_not_found"
   | "presentation_payload_invalid"
@@ -18,12 +19,17 @@ const KNOWN_ARROW_DISPLAY = new Set<RelationArrowDisplay>([
   "undirected",
   "bidirectional",
 ]);
+const KNOWN_LINE_STYLES = new Set<RelationLineStyle>(["solid", "dashed", "dotted"]);
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 function isKnownArrowDisplay(value: unknown): value is RelationArrowDisplay {
   return typeof value === "string" && KNOWN_ARROW_DISPLAY.has(value as RelationArrowDisplay);
+}
+
+function isKnownLineStyle(value: unknown): value is RelationLineStyle {
+  return typeof value === "string" && KNOWN_LINE_STYLES.has(value as RelationLineStyle);
 }
 
 function hasNonWhitespace(value: string): boolean {
@@ -53,6 +59,12 @@ function validateExistingPresentation(dataset: Dataset): PresentationWriteRefusa
     ) {
       return "presentation_payload_invalid";
     }
+    if (
+      Object.hasOwn(record, "lineStyle")
+      && (typeof record.lineStyle !== "string" || record.lineStyle.length === 0)
+    ) {
+      return "presentation_payload_invalid";
+    }
   }
 
   return null;
@@ -76,14 +88,24 @@ export function readRelationArrowDisplay(dataset: Dataset, relationId: string): 
   return record && isKnownArrowDisplay(record.arrowDisplay) ? record.arrowDisplay : "normal";
 }
 
+export function readRelationLineStyle(dataset: Dataset, relationId: string): RelationLineStyle {
+  const record = relationPresentationRecord(dataset, relationId);
+  return record && isKnownLineStyle(record.lineStyle) ? record.lineStyle : "solid";
+}
+
 function refusal(dataset: Dataset, reason: PresentationWriteRefusal): PresentationWriteResult {
   return { dataset, changed: false, refusal: reason };
 }
 
-export function writeRelationArrowDisplay(
+type PresentationProperty = "arrowDisplay" | "lineStyle";
+type PresentationPropertyValue = RelationArrowDisplay | RelationLineStyle;
+
+function writeRelationPresentationProperty(
   dataset: Dataset,
   relationId: string,
-  mode: RelationArrowDisplay,
+  property: PresentationProperty,
+  defaultValue: PresentationPropertyValue,
+  value: PresentationPropertyValue,
 ): PresentationWriteResult {
   const validationRefusal = validateExistingPresentation(dataset);
   if (validationRefusal) return refusal(dataset, validationRefusal);
@@ -92,11 +114,11 @@ export function writeRelationArrowDisplay(
   }
 
   const existingRecord = relationPresentationRecord(dataset, relationId);
-  const hasExistingArrow = existingRecord !== null && Object.hasOwn(existingRecord, "arrowDisplay");
-  const existingArrow = existingRecord?.arrowDisplay;
-  const changed = mode === "normal"
-    ? hasExistingArrow
-    : existingArrow !== mode;
+  const hasExistingProperty = existingRecord !== null && Object.hasOwn(existingRecord, property);
+  const existingValue = existingRecord?.[property];
+  const changed = value === defaultValue
+    ? hasExistingProperty
+    : existingValue !== value;
   if (!changed) return { dataset, changed: false };
 
   const copy = structuredClone(dataset) as Dataset;
@@ -105,7 +127,7 @@ export function writeRelationArrowDisplay(
     ? extensions[PRESENTATION_EXTENSION_ID] as Record<string, unknown>
     : null;
 
-  if (mode !== "normal") {
+  if (value !== defaultValue) {
     const relations = existingPayload && isRecord(existingPayload.relations)
       ? existingPayload.relations
       : {};
@@ -117,7 +139,7 @@ export function writeRelationArrowDisplay(
         specVersion: PRESENTATION_SPEC_VERSION,
         relations: {
           ...relations,
-          [relationId]: { ...record, arrowDisplay: mode },
+          [relationId]: { ...record, [property]: value },
         },
       },
     };
@@ -130,7 +152,7 @@ export function writeRelationArrowDisplay(
 
   const relations = { ...existingPayload.relations };
   const nextRecord = { ...existingPayload.relations[relationId] as Record<string, unknown> };
-  delete nextRecord.arrowDisplay;
+  delete nextRecord[property];
   if (Object.keys(nextRecord).length === 0) delete relations[relationId];
   else relations[relationId] = nextRecord;
 
@@ -147,4 +169,20 @@ export function writeRelationArrowDisplay(
     copy.extensions = { ...extensions, [PRESENTATION_EXTENSION_ID]: nextPayload };
   }
   return { dataset: copy, changed: true };
+}
+
+export function writeRelationArrowDisplay(
+  dataset: Dataset,
+  relationId: string,
+  mode: RelationArrowDisplay,
+): PresentationWriteResult {
+  return writeRelationPresentationProperty(dataset, relationId, "arrowDisplay", "normal", mode);
+}
+
+export function writeRelationLineStyle(
+  dataset: Dataset,
+  relationId: string,
+  style: RelationLineStyle,
+): PresentationWriteResult {
+  return writeRelationPresentationProperty(dataset, relationId, "lineStyle", "solid", style);
 }
