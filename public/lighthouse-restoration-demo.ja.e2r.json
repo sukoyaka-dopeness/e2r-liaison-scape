@@ -478,6 +478,18 @@
       "id": "maintenance-maya",
       "sourceId": "future-maintenance",
       "targetId": "maya"
+    },
+    {
+      "id": "thomas-maya-friends",
+      "name": "友人である",
+      "sourceId": "thomas",
+      "targetId": "maya"
+    },
+    {
+      "id": "beacon-lighthouse-installed-in",
+      "name": "設置されている",
+      "sourceId": "beacon",
+      "targetId": "lighthouse"
     }
   ],
   "extensions": {
@@ -519,8 +531,26 @@
         {
           "extension": "draft.github.sukoyaka-dopeness.coordinate",
           "version": "0.1.0"
+        },
+        {
+          "extension": "draft.github.sukoyaka-dopeness.liaisonscape-presentation",
+          "version": "0.1.0"
         }
       ]
+    },
+    "draft.github.sukoyaka-dopeness.liaisonscape-presentation": {
+      "specVersion": "0.1.0",
+      "relations": {
+        "clara-lighthouse": {
+          "arrowDisplay": "reverse"
+        },
+        "clara-thomas-supervises": {
+          "lineStyle": "dashed"
+        },
+        "thomas-maya-friends": {
+          "arrowDisplay": "undirected"
+        }
+      }
     }
   }
 }

@@ -24,7 +24,7 @@ test("Lighthouse samples are valid, positioned, connected, and round-trip unchan
   for (const sample of [english, japanese]) {
     assert.equal(sample.entities.length, 10);
     assert.equal(sample.events.length, 11);
-    assert.equal(sample.relations.length, 26);
+    assert.equal(sample.relations.length, 28);
     assert.equal(Object.keys(sample.entities.filter((entity: any) => entity.extensions?.["draft.github.sukoyaka-dopeness.coordinate"])).length, 10);
     assert.equal(sample.relations.filter((relation: any) => relation.sourceId === relation.targetId).length, 2);
     assert.equal(sample.relations.filter((relation: any) => relation.sourceId === "clara" && relation.targetId === "thomas").length, 2);
@@ -37,10 +37,45 @@ test("Lighthouse samples are valid, positioned, connected, and round-trip unchan
     assert.ok(sample.entities.some((entity: any) => entity.id === "clara"));
     assert.ok(!sample.entities.some((entity: any) => entity.id === "entity-restoration-team"));
     assert.ok(!sample.entities.some((entity: any) => entity.id === "entity-harbor-community"));
+
+    const friendship = sample.relations.filter((relation: any) => relation.id === "thomas-maya-friends");
+    assert.equal(friendship.length, 1);
+    assert.deepEqual(friendship[0], {
+      id: "thomas-maya-friends",
+      name: sample === english ? "friends with" : "友人である",
+      sourceId: "thomas",
+      targetId: "maya",
+    });
+    const beaconInstallation = sample.relations.filter((relation: any) => relation.id === "beacon-lighthouse-installed-in");
+    assert.equal(beaconInstallation.length, 1);
+    assert.deepEqual(beaconInstallation[0], {
+      id: "beacon-lighthouse-installed-in",
+      name: sample === english ? "is installed in" : "設置されている",
+      sourceId: "beacon",
+      targetId: "lighthouse",
+    });
+
+    const presentation = sample.extensions?.["draft.github.sukoyaka-dopeness.liaisonscape-presentation"];
+    assert.equal(presentation?.specVersion, "0.1.0");
+    assert.deepEqual(presentation?.relations?.["clara-lighthouse"], { arrowDisplay: "reverse" });
+    assert.deepEqual(presentation?.relations?.["clara-thomas-supervises"], { lineStyle: "dashed" });
+    assert.deepEqual(presentation?.relations?.["thomas-maya-friends"], { arrowDisplay: "undirected" });
+    assert.equal(presentation?.relations?.["beacon-lighthouse-installed-in"], undefined);
+    for (const record of Object.values(presentation?.relations ?? {}) as any[]) {
+      assert.notEqual(record.arrowDisplay, "normal");
+      assert.notEqual(record.lineStyle, "solid");
+      assert.notEqual(record.arrowDisplay, "bidirectional");
+      assert.notEqual(record.lineStyle, "dotted");
+    }
+
+    const specification = sample.extensions?.["draft.github.sukoyaka-dopeness.specification"];
+    assert.equal(specification?.uses?.filter((use: any) => use.extension === "draft.github.sukoyaka-dopeness.liaisonscape-presentation" && use.version === "0.1.0").length, 1);
+    assert.equal(specification?.uses?.some((use: any) => "features" in use), false);
   }
 
   assert.notEqual(english.extensions.metadata.datasetId, japanese.extensions.metadata.datasetId);
   assert.deepEqual(english.entities.map((entity: any) => entity.id), japanese.entities.map((entity: any) => entity.id));
   assert.deepEqual(english.events.map((event: any) => [event.id, event.extensions?.history]), japanese.events.map((event: any) => [event.id, event.extensions?.history]));
   assert.deepEqual(english.relations.map((relation: any) => [relation.id, relation.sourceId, relation.targetId]), japanese.relations.map((relation: any) => [relation.id, relation.sourceId, relation.targetId]));
+  assert.deepEqual(english.extensions?.["draft.github.sukoyaka-dopeness.liaisonscape-presentation"], japanese.extensions?.["draft.github.sukoyaka-dopeness.liaisonscape-presentation"]);
 });
