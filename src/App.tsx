@@ -27,6 +27,7 @@ import { canRestoreReplacementTrigger } from "./replacement-focus";
 import { clearDatasetHandoffFragment, parseTargetedDatasetHandoffFragment, type DatasetHandoffFragment } from "./dataset-handoff";
 import { resolveRelationTarget, supportsRelationHandoffCapability } from "./capability-handoff";
 import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
+import { placeInitialEntity } from "./initial-entity-placement";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
@@ -1505,7 +1506,17 @@ export default function App() {
       const result = createEntity(dataset, { name: creationName, description: creationDescription });
       const created = result.dataset.entities.find(({ id }) => id === result.entityId)!;
       updateDataset(result.dataset); setSelectedId(result.entityId); setSelectedRelationId(null); setCreationMode(null); setPendingEntityPlacement(null);
-      const automaticPlacement = graphPointFromViewportCenter({ width: 800, height: 500 }, scale, pan);
+      const desiredPlacement = graphPointFromViewportCenter({ width: 800, height: 500 }, scale, pan);
+      const occupiedPositions = graph.nodes.map((node) => nodePosition(node));
+      const visibleGraphBounds = {
+        left: 400 + (-400 - pan.x) / scale,
+        right: 400 + (400 - pan.x) / scale,
+        top: 250 + (-250 - pan.y) / scale,
+        bottom: 250 + (250 - pan.y) / scale,
+      };
+      const automaticPlacement = placement === null
+        ? placeInitialEntity(desiredPlacement, occupiedPositions, visibleGraphBounds)
+        : desiredPlacement;
       setPositions((value) => applyEntityCreationPlacement({
         positions: value,
         entityId: result.entityId,

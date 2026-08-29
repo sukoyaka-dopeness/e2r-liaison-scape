@@ -848,6 +848,17 @@ test("autofocuses only the Entity creation Name field", () => {
   assert.doesNotMatch(creation, /id="creation-name" autoFocus=\{true\}/);
 });
 
+test("wires automatic initial placement without changing explicit canvas placement", () => {
+  const app = readFileSync("src/App.tsx", "utf8");
+  const placement = readFileSync("src/initial-entity-placement.ts", "utf8");
+  assert.match(app, /import \{ placeInitialEntity \} from "\.\/initial-entity-placement"/);
+  assert.match(app, /const occupiedPositions = graph\.nodes\.map\(\(node\) => nodePosition\(node\)\)/);
+  assert.match(app, /placement === null\s*\?\s*placeInitialEntity\(desiredPlacement, occupiedPositions, visibleGraphBounds\)/);
+  assert.match(app, /: desiredPlacement/);
+  assert.match(placement, /INITIAL_ENTITY_MAX_RING = 8/);
+  assert.match(placement, /return \{ \.\.\.desired \};/);
+});
+
 const relationDetailDataset: Dataset = {
   version: "1.0",
   entities: [{ id: "source", name: "Source" }, { id: "target", name: "Target" }],
