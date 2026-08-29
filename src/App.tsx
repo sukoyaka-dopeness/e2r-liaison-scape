@@ -16,7 +16,9 @@ import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { EntityDeletionResolutionDialog } from "./components/EntityDeletionResolutionDialog";
 import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
+import { readRelationArrowDisplay } from "./presentation-extension";
+import { getRelationArrowheadGeometries } from "./relation-arrow-presentation";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
@@ -1771,13 +1773,15 @@ export default function App() {
                 >
                   <path d={edge.path} className="edge-halo" />
                   <path d={edge.path} className="edge" />
-                  {(() => {
-                    const arrowhead = getArrowheadGeometry(edge.samples, selectedRelationId === edge.id ? 2.75 : 2);
-                    return <polygon
-                      className="edge-arrowhead"
-                      points={`${arrowhead.baseA.x},${arrowhead.baseA.y} ${arrowhead.baseB.x},${arrowhead.baseB.y} ${arrowhead.tip.x},${arrowhead.tip.y}`}
-                    />;
-                  })()}
+                  {getRelationArrowheadGeometries(
+                    edge.samples,
+                    readRelationArrowDisplay(dataset, edge.id),
+                    selectedRelationId === edge.id ? 2.75 : 2,
+                  ).map((arrowhead, index) => <polygon
+                    key={`${edge.id}-arrowhead-${index}`}
+                    className="edge-arrowhead"
+                    points={`${arrowhead.baseA.x},${arrowhead.baseA.y} ${arrowhead.baseB.x},${arrowhead.baseB.y} ${arrowhead.tip.x},${arrowhead.tip.y}`}
+                  />)}
                   <path
                     d={edge.path}
                     className="edge-hit-area"
