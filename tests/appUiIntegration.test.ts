@@ -73,9 +73,56 @@ test("opens an exact targeted Relation inspection request on the existing Detail
 
     assert.ok(environment.document.querySelector("#relation-detail-title"));
     assert.match(environment.document.querySelector(".detail-object-id")?.textContent ?? "", /relation-target/);
+    assert.deepEqual([environment.document.querySelector('label[for="relation-source"]')?.textContent, environment.document.querySelector('label[for="relation-target"]')?.textContent], ["Source", "Target"]);
     assert.equal(environment.document.querySelector(".confirmation-relation"), null);
     assert.equal(environment.document.querySelector(".confirmation-entity"), null);
     assert.match(environment.window.location.hash, /locale=ja/);
+  } finally {
+    await environment.cleanup();
+  }
+});
+
+test("renders type-neutral Relation Detail roles for Event endpoints in both directions and locales", async () => {
+  const environment = createDomTestEnvironment();
+  environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+
+  try {
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    environment.addCleanup(() => server.close());
+    const root = createRoot(container);
+    environment.addCleanup(() => act(async () => root.unmount()));
+    const { RelationDetailDialog } = await server.ssrLoadModule("/src/components/RelationDetailDialog.tsx");
+    const entity = { id: "entity-endpoint", name: "Entity endpoint" };
+    const event = { id: "event-endpoint", name: "Event endpoint" };
+    const renderDetail = async (locale: "en" | "ja", source: typeof entity | typeof event, target: typeof entity | typeof event) => {
+      const relation = { id: "mixed-relation", sourceId: source.id, targetId: target.id, name: "Mixed Relation" };
+      await act(async () => root.render(React.createElement(RelationDetailDialog, {
+        locale,
+        relation,
+        sourceId: relation.sourceId,
+        targetId: relation.targetId,
+        source,
+        target,
+        entities: [entity],
+        name: relation.name,
+        description: "",
+        onNameChange: () => {},
+        onDescriptionChange: () => {},
+        onSave: () => {},
+        onDelete: () => {},
+        onClose: () => {},
+      })));
+      return [...environment.document.querySelectorAll(".detail > dl:first-of-type dt")].map((element) => element.textContent);
+    };
+
+    assert.deepEqual(await renderDetail("en", event, entity), ["Source", "Target"]);
+    assert.match(environment.document.querySelector(".detail > dl:first-of-type")?.textContent ?? "", /Event endpoint.*Entity endpoint/s);
+    assert.doesNotMatch([...environment.document.querySelectorAll(".detail > dl:first-of-type dt")].map((element) => element.textContent).join(" "), /Entity/);
+    assert.deepEqual(await renderDetail("ja", entity, event), ["始点", "終点"]);
+    assert.match(environment.document.querySelector(".detail > dl:first-of-type")?.textContent ?? "", /Entity endpoint.*Event endpoint/s);
+    assert.doesNotMatch([...environment.document.querySelectorAll(".detail > dl:first-of-type dt")].map((element) => element.textContent).join(" "), /エンティティ/);
   } finally {
     await environment.cleanup();
   }
