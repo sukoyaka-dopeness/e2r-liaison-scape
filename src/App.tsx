@@ -65,7 +65,7 @@ export default function App() {
   const [viewportToolbarPosition, setViewportToolbarPosition] = useState<{ x: number; y: number } | null>(null);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
   const [coordinatesDirty, setCoordinatesDirty] = useState(false);
-  const [adoptedCoordinateEntityIds, setAdoptedCoordinateEntityIds] = useState<Set<string>>(() => new Set());
+  const adoptedCoordinateEntityIdsRef = useRef<Set<string>>(new Set());
   const [creationMode, setCreationMode] = useState<"entity" | "relation" | null>(null);
   const [relationCreationPreview, setRelationCreationPreview] = useState<{ sourceId: string; point: { x: number; y: number }; targetId: string | null } | null>(null);
   const [creationName, setCreationName] = useState("");
@@ -164,11 +164,7 @@ export default function App() {
     onSelectRelation: setSelectedRelationId,
     onEntityDeleted: (id) => {
       manualNodeLabelOffsets.current.delete(id);
-      setAdoptedCoordinateEntityIds((value) => {
-        const next = new Set(value);
-        next.delete(id);
-        return next;
-      });
+      adoptedCoordinateEntityIdsRef.current.delete(id);
       setPositions((value) => {
         const next = { ...value };
         delete next[id];
@@ -791,7 +787,7 @@ export default function App() {
     const fittedView = fitGraphView(openedGraph.nodes.map((node) => storedPositions[node.id] ?? node), 800, 500);
     setPositions(storedPositions);
     setCoordinatesDirty(false);
-    setAdoptedCoordinateEntityIds(new Set());
+    adoptedCoordinateEntityIdsRef.current.clear();
     setPan(fittedView.pan);
     setScale(fittedView.scale);
     enterWorkspace();
@@ -1193,7 +1189,7 @@ export default function App() {
     else if (drag.kind === "edge" && drag.id && drag.button === 0) {
       if (moved) { dragRef.current = { ...dragRef.current!, kind: "edge-curve" }; applyOriginAnchoredEdgeCurveDrag(dragRef.current!, currentPoint); }
     }
-    else if (drag.kind === "node" && drag.id && moved && drag.startNodePosition && drag.startGraphPoint) { setCoordinatesDirty(true); setAdoptedCoordinateEntityIds((value) => new Set(value).add(drag.id!)); setPositions((value) => ({ ...value, [drag.id!]: { ...drag.startNodePosition!, x: drag.startNodePosition!.x + currentPoint.x - drag.startGraphPoint!.x, y: drag.startNodePosition!.y + currentPoint.y - drag.startGraphPoint!.y } })); }
+    else if (drag.kind === "node" && drag.id && moved && drag.startNodePosition && drag.startGraphPoint) { setCoordinatesDirty(true); adoptedCoordinateEntityIdsRef.current.add(drag.id!); setPositions((value) => ({ ...value, [drag.id!]: { ...drag.startNodePosition!, x: drag.startNodePosition!.x + currentPoint.x - drag.startGraphPoint!.x, y: drag.startNodePosition!.y + currentPoint.y - drag.startGraphPoint!.y } })); }
     else if (drag.kind === "node-label" && drag.id && moved) {
       const node = nodeMap.get(drag.id);
       const current = nodeLabelPlacements.get(drag.id);
@@ -1363,7 +1359,7 @@ export default function App() {
     if (!dataset || !coordinatesDirty) return;
     const storedPositions = getStoredCoordinates(dataset);
     const entityIds = new Set(dataset.entities.map(({ id }) => id));
-    const persistablePositions = buildPersistableCoordinatePositions({ storedPositions, currentPositions: positions, adoptedEntityIds: adoptedCoordinateEntityIds, entityIds });
+    const persistablePositions = buildPersistableCoordinatePositions({ storedPositions, currentPositions: positions, adoptedEntityIds: adoptedCoordinateEntityIdsRef.current, entityIds });
     const saved = applyStoredCoordinates(dataset, persistablePositions);
     if (saved === dataset) {
       const readiness = assessCoordinateDraftMigration(dataset);
@@ -1378,7 +1374,7 @@ export default function App() {
     setDataset(saved);
     setDatasetModified(false);
     setCoordinatesDirty(false);
-    setAdoptedCoordinateEntityIds(new Set());
+    adoptedCoordinateEntityIdsRef.current.clear();
     setMessage(translate(locale, "coordinateSaveSuccess"));
   }
 
@@ -1539,7 +1535,7 @@ export default function App() {
       }).positions);
       if (placement !== null) {
         setCoordinatesDirty(true);
-        setAdoptedCoordinateEntityIds((value) => new Set(value).add(result.entityId));
+        adoptedCoordinateEntityIdsRef.current.add(result.entityId);
       }
       setNodeLayerOrder((value) => bringToFront(value, result.entityId));
       setEntityNameDraft(typeof created.name === "string" ? created.name : ""); setEntityDescriptionDraft(typeof created.description === "string" ? created.description : "");
