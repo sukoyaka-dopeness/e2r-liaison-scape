@@ -120,6 +120,27 @@ export function applyEntityCreationPlacement<T>({
   };
 }
 
+export function buildPersistableCoordinatePositions<T>({
+  storedPositions,
+  currentPositions,
+  adoptedEntityIds,
+  entityIds,
+}: {
+  storedPositions: Record<string, T>;
+  currentPositions: Record<string, T>;
+  adoptedEntityIds: ReadonlySet<string>;
+  entityIds: ReadonlySet<string>;
+}): Record<string, T> {
+  const result: Record<string, T> = {};
+  for (const [entityId, position] of Object.entries(storedPositions)) {
+    if (entityIds.has(entityId)) result[entityId] = position;
+  }
+  for (const entityId of adoptedEntityIds) {
+    if (entityIds.has(entityId) && currentPositions[entityId] !== undefined) result[entityId] = currentPositions[entityId]!;
+  }
+  return result;
+}
+
 export function candidateFromLoadResult<T extends { dataset: unknown | null }>(result: T): T["dataset"] {
   return result.dataset;
 }

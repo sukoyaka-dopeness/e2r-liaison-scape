@@ -22,7 +22,7 @@ import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform,
 import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
-import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
+import { applyEntityCreationPlacement, buildPersistableCoordinatePositions, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
 import { canRestoreReplacementTrigger } from "./replacement-focus";
 import { clearDatasetHandoffFragment, parseTargetedDatasetHandoffFragment, type DatasetHandoffFragment } from "./dataset-handoff";
 import { resolveRelationTarget, supportsRelationHandoffCapability } from "./capability-handoff";
@@ -65,6 +65,7 @@ export default function App() {
   const [viewportToolbarPosition, setViewportToolbarPosition] = useState<{ x: number; y: number } | null>(null);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
   const [coordinatesDirty, setCoordinatesDirty] = useState(false);
+  const [adoptedCoordinateEntityIds, setAdoptedCoordinateEntityIds] = useState<Set<string>>(() => new Set());
   const [creationMode, setCreationMode] = useState<"entity" | "relation" | null>(null);
   const [relationCreationPreview, setRelationCreationPreview] = useState<{ sourceId: string; point: { x: number; y: number }; targetId: string | null } | null>(null);
   const [creationName, setCreationName] = useState("");
@@ -163,6 +164,11 @@ export default function App() {
     onSelectRelation: setSelectedRelationId,
     onEntityDeleted: (id) => {
       manualNodeLabelOffsets.current.delete(id);
+      setAdoptedCoordinateEntityIds((value) => {
+        const next = new Set(value);
+        next.delete(id);
+        return next;
+      });
       setPositions((value) => {
         const next = { ...value };
         delete next[id];
@@ -785,6 +791,7 @@ export default function App() {
     const fittedView = fitGraphView(openedGraph.nodes.map((node) => storedPositions[node.id] ?? node), 800, 500);
     setPositions(storedPositions);
     setCoordinatesDirty(false);
+    setAdoptedCoordinateEntityIds(new Set());
     setPan(fittedView.pan);
     setScale(fittedView.scale);
     enterWorkspace();
@@ -1186,7 +1193,7 @@ export default function App() {
     else if (drag.kind === "edge" && drag.id && drag.button === 0) {
       if (moved) { dragRef.current = { ...dragRef.current!, kind: "edge-curve" }; applyOriginAnchoredEdgeCurveDrag(dragRef.current!, currentPoint); }
     }
-    else if (drag.kind === "node" && drag.id && moved && drag.startNodePosition && drag.startGraphPoint) { setCoordinatesDirty(true); setPositions((value) => ({ ...value, [drag.id!]: { ...drag.startNodePosition!, x: drag.startNodePosition!.x + currentPoint.x - drag.startGraphPoint!.x, y: drag.startNodePosition!.y + currentPoint.y - drag.startGraphPoint!.y } })); }
+    else if (drag.kind === "node" && drag.id && moved && drag.startNodePosition && drag.startGraphPoint) { setCoordinatesDirty(true); setAdoptedCoordinateEntityIds((value) => new Set(value).add(drag.id!)); setPositions((value) => ({ ...value, [drag.id!]: { ...drag.startNodePosition!, x: drag.startNodePosition!.x + currentPoint.x - drag.startGraphPoint!.x, y: drag.startNodePosition!.y + currentPoint.y - drag.startGraphPoint!.y } })); }
     else if (drag.kind === "node-label" && drag.id && moved) {
       const node = nodeMap.get(drag.id);
       const current = nodeLabelPlacements.get(drag.id);
@@ -1354,7 +1361,10 @@ export default function App() {
 
   function saveCoordinates() {
     if (!dataset || !coordinatesDirty) return;
-    const saved = applyStoredCoordinates(dataset, positions);
+    const storedPositions = getStoredCoordinates(dataset);
+    const entityIds = new Set(dataset.entities.map(({ id }) => id));
+    const persistablePositions = buildPersistableCoordinatePositions({ storedPositions, currentPositions: positions, adoptedEntityIds: adoptedCoordinateEntityIds, entityIds });
+    const saved = applyStoredCoordinates(dataset, persistablePositions);
     if (saved === dataset) {
       const readiness = assessCoordinateDraftMigration(dataset);
       if (!readiness.ready && readiness.code === "linkscape_coordinate_draft_migration_target_exists") {
@@ -1364,8 +1374,11 @@ export default function App() {
       setMessage(translate(locale, "coordinatePayloadWriteRefusal"));
       return;
     }
-    updateDataset(saved);
+    cleanDatasetBaseline.current = structuredClone(saved);
+    setDataset(saved);
+    setDatasetModified(false);
     setCoordinatesDirty(false);
+    setAdoptedCoordinateEntityIds(new Set());
     setMessage(translate(locale, "coordinateSaveSuccess"));
   }
 
@@ -1524,7 +1537,10 @@ export default function App() {
         automaticPlacement,
         coordinatesDirty,
       }).positions);
-      if (placement !== null) setCoordinatesDirty(true);
+      if (placement !== null) {
+        setCoordinatesDirty(true);
+        setAdoptedCoordinateEntityIds((value) => new Set(value).add(result.entityId));
+      }
       setNodeLayerOrder((value) => bringToFront(value, result.entityId));
       setEntityNameDraft(typeof created.name === "string" ? created.name : ""); setEntityDescriptionDraft(typeof created.description === "string" ? created.description : "");
       setMessage(""); return;

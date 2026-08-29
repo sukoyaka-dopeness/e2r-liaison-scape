@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyEntityCreationPlacement, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, deriveReplacementSafetyState, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, replacementActions, resetManualRelationRoute, resolveExportTransition } from "../src/dataset-replacement-safety.ts";
+import { applyEntityCreationPlacement, buildPersistableCoordinatePositions, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, deriveReplacementSafetyState, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, replacementActions, resetManualRelationRoute, resolveExportTransition } from "../src/dataset-replacement-safety.ts";
 import { canRestoreReplacementTrigger } from "../src/replacement-focus.ts";
 import { loadDataset } from "../src/services/DatasetService.ts";
 
@@ -69,6 +69,16 @@ test("automatic Entity creation placement is derived rather than pending Coordin
     positions: {}, entityId: "entity-2", explicitPlacement: null, automaticPlacement: { x: 400, y: 250 }, coordinatesDirty: false,
   });
   assert.deepEqual(result, { positions: { "entity-2": { x: 400, y: 250 } }, coordinatesDirty: false });
+});
+
+test("Coordinate save input excludes automatic-only positions and keeps adopted positions", () => {
+  const result = buildPersistableCoordinatePositions({
+    storedPositions: { stored: { x: 1, y: 2 } },
+    currentPositions: { stored: { x: 10, y: 20 }, automatic: { x: 30, y: 40 }, dragged: { x: 50, y: 60 } },
+    adoptedEntityIds: new Set(["stored", "dragged"]),
+    entityIds: new Set(["stored", "automatic", "dragged"]),
+  });
+  assert.deepEqual(result, { stored: { x: 10, y: 20 }, dragged: { x: 50, y: 60 } });
 });
 
 test("explicit Entity creation placement remains pending until Coordinate save", () => {
