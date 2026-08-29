@@ -3,7 +3,7 @@ import type { Dataset } from "../models";
 import { formatEntityDeletionRefusal, formatEntityIncidentWarning, formatPresentationWriteRefusal, formatRelationDeletionRefusal, formatRelationUpdateRefusal, type Locale } from "../i18n";
 import { assessEntityDeletion, deleteEntity, getEntityDetail, updateEntityDetails } from "../services/EntityService";
 import { assessRelationDeletion, deleteRelation, getRelationDetail, updateRelation } from "../services/RelationService";
-import { readRelationArrowDisplay, writeRelationArrowDisplay, type RelationArrowDisplay } from "../presentation-extension";
+import { readRelationArrowDisplay, readRelationLineStyle, writeRelationArrowDisplay, writeRelationLineStyle, type RelationArrowDisplay, type RelationLineStyle } from "../presentation-extension";
 
 type DetailKind = "entity" | "relation";
 type EntityDeletionResolutionFocusRequest = { relationId: string | null; requestId: number };
@@ -41,6 +41,8 @@ export function useDetailDeletionWorkflow({
   const [relationTargetDraft, setRelationTargetDraft] = useState("");
   const [relationArrowDisplayDraft, setRelationArrowDisplayDraft] = useState<RelationArrowDisplay>("normal");
   const [relationArrowDisplayTouched, setRelationArrowDisplayTouched] = useState(false);
+  const [relationLineStyleDraft, setRelationLineStyleDraft] = useState<RelationLineStyle>("solid");
+  const [relationLineStyleTouched, setRelationLineStyleTouched] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailDismissal, setDetailDismissal] = useState<DetailKind | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<DetailKind | null>(null);
@@ -68,12 +70,19 @@ export function useDetailDeletionWorkflow({
   const meaningfulArrowDisplayDraft = arrowDisplayWriteResult !== null && (
     "refusal" in arrowDisplayWriteResult || arrowDisplayWriteResult.changed
   );
+  const lineStyleWriteResult = relationLineStyleTouched && dataset && selectedRelationId
+    ? writeRelationLineStyle(dataset, selectedRelationId, relationLineStyleDraft)
+    : null;
+  const meaningfulLineStyleDraft = lineStyleWriteResult !== null && (
+    "refusal" in lineStyleWriteResult || lineStyleWriteResult.changed
+  );
   const meaningfulRelationDetailDraft = detailOpen && selectedRelationDetail !== null && (
     relationNameDraft !== (typeof selectedRelationDetail.relation.name === "string" ? selectedRelationDetail.relation.name : "")
     || relationDescriptionDraft !== (typeof selectedRelationDetail.relation.description === "string" ? selectedRelationDetail.relation.description : "")
     || relationSourceDraft !== selectedRelationDetail.sourceId
     || relationTargetDraft !== selectedRelationDetail.targetId
     || meaningfulArrowDisplayDraft
+    || meaningfulLineStyleDraft
   );
 
   function closeDetail() {
@@ -88,6 +97,8 @@ export function useDetailDeletionWorkflow({
     const returnToResolution = detailDismissal === "relation" && entityDeletionResolutionId !== null;
     if (dataset && selectedRelationId) setRelationArrowDisplayDraft(readRelationArrowDisplay(dataset, selectedRelationId));
     setRelationArrowDisplayTouched(false);
+    if (dataset && selectedRelationId) setRelationLineStyleDraft(readRelationLineStyle(dataset, selectedRelationId));
+    setRelationLineStyleTouched(false);
     setDetailDismissal(null);
     setDetailOpen(false);
     if (returnToResolution) returnToEntityDeletionResolution();
@@ -132,9 +143,19 @@ export function useDetailDeletionWorkflow({
       }
       finalDataset = presentationResult.dataset;
     }
+    if (relationLineStyleTouched) {
+      const presentationResult = writeRelationLineStyle(finalDataset, selectedRelationId, relationLineStyleDraft);
+      if ("refusal" in presentationResult) {
+        onMessage(formatPresentationWriteRefusal(locale, presentationResult.refusal));
+        return;
+      }
+      finalDataset = presentationResult.dataset;
+    }
     if (finalDataset !== dataset) onDatasetUpdate(finalDataset);
     setRelationArrowDisplayDraft(readRelationArrowDisplay(finalDataset, selectedRelationId));
     setRelationArrowDisplayTouched(false);
+    setRelationLineStyleDraft(readRelationLineStyle(finalDataset, selectedRelationId));
+    setRelationLineStyleTouched(false);
     if (entityDeletionResolutionId !== null) returnToEntityDeletionResolution();
     else setDetailOpen(false);
     onMessage("");
@@ -268,6 +289,8 @@ export function useDetailDeletionWorkflow({
     setRelationTargetDraft(typeof relation.targetId === "string" ? relation.targetId : "");
     setRelationArrowDisplayDraft(readRelationArrowDisplay(sourceDataset, relation.id));
     setRelationArrowDisplayTouched(false);
+    setRelationLineStyleDraft(readRelationLineStyle(sourceDataset, relation.id));
+    setRelationLineStyleTouched(false);
     setDetailOpen(true);
   }
 
@@ -290,6 +313,11 @@ export function useDetailDeletionWorkflow({
     changeRelationArrowDisplay: (mode: RelationArrowDisplay) => {
       setRelationArrowDisplayDraft(mode);
       setRelationArrowDisplayTouched(true);
+    },
+    relationLineStyleDraft,
+    changeRelationLineStyle: (style: RelationLineStyle) => {
+      setRelationLineStyleDraft(style);
+      setRelationLineStyleTouched(true);
     },
     detailOpen,
     detailDismissal,

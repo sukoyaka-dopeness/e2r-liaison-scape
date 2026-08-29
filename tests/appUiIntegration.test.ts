@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import { createServer } from "vite";
 import { createDomTestEnvironment } from "./helpers/dom-test-environment.ts";
 import type { Dataset } from "../src/models.ts";
+import type { RelationLineStyle } from "../src/presentation-extension.ts";
 
 const presentationExtensionId = "draft.github.sukoyaka-dopeness.liaisonscape-presentation";
 
@@ -45,6 +46,8 @@ function RelationDetailWorkflowProbe({ initialDataset, Dialog, useWorkflow, init
       description: workflow.relationDescriptionDraft,
       arrowDisplay: workflow.relationArrowDisplayDraft,
       onArrowDisplayChange: workflow.changeRelationArrowDisplay,
+      lineStyle: workflow.relationLineStyleDraft,
+      onLineStyleChange: workflow.changeRelationLineStyle,
       saveDisabled: !workflow.meaningfulRelationDetailDraft,
       endpointEditing: entityEndpoints ? {
         entities: dataset.entities,
@@ -99,12 +102,20 @@ function probeSnapshot(environment: ReturnType<typeof createDomTestEnvironment>)
   return JSON.parse(environment.document.querySelector("#probe-state")?.textContent ?? "{}") as { dataset: Dataset; detailOpen: boolean; message: string; updateCount: number };
 }
 
-async function changeProbeSelect(environment: ReturnType<typeof createDomTestEnvironment>, value: string) {
-  const select = environment.document.querySelector("#relation-arrow-display") as HTMLSelectElement;
+async function changeProbeSelect(environment: ReturnType<typeof createDomTestEnvironment>, selector: string, value: string) {
+  const select = environment.document.querySelector(selector) as HTMLSelectElement;
   await act(async () => {
     select.value = value;
     select.dispatchEvent(new environment.window.Event("change", { bubbles: true }));
   });
+}
+
+async function changeProbeArrow(environment: ReturnType<typeof createDomTestEnvironment>, value: string) {
+  await changeProbeSelect(environment, "#relation-arrow-display", value);
+}
+
+async function changeProbeLineStyle(environment: ReturnType<typeof createDomTestEnvironment>, value: RelationLineStyle) {
+  await changeProbeSelect(environment, "#relation-line-style", value);
 }
 
 async function setProbeName(environment: ReturnType<typeof createDomTestEnvironment>, id: string) {
@@ -737,25 +748,29 @@ const relationDetailDataset: Dataset = {
   relations: [{ id: "relation", sourceId: "source", targetId: "target", name: "Original", description: "Description" }],
 };
 
-test("integrates the Relation Detail Arrow display control and field hierarchy", async () => {
+test("integrates the Relation Detail Arrow and Line style controls and field hierarchy", async () => {
   await withRelationDetailProbe(relationDetailDataset, async (environment) => {
     await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
-    assert.deepEqual([...environment.document.querySelectorAll(".detail-fields > label")].map((element) => element.textContent), ["Name", "Connected object", "Arrow display", "Connected object", "Description"]);
+    assert.deepEqual([...environment.document.querySelectorAll(".detail-fields > label")].map((element) => element.textContent), ["Name", "Connected object", "Arrow display", "Line style", "Connected object", "Description"]);
     assert.deepEqual([...environment.document.querySelectorAll("#relation-arrow-display option")].map((element) => [element.getAttribute("value"), element.textContent]), [["normal", "→"], ["reverse", "←"], ["undirected", "—"], ["bidirectional", "↔"]]);
     assert.equal((environment.document.querySelector(".detail-actions button") as HTMLButtonElement).disabled, true);
+    assert.deepEqual([...environment.document.querySelectorAll("#relation-line-style option")].map((element) => [element.getAttribute("value"), element.textContent]), [["solid", "Solid"], ["dashed", "Dashed"], ["dotted", "Dotted"]]);
 
-    await changeProbeSelect(environment, "reverse");
+    await changeProbeArrow(environment, "reverse");
+    await changeProbeLineStyle(environment, "dashed");
     assert.equal((environment.document.querySelector(".detail-actions button") as HTMLButtonElement).disabled, false);
     await act(async () => { (environment.document.querySelector("#probe-locale") as HTMLButtonElement).click(); });
-    assert.deepEqual([...environment.document.querySelectorAll(".detail-fields > label")].map((element) => element.textContent), ["名前", "つながり先", "矢印の表示", "つながり先", "説明"]);
+    const japaneseLabels = [...environment.document.querySelectorAll(".detail-fields > label")].map((element) => element.textContent);
+    assert.deepEqual(japaneseLabels, ["名前", "つながり先", "矢印の表示", japaneseLabels[3], "つながり先", "説明"]);
     assert.equal((environment.document.querySelector("#relation-arrow-display") as HTMLSelectElement).value, "reverse");
+    assert.equal((environment.document.querySelector("#relation-line-style") as HTMLSelectElement).value, "dashed");
   });
 });
 
 test("saves Arrow display through one atomic workflow transaction and preserves its safety semantics", async () => {
   await withRelationDetailProbe(relationDetailDataset, async (environment) => {
     await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
-    await changeProbeSelect(environment, "reverse");
+    await changeProbeArrow(environment, "reverse");
     await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
     let snapshot = probeSnapshot(environment);
     assert.equal(snapshot.updateCount, 1);
@@ -764,7 +779,7 @@ test("saves Arrow display through one atomic workflow transaction and preserves 
     assert.equal((snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, { arrowDisplay: string }> }).relations.relation.arrowDisplay, "reverse");
 
     await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
-    await changeProbeSelect(environment, "undirected");
+    await changeProbeArrow(environment, "undirected");
     await act(async () => { (environment.document.querySelector("#probe-locale") as HTMLButtonElement).click(); });
     assert.equal((environment.document.querySelector("#relation-arrow-display") as HTMLSelectElement).value, "undirected");
     await act(async () => { (environment.document.querySelector(".detail-header button") as HTMLButtonElement).click(); });
@@ -798,8 +813,8 @@ test("saves Arrow display through one atomic workflow transaction and preserves 
     assert.equal(record.unknownField, "keep");
 
     await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
-    await changeProbeSelect(environment, "reverse");
-    await changeProbeSelect(environment, "normal");
+    await changeProbeArrow(environment, "reverse");
+    await changeProbeArrow(environment, "normal");
     assert.equal((environment.document.querySelector(".detail-actions button") as HTMLButtonElement).disabled, false);
     await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
     snapshot = probeSnapshot(environment);
@@ -814,10 +829,144 @@ test("saves Arrow display through one atomic workflow transaction and preserves 
   };
   await withRelationDetailProbe(reverseDataset, async (environment) => {
     await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
-    await changeProbeSelect(environment, "reverse");
+    await changeProbeArrow(environment, "reverse");
     assert.equal((environment.document.querySelector(".detail-actions button") as HTMLButtonElement).disabled, true);
     await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
     assert.equal(probeSnapshot(environment).updateCount, 0);
+  });
+});
+
+test("saves Line style atomically, preserves sibling Presentation values, and canonicalizes Solid", async () => {
+  await withRelationDetailProbe(relationDetailDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    assert.equal((environment.document.querySelector("#relation-line-style") as HTMLSelectElement).value, "solid");
+    assert.equal((environment.document.querySelector(".detail-actions button") as HTMLButtonElement).disabled, true);
+    await changeProbeLineStyle(environment, "dashed");
+    assert.equal((environment.document.querySelector(".detail-actions button") as HTMLButtonElement).disabled, false);
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    let snapshot = probeSnapshot(environment);
+    assert.equal(snapshot.updateCount, 1);
+    assert.equal((snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, { lineStyle: string }> }).relations.relation.lineStyle, "dashed");
+
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeLineStyle(environment, "dotted");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    snapshot = probeSnapshot(environment);
+    assert.equal(snapshot.updateCount, 2);
+    assert.equal((snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, { lineStyle: string }> }).relations.relation.lineStyle, "dotted");
+
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeLineStyle(environment, "solid");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    snapshot = probeSnapshot(environment);
+    assert.equal(snapshot.updateCount, 3);
+    assert.equal(snapshot.dataset.extensions, undefined);
+  });
+
+  const combinedDataset: Dataset = {
+    ...relationDetailDataset,
+    extensions: { [presentationExtensionId]: { specVersion: "0.1.0", relations: { relation: { arrowDisplay: "reverse", lineStyle: "dashed" } } } },
+  };
+  await withRelationDetailProbe(combinedDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeLineStyle(environment, "dotted");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    let snapshot = probeSnapshot(environment);
+    let record = (snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, Record<string, string>> }).relations.relation;
+    assert.equal(record.arrowDisplay, "reverse");
+    assert.equal(record.lineStyle, "dotted");
+
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeArrow(environment, "bidirectional");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    snapshot = probeSnapshot(environment);
+    record = (snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, Record<string, string>> }).relations.relation;
+    assert.equal(record.arrowDisplay, "bidirectional");
+    assert.equal(record.lineStyle, "dotted");
+
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeLineStyle(environment, "solid");
+    await changeProbeArrow(environment, "normal");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    snapshot = probeSnapshot(environment);
+    assert.equal(snapshot.dataset.extensions, undefined);
+  });
+});
+
+test("preserves unknown Presentation values across unrelated and sibling Line style saves", async () => {
+  const unknownLineStyleDataset: Dataset = {
+    ...relationDetailDataset,
+    extensions: { [presentationExtensionId]: { specVersion: "0.1.0", relations: { relation: { lineStyle: "future-pattern", unknownField: "keep" } } } },
+  };
+  await withRelationDetailProbe(unknownLineStyleDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    assert.equal((environment.document.querySelector("#relation-line-style") as HTMLSelectElement).value, "solid");
+    await setProbeName(environment, "probe-name-only");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    let snapshot = probeSnapshot(environment);
+    let record = (snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, Record<string, string>> }).relations.relation;
+    assert.equal(record.lineStyle, "future-pattern");
+    assert.equal(record.unknownField, "keep");
+
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeLineStyle(environment, "dashed");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    snapshot = probeSnapshot(environment);
+    record = (snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, Record<string, string>> }).relations.relation;
+    assert.equal(record.lineStyle, "dashed");
+    assert.equal(record.unknownField, "keep");
+
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeLineStyle(environment, "solid");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    snapshot = probeSnapshot(environment);
+    record = (snapshot.dataset.extensions?.[presentationExtensionId] as { relations: Record<string, Record<string, string>> }).relations.relation;
+    assert.equal(record.lineStyle, undefined);
+    assert.equal(record.unknownField, "keep");
+  });
+
+  const unknownCrossPropertyDataset: Dataset = {
+    ...relationDetailDataset,
+    extensions: { [presentationExtensionId]: { specVersion: "0.1.0", relations: { relation: { arrowDisplay: "future-arrow-mode", lineStyle: "dashed" } } } },
+  };
+  await withRelationDetailProbe(unknownCrossPropertyDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeLineStyle(environment, "dotted");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    const record = (probeSnapshot(environment).dataset.extensions?.[presentationExtensionId] as { relations: Record<string, Record<string, string>> }).relations.relation;
+    assert.equal(record.arrowDisplay, "future-arrow-mode");
+    assert.equal(record.lineStyle, "dotted");
+  });
+});
+
+test("protects explicit Line style drafts and refuses atomic Presentation writes", async () => {
+  await withRelationDetailProbe(relationDetailDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await changeProbeLineStyle(environment, "dotted");
+    await act(async () => { (environment.document.querySelector(".detail-header button") as HTMLButtonElement).click(); });
+    assert.ok(environment.document.querySelector("#probe-dismissal"));
+    await act(async () => { (environment.document.querySelector("#probe-dismissal button") as HTMLButtonElement).click(); });
+    assert.equal((environment.document.querySelector("#relation-line-style") as HTMLSelectElement).value, "dotted");
+    await act(async () => { (environment.document.querySelector(".detail-header button") as HTMLButtonElement).click(); });
+    await act(async () => { (environment.document.querySelectorAll("#probe-dismissal button")[1] as HTMLButtonElement).click(); });
+    assert.equal(probeSnapshot(environment).updateCount, 0);
+    assert.equal(probeSnapshot(environment).detailOpen, false);
+  });
+
+  const unsupportedDataset: Dataset = {
+    ...relationDetailDataset,
+    extensions: { [presentationExtensionId]: { specVersion: "9.9.9", relations: { relation: { lineStyle: "dashed" } } } },
+  };
+  await withRelationDetailProbe(unsupportedDataset, async (environment) => {
+    await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
+    await setProbeName(environment, "probe-core-name");
+    await changeProbeLineStyle(environment, "dotted");
+    await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    const snapshot = probeSnapshot(environment);
+    assert.equal(snapshot.updateCount, 0);
+    assert.equal(snapshot.detailOpen, true);
+    assert.equal(snapshot.dataset.relations[0]?.name, "Original");
+    assert.match(snapshot.message, /Could not save the display settings because this Dataset's display settings cannot be safely updated\./);
   });
 });
 
@@ -837,13 +986,13 @@ test("refuses unsafe Arrow display writes atomically and protects unsaved Arrow 
 
     await act(async () => { (environment.document.querySelector("#probe-open") as HTMLButtonElement).click(); });
     await setProbeName(environment, "probe-blocked-name");
-    await changeProbeSelect(environment, "reverse");
+    await changeProbeArrow(environment, "reverse");
     await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
     snapshot = probeSnapshot(environment);
     assert.equal(snapshot.updateCount, 1);
     assert.equal(snapshot.detailOpen, true);
     assert.equal(snapshot.dataset.relations[0]?.name, "Core changed");
-    assert.match(snapshot.message, /Could not save the arrow display because this Dataset's display settings cannot be safely updated\./);
+    assert.match(snapshot.message, /Could not save the display settings because this Dataset's display settings cannot be safely updated\./);
 
     await act(async () => { (environment.document.querySelector(".detail-header button") as HTMLButtonElement).click(); });
     assert.ok(environment.document.querySelector("#probe-dismissal"));
@@ -877,13 +1026,17 @@ test("routes a real Relation Detail Arrow save through App updateDataset and the
     await act(async () => root.render(React.createElement(App)));
     await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 0)));
 
-    assert.deepEqual([...environment.document.querySelectorAll(".detail-fields > label")].map((element) => element.textContent), ["Name", "Connected object", "Arrow display", "Connected object", "Description"]);
+    assert.deepEqual([...environment.document.querySelectorAll(".detail-fields > label")].map((element) => element.textContent), ["Name", "Connected object", "Arrow display", "Line style", "Connected object", "Description"]);
     const arrowDisplay = environment.document.querySelector("#relation-arrow-display") as HTMLSelectElement;
     arrowDisplay.value = "reverse";
     await act(async () => { arrowDisplay.dispatchEvent(new environment.window.Event("change", { bubbles: true })); });
+    const lineStyle = environment.document.querySelector("#relation-line-style") as HTMLSelectElement;
+    lineStyle.value = "dashed";
+    await act(async () => { lineStyle.dispatchEvent(new environment.window.Event("change", { bubbles: true })); });
     await act(async () => { (environment.document.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
     assert.equal(environment.document.querySelector("#relation-detail-title"), null);
     assert.equal(environment.document.querySelectorAll('.edge-group[data-relation-id="relation"] .edge-arrowhead').length, 1);
+    assert.equal(environment.document.querySelector('.edge-group[data-relation-id="relation"] .edge')?.getAttribute("class"), "edge line-style-dashed");
 
     await act(async () => { (environment.document.querySelector(".header-home-button") as HTMLAnchorElement).click(); });
     const newDatasetButton = [...environment.document.querySelectorAll("button")].find((button) => button.textContent === "New Dataset");

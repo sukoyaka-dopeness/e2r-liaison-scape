@@ -127,6 +127,8 @@ export default function App() {
     setRelationTargetDraft,
     relationArrowDisplayDraft,
     changeRelationArrowDisplay,
+    relationLineStyleDraft,
+    changeRelationLineStyle,
     detailOpen,
     detailDismissal,
     deleteConfirmation,
@@ -1998,6 +2000,8 @@ export default function App() {
               description={relationDescriptionDraft}
               arrowDisplay={relationArrowDisplayDraft}
               onArrowDisplayChange={changeRelationArrowDisplay}
+              lineStyle={relationLineStyleDraft}
+              onLineStyleChange={changeRelationLineStyle}
               saveDisabled={!meaningfulRelationDetailDraft}
               endpointEditing={dataset.entities.some(({ id }) => id === selectedRelationDetail.sourceId)
                 && dataset.entities.some(({ id }) => id === selectedRelationDetail.targetId)

@@ -138,6 +138,10 @@ export const messages = {
     relatedRelationName: "Relation name",
     connectedObject: "Connected object",
     arrowDisplay: "Arrow display",
+    lineStyle: "Line style",
+    solidLineStyle: "Solid",
+    dashedLineStyle: "Dashed",
+    dottedLineStyle: "Dotted",
     relatedRelationSource: "Source",
     relatedRelationTarget: "Target",
     entityShownRelations: "Shown Relations",
@@ -248,6 +252,10 @@ export const messages = {
     relationDetailSave: "つながりを保存",
     technicalDetails: "技術情報",
     objectId: "Object ID",
+    lineStyle: "線のスタイル",
+    solidLineStyle: "実線",
+    dashedLineStyle: "破線",
+    dottedLineStyle: "点線",
     relatedRelationName: "つながりの名前",
     connectedObject: "つながり先",
     arrowDisplay: "矢印の表示",
@@ -404,8 +412,8 @@ export function formatRelationUpdateRefusal(locale: Locale, reason: AuthoringRef
 
 export function formatPresentationWriteRefusal(locale: Locale, _reason: PresentationWriteRefusal): string {
   return locale === "ja"
-    ? "このDatasetの表示設定を安全に更新できないため、矢印の表示を保存できませんでした。"
-    : "Could not save the arrow display because this Dataset's display settings cannot be safely updated.";
+    ? "このDatasetの表示設定を安全に更新できないため、表示設定を保存できませんでした。"
+    : "Could not save the display settings because this Dataset's display settings cannot be safely updated.";
 }
 
 export function formatRelationCreationRefusal(locale: Locale, reason: AuthoringRefusal): string {
