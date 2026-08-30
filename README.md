@@ -91,3 +91,7 @@ The following remain candidates for post-distribution work:
 
 The current application does not publish to npm and does not include a native
 installer or desktop package.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
