@@ -8,6 +8,7 @@ import { createEntity } from "./services/EntityService";
 import { createRelation } from "./services/RelationService";
 import { canCompleteLongPress, createCanvasContextMenu, draggedPointFromOrigin, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, svgPointFromPointer, type ContextMenu } from "./direct-graph-authoring";
 import { ConfirmationDialog } from "./components/ConfirmationDialog";
+import { AutoLayoutConfirmation } from "./components/AutoLayoutConfirmation";
 import { DetailDismissalConfirmation } from "./components/DetailDismissalConfirmation";
 import { CreationDismissalConfirmation } from "./components/CreationDismissalConfirmation";
 import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
@@ -29,6 +30,7 @@ import { resolveRelationTarget, supportsRelationHandoffCapability } from "./capa
 import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
 import { placeInitialEntities } from "./entity-placement";
+import { solveAutoLayout } from "./auto-layout";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
@@ -80,6 +82,7 @@ export default function App() {
   const [pendingEntityPlacement, setPendingEntityPlacement] = useState<{ x: number; y: number } | null>(null);
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [maintenanceMenuOpen, setMaintenanceMenuOpen] = useState(false);
+  const [autoLayoutConfirmationOpen, setAutoLayoutConfirmationOpen] = useState(false);
   const creditsTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [manualLabelRevision, setManualLabelRevision] = useState(0);
   const [hoveredPlacement, setHoveredPlacement] = useState<{ target: PlacementTarget | "entity"; id: string; clientX: number; clientY: number; entityBounds?: { left: number; bottom: number } } | null>(null);
@@ -1454,6 +1457,24 @@ export default function App() {
     if (suppressNextContextMenuRef.current) { suppressNextContextMenuRef.current = false; return; }
     openCanvasContextAt(event.clientX, event.clientY);
   }
+
+  function applyAutoLayout() {
+    if (!dataset) return;
+    const result = solveAutoLayout({ entities: graph.nodes.map(({ id }) => ({ id })), relations: graph.edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })) });
+    const changed = graph.nodes.some((node) => { const current = positions[node.id] ?? node; const next = result[node.id]; return next !== undefined && (current.x !== next.x || current.y !== next.y); });
+    if (!changed) { setAutoLayoutConfirmationOpen(false); return; }
+    setPositions((value) => ({ ...value, ...result }));
+    setCoordinatesDirty(true);
+    for (const node of graph.nodes) adoptedCoordinateEntityIdsRef.current.add(node.id);
+    setAutoLayoutConfirmationOpen(false);
+  }
+
+  function requestAutoLayout() {
+    closeMaintenanceMenu();
+    if (!dataset) return;
+    if (coordinatesDirty) setAutoLayoutConfirmationOpen(true);
+    else applyAutoLayout();
+  }
   function applyOriginAnchoredEdgeCurveDrag(drag: NonNullable<typeof dragRef.current>, currentPoint: { x: number; y: number }) {
     if (!drag.id || !drag.startGraphPoint) return;
     const total = draggedPointFromOrigin({ x: 0, y: 0 }, drag.startGraphPoint, currentPoint);
@@ -1673,6 +1694,7 @@ export default function App() {
                 <button type="button" className="mobile-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={() => { closeMaintenanceMenu(); saveCoordinates(); }}>{translate(locale, "saveCoordinates")}</button>
                 <button type="button" disabled={!dataset || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>{translate(locale, "migrateCoordinateDraft")}</button>
                 <button type="button" disabled={!dataset || spaceMigrationReadiness?.ready !== true} onClick={migrateSpaceToLiaisonScape}>{translate(locale, "migrateLinkscapeCoordinates")}</button>
+                <button type="button" disabled={!dataset || graph.nodes.length === 0} onClick={requestAutoLayout}>{translate(locale, "autoLayout")}</button>
                 <div className="mobile-secondary-action mobile-viewport-menu" aria-label={translate(locale, "graphViewControls")}>
                   <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>{translate(locale, "zoomOut")}</button>
                   <span aria-live="polite">{Math.round(scale * 100)}%</span>
@@ -1724,6 +1746,7 @@ export default function App() {
         focusRequest={entityDeletionResolutionFocusRequest}
       />}
       {dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={cancelDeletion} onConfirm={confirmDeletion} />}
+      {dataset && autoLayoutConfirmationOpen && <AutoLayoutConfirmation locale={locale} onCancel={() => { setAutoLayoutConfirmationOpen(false); maintenanceMenuSummaryRef.current?.focus(); }} onConfirm={applyAutoLayout} />}
       {dataset && (
         <dl className="dataset-metadata" aria-label={translate(locale, "datasetMetadata")}>
           <dt>{translate(locale, "datasetTitleVisible")}</dt>
