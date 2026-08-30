@@ -1281,6 +1281,16 @@ test("parallel automatic routes retain their equivalent manual baseline", () => 
   assert.equal(curveOffsetFromControlPoint(source, source, source), null);
 });
 
+test("reverse-direction parallel routes use opposite canonical physical sides", () => {
+  const source = { x: 0, y: 0 };
+  const target = { x: 200, y: 0 };
+  const forward = routeGraphEdge(source, target, 0, 2);
+  const reverse = routeGraphEdge(target, source, 1, 2, [], [], false, 0, undefined, undefined, [], -1);
+  assert.ok(forward.controlPoint.y > 0);
+  assert.ok(reverse.controlPoint.y < 0);
+  assert.notEqual(forward.controlPoint.y, reverse.controlPoint.y);
+});
+
 test("parallel solver eligibility follows obstacle route effect for distant and active obstacles", () => {
   const source = { x: 0, y: 0 };
   const target = { x: 400, y: 0 };

@@ -600,6 +600,7 @@ export function routeGraphEdge(
   manualOffset?: number,
   manualSelfLoop?: { orientation: number; radius: number },
   labelRects: LabelRect[] = [],
+  canonicalPhysicalSideSign = 1,
 ): { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point } {
   if (source.x === target.x && source.y === target.y && selfRelation) {
     if (manualSelfLoop === undefined) return selectAutomaticSelfLoopGeometry(source, parallelIndex, obstacles);
@@ -682,7 +683,8 @@ export function routeGraphEdge(
   const length = Math.max(1, Math.hypot(dx, dy));
   const unitX = dx / length;
   const unitY = dy / length;
-  const direction = parallelIndex % 2 === 0 ? 1 : -1;
+  const direction = (parallelIndex % 2 === 0 ? 1 : -1)
+    * (parallelCount > 1 ? canonicalPhysicalSideSign : 1);
   const rank = Math.floor(parallelIndex / 2) + 1;
   const baseOffset = parallelCount === 1 ? 0 : direction * (40 + (rank - 1) * 24);
   // Callers exclude the source and target by identity. Keep unrelated nodes

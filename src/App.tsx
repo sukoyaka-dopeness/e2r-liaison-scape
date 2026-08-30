@@ -334,6 +334,7 @@ export default function App() {
     const automaticOrdinaryEdges = graph.edges.filter((edge) => !fixedEdges.some(({ id }) => id === edge.id))
       .sort(compareRoutingPriority);
     for (const edge of [...fixedEdges, ...automaticOrdinaryEdges]) {
+      const canonicalPhysicalSideSign = edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1;
       const sourceNode = nodeMap.get(edge.sourceId)!;
       const targetNode = nodeMap.get(edge.targetId)!;
       const source = positions[sourceNode.id] ?? sourceNode;
@@ -359,6 +360,7 @@ export default function App() {
         edgeCurveOffsets[edge.id],
         selfLoopOverrides[edge.id],
         provisionalNodeLabels,
+        canonicalPhysicalSideSign,
       );
       const routeWithoutObstacles = edge.parallelCount > 1
         && edge.sourceId !== edge.targetId
@@ -374,6 +376,8 @@ export default function App() {
           overlapIndex,
           edgeCurveOffsets[edge.id],
           selfLoopOverrides[edge.id],
+          [],
+          canonicalPhysicalSideSign,
         )
         : null;
       const routeWithoutObstaclesOrOccupiedPaths = routeWithoutObstacles !== null
@@ -388,6 +392,8 @@ export default function App() {
           overlapIndex,
           edgeCurveOffsets[edge.id],
           selfLoopOverrides[edge.id],
+          [],
+          canonicalPhysicalSideSign,
         )
         : null;
       const obstacleComparison = routeWithoutObstacles === null
@@ -1506,7 +1512,7 @@ export default function App() {
         grabFraction: drag.startGrabFraction,
         normal,
         desiredNormalDelta: normal.x * total.x + normal.y * total.y,
-        routeAtOffset: (offset) => routeGraphEdge(source, target, edge.parallelIndex, edge.parallelCount, [], [], false, 0, offset).samples,
+        routeAtOffset: (offset) => routeGraphEdge(source, target, edge.parallelIndex, edge.parallelCount, [], [], false, 0, offset, undefined, [], edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1).samples,
         isCandidateSafe: parallelSolverEligible ? (samples) => !routeSamplesHaveNodeInfluence(samples, graph.nodes
           .filter((node) => node.id !== edge.sourceId && node.id !== edge.targetId)
           .map((node) => positions[node.id] ?? node)) : undefined,
