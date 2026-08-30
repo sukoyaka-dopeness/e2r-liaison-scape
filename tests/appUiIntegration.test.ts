@@ -494,8 +494,10 @@ test("implements the collapsible viewport toolbar interaction contract", async (
     assert.equal(tooltip.textContent, "Move\nCollapse");
     assert.equal(handle.getAttribute("aria-expanded"), "true");
     assert.equal(actions.hidden, false);
-    assert.equal(handle.getAttribute("aria-label"), "Move or collapse viewport controls");
+    assert.equal(handle.getAttribute("aria-label"), "Collapse viewport controls");
     assert.equal(handle.getAttribute("aria-controls"), "viewport-toolbar-actions");
+    handle.focus();
+    assert.equal(environment.document.activeElement, handle);
 
     let toolbarWidth = 360;
     Object.defineProperty(graph, "getBoundingClientRect", { configurable: true, value: () => ({ left: 0, top: 0, width: 800, height: 500 }) });
@@ -522,12 +524,13 @@ test("implements the collapsible viewport toolbar interaction contract", async (
     assert.equal(handle.getAttribute("aria-expanded"), "false");
     assert.equal(actions.hidden, true);
     assert.equal(actions.querySelectorAll("button").length, 3);
-    assert.equal(handle.getAttribute("aria-label"), "Move or expand viewport controls");
+    assert.equal(handle.getAttribute("aria-label"), "Expand viewport controls");
+    assert.equal(environment.document.activeElement, handle);
     assert.equal(tooltip.textContent, "Move\nExpand");
 
     await act(async () => { handle.click(); });
     assert.equal(handle.getAttribute("aria-expanded"), "true");
-    assert.equal(handle.getAttribute("aria-label"), "Move or collapse viewport controls");
+    assert.equal(handle.getAttribute("aria-label"), "Collapse viewport controls");
     assert.equal(tooltip.textContent, "Move\nCollapse");
 
     await dispatchPointer("pointerdown", 2, 10, 10);
@@ -550,13 +553,13 @@ test("implements the collapsible viewport toolbar interaction contract", async (
 
     const localeButton = environment.document.querySelector(".locale-button") as HTMLButtonElement;
     await act(async () => { localeButton.click(); });
-    assert.equal(handle.getAttribute("aria-label"), "表示操作を移動またはたたむ");
+    assert.equal(handle.getAttribute("aria-label"), "表示操作を折りたたむ");
     assert.equal(tooltip.textContent, "移動\nたたむ");
     assert.equal(toolbar.style.left, "300px");
 
     await act(async () => { handle.click(); });
     assert.equal(handle.getAttribute("aria-expanded"), "false");
-    assert.equal(handle.getAttribute("aria-label"), "表示操作を移動または広げる");
+    assert.equal(handle.getAttribute("aria-label"), "表示操作を展開する");
     assert.equal(tooltip.textContent, "移動\n広げる");
   } finally {
     await environment.cleanup();
