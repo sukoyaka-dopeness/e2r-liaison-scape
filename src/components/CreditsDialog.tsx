@@ -6,9 +6,10 @@ export function CreditsDialog({ locale, onClose }: { locale: Locale; onClose: ()
     <button className="detail-backdrop credits-backdrop" type="button" aria-label={translate(locale, "closeCredits")} onClick={onClose} />
     <aside className="detail credits-dialog" role="dialog" aria-modal="true" aria-labelledby="credits-title">
       <h2 id="credits-title">{translate(locale, "credits")}</h2>
-      <p>{translate(locale, "application")}: LiaisonScape 0.1.0</p>
+      <p>{translate(locale, "application")}: LiaisonScape 0.2.0</p>
       <p>{translate(locale, "creator")}: sukoyaka-dopeness</p>
-      <p>{translate(locale, "releaseDate")}: {translate(locale, "releaseDatePending")}</p>
+      <p>{translate(locale, "firstRelease")}: 2026-08-16</p>
+      <p>{translate(locale, "updated")}: 2026-08-30</p>
       <p>{translate(locale, "aiAcknowledgement")}</p>
       <nav className="credits-links" aria-label={translate(locale, "creditsLinks")}>
         <a href="https://github.com/sukoyaka-dopeness/e2r-liaison-scape" target="_blank" rel="noreferrer">{translate(locale, "liaisonScapeRepository")}</a>

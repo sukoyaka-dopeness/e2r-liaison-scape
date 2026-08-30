@@ -21,7 +21,7 @@ LiaisonScape currently provides:
 - English and Japanese UI
 - Locale-specific public sample Dataset loading from Home
 
-The application uses E2R Validator `0.2.0` and preserves unknown Core fields
+The application uses E2R Validator `0.4.0` and preserves unknown Core fields
 and Extensions through supported load, edit, and save flows. Its current
 acceptance coverage includes A1 through A19, including Event endpoint
 limitations, self and parallel Relations, coordinate behavior, and validation
@@ -71,10 +71,11 @@ https://sukoyaka-dopeness.github.io/e2r-liaison-scape/
 
 ## Version
 
-Current package version: `0.1.0`
+Current package version: `0.2.0`
 
-The package version and Credits display are aligned. The First Distribution
-release date is 2026-08-16.
+The package version and Credits display are aligned for the `0.2.0` release
+candidate. First Distribution provenance remains 2026-08-16, and the current
+application metadata was updated on 2026-08-30.
 
 ## Known limitations
 
