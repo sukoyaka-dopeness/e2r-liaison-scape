@@ -30,7 +30,7 @@ import { resolveRelationTarget, supportsRelationHandoffCapability } from "./capa
 import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
 import { placeInitialEntities } from "./entity-placement";
-import { solveAutoLayout } from "./auto-layout";
+import { settleInitialPlacement, solveAutoLayout } from "./auto-layout";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
@@ -803,7 +803,13 @@ export default function App() {
     closeDetail();
     const storedPositions = getStoredCoordinates(nextDataset);
     const openedGraph = buildEntityGraph(nextDataset);
-    const initialPositions = placeInitialEntities(openedGraph.nodes, openedGraph.edges, storedPositions);
+    const seededPositions = placeInitialEntities(openedGraph.nodes, openedGraph.edges, storedPositions);
+    const initialPositions = Object.keys(storedPositions).length === 0
+      ? settleInitialPlacement({
+        entities: openedGraph.nodes.map(({ id }) => ({ id })),
+        relations: openedGraph.edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
+      })
+      : seededPositions;
     setNodeLayerOrder(openedGraph.nodes.map(({ id }) => id));
     setEdgeLayerOrder(openedGraph.edges.map(({ id }) => id));
     setEdgeLabelOffsets({});

@@ -11,6 +11,7 @@ export type AutoLayoutOptions = {
 const DEFAULT_CLEARANCE = 96;
 const DEFAULT_COMPONENT_GAP = 144;
 const DEFAULT_ITERATIONS = 12;
+export const INITIAL_PLACEMENT_SETTLING_ITERATIONS = 3;
 
 function compareId(a: string, b: string): number { return a.localeCompare(b); }
 function key(a: string, b: string): string { return compareId(a, b) < 0 ? `${a}\0${b}` : `${b}\0${a}`; }
@@ -77,3 +78,10 @@ export function solveAutoLayout(input: AutoLayoutInput, options: AutoLayoutOptio
   return result;
 }
 
+/**
+ * Bounded derived placement for coordinate-less Dataset opening. This reuses
+ * the pure solver mechanics without invoking the explicit Auto Layout workflow.
+ */
+export function settleInitialPlacement(input: AutoLayoutInput): Record<string, LayoutPoint> {
+  return solveAutoLayout(input, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
+}

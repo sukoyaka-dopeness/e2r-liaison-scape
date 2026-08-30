@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { placeInitialEntities } from "../src/entity-placement.ts";
+import { settleInitialPlacement } from "../src/auto-layout.ts";
 
 const nodes = (ids: string[]) => ids.map((id) => ({ id, label: id, description: "", x: 0, y: 0 }));
 const edge = (sourceId: string, targetId: string) => ({ id: `${sourceId}-${targetId}`, sourceId, targetId, parallelIndex: 0, parallelCount: 1 });
@@ -32,4 +33,15 @@ test("disconnected and long-label entities receive finite non-overlapping positi
   const result = placeInitialEntities(graph, [], {});
   for (const point of Object.values(result)) assert.ok(Number.isFinite(point.x) && Number.isFinite(point.y));
   assert.ok(new Set(Object.values(result).map(point => `${point.x},${point.y}`)).size === 3);
+});
+
+test("bounded initial settling is deterministic and non-grid for coordinate-less graphs", () => {
+  const graph = nodes(["a", "b", "c", "d"]);
+  const edges = [edge("a", "b"), edge("b", "c"), edge("c", "d")];
+  const input = { entities: graph.map(({ id }) => ({ id })), relations: edges };
+  const first = settleInitialPlacement(input);
+  const second = settleInitialPlacement({ ...input, entities: [...input.entities].reverse() });
+  assert.deepEqual(first, second);
+  assert.equal(new Set(Object.values(first).map((point) => `${point.x},${point.y}`)).size, 4);
+  assert.ok(Object.values(first).some((point) => point.x % 1 !== 0 || point.y % 1 !== 0));
 });
