@@ -749,6 +749,8 @@ export function routeGraphEdge(
 
   let bestGeometry: ReturnType<typeof geometryForOffset> | null = null;
   let bestScore = Infinity;
+  let bestSidePreservingGeometry: ReturnType<typeof geometryForOffset> | null = null;
+  let bestSidePreservingScore = Infinity;
   for (const candidateOffset of offsets) {
     const geometry = geometryForOffset(candidateOffset);
     const { samples } = geometry;
@@ -783,9 +785,14 @@ export function routeGraphEdge(
       bestGeometry = geometry;
       bestScore = score;
     }
-    if (score === 0) break;
+    const preservesBaseSide = Math.sign(candidateOffset) === Math.sign(baseOffset);
+    const isExistingSafeCandidate = nodeOverlapScore === 0 && !overlapsEdge && labelPressure === 0;
+    if (preservesBaseSide && isExistingSafeCandidate && score < bestSidePreservingScore) {
+      bestSidePreservingGeometry = geometry;
+      bestSidePreservingScore = score;
+    }
   }
-  return bestGeometry ?? geometryForOffset(baseOffset);
+  return bestSidePreservingGeometry ?? bestGeometry ?? geometryForOffset(baseOffset);
 }
 
 function shortestAngularDistance(left: number, right: number): number {

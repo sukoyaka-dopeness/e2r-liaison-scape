@@ -1291,6 +1291,18 @@ test("reverse-direction parallel routes use opposite canonical physical sides", 
   assert.notEqual(forward.controlPoint.y, reverse.controlPoint.y);
 });
 
+test("parallel obstacle routing preserves each base side when a safe candidate exists", () => {
+  const source = { x: 0, y: 0 };
+  const target = { x: 400, y: 0 };
+  const obstacle = { x: 200, y: 40 };
+  const forward = routeGraphEdge(source, target, 0, 2, [obstacle]);
+  const reverse = routeGraphEdge(target, source, 1, 2, [obstacle], [], false, 0, undefined, undefined, [], -1);
+  assert.ok(forward.controlPoint.y > 0);
+  assert.ok(reverse.controlPoint.y < 0);
+  assert.ok(Math.min(...forward.samples.map((point) => Math.hypot(point.x - obstacle.x, point.y - obstacle.y))) >= 60);
+  assert.ok(Math.min(...reverse.samples.map((point) => Math.hypot(point.x - obstacle.x, point.y - obstacle.y))) >= 60);
+});
+
 test("parallel solver eligibility follows obstacle route effect for distant and active obstacles", () => {
   const source = { x: 0, y: 0 };
   const target = { x: 400, y: 0 };
