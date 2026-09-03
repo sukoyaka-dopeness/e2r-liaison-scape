@@ -26,6 +26,12 @@ type AutoLayoutSeed = {
   initialPositions: Record<string, LayoutPoint>;
 };
 
+type InitialPositionSource = (
+  component: readonly string[],
+  componentLeft: number,
+  clearance: number,
+) => AutoLayoutSeed;
+
 const DEFAULT_CLEARANCE = 96;
 const DEFAULT_COMPONENT_GAP = 144;
 const DEFAULT_ITERATIONS = 12;
@@ -136,21 +142,39 @@ export function settleLayoutPositions(
   return points;
 }
 
+function settleNormalizedLayout(
+  layoutGraph: NormalizedLayoutGraph,
+  options: ResolvedLayoutOptions,
+  initialPositionSource: InitialPositionSource,
+): Record<string, LayoutPoint> {
+  const result: Record<string, LayoutPoint> = {};
+  let componentLeft = 0;
+  for (const component of layoutGraph.components) {
+    const seed = initialPositionSource(component, componentLeft, options.clearance);
+    const points = settleLayoutPositions(layoutGraph, component, seed.initialPositions, { nodeClearance: options.clearance, iterations: options.iterations });
+    const maxX = Math.max(...Object.values(points).map((point) => point.x), seed.center.x);
+    for (const id of component) result[id] = { x: points[id].x, y: points[id].y };
+    componentLeft = maxX + options.gap;
+  }
+  return result;
+}
+
+export function settleNormalizedLayoutFromInitialPositions(
+  layoutGraph: NormalizedLayoutGraph,
+  initialPositions: Readonly<Record<string, LayoutPoint>>,
+  options: AutoLayoutOptions = {},
+): Record<string, LayoutPoint> {
+  return settleNormalizedLayout(layoutGraph, resolveLayoutOptions(options), (component, componentLeft) => ({
+    center: { x: componentLeft + 160, y: 160 },
+    initialPositions: { ...initialPositions },
+  }));
+}
+
 /** Pure, deterministic EXP-1A placement. It does not mutate its input or Dataset data. */
 export function solveAutoLayout(input: AutoLayoutInput, options: AutoLayoutOptions = {}): Record<string, LayoutPoint> {
   const { clearance, gap, iterations } = resolveLayoutOptions(options);
   const layoutGraph = buildNormalizedLayoutGraph(input);
-
-  const result: Record<string, LayoutPoint> = {};
-  let componentLeft = 0;
-  for (const component of layoutGraph.components) {
-    const seed = createAutoLayoutInitialPositions(layoutGraph, component, componentLeft, clearance);
-    const points = settleLayoutPositions(layoutGraph, component, seed.initialPositions, { nodeClearance: clearance, iterations });
-    const maxX = Math.max(...Object.values(points).map((point) => point.x), seed.center.x);
-    for (const id of component) result[id] = { x: points[id].x, y: points[id].y };
-    componentLeft = maxX + gap;
-  }
-  return result;
+  return settleNormalizedLayout(layoutGraph, { clearance, gap, iterations }, (component, componentLeft, nodeClearance) => createAutoLayoutInitialPositions(layoutGraph, component, componentLeft, nodeClearance));
 }
 
 /**
