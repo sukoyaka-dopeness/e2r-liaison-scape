@@ -13,7 +13,17 @@ const DEFAULT_COMPONENT_GAP = 144;
 const DEFAULT_ITERATIONS = 12;
 export const INITIAL_PLACEMENT_SETTLING_ITERATIONS = 3;
 
-function compareId(a: string, b: string): number { return a.localeCompare(b); }
+function compareId(a: string, b: string): number {
+  const left = [...a];
+  const right = [...b];
+  const length = Math.min(left.length, right.length);
+  for (let index = 0; index < length; index += 1) {
+    const leftCodePoint = left[index]!.codePointAt(0)!;
+    const rightCodePoint = right[index]!.codePointAt(0)!;
+    if (leftCodePoint !== rightCodePoint) return leftCodePoint - rightCodePoint;
+  }
+  return left.length - right.length;
+}
 function key(a: string, b: string): string { return compareId(a, b) < 0 ? `${a}\0${b}` : `${b}\0${a}`; }
 
 /** Pure, deterministic EXP-1A placement. It does not mutate its input or Dataset data. */
@@ -33,6 +43,9 @@ export function solveAutoLayout(input: AutoLayoutInput, options: AutoLayoutOptio
     adjacency.get(relation.sourceId)?.add(relation.targetId);
     adjacency.get(relation.targetId)?.add(relation.sourceId);
   }
+  const canonicalNeighbors = new Map(
+    ids.map((id) => [id, [...(adjacency.get(id) ?? [])].sort(compareId)]),
+  );
 
   const components: string[][] = [];
   const visited = new Set<string>();
@@ -41,7 +54,7 @@ export function solveAutoLayout(input: AutoLayoutInput, options: AutoLayoutOptio
     const component: string[] = []; const queue = [start]; visited.add(start);
     while (queue.length) {
       const current = queue.shift()!; component.push(current);
-      for (const next of [...(adjacency.get(current) ?? [])].sort(compareId)) {
+      for (const next of canonicalNeighbors.get(current) ?? []) {
         if (!visited.has(next)) { visited.add(next); queue.push(next); }
       }
     }
@@ -67,7 +80,7 @@ export function solveAutoLayout(input: AutoLayoutInput, options: AutoLayoutOptio
           const distance = Math.hypot(deltaX, deltaY) || 1;
           if (distance < clearance) { const push = (clearance - distance) / distance; dx += deltaX * push * 0.25; dy += deltaY * push * 0.25; }
         }
-        for (const neighbor of adjacency.get(id) ?? []) { dx += (points[neighbor].x - points[id].x) * 0.018; dy += (points[neighbor].y - points[id].y) * 0.018; }
+        for (const neighbor of canonicalNeighbors.get(id) ?? []) { dx += (points[neighbor].x - points[id].x) * 0.018; dy += (points[neighbor].y - points[id].y) * 0.018; }
         points[id] = { x: points[id].x + Math.max(-18, Math.min(18, dx)), y: points[id].y + Math.max(-18, Math.min(18, dy)) };
       }
     }
