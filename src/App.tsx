@@ -19,9 +19,9 @@ import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { readRelationArrowDisplay, readRelationLineStyle } from "./presentation-extension";
 import { getRelationArrowheadGeometries } from "./relation-arrow-presentation";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, fitGraphView, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, fitGraphView, nearestPolylineArcFraction, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
-import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
+import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
 import { applyEntityCreationPlacement, buildPersistableCoordinatePositions, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
 import { canRestoreReplacementTrigger } from "./replacement-focus";
@@ -31,7 +31,7 @@ import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
 import { placeInitialEntities } from "./entity-placement";
 import { settleInitialPlacement, solveAutoLayout } from "./auto-layout";
-import { deriveAutomaticRoutes } from "./graph-presentation";
+import { deriveAutomaticNodeLabels, deriveAutomaticRelationLabels, deriveAutomaticRoutes } from "./graph-presentation";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
@@ -332,31 +332,15 @@ export default function App() {
     });
   }, [edgeCurveOffsets, graph, nodeMap, positions, relationMap, selfLoopOverrides]);
   const edgeLabelPlacements = useMemo(() => {
-    const occupiedLabels: LabelRect[] = [];
-    const result = new Map<string, LabelRect>();
     const nodes = graph.nodes.map((node) => positions[node.id] ?? node);
     const draggedNodeId = dragRef.current?.kind === "node" ? dragRef.current.id : undefined;
-    for (const edge of routedEdges) {
-      if (!edge.label) continue;
-      const otherEdgePaths = routedEdges.filter(({ id }) => id !== edge.id).map(({ samples }) => samples);
-      const relationMovesWithDraggedNode = draggedNodeId !== undefined &&
-        (edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId);
-      const automaticPlacement = placeEdgeLabel(
-        edge.samples,
-        edge.label,
-        occupiedLabels,
-        nodes,
-        otherEdgePaths,
-        relationMovesWithDraggedNode ? undefined : previousEdgeLabelPlacements.current.get(edge.id),
-      );
-      const manualAnchor = manualRelationLabelAnchors.current.get(edge.id);
-      const placement = manualAnchor
-        ? { ...automaticPlacement, ...reconstructManualRelationLabelTarget(edge.samples, manualAnchor) }
-        : automaticPlacement;
-      occupiedLabels.push(placement);
-      result.set(edge.id, placement);
-    }
-    return result;
+    return deriveAutomaticRelationLabels({
+      routedEdges,
+      nodes,
+      previousPlacements: new Map(previousEdgeLabelPlacements.current),
+      manualAnchors: new Map(manualRelationLabelAnchors.current),
+      draggedNodeId,
+    });
   }, [graph.nodes, positions, routedEdges, manualLabelRevision]);
   const displayedEdgeLabelPlacements = useMemo(() => {
     const result = new Map<string, LabelRect>();
@@ -375,29 +359,16 @@ export default function App() {
     return result;
   }, [edgeLabelPlacements, routedEdges, positions]);
   const nodeLabelPlacements = useMemo(() => {
-    const occupiedLabels: LabelRect[] = Array.from(edgeLabelPlacements.values());
-    const result = new Map<string, LabelRect>();
-    const edgePaths = routedEdges.map(({ samples }) => samples).filter(({ length }) => length > 0);
-    for (const node of graph.nodes) {
-      const position = positions[node.id] ?? node;
-      const isActivelyDraggedNode = dragRef.current?.kind === "node" && dragRef.current.id === node.id;
-      const automaticPlacement = placeNodeLabel(
-        position,
-        node.label,
-        node.description,
-        occupiedLabels,
-        graph.nodes.filter(({ id }) => id !== node.id).map((other) => positions[other.id] ?? other),
-        edgePaths,
-        isActivelyDraggedNode ? undefined : previousNodeLabelPlacements.current.get(node.id),
-      );
-      const manualOffset = manualNodeLabelOffsets.current.get(node.id);
-      const placement = manualOffset
-        ? { ...automaticPlacement, x: position.x + manualOffset.x, y: position.y + manualOffset.y }
-        : automaticPlacement;
-      occupiedLabels.push(placement);
-      result.set(node.id, placement);
-    }
-    return result;
+    const activelyDraggedNodeId = dragRef.current?.kind === "node" ? dragRef.current.id : undefined;
+    return deriveAutomaticNodeLabels({
+      nodes: graph.nodes,
+      positions,
+      routedEdges,
+      occupiedRelationLabels: edgeLabelPlacements,
+      previousPlacements: new Map(previousNodeLabelPlacements.current),
+      manualOffsets: new Map(manualNodeLabelOffsets.current),
+      activelyDraggedNodeId,
+    });
   }, [edgeLabelPlacements, graph.nodes, positions, routedEdges, manualLabelRevision]);
 
   useEffect(() => {

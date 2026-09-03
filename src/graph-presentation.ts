@@ -1,5 +1,6 @@
 import type { GraphEdge, GraphNode } from "./dataset.ts";
-import { compareRouteGeometry, routeGraphEdge, type LabelRect, type Point } from "./viewport.ts";
+import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, type LabelRect, type Point } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -129,4 +130,90 @@ export function deriveAutomaticRoutes({
     });
   }
   return graph.edges.map((edge) => ({ ...edge, ...routedById.get(edge.id)! }));
+}
+
+export type AutomaticRelationLabelInput = {
+  routedEdges: readonly DerivedAutomaticRoute[];
+  nodes: readonly Point[];
+  previousPlacements: ReadonlyMap<string, LabelRect>;
+  manualAnchors: ReadonlyMap<string, ManualRelationLabelAnchor>;
+  draggedNodeId?: string;
+};
+
+export type AutomaticNodeLabelInput = {
+  nodes: readonly GraphNode[];
+  positions: Readonly<Record<string, Point>>;
+  routedEdges: readonly DerivedAutomaticRoute[];
+  occupiedRelationLabels: ReadonlyMap<string, LabelRect>;
+  previousPlacements: ReadonlyMap<string, LabelRect>;
+  manualOffsets: ReadonlyMap<string, ManualNodeLabelOffset>;
+  activelyDraggedNodeId?: string;
+};
+
+/** Pure Product-owned automatic Relation-label orchestration. App state arrives as snapshots. */
+export function deriveAutomaticRelationLabels({
+  routedEdges,
+  nodes,
+  previousPlacements,
+  manualAnchors,
+  draggedNodeId,
+}: AutomaticRelationLabelInput): Map<string, LabelRect> {
+  const occupiedLabels: LabelRect[] = [];
+  const result = new Map<string, LabelRect>();
+  const nodePoints = [...nodes];
+  for (const edge of routedEdges) {
+    if (!edge.label) continue;
+    const otherEdgePaths = routedEdges.filter(({ id }) => id !== edge.id).map(({ samples }) => samples);
+    const relationMovesWithDraggedNode = draggedNodeId !== undefined
+      && (edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId);
+    const automaticPlacement = placeEdgeLabel(
+      edge.samples,
+      edge.label,
+      occupiedLabels,
+      nodePoints,
+      otherEdgePaths,
+      relationMovesWithDraggedNode ? undefined : previousPlacements.get(edge.id),
+    );
+    const manualAnchor = manualAnchors.get(edge.id);
+    const placement = manualAnchor
+      ? { ...automaticPlacement, ...reconstructManualRelationLabelTarget(edge.samples, manualAnchor) }
+      : automaticPlacement;
+    occupiedLabels.push(placement);
+    result.set(edge.id, placement);
+  }
+  return result;
+}
+
+/** Pure Product-owned automatic Node-label orchestration. App state arrives as snapshots. */
+export function deriveAutomaticNodeLabels({
+  nodes,
+  positions,
+  routedEdges,
+  occupiedRelationLabels,
+  previousPlacements,
+  manualOffsets,
+  activelyDraggedNodeId,
+}: AutomaticNodeLabelInput): Map<string, LabelRect> {
+  const occupiedLabels: LabelRect[] = Array.from(occupiedRelationLabels.values());
+  const result = new Map<string, LabelRect>();
+  const edgePaths = routedEdges.map(({ samples }) => samples).filter(({ length }) => length > 0);
+  for (const node of nodes) {
+    const position = positions[node.id] ?? node;
+    const automaticPlacement = placeNodeLabel(
+      position,
+      node.label,
+      node.description,
+      occupiedLabels,
+      nodes.filter(({ id }) => id !== node.id).map((other) => positions[other.id] ?? other),
+      edgePaths,
+      activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id),
+    );
+    const manualOffset = manualOffsets.get(node.id);
+    const placement = manualOffset
+      ? { ...automaticPlacement, x: position.x + manualOffset.x, y: position.y + manualOffset.y }
+      : automaticPlacement;
+    occupiedLabels.push(placement);
+    result.set(node.id, placement);
+  }
+  return result;
 }

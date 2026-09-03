@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { deriveAutomaticRoutes, type AutomaticRoutingInput } from "../src/graph-presentation.ts";
+import {
+  deriveAutomaticNodeLabels,
+  deriveAutomaticRelationLabels,
+  deriveAutomaticRoutes,
+  type AutomaticNodeLabelInput,
+  type AutomaticRelationLabelInput,
+  type AutomaticRoutingInput,
+} from "../src/graph-presentation.ts";
 
 function input(overrides: Partial<AutomaticRoutingInput> = {}): AutomaticRoutingInput {
   return {
@@ -16,6 +23,30 @@ function input(overrides: Partial<AutomaticRoutingInput> = {}): AutomaticRouting
     edgeCurveOffsets: {},
     selfLoopOverrides: {},
     provisionalNodeLabels: [],
+    ...overrides,
+  };
+}
+
+function relationLabelInput(overrides: Partial<AutomaticRelationLabelInput> = {}): AutomaticRelationLabelInput {
+  const routingInput = input();
+  return {
+    routedEdges: deriveAutomaticRoutes(routingInput),
+    nodes: routingInput.graph.nodes.map(({ x, y }) => ({ x, y })),
+    previousPlacements: new Map(),
+    manualAnchors: new Map(),
+    ...overrides,
+  };
+}
+
+function nodeLabelInput(overrides: Partial<AutomaticNodeLabelInput> = {}): AutomaticNodeLabelInput {
+  const routingInput = input();
+  return {
+    nodes: routingInput.graph.nodes,
+    positions: routingInput.positions,
+    routedEdges: deriveAutomaticRoutes(routingInput),
+    occupiedRelationLabels: new Map(),
+    previousPlacements: new Map(),
+    manualOffsets: new Map(),
     ...overrides,
   };
 }
@@ -114,4 +145,132 @@ test("returns routes in the original graph.edges order", () => {
     ],
   };
   assert.deepEqual(deriveAutomaticRoutes(input({ graph })).map(({ id }) => id), ["z", "a"]);
+});
+
+test("same inputs produce exact deterministic Node-label results", () => {
+  assert.deepEqual(deriveAutomaticNodeLabels(nodeLabelInput()), deriveAutomaticNodeLabels(nodeLabelInput()));
+});
+
+test("same inputs produce exact deterministic Relation-label results", () => {
+  assert.deepEqual(deriveAutomaticRelationLabels(relationLabelInput()), deriveAutomaticRelationLabels(relationLabelInput()));
+});
+
+test("current Node positions drive automatic Node-label recomputation", () => {
+  const first = deriveAutomaticNodeLabels(nodeLabelInput());
+  const second = deriveAutomaticNodeLabels(nodeLabelInput({ positions: { a: { x: 0, y: 0 }, b: { x: 200, y: 80 }, c: { x: 100, y: 120 } } }));
+  assert.notDeepEqual(first, second);
+});
+
+test("current route geometry drives automatic Relation-label follow", () => {
+  const base = input();
+  const first = deriveAutomaticRelationLabels({
+    ...relationLabelInput(),
+    routedEdges: deriveAutomaticRoutes(base),
+  });
+  const second = deriveAutomaticRelationLabels({
+    ...relationLabelInput(),
+    routedEdges: deriveAutomaticRoutes({ ...base, edgeCurveOffsets: { ab: 54 } }),
+  });
+  assert.notDeepEqual(first.get("ab"), second.get("ab"));
+});
+
+test("curve-offset-induced route changes move the automatic Relation label", () => {
+  const base = input();
+  const first = deriveAutomaticRelationLabels({
+    ...relationLabelInput(),
+    routedEdges: deriveAutomaticRoutes(base),
+  }).get("ab");
+  const second = deriveAutomaticRelationLabels({
+    ...relationLabelInput(),
+    routedEdges: deriveAutomaticRoutes({ ...base, edgeCurveOffsets: { ab: 54 } }),
+  }).get("ab");
+  assert.notDeepEqual(first, second);
+});
+
+test("self-loop route changes move the automatic Relation label", () => {
+  const base = input({
+    graph: { nodes: input().graph.nodes, edges: [{ id: "aa", sourceId: "a", targetId: "a", parallelIndex: 0, parallelCount: 1, label: "AA" }] },
+  });
+  const first = deriveAutomaticRelationLabels({
+    ...relationLabelInput(),
+    routedEdges: deriveAutomaticRoutes(base),
+  }).get("aa");
+  const second = deriveAutomaticRelationLabels({
+    ...relationLabelInput(),
+    routedEdges: deriveAutomaticRoutes({ ...base, selfLoopOverrides: { aa: { orientation: Math.PI / 2, radius: 72 } } }),
+  }).get("aa");
+  assert.notDeepEqual(first, second);
+});
+
+test("occupied Relation-label rectangles preserve deterministic collision order", () => {
+  const routingInput = input({
+    graph: {
+      nodes: input().graph.nodes,
+      edges: [
+        { id: "ab", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1, label: "First" },
+        { id: "bc", sourceId: "b", targetId: "c", parallelIndex: 0, parallelCount: 1, label: "Second" },
+      ],
+    },
+  });
+  const labelInput = relationLabelInput({
+    routedEdges: deriveAutomaticRoutes(routingInput),
+    nodes: routingInput.graph.nodes.map(({ x, y }) => ({ x, y })),
+  });
+  const first = deriveAutomaticRelationLabels(labelInput);
+  const second = deriveAutomaticRelationLabels(labelInput);
+  assert.deepEqual(first, second);
+  assert.notDeepEqual(first.get("ab"), first.get("bc"));
+});
+
+test("Node-label derivation consumes Relation-label rectangles before Node order", () => {
+  const base = deriveAutomaticNodeLabels(nodeLabelInput());
+  const occupied = new Map([["synthetic", { x: 0, y: 50, width: 48, height: 20, directionX: 0, directionY: 1 }]]);
+  const withRelationLabel = deriveAutomaticNodeLabels(nodeLabelInput({ occupiedRelationLabels: occupied }));
+  assert.notDeepEqual(base.get("a"), withRelationLabel.get("a"));
+});
+
+test("manual Node-label offset data remains input-only and unmodified", () => {
+  const manualOffsets = new Map([["a", { x: 15, y: -10 }]]);
+  const value = nodeLabelInput({ manualOffsets });
+  const before = structuredClone(value);
+  const result = deriveAutomaticNodeLabels(value).get("a")!;
+  assert.deepEqual(value, before);
+  assert.equal(result.x, value.positions.a!.x + 15);
+  assert.equal(result.y, value.positions.a!.y - 10);
+});
+
+test("manual Relation-label anchor data remains input-only and unmodified", () => {
+  const manualAnchors = new Map([["ab", { fraction: 0.5, tangentOffset: 3, normalOffset: 10 }]]);
+  const value = relationLabelInput({ manualAnchors });
+  const before = structuredClone(value);
+  deriveAutomaticRelationLabels(value);
+  assert.deepEqual(value, before);
+});
+
+test("label derivation does not mutate graph, routes, or geometry snapshots", () => {
+  const relation = relationLabelInput();
+  const node = nodeLabelInput({ routedEdges: relation.routedEdges });
+  const before = structuredClone({ relation, node });
+  deriveAutomaticRelationLabels(relation);
+  deriveAutomaticNodeLabels(node);
+  assert.deepEqual({ relation, node }, before);
+});
+
+test("automatic label output follows the exact current App processing order", () => {
+  const routingInput = input({
+    graph: {
+      nodes: input().graph.nodes,
+      edges: [
+        { id: "z", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1, label: "Z" },
+        { id: "a", sourceId: "b", targetId: "c", parallelIndex: 0, parallelCount: 1, label: "A" },
+      ],
+    },
+  });
+  const result = deriveAutomaticRelationLabels({
+    routedEdges: deriveAutomaticRoutes(routingInput),
+    nodes: routingInput.graph.nodes.map(({ x, y }) => ({ x, y })),
+    previousPlacements: new Map(),
+    manualAnchors: new Map(),
+  });
+  assert.deepEqual([...result.keys()], ["z", "a"]);
 });
