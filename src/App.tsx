@@ -19,7 +19,7 @@ import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { readRelationArrowDisplay, readRelationLineStyle } from "./presentation-extension";
 import { getRelationArrowheadGeometries } from "./relation-arrow-presentation";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, fitGraphView, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualRelationLabelTarget, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
@@ -31,6 +31,7 @@ import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
 import { placeInitialEntities } from "./entity-placement";
 import { settleInitialPlacement, solveAutoLayout } from "./auto-layout";
+import { deriveAutomaticRoutes } from "./graph-presentation";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
@@ -302,9 +303,6 @@ export default function App() {
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
   const relationMap = useMemo(() => new Map(dataset?.relations.map((relation) => [relation.id, relation]) ?? []), [dataset]);
   const routedEdges = useMemo(() => {
-    const occupiedPaths: Array<Array<{ x: number; y: number }>> = [];
-    const overlapCounts = new Map<string, number>();
-    const routedById = new Map<string, ReturnType<typeof routeGraphEdge> & { label: string; parallelSolverEligible: boolean }>();
     const provisionalNodeLabels = graph.nodes.map((node) => {
       const position = positions[node.id] ?? node;
       const automatic = placeNodeLabel(
@@ -318,107 +316,20 @@ export default function App() {
       const manual = manualNodeLabelOffsets.current.get(node.id);
       return manual ? { ...automatic, x: position.x + manual.x, y: position.y + manual.y } : automatic;
     });
-    const compareRoutingPriority = (left: typeof graph.edges[number], right: typeof graph.edges[number]) =>
-      left.sourceId.localeCompare(right.sourceId)
-      || left.targetId.localeCompare(right.targetId)
-      || left.id.localeCompare(right.id);
-    const fixedEdges = graph.edges.filter((edge) => {
-      const sourceNode = nodeMap.get(edge.sourceId)!;
-      const targetNode = nodeMap.get(edge.targetId)!;
-      const source = positions[sourceNode.id] ?? sourceNode;
-      const target = positions[targetNode.id] ?? targetNode;
-      return edgeCurveOffsets[edge.id] !== undefined
-        || edge.sourceId === edge.targetId
-        || (source.x === target.x && source.y === target.y);
-    }).sort(compareRoutingPriority);
-    const automaticOrdinaryEdges = graph.edges.filter((edge) => !fixedEdges.some(({ id }) => id === edge.id))
-      .sort(compareRoutingPriority);
-    for (const edge of [...fixedEdges, ...automaticOrdinaryEdges]) {
-      const canonicalPhysicalSideSign = edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1;
-      const sourceNode = nodeMap.get(edge.sourceId)!;
-      const targetNode = nodeMap.get(edge.targetId)!;
-      const source = positions[sourceNode.id] ?? sourceNode;
-      const target = positions[targetNode.id] ?? targetNode;
-      const obstacles = graph.nodes
-        .filter((node) => node.id !== edge.sourceId && node.id !== edge.targetId)
-        .map((node) => positions[node.id] ?? node);
-      const isOverlappingPair = edge.sourceId !== edge.targetId
-        && source.x === target.x
-        && source.y === target.y;
-      const overlapKey = `${source.x}\u0000${source.y}`;
-      const overlapIndex = isOverlappingPair ? (overlapCounts.get(overlapKey) ?? 0) : 0;
-      if (isOverlappingPair) overlapCounts.set(overlapKey, overlapIndex + 1);
-      const route = routeGraphEdge(
-        source,
-        target,
-        edge.parallelIndex,
-        edge.parallelCount,
-        obstacles,
-        occupiedPaths,
-        edge.sourceId === edge.targetId,
-        overlapIndex,
-        edgeCurveOffsets[edge.id],
-        selfLoopOverrides[edge.id],
-        provisionalNodeLabels,
-        canonicalPhysicalSideSign,
-      );
-      const routeWithoutObstacles = edge.parallelCount > 1
-        && edge.sourceId !== edge.targetId
-        && !isOverlappingPair
-        ? routeGraphEdge(
-          source,
-          target,
-          edge.parallelIndex,
-          edge.parallelCount,
-          [],
-          occupiedPaths,
-          false,
-          overlapIndex,
-          edgeCurveOffsets[edge.id],
-          selfLoopOverrides[edge.id],
-          [],
-          canonicalPhysicalSideSign,
-        )
-        : null;
-      const routeWithoutObstaclesOrOccupiedPaths = routeWithoutObstacles !== null
-        ? routeGraphEdge(
-          source,
-          target,
-          edge.parallelIndex,
-          edge.parallelCount,
-          [],
-          [],
-          false,
-          overlapIndex,
-          edgeCurveOffsets[edge.id],
-          selfLoopOverrides[edge.id],
-          [],
-          canonicalPhysicalSideSign,
-        )
-        : null;
-      const obstacleComparison = routeWithoutObstacles === null
-        ? null
-        : compareRouteGeometry(routeWithoutObstacles.samples, route.samples);
-      const occupiedPathComparison = routeWithoutObstacles === null || routeWithoutObstaclesOrOccupiedPaths === null
-        ? null
-        : compareRouteGeometry(routeWithoutObstaclesOrOccupiedPaths.samples, routeWithoutObstacles.samples);
-      const parallelSolverEligible = edge.parallelCount > 1
-        && edge.sourceId !== edge.targetId
-        && !isOverlappingPair
-        && obstacleComparison?.equivalent === true
-        && occupiedPathComparison?.equivalent === true;
-      occupiedPaths.push(route.samples);
-      const relation = relationMap.get(edge.id);
-      routedById.set(edge.id, {
-        path: route.path,
-        samples: route.samples,
-        labelPoint: route.labelPoint,
-        controlPoint: route.controlPoint,
-        label: typeof relation?.name === "string" ? relation.name : "",
-        parallelSolverEligible,
-      });
-    }
-    return graph.edges.map((edge) => ({ ...edge, ...routedById.get(edge.id)! }));
+    const edges = graph.edges.map((edge) => ({
+      ...edge,
+      label: (() => {
+        const relation = relationMap.get(edge.id);
+        return typeof relation?.name === "string" ? relation.name : "";
+      })(),
+    }));
+    return deriveAutomaticRoutes({
+      graph: { nodes: graph.nodes, edges },
+      positions,
+      edgeCurveOffsets,
+      selfLoopOverrides,
+      provisionalNodeLabels,
+    });
   }, [edgeCurveOffsets, graph, nodeMap, positions, relationMap, selfLoopOverrides]);
   const edgeLabelPlacements = useMemo(() => {
     const occupiedLabels: LabelRect[] = [];
