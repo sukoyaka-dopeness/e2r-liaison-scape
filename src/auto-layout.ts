@@ -8,6 +8,24 @@ export type AutoLayoutOptions = {
   iterations?: number;
 };
 
+export type NormalizedLayoutGraph = {
+  ids: readonly string[];
+  canonicalNeighbors: ReadonlyMap<string, readonly string[]>;
+  components: readonly (readonly string[])[];
+  degree: ReadonlyMap<string, number>;
+};
+
+type ResolvedLayoutOptions = {
+  clearance: number;
+  gap: number;
+  iterations: number;
+};
+
+type AutoLayoutSeed = {
+  center: LayoutPoint;
+  initialPositions: Record<string, LayoutPoint>;
+};
+
 const DEFAULT_CLEARANCE = 96;
 const DEFAULT_COMPONENT_GAP = 144;
 const DEFAULT_ITERATIONS = 12;
@@ -26,11 +44,14 @@ function compareId(a: string, b: string): number {
 }
 function key(a: string, b: string): string { return compareId(a, b) < 0 ? `${a}\0${b}` : `${b}\0${a}`; }
 
-/** Pure, deterministic EXP-1A placement. It does not mutate its input or Dataset data. */
-export function solveAutoLayout(input: AutoLayoutInput, options: AutoLayoutOptions = {}): Record<string, LayoutPoint> {
+function resolveLayoutOptions(options: AutoLayoutOptions): ResolvedLayoutOptions {
   const clearance = Math.max(1, options.nodeClearance ?? DEFAULT_CLEARANCE);
   const gap = Math.max(clearance, options.componentGap ?? DEFAULT_COMPONENT_GAP);
   const iterations = Math.max(0, Math.floor(options.iterations ?? DEFAULT_ITERATIONS));
+  return { clearance, gap, iterations };
+}
+
+export function buildNormalizedLayoutGraph(input: AutoLayoutInput): NormalizedLayoutGraph {
   const ids = [...new Set(input.entities.map((entity) => entity.id))].sort(compareId);
   const idSet = new Set(ids);
   const adjacency = new Map(ids.map((id) => [id, new Set<string>()]));
@@ -61,30 +82,71 @@ export function solveAutoLayout(input: AutoLayoutInput, options: AutoLayoutOptio
     components.push(component.sort(compareId));
   }
 
+  return {
+    ids,
+    canonicalNeighbors,
+    components,
+    degree: new Map(ids.map((id) => [id, adjacency.get(id)!.size])),
+  };
+}
+
+function createAutoLayoutInitialPositions(
+  layoutGraph: NormalizedLayoutGraph,
+  component: readonly string[],
+  componentLeft: number,
+  clearance: number,
+): AutoLayoutSeed {
+  const ranked = component.slice().sort((a, b) => (layoutGraph.degree.get(b)! - layoutGraph.degree.get(a)!) || compareId(a, b));
+  const center = { x: componentLeft + 160, y: 160 };
+  const initialPositions: Record<string, LayoutPoint> = {};
+  ranked.forEach((id, index) => {
+    if (index === 0) initialPositions[id] = { ...center };
+    else { const angle = ((index - 1) % 8) * Math.PI / 4; const ring = Math.floor((index - 1) / 8) + 1;
+      initialPositions[id] = { x: center.x + Math.cos(angle) * clearance * 1.8 * ring, y: center.y + Math.sin(angle) * clearance * 1.8 * ring }; }
+  });
+  return { center, initialPositions };
+}
+
+export function settleLayoutPositions(
+  layoutGraph: NormalizedLayoutGraph,
+  component: readonly string[],
+  initialPositions: Readonly<Record<string, LayoutPoint>>,
+  options: Pick<AutoLayoutOptions, "nodeClearance" | "iterations"> = {},
+): Record<string, LayoutPoint> {
+  const clearance = Math.max(1, options.nodeClearance ?? DEFAULT_CLEARANCE);
+  const iterations = Math.max(0, Math.floor(options.iterations ?? DEFAULT_ITERATIONS));
+  const points: Record<string, LayoutPoint> = {};
+  for (const id of component) {
+    const point = initialPositions[id];
+    if (!point) throw new Error(`Missing initial position for entity: ${id}`);
+    points[id] = { x: point.x, y: point.y };
+  }
+  for (let step = 0; step < iterations; step += 1) {
+    for (const id of component) {
+      let dx = 0; let dy = 0;
+      for (const other of component) if (other !== id) {
+        const deltaX = points[id].x - points[other].x; const deltaY = points[id].y - points[other].y;
+        const distance = Math.hypot(deltaX, deltaY) || 1;
+        if (distance < clearance) { const push = (clearance - distance) / distance; dx += deltaX * push * 0.25; dy += deltaY * push * 0.25; }
+      }
+      for (const neighbor of layoutGraph.canonicalNeighbors.get(id) ?? []) { dx += (points[neighbor].x - points[id].x) * 0.018; dy += (points[neighbor].y - points[id].y) * 0.018; }
+      points[id] = { x: points[id].x + Math.max(-18, Math.min(18, dx)), y: points[id].y + Math.max(-18, Math.min(18, dy)) };
+    }
+  }
+  return points;
+}
+
+/** Pure, deterministic EXP-1A placement. It does not mutate its input or Dataset data. */
+export function solveAutoLayout(input: AutoLayoutInput, options: AutoLayoutOptions = {}): Record<string, LayoutPoint> {
+  const { clearance, gap, iterations } = resolveLayoutOptions(options);
+  const layoutGraph = buildNormalizedLayoutGraph(input);
+
   const result: Record<string, LayoutPoint> = {};
   let componentLeft = 0;
-  for (const component of components) {
-    const ranked = component.slice().sort((a, b) => (adjacency.get(b)!.size - adjacency.get(a)!.size) || compareId(a, b));
-    const center = { x: componentLeft + 160, y: 160 };
-    const points: Record<string, LayoutPoint> = {};
-    ranked.forEach((id, index) => {
-      if (index === 0) points[id] = { ...center };
-      else { const angle = ((index - 1) % 8) * Math.PI / 4; const ring = Math.floor((index - 1) / 8) + 1;
-        points[id] = { x: center.x + Math.cos(angle) * clearance * 1.8 * ring, y: center.y + Math.sin(angle) * clearance * 1.8 * ring }; }
-    });
-    for (let step = 0; step < iterations; step += 1) {
-      for (const id of component) {
-        let dx = 0; let dy = 0;
-        for (const other of component) if (other !== id) {
-          const deltaX = points[id].x - points[other].x; const deltaY = points[id].y - points[other].y;
-          const distance = Math.hypot(deltaX, deltaY) || 1;
-          if (distance < clearance) { const push = (clearance - distance) / distance; dx += deltaX * push * 0.25; dy += deltaY * push * 0.25; }
-        }
-        for (const neighbor of canonicalNeighbors.get(id) ?? []) { dx += (points[neighbor].x - points[id].x) * 0.018; dy += (points[neighbor].y - points[id].y) * 0.018; }
-        points[id] = { x: points[id].x + Math.max(-18, Math.min(18, dx)), y: points[id].y + Math.max(-18, Math.min(18, dy)) };
-      }
-    }
-    const maxX = Math.max(...Object.values(points).map((point) => point.x), center.x);
+  for (const component of layoutGraph.components) {
+    const seed = createAutoLayoutInitialPositions(layoutGraph, component, componentLeft, clearance);
+    const points = settleLayoutPositions(layoutGraph, component, seed.initialPositions, { nodeClearance: clearance, iterations });
+    const maxX = Math.max(...Object.values(points).map((point) => point.x), seed.center.x);
     for (const id of component) result[id] = { x: points[id].x, y: points[id].y };
     componentLeft = maxX + gap;
   }

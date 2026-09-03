@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { solveAutoLayout } from "../src/auto-layout.ts";
+import {
+  INITIAL_PLACEMENT_SETTLING_ITERATIONS,
+  buildNormalizedLayoutGraph,
+  settleInitialPlacement,
+  settleLayoutPositions,
+  solveAutoLayout,
+} from "../src/auto-layout.ts";
 
 const entities = (ids: string[]) => ids.map((id) => ({ id }));
 test("is deterministic and ignores relation order, parallels, self-relations, and non-entity edges", () => {
@@ -75,4 +81,72 @@ test("preserves duplicate, parallel, self, and invalid endpoint semantics", () =
     solveAutoLayout({ ...input, relations: [...input.relations].reverse() }),
     solveAutoLayout(input),
   );
+});
+
+test("settleInitialPlacement uses the default Product composition with exactly three iterations", () => {
+  assert.equal(INITIAL_PLACEMENT_SETTLING_ITERATIONS, 3);
+  const input = {
+    entities: entities(["hub", "a", "b", "isolated"]),
+    relations: [
+      { id: "ha", sourceId: "hub", targetId: "a" },
+      { id: "hb", sourceId: "hub", targetId: "b" },
+    ],
+  };
+  assert.deepEqual(
+    settleInitialPlacement(input),
+    solveAutoLayout(input, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS }),
+  );
+});
+
+test("builds one canonical normalized graph independent of Relation order", () => {
+  const input = {
+    entities: entities(["c", "a", "b"]),
+    relations: [
+      { id: "bc", sourceId: "b", targetId: "c" },
+      { id: "ab", sourceId: "a", targetId: "b" },
+      { id: "ba", sourceId: "b", targetId: "a" },
+      { id: "self", sourceId: "a", targetId: "a" },
+    ],
+  };
+  const graph = buildNormalizedLayoutGraph(input);
+  const reversedGraph = buildNormalizedLayoutGraph({ ...input, relations: [...input.relations].reverse() });
+  assert.deepEqual([...graph.canonicalNeighbors], [...reversedGraph.canonicalNeighbors]);
+  assert.deepEqual(graph.components, [["a", "b", "c"]]);
+  assert.deepEqual(graph.canonicalNeighbors.get("b"), ["a", "c"]);
+});
+
+test("settles generic initial positions deterministically from the normalized graph", () => {
+  const input = {
+    entities: entities(["a", "b", "c"]),
+    relations: [
+      { id: "ab", sourceId: "a", targetId: "b" },
+      { id: "bc", sourceId: "b", targetId: "c" },
+    ],
+  };
+  const graph = buildNormalizedLayoutGraph(input);
+  const reversedGraph = buildNormalizedLayoutGraph({ ...input, relations: [...input.relations].reverse() });
+  const initialPositions = {
+    a: { x: 20, y: 30 },
+    b: { x: 20, y: 30 },
+    c: { x: 140, y: 30 },
+  };
+  const settled = settleLayoutPositions(graph, graph.components[0]!, initialPositions, { iterations: 3 });
+  const reversedSettled = settleLayoutPositions(reversedGraph, reversedGraph.components[0]!, initialPositions, { iterations: 3 });
+  assert.deepEqual(settled, reversedSettled);
+});
+
+test("does not mutate normalized graph inputs or initial position maps", () => {
+  const input = {
+    entities: entities(["a", "b"]),
+    relations: [{ id: "ab", sourceId: "a", targetId: "b" }],
+  };
+  const initialPositions = { a: { x: 20, y: 30 }, b: { x: 20, y: 30 } };
+  const inputSnapshot = structuredClone(input);
+  const initialPositionsSnapshot = structuredClone(initialPositions);
+  const graph = buildNormalizedLayoutGraph(input);
+  const graphSnapshot = [...graph.canonicalNeighbors].map(([id, neighbors]) => [id, [...neighbors]]);
+  settleLayoutPositions(graph, graph.components[0]!, initialPositions, { iterations: 3 });
+  assert.deepEqual(input, inputSnapshot);
+  assert.deepEqual(initialPositions, initialPositionsSnapshot);
+  assert.deepEqual([...graph.canonicalNeighbors].map(([id, neighbors]) => [id, [...neighbors]]), graphSnapshot);
 });
