@@ -6,7 +6,7 @@ import "./actual-inspection.css";
 
 const diagnosticDatasetUrl = "https://diagnostic.liaisonscape.invalid/apollo-11-product-inspection.en.e2r.json";
 const spacingVariant = new URL(window.location.href).searchParams.get("spacing") ?? "control";
-const allowedSpacingVariants = new Set(["control", "108", "120", "132", "144"]);
+const allowedSpacingVariants = new Set(["control", "108", "120", "132", "144", "160", "180", "200", "220"]);
 const selectedSpacingVariant = allowedSpacingVariants.has(spacingVariant) ? spacingVariant : "control";
 const localDatasetUrl = `${import.meta.env.BASE_URL}experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-${selectedSpacingVariant}.en.e2r.json`;
 const originalFetch = window.fetch.bind(window);
@@ -36,6 +36,10 @@ function ActualProductInspection() {
         <option value="120">120</option>
         <option value="132">132</option>
         <option value="144">144</option>
+        <option value="160">160</option>
+        <option value="180">180</option>
+        <option value="200">200</option>
+        <option value="220">220</option>
       </select></label>
       <span className="actual-inspection-seam-note">Reloads the actual Product workspace with the selected diagnostic fixture.</span>
     </div>
