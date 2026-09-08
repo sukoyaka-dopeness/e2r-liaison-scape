@@ -1,0 +1,14 @@
+.actual-inspection-seam {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font: 12px/1.4 system-ui, sans-serif;
+}
+
+.actual-inspection-seam label { display: inline-flex; align-items: center; gap: 6px; }
+.actual-inspection-seam select { font: inherit; }
+.actual-inspection-seam-note { color: var(--muted-foreground); }
