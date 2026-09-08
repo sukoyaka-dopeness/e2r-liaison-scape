@@ -330,6 +330,7 @@ export function getArrowheadGeometry(samples: Point[], strokeWidth: number): Arr
   };
 }
 export type LabelRect = Point & { width: number; height: number; directionX: number; directionY: number };
+export type RouteYieldPath = { samples: Point[]; deviation: number };
 
 export function minimumPathToLabelRectDistance(samples: Point[], rect: LabelRect): number {
   if (!samples.length || !Number.isFinite(rect.x) || !Number.isFinite(rect.y) || !Number.isFinite(rect.width) || !Number.isFinite(rect.height)) return Infinity;
@@ -476,6 +477,7 @@ export function placeNodeLabel(
   otherNodes: Point[],
   edgePaths: Point[][],
   previousPlacement?: LabelRect,
+  yieldingRoutes: readonly RouteYieldPath[] = [],
 ): LabelRect {
   const descriptionLines = description.trim()
     ? wrapNodeLabel(truncateNodeText(description, 28), 20)
@@ -527,6 +529,15 @@ export function placeNodeLabel(
             / NODE_LABEL_ROUTE_HALO_WIDTH;
           score += NODE_LABEL_ROUTE_HALO_WEIGHT * normalized ** 2;
         }
+      }
+    }
+    for (const yieldingRoute of yieldingRoutes) {
+      const routeDistance = minimumPathToLabelRectDistance(yieldingRoute.samples, candidate);
+      if (routeDistance === 0) {
+        score += 1600 + Math.min(6400, yieldingRoute.deviation * 8);
+      } else if (routeDistance < NODE_LABEL_ROUTE_HALO_WIDTH) {
+        score += (NODE_LABEL_ROUTE_HALO_WIDTH - routeDistance) / NODE_LABEL_ROUTE_HALO_WIDTH
+          * (400 + Math.min(1600, yieldingRoute.deviation * 2));
       }
     }
     return { candidate, score: score + placementMovementCost(candidate, previousPlacement) };

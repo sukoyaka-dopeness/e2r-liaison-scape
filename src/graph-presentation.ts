@@ -1,6 +1,6 @@
 import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, type LabelRect, type Point } from "./viewport.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, type LabelRect, type Point, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -148,6 +148,7 @@ export type AutomaticNodeLabelInput = {
   previousPlacements: ReadonlyMap<string, LabelRect>;
   manualOffsets: ReadonlyMap<string, ManualNodeLabelOffset>;
   activelyDraggedNodeId?: string;
+  yieldingRoutes?: readonly RouteYieldPath[];
 };
 
 /** Pure Product-owned automatic Relation-label orchestration. App state arrives as snapshots. */
@@ -193,6 +194,7 @@ export function deriveAutomaticNodeLabels({
   previousPlacements,
   manualOffsets,
   activelyDraggedNodeId,
+  yieldingRoutes = [],
 }: AutomaticNodeLabelInput): Map<string, LabelRect> {
   const occupiedLabels: LabelRect[] = Array.from(occupiedRelationLabels.values());
   const result = new Map<string, LabelRect>();
@@ -207,6 +209,7 @@ export function deriveAutomaticNodeLabels({
       nodes.filter(({ id }) => id !== node.id).map((other) => positions[other.id] ?? other),
       edgePaths,
       activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id),
+      yieldingRoutes,
     );
     const manualOffset = manualOffsets.get(node.id);
     const placement = manualOffset
@@ -247,6 +250,22 @@ function labelGeometryMoved(left: LabelRect | undefined, right: LabelRect | unde
     || Math.abs(left.height - right.height) > 0.5;
 }
 
+function routeLength(samples: readonly Point[]): number {
+  return samples.slice(1).reduce((total, point, index) => total + Math.hypot(
+    point.x - samples[index]!.x,
+    point.y - samples[index]!.y,
+  ), 0);
+}
+
+function routeDeviation(left: readonly Point[], right: readonly Point[]): number {
+  const sampleCount = Math.min(left.length, right.length);
+  if (sampleCount === 0) return 0;
+  return left.slice(0, sampleCount).reduce((total, point, index) => total + Math.hypot(
+    point.x - right[index]!.x,
+    point.y - right[index]!.y,
+  ), 0) / sampleCount;
+}
+
 /**
  * Performs one deterministic label/routing feedback pass. The first pass
  * establishes relation labels and final Node labels from the existing
@@ -276,6 +295,20 @@ export function deriveBoundedAutomaticPresentation({
       selfLoopOverrides,
       provisionalNodeLabels: routeLabels,
     });
+    const routesWithoutNodeLabels = deriveAutomaticRoutes({
+      graph,
+      positions,
+      edgeCurveOffsets,
+      selfLoopOverrides,
+      provisionalNodeLabels: [],
+    });
+    const routeById = new Map(routesWithoutNodeLabels.map((route) => [route.id, route]));
+    const yieldingRoutes: RouteYieldPath[] = routedEdges.flatMap((route) => {
+      const labelFreeRoute = routeById.get(route.id);
+      if (!labelFreeRoute || compareRouteGeometry(route.samples, labelFreeRoute.samples).equivalent) return [];
+      const deviation = routeDeviation(route.samples, labelFreeRoute.samples);
+      return deviation >= 12 ? [{ samples: labelFreeRoute.samples, deviation }] : [];
+    });
     const relationLabels = deriveAutomaticRelationLabels({
       routedEdges,
       nodes,
@@ -291,6 +324,7 @@ export function deriveBoundedAutomaticPresentation({
       previousPlacements: previousNodeLabelPlacements,
       manualOffsets: manualNodeLabelOffsets,
       activelyDraggedNodeId,
+      yieldingRoutes,
     });
     return { routedEdges, relationLabels, nodeLabels };
   };

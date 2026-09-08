@@ -1216,6 +1216,22 @@ test("node-label route halo anticipates a route just outside hard clearance", ()
   assert.deepEqual(first, second);
 });
 
+test("node labels yield a stable prior placement when a safe route alternative exists", () => {
+  const prior = placeNodeLabel({ x: 100, y: 100 }, "Node", "", [], [], []);
+  const yielding = placeNodeLabel(
+    { x: 100, y: 100 },
+    "Node",
+    "",
+    [],
+    [],
+    [],
+    prior,
+    [{ samples: [{ x: 50, y: prior.y }, { x: 100, y: prior.y }, { x: 150, y: prior.y }], deviation: 120 }],
+  );
+  assert.notDeepEqual(yielding, prior);
+  assert.ok(minimumPathToLabelRectDistance([{ x: 50, y: prior.y }, { x: 100, y: prior.y }, { x: 150, y: prior.y }], yielding) > 0);
+});
+
 test("node label connectors appear only when labels are outside the icon", () => {
   assert.equal(shouldShowNodeLabelConnector({ x: 0, y: 0 }), false);
   assert.equal(shouldShowNodeLabelConnector({ x: 32, y: 0 }), false);
