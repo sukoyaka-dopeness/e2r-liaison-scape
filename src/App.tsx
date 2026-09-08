@@ -31,7 +31,7 @@ import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
 import { placeInitialEntities } from "./entity-placement";
 import { settleInitialPlacement, solveAutoLayout } from "./auto-layout";
-import { deriveAutomaticNodeLabels, deriveAutomaticRelationLabels, deriveAutomaticRoutes } from "./graph-presentation";
+import { deriveBoundedAutomaticPresentation } from "./graph-presentation";
 import { publishPresentationDiagnostic } from "./presentation-diagnostics";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
@@ -318,7 +318,7 @@ export default function App() {
       return manual ? { ...automatic, x: position.x + manual.x, y: position.y + manual.y } : automatic;
     }),
   [graph.nodes, positions]);
-  const routedEdges = useMemo(() => {
+  const presentation = useMemo(() => {
     const edges = graph.edges.map((edge) => ({
       ...edge,
       label: (() => {
@@ -326,25 +326,22 @@ export default function App() {
         return typeof relation?.name === "string" ? relation.name : "";
       })(),
     }));
-    return deriveAutomaticRoutes({
+    return deriveBoundedAutomaticPresentation({
       graph: { nodes: graph.nodes, edges },
       positions,
       edgeCurveOffsets,
       selfLoopOverrides,
       provisionalNodeLabels,
+      previousNodeLabelPlacements: new Map(previousNodeLabelPlacements.current),
+      previousRelationLabelPlacements: new Map(previousEdgeLabelPlacements.current),
+      manualNodeLabelOffsets: new Map(manualNodeLabelOffsets.current),
+      manualRelationLabelAnchors: new Map(manualRelationLabelAnchors.current),
+      draggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
+      activelyDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
     });
-  }, [edgeCurveOffsets, graph, nodeMap, positions, provisionalNodeLabels, relationMap, selfLoopOverrides]);
-  const edgeLabelPlacements = useMemo(() => {
-    const nodes = graph.nodes.map((node) => positions[node.id] ?? node);
-    const draggedNodeId = dragRef.current?.kind === "node" ? dragRef.current.id : undefined;
-    return deriveAutomaticRelationLabels({
-      routedEdges,
-      nodes,
-      previousPlacements: new Map(previousEdgeLabelPlacements.current),
-      manualAnchors: new Map(manualRelationLabelAnchors.current),
-      draggedNodeId,
-    });
-  }, [graph.nodes, positions, routedEdges, manualLabelRevision]);
+  }, [edgeCurveOffsets, graph, manualLabelRevision, positions, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+  const routedEdges = presentation.routedEdges;
+  const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {
     const result = new Map<string, LabelRect>();
     const liveIds = new Set(edgeLabelPlacements.keys());
@@ -361,18 +358,7 @@ export default function App() {
     }
     return result;
   }, [edgeLabelPlacements, routedEdges, positions]);
-  const nodeLabelPlacements = useMemo(() => {
-    const activelyDraggedNodeId = dragRef.current?.kind === "node" ? dragRef.current.id : undefined;
-    return deriveAutomaticNodeLabels({
-      nodes: graph.nodes,
-      positions,
-      routedEdges,
-      occupiedRelationLabels: edgeLabelPlacements,
-      previousPlacements: new Map(previousNodeLabelPlacements.current),
-      manualOffsets: new Map(manualNodeLabelOffsets.current),
-      activelyDraggedNodeId,
-    });
-  }, [edgeLabelPlacements, graph.nodes, positions, routedEdges, manualLabelRevision]);
+  const nodeLabelPlacements = presentation.nodeLabels;
 
   useEffect(() => {
     previousNodeLabelPlacements.current = new Map(nodeLabelPlacements);

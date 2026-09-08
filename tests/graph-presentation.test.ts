@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  deriveBoundedAutomaticPresentation,
   deriveAutomaticNodeLabels,
   deriveAutomaticRelationLabels,
   deriveAutomaticRoutes,
@@ -109,6 +110,38 @@ test("supplied provisional Node-label geometry is consumed as route input", () =
   const withoutLabel = deriveAutomaticRoutes(input())[0]!;
   const withLabel = deriveAutomaticRoutes(input({ provisionalNodeLabels: [labelRect] }))[0]!;
   assert.notEqual(withoutLabel.path, withLabel.path);
+});
+
+test("bounded presentation feedback uses final Node-label bounds exactly once", () => {
+  const provisional = [{ x: 100, y: -12, width: 80, height: 24, directionX: 0, directionY: 1 }];
+  const base = input({ provisionalNodeLabels: provisional });
+  const makePresentation = () => deriveBoundedAutomaticPresentation({
+    ...base,
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+  });
+  const presentation = makePresentation();
+  assert.equal(presentation.feedbackApplied, true);
+  assert.deepEqual(presentation, makePresentation());
+  const finalLabels = base.graph.nodes.map((node, index) => presentation.nodeLabels.get(node.id) ?? provisional[index]!);
+  assert.deepEqual(
+    presentation.routedEdges,
+    deriveAutomaticRoutes({ ...base, provisionalNodeLabels: finalLabels }),
+  );
+});
+
+test("bounded feedback preserves manual curve authority", () => {
+  const base = input({ edgeCurveOffsets: { ab: 54 } });
+  const presentation = deriveBoundedAutomaticPresentation({
+    ...base,
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+  });
+  assert.deepEqual(presentation.routedEdges[0]!.controlPoint, { x: 100, y: 54 });
 });
 
 test("overlapping endpoint pairs preserve deterministic overlap indexing", () => {

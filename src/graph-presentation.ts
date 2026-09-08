@@ -217,3 +217,90 @@ export function deriveAutomaticNodeLabels({
   }
   return result;
 }
+
+export type BoundedAutomaticPresentationInput = {
+  graph: { nodes: readonly GraphNode[]; edges: readonly RoutingGraphEdge[] };
+  positions: Readonly<Record<string, Point>>;
+  edgeCurveOffsets: Readonly<Record<string, number>>;
+  selfLoopOverrides: Readonly<Record<string, SelfLoopOverride>>;
+  provisionalNodeLabels: readonly LabelRect[];
+  previousNodeLabelPlacements: ReadonlyMap<string, LabelRect>;
+  previousRelationLabelPlacements: ReadonlyMap<string, LabelRect>;
+  manualNodeLabelOffsets: ReadonlyMap<string, ManualNodeLabelOffset>;
+  manualRelationLabelAnchors: ReadonlyMap<string, ManualRelationLabelAnchor>;
+  draggedNodeId?: string;
+  activelyDraggedNodeId?: string;
+};
+
+export type BoundedAutomaticPresentation = {
+  routedEdges: DerivedAutomaticRoute[];
+  relationLabels: Map<string, LabelRect>;
+  nodeLabels: Map<string, LabelRect>;
+  feedbackApplied: boolean;
+};
+
+function labelGeometryMoved(left: LabelRect | undefined, right: LabelRect | undefined): boolean {
+  if (!left || !right) return left !== right;
+  return Math.abs(left.x - right.x) > 0.5
+    || Math.abs(left.y - right.y) > 0.5
+    || Math.abs(left.width - right.width) > 0.5
+    || Math.abs(left.height - right.height) > 0.5;
+}
+
+/**
+ * Performs one deterministic label/routing feedback pass. The first pass
+ * establishes relation labels and final Node labels from the existing
+ * provisional route. If a final Node label moved, a single second pass uses
+ * those final bounds as route obstacles. This is intentionally bounded: it
+ * does not iterate toward a fixed point or take ownership from manual data.
+ */
+export function deriveBoundedAutomaticPresentation({
+  graph,
+  positions,
+  edgeCurveOffsets,
+  selfLoopOverrides,
+  provisionalNodeLabels,
+  previousNodeLabelPlacements,
+  previousRelationLabelPlacements,
+  manualNodeLabelOffsets,
+  manualRelationLabelAnchors,
+  draggedNodeId,
+  activelyDraggedNodeId,
+}: BoundedAutomaticPresentationInput): BoundedAutomaticPresentation {
+  const nodes = graph.nodes.map((node) => positions[node.id] ?? node);
+  const derivePass = (routeLabels: readonly LabelRect[]) => {
+    const routedEdges = deriveAutomaticRoutes({
+      graph,
+      positions,
+      edgeCurveOffsets,
+      selfLoopOverrides,
+      provisionalNodeLabels: routeLabels,
+    });
+    const relationLabels = deriveAutomaticRelationLabels({
+      routedEdges,
+      nodes,
+      previousPlacements: previousRelationLabelPlacements,
+      manualAnchors: manualRelationLabelAnchors,
+      draggedNodeId,
+    });
+    const nodeLabels = deriveAutomaticNodeLabels({
+      nodes: graph.nodes,
+      positions,
+      routedEdges,
+      occupiedRelationLabels: relationLabels,
+      previousPlacements: previousNodeLabelPlacements,
+      manualOffsets: manualNodeLabelOffsets,
+      activelyDraggedNodeId,
+    });
+    return { routedEdges, relationLabels, nodeLabels };
+  };
+
+  const first = derivePass(provisionalNodeLabels);
+  const finalRouteLabels = graph.nodes
+    .map((node, index) => first.nodeLabels.get(node.id) ?? provisionalNodeLabels[index])
+    .filter((label): label is LabelRect => label !== undefined);
+  const feedbackApplied = finalRouteLabels.length === graph.nodes.length
+    && finalRouteLabels.some((label, index) => labelGeometryMoved(provisionalNodeLabels[index], label));
+  const result = feedbackApplied ? derivePass(finalRouteLabels) : first;
+  return { ...result, feedbackApplied };
+}
