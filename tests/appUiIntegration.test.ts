@@ -436,6 +436,52 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.match(styles, /@media \(max-width: 600px\)/);
 });
 
+test("dismisses a placement ownership popover when a node drag starts", async () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [
+      { id: "entity-source", name: "Source" },
+      { id: "entity-target", name: "Target" },
+    ],
+    events: [],
+    relations: [{ id: "relation-source-target", sourceId: "entity-source", targetId: "entity-target", name: "Connects" }],
+  };
+  await withProductionApp({ dataset, callback: async (environment) => {
+    environment.installGlobal("SVGSVGElement", environment.window.SVGSVGElement);
+    environment.window.SVGSVGElement.prototype.setPointerCapture = function setPointerCapture() {};
+    environment.window.SVGSVGElement.prototype.releasePointerCapture = function releasePointerCapture() {};
+    environment.window.SVGSVGElement.prototype.hasPointerCapture = function hasPointerCapture() { return true; };
+    const body = environment.document.querySelector('[data-entity-id="entity-source"] .entity-body') as SVGRectElement;
+    assert.ok(body);
+
+    const dispatchPointer = async (target: Element, type: string) => {
+      const event = new environment.window.Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperties(event, {
+        button: { value: 0 },
+        clientX: { value: 120 },
+        clientY: { value: 140 },
+        pointerId: { value: 1 },
+        pointerType: { value: "mouse" },
+      });
+      await act(async () => { target.dispatchEvent(event); });
+    };
+
+    await dispatchPointer(body, "pointerover");
+    assert.ok(environment.document.querySelector(".placement-hover-popover"));
+
+    await dispatchPointer(body, "pointerdown");
+    assert.equal(environment.document.querySelector(".placement-hover-popover"), null);
+
+    await dispatchPointer(body, "pointermove");
+    assert.equal(environment.document.querySelector(".placement-hover-popover"), null);
+    await dispatchPointer(body, "pointerup");
+    assert.equal(environment.document.querySelector(".placement-hover-popover"), null);
+
+    await dispatchPointer(body, "pointerover");
+    assert.ok(environment.document.querySelector(".placement-hover-popover"));
+  }});
+});
+
 test("implements the collapsible viewport toolbar interaction contract", async () => {
   const relationDataset = {
     version: "1.0",

@@ -1133,6 +1133,8 @@ export default function App() {
   ) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     event.preventDefault();
+    setHoveredPlacement(null);
+    setPopoverPosition(null);
     const svg = event.currentTarget instanceof SVGSVGElement
       ? event.currentTarget
       : event.currentTarget.ownerSVGElement;
