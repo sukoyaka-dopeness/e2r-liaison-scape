@@ -242,6 +242,77 @@ function improveFactor(startPositions, objective, targetIds) {
   return { positions: current, metrics, evaluations, rejectedInfeasible, rejectedBound, accepted, sweeps: 1, steps, directionCount: directions.length, maxNodeDisplacement: 96 };
 }
 
+function relativeAdjacencyPenalty(positions, referencePositions) {
+  return graph.edges.reduce((total, edge) => {
+    const referenceSource = referencePositions[edge.sourceId];
+    const referenceTarget = referencePositions[edge.targetId];
+    const source = positions[edge.sourceId];
+    const target = positions[edge.targetId];
+    const referenceDistance = Math.hypot(referenceSource.x - referenceTarget.x, referenceSource.y - referenceTarget.y);
+    const distance = Math.hypot(source.x - target.x, source.y - target.y);
+    const lower = Math.max(INITIAL_ENTITY_CLEARANCE, referenceDistance * 0.8);
+    const upper = referenceDistance * 1.12;
+    const excess = distance < lower ? lower - distance : Math.max(0, distance - upper);
+    return total + (excess / 24) ** 2 * 700;
+  }, 0);
+}
+
+function improveVerticalCompaction(startPositions) {
+  let current = clonePositions(startPositions);
+  let metrics = presentationMetrics(current);
+  let evaluations = 1; let rejectedInfeasible = 0; let rejectedBound = 0; let accepted = 0;
+  const reference = clonePositions(startPositions);
+  const steps = [18, 9, 6];
+  for (const node of graph.nodes) for (const step of steps) for (const sign of [-1, 1]) {
+    const candidate = clonePositions(current);
+    candidate[node.id] = { x: candidate[node.id].x, y: candidate[node.id].y + sign * step };
+    const displacement = Math.abs(candidate[node.id].y - startPositions[node.id].y);
+    if (displacement > 72) { rejectedBound += 1; continue; }
+    const feasibility = nodeFeasibility(candidate);
+    if (feasibility.overlapPairs > 0) { rejectedInfeasible += 1; continue; }
+    const candidateMetrics = presentationMetrics(candidate); evaluations += 1;
+    const topologyPenalty = relativeAdjacencyPenalty(candidate, reference);
+    const currentTopologyPenalty = relativeAdjacencyPenalty(current, reference);
+    const candidateObjective = candidateMetrics.score + candidateMetrics.usableSpanPenalty * 1.2 + topologyPenalty * 1.5;
+    const currentObjective = metrics.score + metrics.usableSpanPenalty * 1.2 + currentTopologyPenalty * 1.5;
+    if (candidateObjective < currentObjective) { current = candidate; metrics = candidateMetrics; accepted += 1; }
+  }
+  return { positions: current, metrics, evaluations, rejectedInfeasible, rejectedBound, accepted, sweeps: 1, steps, axis: "y-only", maxNodeDisplacement: 72 };
+}
+
+function improveCrossingAfterCompaction(startPositions) {
+  let current = clonePositions(startPositions);
+  let metrics = presentationMetrics(current);
+  const reference = clonePositions(startPositions);
+  const initialUsableSpanPenalty = metrics.usableSpanPenalty;
+  let evaluations = 1; let rejectedInfeasible = 0; let rejectedConstraint = 0; let accepted = 0;
+  const directions = [
+    { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: -1, y: 1 },
+    { x: -1, y: 0 }, { x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 },
+  ];
+  const steps = [12, 6];
+  const objective = (candidateMetrics, candidate) => candidateMetrics.crossings * 9000
+    + candidateMetrics.labelRouteHits * 6000
+    + candidateMetrics.labelOverlap * 3000
+    + candidateMetrics.labelNear20 * 700
+    + candidateMetrics.usableSpanPenalty * 1.2
+    + relativeAdjacencyPenalty(candidate, reference) * 1.5
+    + candidateMetrics.routeMedian * 1.5 + candidateMetrics.routeMax * 0.5
+    + (candidateMetrics.extent[0] + candidateMetrics.extent[1]) * 0.35;
+  for (const node of graph.nodes) for (const step of steps) for (const direction of directions) {
+    const candidate = clonePositions(current);
+    candidate[node.id] = { x: candidate[node.id].x + direction.x * step, y: candidate[node.id].y + direction.y * step };
+    if (Math.hypot(candidate[node.id].x - startPositions[node.id].x, candidate[node.id].y - startPositions[node.id].y) > 48) { rejectedConstraint += 1; continue; }
+    const feasibility = nodeFeasibility(candidate);
+    if (feasibility.overlapPairs > 0) { rejectedInfeasible += 1; continue; }
+    const candidateMetrics = presentationMetrics(candidate); evaluations += 1;
+    if (candidateMetrics.labelRouteHits > 0 || candidateMetrics.labelOverlap > 0
+      || candidateMetrics.usableSpanPenalty > initialUsableSpanPenalty * 1.25 + 64) { rejectedConstraint += 1; continue; }
+    if (objective(candidateMetrics, candidate) < objective(metrics, current)) { current = candidate; metrics = candidateMetrics; accepted += 1; }
+  }
+  return { positions: current, metrics, evaluations, rejectedInfeasible, rejectedConstraint, accepted, sweeps: 1, steps, maxNodeDisplacement: 48 };
+}
+
 const baseline = presentationMetrics(start);
 const baselineWithAdjacency = { metrics: baseline, adjacency: adjacencyMetrics(start) };
 const baselineRouteSupports = new Map(baseline.routeSupports.map((route) => [route.id, route]));
@@ -261,6 +332,8 @@ const topologyAware = improveTopology(start);
 const labelLengthAware = improveFactor(start, (metrics) => metrics.score + metrics.usableSpanPenalty * 2, graph.nodes.map(({ id }) => id));
 const horizontalCanvasAware = improveFactor(start, (metrics) => metrics.score + metrics.aspectPenalty, graph.nodes.map(({ id }) => id));
 const balancedEdgeLength = improveFactor(start, (metrics) => metrics.score + metrics.aspectPenalty + balancedLengthPenalty(metrics), graph.nodes.map(({ id }) => id));
+const safeVerticalCompaction = improveVerticalCompaction(balancedEdgeLength.positions);
+const crossingAfterCompaction = improveCrossingAfterCompaction(safeVerticalCompaction.positions);
 console.log(JSON.stringify({
   contract: "LIAISONSCAPE-PRESENTATION-TOPOLOGY-RELAXATION-v1",
   diagnosticOnly: true,
@@ -277,4 +350,6 @@ console.log(JSON.stringify({
   labelLengthAware,
   horizontalCanvasAware,
   balancedEdgeLength,
+  safeVerticalCompaction,
+  crossingAfterCompaction,
 }, null, 2));

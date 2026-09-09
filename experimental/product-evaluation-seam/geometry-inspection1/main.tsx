@@ -107,6 +107,28 @@ const balancedEdgeLengthPositions = {
   moon: { x: 407.534, y: -64.622 },
   hornet: { x: 156.701, y: -87.251 },
 };
+const safeVerticalCompactionPositions = {
+  armstrong: { x: -116.717, y: 294.208 },
+  aldrin: { x: 204.011, y: 475.891 },
+  collins: { x: -102.185, y: 126 },
+  nasa: { x: 139.196, y: 325.48 },
+  columbia: { x: 145.797, y: 64.267 },
+  eagle: { x: 336.422, y: 167.709 },
+  "saturn-v": { x: -33.844, y: -43.818 },
+  moon: { x: 407.534, y: -64.622 },
+  hornet: { x: 156.701, y: -60.251 },
+};
+const crossingAfterCompactionPositions = {
+  armstrong: { x: -104.717, y: 300.208 },
+  aldrin: { x: 204.011, y: 475.891 },
+  collins: { x: -108.185, y: 114 },
+  nasa: { x: 139.196, y: 325.48 },
+  columbia: { x: 151.797, y: 58.267 },
+  eagle: { x: 336.422, y: 167.709 },
+  "saturn-v": { x: -33.844, y: -43.818 },
+  moon: { x: 407.534, y: -52.622 },
+  hornet: { x: 168.701, y: -48.251 },
+};
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -129,6 +151,8 @@ const candidateDescriptions = {
   "label-length-aware-v1": "Label-length-aware refinement (mixed control)",
   "horizontal-canvas-v1": "Horizontal-canvas refinement (mixed control)",
   "balanced-edge-length-v1": "Horizontal canvas with balanced Edge length (diagnostic)",
+  "safe-vertical-compaction-v1": "Balanced Edge length with safe vertical compaction (diagnostic)",
+  "crossing-after-compaction-v1": "Bounded crossing refinement after compaction (diagnostic)",
   "source-f0-160": "Source F0 solver, clearance 160",
   "fp1-ngp-420": "FP1-NGP negative control",
 } as const;
@@ -150,6 +174,8 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "label-length-aware-v1") return labelLengthAwarePositions;
   if (candidate === "horizontal-canvas-v1") return horizontalCanvasAwarePositions;
   if (candidate === "balanced-edge-length-v1") return balancedEdgeLengthPositions;
+  if (candidate === "safe-vertical-compaction-v1") return safeVerticalCompactionPositions;
+  if (candidate === "crossing-after-compaction-v1") return crossingAfterCompactionPositions;
   if (candidate === "fp1-ngp-420") return fp1NgpPositions;
   const graph = buildEntityGraph(dataset);
   if (candidate === "source-f0-160") {
@@ -212,6 +238,8 @@ function CandidateMetrics() {
     ["label-length-aware-v1", "3", "0", "185.9", "394.6", "485 × 653", "0.727", "0.365", "0"],
     ["horizontal-canvas-v1", "3", "0", "140.1", "394.8", "569 × 587", "0.970", "0.473", "4624"],
     ["balanced-edge-length-v1", "3", "0", "192.4", "410.9", "524 × 578", "0.907", "0.480", "15"],
+    ["safe-vertical-compaction-v1", "3", "0", "189.6", "404.0", "524 × 541", "0.970", "0.510", "6"],
+    ["crossing-after-compaction-v1", "3", "0", "180.9", "393.8", "516 × 529", "0.976", "0.520", "6"],
     ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542", "0.893", "0.508", "—"],
     ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420", "1.000", "0.636", "—"],
   ], []);
@@ -233,7 +261,7 @@ function GeometryInspection() {
       <label>Candidate <select value={selectedCandidate} onChange={changeCandidate} aria-label="Geometry candidate">
         {Object.entries(candidateDescriptions).map(([id, description]) => <option key={id} value={id}>{description}</option>)}
       </select></label>
-      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Targeted local corridor refinement with Horizontal-canvas refinement and the new Horizontal canvas with balanced Edge length. Recheck Neil Armstrong / NASA / Lunar Module Eagle, Michael Collins / NASA, NASA / Saturn V, Saturn V / Command Module Columbia, and the crowded NASA corridor. These are diagnostic comparisons, not adoption decisions. Pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
+      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Targeted local corridor refinement, Horizontal canvas with balanced Edge length, Balanced Edge length with safe vertical compaction, and Bounded crossing refinement after compaction. Recheck Neil Armstrong / NASA / Lunar Module Eagle, Michael Collins / NASA, NASA / Saturn V, Saturn V / Command Module Columbia, and the crowded NASA corridor. These are diagnostic comparisons, not adoption decisions; the crossing pass did not reduce the raw crossing count in this fixture. Pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
     </div>
     <CandidateMetrics />
     <App />
