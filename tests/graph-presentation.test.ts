@@ -9,6 +9,7 @@ import {
   type AutomaticRelationLabelInput,
   type AutomaticRoutingInput,
 } from "../src/graph-presentation.ts";
+import { routeGraphEdge } from "../src/viewport.ts";
 
 function input(overrides: Partial<AutomaticRoutingInput> = {}): AutomaticRoutingInput {
   return {
@@ -119,6 +120,47 @@ test("route decision trace records safe non-incident continuity without changing
   });
   assert.deepEqual(moved.find(({ id }) => id === "cd"), initial.find(({ id }) => id === "cd"));
   assert.equal(decisions.find(({ edgeId }) => edgeId === "cd")?.usedPreviousRoute, true);
+});
+
+test("incident automatic routes can prefer a safe previous side", () => {
+  const graph = {
+    nodes: [
+      { id: "a", label: "A", description: "", x: 0, y: 0 },
+      { id: "b", label: "B", description: "", x: 300, y: 0 },
+      { id: "obstacle", label: "Obstacle", description: "", x: 150, y: 0 },
+    ],
+    edges: [{ id: "ab", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1, label: "AB" }],
+  };
+  const previousGeometry = routeGraphEdge(
+    { x: 0, y: 0 },
+    { x: 300, y: 0 },
+    0,
+    1,
+    [{ x: 150, y: 0 }],
+    [],
+    false,
+    0,
+    -108,
+  );
+  const decisions = [];
+  const presentation = deriveAutomaticRoutes({
+    graph,
+    positions: { a: { x: 0, y: 0 }, b: { x: 300, y: 0 }, obstacle: { x: 150, y: 0 } },
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: [],
+    previousAutomaticRoutes: new Map([[
+      "ab",
+      { ...graph.edges[0], ...previousGeometry, parallelSolverEligible: false },
+    ]]),
+    draggedNodeId: "a",
+    routeDecisionSink: (decision) => decisions.push(decision),
+  });
+  const selected = decisions.find(({ edgeId, pass }) => edgeId === "ab" && pass === "first")!.candidateDiagnostics.find(({ selected: isSelected }) => isSelected)!;
+  assert.equal(Math.sign(selected.offset), -1);
+  assert.equal(selected.nodeOverlapScore, 0);
+  assert.equal(selected.occupiedPathConflict, false);
+  assert.equal(presentation[0]!.path.includes(" Q "), true);
 });
 
 test("finalizing Node drag preserves a safe previous non-incident route", () => {

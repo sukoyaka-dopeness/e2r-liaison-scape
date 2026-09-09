@@ -115,7 +115,6 @@ export function deriveAutomaticRoutes({
       : routeLabelRects;
     const previousRoute = previousAutomaticRoutes?.get(edge.id);
     const previousRouteSideSign = draggedNodeId !== undefined
-      && !isIncident
       && edge.parallelCount === 1
       && edgeCurveOffsets[edge.id] === undefined
       && previousRoute?.samples.length
