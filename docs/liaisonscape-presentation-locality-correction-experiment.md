@@ -56,6 +56,12 @@ optimization target or formal acceptance signal. In particular, the NASA case
 shows why locality cannot be judged by remote-change count alone: fewer changes
 do not guarantee better visual output.
 
+For the same Apollo 11 fixture, a warm pure-function active-drag benchmark
+measured `79.545 ms` median / `85.165 ms` p95 with the continuity candidate,
+compared with `81.331 ms` median / `87.132 ms` p95 without supplying a previous
+route set. This comparison is local implementation timing only; it does not
+establish browser FPS or pointer latency.
+
 ## Actual Product check
 
 The real Product surface was inspected at:
