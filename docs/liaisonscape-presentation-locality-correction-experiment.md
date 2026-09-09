@@ -692,4 +692,46 @@ does not select spacing, crossing-aware placement, global routing
 optimization, or governed evidence execution. A physical user check must
 confirm that the active incident route follows naturally, relation labels stay
 readable, and genuine obstacle-driven reroutes remain acceptable.
+
+## Sparse versus crowded incident-route follow-up
+
+The Apollo 11 comparison separates the case corrected by `67a2389` from the
+case that must remain curved.
+
+### Sparse / less-constrained case
+
+For Saturn V moved by 45 graph units, the active `NASA -> Saturn V`
+(`entity-8`) and `Saturn V -> Columbia` (`entity-10`) routes select the
+straight offset-0 candidate with score `0` after endpoint-label self-blocking
+is removed. The existing small-move locality test still changes only the two
+incident routes, and the larger move still permits the genuine remote
+`entity-6` reroute.
+
+### Crowded case
+
+For NASA moved 45 graph units to the right, the active `NASA -> Saturn V`
+straight candidate remains unsafe. Its route passes within the 60-unit Node
+influence radius of `Command Module Columbia`; the recorded straight-candidate
+node-overlap score is approximately `413.1`, producing a route score of about
+`41308.2`. The selected offset-24 candidate has no Node overlap and score
+`0.24`. The occupied-path contribution is false and endpoint-label pressure is
+zero in this active incident comparison, so neither occupied paths nor the
+endpoint-label correction explains the remaining curve.
+
+The same geometry evaluated through the final feedback-enabled presentation
+selects the same offset-24 curved route. This is therefore necessary obstacle
+avoidance, not active-only transient curvature. The focused regression test
+keeps the route curved and equal between active and final states, preventing a
+future “make crowded routes straight” correction from reintroducing Node
+collisions.
+
+### Decision
+
+`67a2389` is retained as a partial incident-route improvement: it removes
+endpoint-label self-blocking in sparse or less-constrained cases while
+preserving crowded geometry safety. No additional crowded-route correction is
+selected from this checkpoint. Any future change must first show a genuinely
+safe alternative to the Columbia-blocked straight route; a global straightness
+preference or broader obstacle relaxation is not justified by the current
+evidence.
 ```

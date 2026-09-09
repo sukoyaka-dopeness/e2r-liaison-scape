@@ -38,7 +38,7 @@ test("wide Apollo routing diagnostic isolates provisional-label curvature", () =
   assert.match(diagnostic.reasons.join("\n"), /Provisional node-label bounds change the selected route/);
 });
 
-test("active Apollo drag ignores an already accepted remote label overlap but still reroutes for new node influence", () => {
+test("active Apollo drag preserves locality and necessary crowded incident routing", () => {
   const dataset = JSON.parse(readFileSync("experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json", "utf8"));
   const graphBase = buildEntityGraph(dataset);
   const relationNames = new Map(dataset.relations.map((relation) => [relation.id, typeof relation.name === "string" ? relation.name : ""]));
@@ -100,4 +100,47 @@ test("active Apollo drag ignores an already accepted remote label overlap but st
   // Once Saturn V enters entity-6's influence, that remote route remains free
   // to reroute: active continuity is not an unconditional visual freeze.
   assert.deepEqual(changedIds(activePresentation(160)), ["entity-6", "entity-8", "entity-10"]);
+
+  // NASA moved right by 45 graph units is the crowded counterpart: the
+  // straight NASA -> Saturn V route approaches Columbia's Node, so its curve
+  // remains necessary in both active and feedback-settled presentations.
+  const nasaPositions = { ...basePositions, nasa: { x: basePositions.nasa!.x + 45, y: basePositions.nasa!.y } };
+  const nasaLabels = provisionalLabels(nasaPositions);
+  const nasaActive = deriveBoundedAutomaticPresentation({
+    graph,
+    positions: nasaPositions,
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: nasaLabels,
+    previousNodeLabelPlacements: new Map(initial.nodeLabels),
+    previousRelationLabelPlacements: new Map(initial.relationLabels),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+    previousAutomaticRoutes: new Map(initial.routedEdges.map((route) => [route.id, route])),
+    draggedNodeId: "nasa",
+    activeDraggedNodeId: "nasa",
+    activelyDraggedNodeId: "nasa",
+    continuityNodeLabels: graph.nodes.map((node, index) => node.id === "nasa" ? nasaLabels[index]! : initial.nodeLabels.get(node.id)!),
+    previousContinuityNodeLabels: new Map(initial.nodeLabels),
+    feedbackEnabled: false,
+  });
+  const nasaFinal = deriveBoundedAutomaticPresentation({
+    graph,
+    positions: nasaPositions,
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: nasaLabels,
+    previousNodeLabelPlacements: new Map(initial.nodeLabels),
+    previousRelationLabelPlacements: new Map(initial.relationLabels),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+    previousAutomaticRoutes: new Map(initial.routedEdges.map((route) => [route.id, route])),
+    draggedNodeId: "nasa",
+    feedbackEnabled: true,
+  });
+  const nasaActiveRoute = nasaActive.routedEdges.find(({ id }) => id === "entity-8")!;
+  const nasaFinalRoute = nasaFinal.routedEdges.find(({ id }) => id === "entity-8")!;
+  assert.match(nasaActiveRoute.path, / Q /);
+  assert.match(nasaFinalRoute.path, / Q /);
+  assert.equal(nasaActiveRoute.path, nasaFinalRoute.path);
 });
