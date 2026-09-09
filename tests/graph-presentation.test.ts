@@ -161,7 +161,7 @@ test("active drag eagerly recovers only a detour directly caused by that Node", 
   assert.equal(decisions[0]!.recoveredCurrentRoute, true);
 });
 
-test("active drag does not eagerly replace a safe remote route without direct-obstacle provenance", () => {
+test("active or finalizing drag does not replace a safe remote route without direct-obstacle provenance", () => {
   const graph = {
     nodes: [
       { id: "a", label: "A", description: "", x: 0, y: 0 },
@@ -182,6 +182,16 @@ test("active drag does not eagerly replace a safe remote route without direct-ob
     activeDraggedNodeId: "obstacle",
   });
   assert.equal(presentation[0]!.path, previous.path);
+  const finalizing = deriveAutomaticRoutes({
+    graph,
+    positions: { a: { x: 0, y: 0 }, b: { x: 300, y: 0 }, obstacle: { x: 150, y: 180 } },
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: [],
+    previousAutomaticRoutes: new Map([["ab", { ...graph.edges[0], ...previous, parallelSolverEligible: false }]]),
+    draggedNodeId: "obstacle",
+  });
+  assert.equal(finalizing[0]!.path, previous.path);
 });
 
 test("route decision trace records safe non-incident continuity without changing routing", () => {

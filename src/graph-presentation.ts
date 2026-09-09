@@ -18,6 +18,7 @@ export type AutomaticRouteDecision = {
   activeRecovery: {
     previousRouteDirectRecoveryObstacleId?: string;
     provenanceMatchesActiveDrag: boolean;
+    provenanceMatchesFinalizingDrag: boolean;
     freshRouteIsSafe: boolean;
     freshRouteHasNodeInfluence: boolean;
     freshRouteHasOccupiedPathConflict: boolean;
@@ -198,27 +199,29 @@ export function deriveAutomaticRoutes({
       && !priorRouteHasNodeInfluence
       && !priorRouteHasOccupiedPathConflict
       && !priorRouteHasLabelCollision;
-    // Continuity is intentionally active-drag first: while a Node is moving,
-    // a safe remote route should not churn merely because a different safe
-    // candidate becomes available. At pointer-up, however, retaining a
-    // historical detour can make a round trip non-idempotent. If the fresh
-    // route is itself free of node, occupied-path, and hard label conflicts,
-    // return to that current-input route rather than preserving history.
-    // This does not make straightness authoritative: `routeGraphEdge` still
-    // chooses the fresh route from the normal scoring model.
+    // While a Node is moving, a safe remote route must not churn merely
+    // because a different safe candidate becomes available. The same is true
+    // at pointer-up unless this Node is returning a route it directly
+    // displaced: replacing every safe historical route at finalization made a
+    // same-geometry phase boundary visibly re-arbitrate unrelated routes.
+    // A directly-caused detour retains its bounded provenance, so its safe
+    // recovery remains idempotent without making straightness authoritative.
     const freshRouteHasNodeInfluence = continuityCandidate && routeSamplesHaveNodeInfluence(route.samples, obstacles);
     const freshRouteHasOccupiedPathConflict = continuityCandidate && routeSamplesHaveOccupiedPathConflict(route.samples, occupiedPaths);
     const freshRouteHasLabelCollision = continuityCandidate && routeSamplesHaveLabelCollision(route.samples, routeLabelsForEdge);
     const freshRouteIsSafe = !freshRouteHasNodeInfluence
       && !freshRouteHasOccupiedPathConflict
       && !freshRouteHasLabelCollision;
-    const previousDirectRecoveryMatchesDrag = previousRoute?.directRecoveryObstacleId === draggedNodeId;
+    const previousDirectRecoveryMatchesDrag = draggedNodeId !== undefined
+      && previousRoute?.directRecoveryObstacleId === draggedNodeId;
     const canRecoverDuringActiveDrag = activeDraggedNodeId !== undefined
+      && previousDirectRecoveryMatchesDrag;
+    const canRecoverDuringFinalization = activeDraggedNodeId === undefined
       && previousDirectRecoveryMatchesDrag;
     const canRecoverCurrentRoute = canPreservePreviousRoute
       && previousRoute!.path !== route.path
       && freshRouteIsSafe
-      && (activeDraggedNodeId === undefined || canRecoverDuringActiveDrag);
+      && (canRecoverDuringActiveDrag || canRecoverDuringFinalization);
     const selectedRoute = canPreservePreviousRoute && !canRecoverCurrentRoute ? previousRoute : route;
     // A direct-obstacle recovery can legitimately pass through a safe but
     // still-curved fresh candidate before the original/equivalent route is
@@ -257,6 +260,7 @@ export function deriveAutomaticRoutes({
       activeRecovery: {
         previousRouteDirectRecoveryObstacleId: previousRoute?.directRecoveryObstacleId,
         provenanceMatchesActiveDrag: canRecoverDuringActiveDrag,
+        provenanceMatchesFinalizingDrag: canRecoverDuringFinalization,
         freshRouteIsSafe,
         freshRouteHasNodeInfluence,
         freshRouteHasOccupiedPathConflict,

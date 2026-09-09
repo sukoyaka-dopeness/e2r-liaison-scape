@@ -38,6 +38,8 @@ type RouteTransitionReport = {
   routeShapeComparisons: Array<{
     routeId: string;
     incident: boolean;
+    fromPresentationAuthority: "previous-route" | "fresh-route" | "fresh-direct-recovery";
+    toPresentationAuthority: "previous-route" | "fresh-route" | "fresh-direct-recovery";
     from: { curved: boolean; length: number; controlPoint: { x: number; y: number } | null };
     to: { curved: boolean; length: number; controlPoint: { x: number; y: number } | null };
     fromCandidates: readonly RouteCandidateDiagnostic[];
@@ -200,6 +202,12 @@ function selectedCandidateFor(snapshot: PresentationDiagnosticSnapshot, routeId:
   return routeDecisionFor(snapshot, routeId)?.candidateDiagnostics.find((candidate) => candidate.selected) ?? null;
 }
 
+function presentationAuthority(snapshot: PresentationDiagnosticSnapshot, routeId: string): "previous-route" | "fresh-route" | "fresh-direct-recovery" {
+  const decision = routeDecisionFor(snapshot, routeId);
+  if (decision?.usedPreviousRoute) return "previous-route";
+  return decision?.recoveredCurrentRoute ? "fresh-direct-recovery" : "fresh-route";
+}
+
 function remoteRouteOutcomes(
   start: PresentationDiagnosticSnapshot | null,
   final: PresentationDiagnosticSnapshot,
@@ -291,6 +299,8 @@ function routeTransitionReport(stage: RouteTransitionReport["stage"], from: Pres
       return before && after && edge ? [{
         routeId,
         incident: edge.sourceId === nodeId || edge.targetId === nodeId,
+        fromPresentationAuthority: presentationAuthority(from, routeId),
+        toPresentationAuthority: presentationAuthority(to, routeId),
         from: routeShape(before),
         to: routeShape(after),
         fromCandidates: beforeDecision?.candidateDiagnostics ?? [],
@@ -356,7 +366,8 @@ function activeDragRemoteTransition(snapshot: PresentationDiagnosticSnapshot, ro
     continuity.priorRouteHasOccupiedPathConflict ? "occupied-path conflict" : "",
     continuity.priorRouteHasLabelCollision ? "label collision" : "",
   ].filter(Boolean);
-  const classification = decision?.recoveredCurrentRoute && decision.activeRecovery.provenanceMatchesActiveDrag
+  const classification = decision?.recoveredCurrentRoute
+    && (decision.activeRecovery.provenanceMatchesActiveDrag || decision.activeRecovery.provenanceMatchesFinalizingDrag)
     ? "direct-recovery-history"
     : continuity === undefined ? "unclassified"
     : continuity.priorRouteHasNodeInfluence
@@ -667,7 +678,7 @@ function PresentationDiagnostics() {
         <ul>
           {diagnostic.variants.map((variant) => <li key={variant.name}><code>{variant.name}</code>: offset {distance(variant.offset)}, length {variant.length.toFixed(1)}, nearest provisional {variant.nearestProvisionalLabel ? `${variant.nearestProvisionalLabel.id} / ${variant.nearestProvisionalLabel.distance.toFixed(1)}` : "none"}, {variant.matchesCurrent ? "same as current" : "different geometry"}</li>)}
         </ul>
-        {activeRecovery && <p>Active recovery: prior direct-obstacle marker {activeRecovery.previousRouteDirectRecoveryObstacleId ?? "none"}; matches active drag {activeRecovery.provenanceMatchesActiveDrag ? "yes" : "no"}; fresh route safe {activeRecovery.freshRouteIsSafe ? "yes" : "no"} (node {activeRecovery.freshRouteHasNodeInfluence ? "blocked" : "clear"}, occupied path {activeRecovery.freshRouteHasOccupiedPathConflict ? "blocked" : "clear"}, label {activeRecovery.freshRouteHasLabelCollision ? "blocked" : "clear"}); selected fresh recovery {decision?.recoveredCurrentRoute ? "yes" : "no"}.</p>}
+        {activeRecovery && <p>Recovery: prior direct-obstacle marker {activeRecovery.previousRouteDirectRecoveryObstacleId ?? "none"}; matches active drag {activeRecovery.provenanceMatchesActiveDrag ? "yes" : "no"}; matches finalizing drag {activeRecovery.provenanceMatchesFinalizingDrag ? "yes" : "no"}; fresh route safe {activeRecovery.freshRouteIsSafe ? "yes" : "no"} (node {activeRecovery.freshRouteHasNodeInfluence ? "blocked" : "clear"}, occupied path {activeRecovery.freshRouteHasOccupiedPathConflict ? "blocked" : "clear"}, label {activeRecovery.freshRouteHasLabelCollision ? "blocked" : "clear"}); selected fresh recovery {decision?.recoveredCurrentRoute ? "yes" : "no"}.</p>}
         <p>Final labels that moved after routing: {diagnostic.provisionalFinalMoves.slice(0, 4).map(({ id, distance: moved }) => `${id} ${moved.toFixed(1)}`).join(", ") || "none"}.</p>
         <p>Non-adjacent sampled crossings on this route: {diagnostic.crossings.map(({ relationId }) => relationId).join(", ") || "none"}.</p>
         <ul>{diagnostic.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
@@ -723,7 +734,7 @@ function DragTimingDiagnostics() {
       <li>non-incident changes during active drag: {routeTransition.changedNonIncidentRouteIdsDuringActiveDrag.join(", ") || "none"}</li>
       <li>non-incident continuity blocks: {routeTransition.continuityBlocks.map(({ routeId, pass, processingIndex, usedPreviousRoute, reasons }) => `${routeId} [${pass} #${processingIndex}; previous route ${usedPreviousRoute ? "used" : "not used"}: ${reasons.join(", ") || "no rejected continuity condition"}]`).join("; ") || "none"}</li>
       <li>changed node labels: {routeTransition.changedNodeLabelIds.join(", ") || "none"}; changed relation labels: {routeTransition.changedRelationLabelIds.join(", ") || "none"}</li>
-      <li>route shape transitions: {routeTransition.routeShapeComparisons.map(({ routeId, incident, from, to }) => `${routeId} (${incident ? "incident" : "remote"}) ${from.curved ? "curved" : "straight"} ${format(from.length)} → ${to.curved ? "curved" : "straight"} ${format(to.length)}`).join("; ") || "none"}</li>
+      <li>route shape transitions: {routeTransition.routeShapeComparisons.map(({ routeId, incident, fromPresentationAuthority, toPresentationAuthority, from, to }) => `${routeId} (${incident ? "incident" : "remote"}) ${from.curved ? "curved" : "straight"} ${format(from.length)} [${fromPresentationAuthority}] → ${to.curved ? "curved" : "straight"} ${format(to.length)} [${toPresentationAuthority}]`).join("; ") || "none"}</li>
       <li>selected candidate scores: {routeTransition.routeShapeComparisons.map(({ routeId, fromCandidates, toCandidates }) => `${routeId} active [${candidateSummary(fromCandidates)}] → final [${candidateSummary(toCandidates)}]`).join("; ") || "none"}</li>
       <li>remote route outcomes: {routeTransition.remoteRouteOutcomes.map(remoteOutcomeSummary).join("; ") || "none"}</li>
       <li>relation-label transitions: {routeTransition.relationLabelComparisons.map(({ routeId, from, to }) => `${routeId} ${from ? `${format(from.x)}, ${format(from.y)}` : "none"} → ${to ? `${format(to.x)}, ${format(to.y)}` : "none"}`).join("; ") || "none"}</li>
