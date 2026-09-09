@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { buildEntityGraph, getStoredCoordinates } from "../src/dataset.ts";
 import { deriveAutomaticNodeLabels, deriveAutomaticRelationLabels, deriveAutomaticRoutes, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
-import { placeNodeLabel } from "../src/viewport.ts";
+import { curveOffsetFromControlPoint, placeNodeLabel } from "../src/viewport.ts";
 import { diagnoseRoute } from "../experimental/product-evaluation-seam/actual-inspection/routing-diagnostics.ts";
 
 function wideApolloSnapshot() {
@@ -410,4 +410,26 @@ test("finalizing Apollo retains a safe active incident route but rejects an unsa
     unsafeRetained.decisions.find(({ edgeId, pass }) => edgeId === "entity-4" && pass === "feedback")?.usedPreviousRoute,
     false,
   );
+
+  // Replay the user-correlated session #1 endpoint. Its active +168 route is
+  // intentionally rejected at finalization because the settled NASA label
+  // occupies that side; the safe -60 candidate remains available.
+  const observed = activeAt({ x: 10.587, y: -1.477 });
+  const observedActive = observed.active.routedEdges.find(({ id }) => id === "entity-4")!;
+  const observedFinal = observed.final(true);
+  const observedFinalRoute = observedFinal.result.routedEdges.find(({ id }) => id === "entity-4")!;
+  const observedDecision = observedFinal.decisions.find(({ edgeId, pass }) => edgeId === "entity-4" && pass === "feedback")!;
+  assert.equal(Math.round(curveOffsetFromControlPoint(
+    { x: 61.9, y: 380.3 },
+    { x: positions.eagle!.x, y: positions.eagle!.y },
+    observedActive.controlPoint!,
+  )!), 168);
+  assert.equal(observedDecision.usedPreviousRoute, false);
+  assert.equal(observedDecision.continuity.priorRouteHasLabelCollision, true);
+  assert.deepEqual(observedDecision.continuity.blockingNodeLabelIds, ["nasa"]);
+  assert.equal(Math.round(curveOffsetFromControlPoint(
+    { x: 61.9, y: 380.3 },
+    { x: positions.eagle!.x, y: positions.eagle!.y },
+    observedFinalRoute.controlPoint!,
+  )!), -60);
 });
