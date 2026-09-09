@@ -48,7 +48,11 @@ export type AutomaticRoutingInput = {
 export type DerivedAutomaticRoute = RoutingGraphEdge & Pick<
   ReturnType<typeof routeGraphEdge>,
   "path" | "samples" | "labelPoint" | "controlPoint"
-> & { parallelSolverEligible: boolean };
+> & {
+  parallelSolverEligible: boolean;
+  /** The active-drag Node that directly forced this non-incident route away from its prior safe geometry. */
+  activeRecoveryObstacleId?: string;
+};
 
 /** Pure Product-owned automatic route derivation. App state arrives as snapshots. */
 export function deriveAutomaticRoutes({
@@ -156,6 +160,11 @@ export function deriveAutomaticRoutes({
     // Keep the existing lazy safety work: ordinary presentation without a
     // continuity candidate does not pay these diagnostic-observable checks.
     const priorRouteHasNodeInfluence = continuityCandidate && routeSamplesHaveNodeInfluence(previousRoute.samples, obstacles);
+    // Preserve an origin only when this very dragged Node directly blocked the
+    // preceding route. Routes that merely changed because an earlier route
+    // occupied a different corridor must not receive eager active recovery.
+    const priorRouteBlockedByDraggedNode = continuityCandidate
+      && routeSamplesHaveNodeInfluence(previousRoute.samples, [positions[draggedNodeId!] ?? nodeMap.get(draggedNodeId!)!]);
     const priorRouteHasOccupiedPathConflict = continuityCandidate && routeSamplesHaveOccupiedPathConflict(previousRoute.samples, occupiedPaths);
     const collidingContinuityNodeLabelIds = continuityCandidate && routeSamplesHaveLabelCollision(previousRoute.samples, continuityLabelRects)
       ? continuityLabelRects.flatMap((label, index) => {
@@ -184,13 +193,19 @@ export function deriveAutomaticRoutes({
     const freshRouteHasNodeInfluence = continuityCandidate && routeSamplesHaveNodeInfluence(route.samples, obstacles);
     const freshRouteHasOccupiedPathConflict = continuityCandidate && routeSamplesHaveOccupiedPathConflict(route.samples, occupiedPaths);
     const freshRouteHasLabelCollision = continuityCandidate && routeSamplesHaveLabelCollision(route.samples, routeLabelsForEdge);
-    const canRecoverCurrentRoute = canPreservePreviousRoute
-      && activeDraggedNodeId === undefined
-      && previousRoute!.path !== route.path
-      && !freshRouteHasNodeInfluence
+    const freshRouteIsSafe = !freshRouteHasNodeInfluence
       && !freshRouteHasOccupiedPathConflict
       && !freshRouteHasLabelCollision;
+    const canRecoverDuringActiveDrag = activeDraggedNodeId !== undefined
+      && previousRoute!.activeRecoveryObstacleId === draggedNodeId;
+    const canRecoverCurrentRoute = canPreservePreviousRoute
+      && previousRoute!.path !== route.path
+      && freshRouteIsSafe
+      && (activeDraggedNodeId === undefined || canRecoverDuringActiveDrag);
     const selectedRoute = canPreservePreviousRoute && !canRecoverCurrentRoute ? previousRoute : route;
+    const activeRecoveryObstacleId = selectedRoute === previousRoute
+      ? previousRoute.activeRecoveryObstacleId
+      : priorRouteBlockedByDraggedNode ? draggedNodeId : undefined;
     // Compute explanatory identities only for the opt-in development sink.
     // The normal Product path retains the original constant-cost predicates.
     const blockingNodeIds = routeDecisionSink !== undefined && priorRouteHasNodeInfluence
@@ -276,6 +291,7 @@ export function deriveAutomaticRoutes({
       labelPoint: selectedRoute.labelPoint,
       controlPoint: selectedRoute.controlPoint,
       parallelSolverEligible,
+      activeRecoveryObstacleId,
     });
   }
   return graph.edges.map((edge) => ({ ...edge, ...routedById.get(edge.id)! }));

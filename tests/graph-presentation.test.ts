@@ -125,6 +125,65 @@ test("finalizing a temporary obstacle round trip recovers the fresh safe route",
   assert.equal(decisions[0]!.recoveredCurrentRoute, true);
 });
 
+test("active drag eagerly recovers only a detour directly caused by that Node", () => {
+  const graph = {
+    nodes: [
+      { id: "a", label: "A", description: "", x: 0, y: 0 },
+      { id: "b", label: "B", description: "", x: 300, y: 0 },
+      { id: "obstacle", label: "Obstacle", description: "", x: 150, y: 180 },
+    ],
+    edges: [{ id: "ab", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1, label: "A to B" }],
+  };
+  const common = { graph, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels: [] };
+  const initialPositions = { a: { x: 0, y: 0 }, b: { x: 300, y: 0 }, obstacle: { x: 150, y: 180 } };
+  const initial = deriveAutomaticRoutes({ ...common, positions: initialPositions });
+  const activeObstacle = deriveAutomaticRoutes({
+    ...common,
+    positions: { ...initialPositions, obstacle: { x: 150, y: 0 } },
+    previousAutomaticRoutes: new Map(initial.map((route) => [route.id, route])),
+    draggedNodeId: "obstacle",
+    activeDraggedNodeId: "obstacle",
+  });
+  assert.match(activeObstacle[0]!.path, / Q /u);
+  assert.equal(activeObstacle[0]!.activeRecoveryObstacleId, "obstacle");
+  const decisions: Array<{ usedPreviousRoute: boolean; recoveredCurrentRoute: boolean }> = [];
+  const activeReturn = deriveAutomaticRoutes({
+    ...common,
+    positions: initialPositions,
+    previousAutomaticRoutes: new Map(activeObstacle.map((route) => [route.id, route])),
+    draggedNodeId: "obstacle",
+    activeDraggedNodeId: "obstacle",
+    routeDecisionSink: (decision) => decisions.push(decision),
+  });
+  assert.equal(activeReturn[0]!.path, initial[0]!.path);
+  assert.equal(activeReturn[0]!.activeRecoveryObstacleId, undefined);
+  assert.equal(decisions[0]!.usedPreviousRoute, false);
+  assert.equal(decisions[0]!.recoveredCurrentRoute, true);
+});
+
+test("active drag does not eagerly replace a safe remote route without direct-obstacle provenance", () => {
+  const graph = {
+    nodes: [
+      { id: "a", label: "A", description: "", x: 0, y: 0 },
+      { id: "b", label: "B", description: "", x: 300, y: 0 },
+      { id: "obstacle", label: "Obstacle", description: "", x: 150, y: 180 },
+    ],
+    edges: [{ id: "ab", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1, label: "A to B" }],
+  };
+  const previous = routeGraphEdge({ x: 0, y: 0 }, { x: 300, y: 0 }, 0, 1, [], [], false, 0, 108);
+  const presentation = deriveAutomaticRoutes({
+    graph,
+    positions: { a: { x: 0, y: 0 }, b: { x: 300, y: 0 }, obstacle: { x: 150, y: 180 } },
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: [],
+    previousAutomaticRoutes: new Map([["ab", { ...graph.edges[0], ...previous, parallelSolverEligible: false }]]),
+    draggedNodeId: "obstacle",
+    activeDraggedNodeId: "obstacle",
+  });
+  assert.equal(presentation[0]!.path, previous.path);
+});
+
 test("route decision trace records safe non-incident continuity without changing routing", () => {
   const graph = {
     nodes: [
