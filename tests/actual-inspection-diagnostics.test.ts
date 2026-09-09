@@ -144,3 +144,38 @@ test("active Apollo drag preserves locality and necessary crowded incident routi
   assert.match(nasaFinalRoute.path, / Q /);
   assert.equal(nasaActiveRoute.path, nasaFinalRoute.path);
 });
+
+test("wide Apollo round trip restores the fresh safe remote route after obstacle removal", () => {
+  const initial = wideApolloSnapshot();
+  const graph = { nodes: initial.nodes, edges: initial.edges };
+  const movedPositions = {
+    ...initial.positions,
+    "saturn-v": { x: initial.positions["saturn-v"]!.x, y: initial.positions["saturn-v"]!.y + 120 },
+  };
+  const moved = deriveAutomaticRoutes({
+    graph,
+    positions: movedPositions,
+    edgeCurveOffsets: initial.edgeCurveOffsets,
+    selfLoopOverrides: initial.selfLoopOverrides,
+    provisionalNodeLabels: initial.provisionalNodeLabels,
+    previousAutomaticRoutes: new Map(initial.routedEdges.map((route) => [route.id, route])),
+    draggedNodeId: "saturn-v",
+  });
+  const decisions: Array<{ edgeId: string; recoveredCurrentRoute: boolean }> = [];
+  const returned = deriveAutomaticRoutes({
+    graph,
+    positions: initial.positions,
+    edgeCurveOffsets: initial.edgeCurveOffsets,
+    selfLoopOverrides: initial.selfLoopOverrides,
+    provisionalNodeLabels: initial.provisionalNodeLabels,
+    previousAutomaticRoutes: new Map(moved.map((route) => [route.id, route])),
+    draggedNodeId: "saturn-v",
+    routeDecisionSink: (decision) => decisions.push(decision),
+  });
+  const initialRoute = initial.routedEdges.find(({ id }) => id === "entity-6")!;
+  const movedRoute = moved.find(({ id }) => id === "entity-6")!;
+  const returnedRoute = returned.find(({ id }) => id === "entity-6")!;
+  assert.notEqual(movedRoute.path, initialRoute.path);
+  assert.equal(returnedRoute.path, initialRoute.path);
+  assert.equal(decisions.find(({ edgeId }) => edgeId === "entity-6")?.recoveredCurrentRoute, true);
+});

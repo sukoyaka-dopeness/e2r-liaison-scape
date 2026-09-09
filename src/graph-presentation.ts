@@ -9,6 +9,8 @@ export type AutomaticRouteDecision = {
   pass: "label-free" | "first" | "feedback";
   processingIndex: number;
   usedPreviousRoute: boolean;
+  /** A finalizing pass discarded an otherwise safe historical detour for the current safe route. */
+  recoveredCurrentRoute: boolean;
   continuity: {
     previousRoutePresent: boolean;
     draggedNodePresent: boolean;
@@ -171,7 +173,24 @@ export function deriveAutomaticRoutes({
       && !priorRouteHasNodeInfluence
       && !priorRouteHasOccupiedPathConflict
       && !priorRouteHasLabelCollision;
-    const selectedRoute = canPreservePreviousRoute ? previousRoute : route;
+    // Continuity is intentionally active-drag first: while a Node is moving,
+    // a safe remote route should not churn merely because a different safe
+    // candidate becomes available. At pointer-up, however, retaining a
+    // historical detour can make a round trip non-idempotent. If the fresh
+    // route is itself free of node, occupied-path, and hard label conflicts,
+    // return to that current-input route rather than preserving history.
+    // This does not make straightness authoritative: `routeGraphEdge` still
+    // chooses the fresh route from the normal scoring model.
+    const freshRouteHasNodeInfluence = continuityCandidate && routeSamplesHaveNodeInfluence(route.samples, obstacles);
+    const freshRouteHasOccupiedPathConflict = continuityCandidate && routeSamplesHaveOccupiedPathConflict(route.samples, occupiedPaths);
+    const freshRouteHasLabelCollision = continuityCandidate && routeSamplesHaveLabelCollision(route.samples, routeLabelsForEdge);
+    const canRecoverCurrentRoute = canPreservePreviousRoute
+      && activeDraggedNodeId === undefined
+      && previousRoute!.path !== route.path
+      && !freshRouteHasNodeInfluence
+      && !freshRouteHasOccupiedPathConflict
+      && !freshRouteHasLabelCollision;
+    const selectedRoute = canPreservePreviousRoute && !canRecoverCurrentRoute ? previousRoute : route;
     // Compute explanatory identities only for the opt-in development sink.
     // The normal Product path retains the original constant-cost predicates.
     const blockingNodeIds = routeDecisionSink !== undefined && priorRouteHasNodeInfluence
@@ -188,7 +207,8 @@ export function deriveAutomaticRoutes({
       edgeId: edge.id,
       pass: routeDecisionPass,
       processingIndex,
-      usedPreviousRoute: canPreservePreviousRoute,
+      usedPreviousRoute: canPreservePreviousRoute && !canRecoverCurrentRoute,
+      recoveredCurrentRoute: canRecoverCurrentRoute,
       continuity: {
         previousRoutePresent: previousRoute !== undefined,
         draggedNodePresent: draggedNodeId !== undefined,
