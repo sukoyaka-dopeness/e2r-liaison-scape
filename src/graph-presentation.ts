@@ -17,6 +17,10 @@ export type AutomaticRouteDecision = {
     priorRouteHasNodeInfluence: boolean;
     priorRouteHasOccupiedPathConflict: boolean;
     priorRouteHasLabelCollision: boolean;
+    /** Development-only explanation of a rejected continuity candidate. */
+    blockingNodeIds: readonly string[];
+    blockingOccupiedRouteIds: readonly string[];
+    blockingNodeLabelIds: readonly string[];
   };
 };
 
@@ -26,6 +30,10 @@ export type AutomaticRoutingInput = {
   edgeCurveOffsets: Readonly<Record<string, number>>;
   selfLoopOverrides: Readonly<Record<string, SelfLoopOverride>>;
   provisionalNodeLabels: readonly LabelRect[];
+  /** Labels used only to validate a previous route's active-drag continuity. */
+  continuityNodeLabels?: readonly LabelRect[];
+  /** Labels displayed with the previous route, for distinguishing a new collision from an accepted prior one. */
+  previousContinuityNodeLabels?: ReadonlyMap<string, LabelRect>;
   previousAutomaticRoutes?: ReadonlyMap<string, DerivedAutomaticRoute>;
   draggedNodeId?: string;
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
@@ -44,15 +52,19 @@ export function deriveAutomaticRoutes({
   edgeCurveOffsets,
   selfLoopOverrides,
   provisionalNodeLabels,
+  continuityNodeLabels,
+  previousContinuityNodeLabels,
   previousAutomaticRoutes,
   draggedNodeId,
   routeDecisionSink,
   routeDecisionPass = "first",
 }: AutomaticRoutingInput): DerivedAutomaticRoute[] {
   const occupiedPaths: Array<Array<Point>> = [];
+  const occupiedPathIds: string[] = [];
   const overlapCounts = new Map<string, number>();
   const nodeMap = new Map(graph.nodes.map((node) => [node.id, node]));
   const routeLabelRects = [...provisionalNodeLabels];
+  const continuityLabelRects = continuityNodeLabels ?? routeLabelRects;
   const routedById = new Map<string, Omit<DerivedAutomaticRoute, keyof RoutingGraphEdge>>();
   const compareRoutingPriority = (left: RoutingGraphEdge, right: RoutingGraphEdge) =>
     left.sourceId.localeCompare(right.sourceId)
@@ -114,12 +126,35 @@ export function deriveAutomaticRoutes({
     // continuity candidate does not pay these diagnostic-observable checks.
     const priorRouteHasNodeInfluence = continuityCandidate && routeSamplesHaveNodeInfluence(previousRoute.samples, obstacles);
     const priorRouteHasOccupiedPathConflict = continuityCandidate && routeSamplesHaveOccupiedPathConflict(previousRoute.samples, occupiedPaths);
-    const priorRouteHasLabelCollision = continuityCandidate && routeSamplesHaveLabelCollision(previousRoute.samples, routeLabelRects);
+    const collidingContinuityNodeLabelIds = continuityCandidate && routeSamplesHaveLabelCollision(previousRoute.samples, continuityLabelRects)
+      ? continuityLabelRects.flatMap((label, index) => {
+        if (!routeSamplesHaveLabelCollision(previousRoute.samples, [label])) return [];
+        const nodeId = graph.nodes[index]?.id ?? `label-${index}`;
+        const priorLabel = previousContinuityNodeLabels?.get(nodeId);
+        // A label/route overlap that the immediately preceding presentation
+        // already displayed is not a new active-drag safety regression. It
+        // must not alone trigger a remote route flip before label feedback.
+        return priorLabel && routeSamplesHaveLabelCollision(previousRoute.samples, [priorLabel]) ? [] : [nodeId];
+      })
+      : [];
+    const priorRouteHasLabelCollision = collidingContinuityNodeLabelIds.length > 0;
     const canPreservePreviousRoute = continuityCandidate
       && !priorRouteHasNodeInfluence
       && !priorRouteHasOccupiedPathConflict
       && !priorRouteHasLabelCollision;
     const selectedRoute = canPreservePreviousRoute ? previousRoute : route;
+    // Compute explanatory identities only for the opt-in development sink.
+    // The normal Product path retains the original constant-cost predicates.
+    const blockingNodeIds = routeDecisionSink !== undefined && priorRouteHasNodeInfluence
+      ? graph.nodes
+        .filter((node) => node.id !== edge.sourceId && node.id !== edge.targetId)
+        .filter((node) => routeSamplesHaveNodeInfluence(previousRoute!.samples, [positions[node.id] ?? node]))
+        .map((node) => node.id)
+      : [];
+    const blockingOccupiedRouteIds = routeDecisionSink !== undefined && priorRouteHasOccupiedPathConflict
+      ? occupiedPaths.flatMap((occupiedPath, index) => routeSamplesHaveOccupiedPathConflict(previousRoute!.samples, [occupiedPath]) ? [occupiedPathIds[index]!] : [])
+      : [];
+    const blockingNodeLabelIds = routeDecisionSink !== undefined ? collidingContinuityNodeLabelIds : [];
     routeDecisionSink?.({
       edgeId: edge.id,
       pass: routeDecisionPass,
@@ -133,6 +168,9 @@ export function deriveAutomaticRoutes({
         priorRouteHasNodeInfluence,
         priorRouteHasOccupiedPathConflict,
         priorRouteHasLabelCollision,
+        blockingNodeIds,
+        blockingOccupiedRouteIds,
+        blockingNodeLabelIds,
       },
     });
     const routeWithoutObstacles = edge.parallelCount > 1
@@ -181,6 +219,7 @@ export function deriveAutomaticRoutes({
       && obstacleComparison?.equivalent === true
       && occupiedPathComparison?.equivalent === true;
     occupiedPaths.push(selectedRoute.samples);
+    occupiedPathIds.push(edge.id);
     routedById.set(edge.id, {
       path: selectedRoute.path,
       samples: selectedRoute.samples,
@@ -294,6 +333,8 @@ export type BoundedAutomaticPresentationInput = {
   previousAutomaticRoutes?: ReadonlyMap<string, DerivedAutomaticRoute>;
   draggedNodeId?: string;
   activelyDraggedNodeId?: string;
+  continuityNodeLabels?: readonly LabelRect[];
+  previousContinuityNodeLabels?: ReadonlyMap<string, LabelRect>;
   feedbackEnabled?: boolean;
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
 };
@@ -349,6 +390,8 @@ export function deriveBoundedAutomaticPresentation({
   previousAutomaticRoutes,
   draggedNodeId,
   activelyDraggedNodeId,
+  continuityNodeLabels,
+  previousContinuityNodeLabels,
   feedbackEnabled = true,
   routeDecisionSink,
 }: BoundedAutomaticPresentationInput): BoundedAutomaticPresentation {
@@ -373,6 +416,8 @@ export function deriveBoundedAutomaticPresentation({
       edgeCurveOffsets,
       selfLoopOverrides,
       provisionalNodeLabels: routeLabels,
+      continuityNodeLabels,
+      previousContinuityNodeLabels,
       previousAutomaticRoutes,
       draggedNodeId,
       routeDecisionSink,

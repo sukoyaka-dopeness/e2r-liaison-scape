@@ -28,7 +28,7 @@ type RouteTransitionReport = {
   changedNonIncidentRouteIdsDuringActiveDrag: string[];
   changedNodeLabelIds: string[];
   changedRelationLabelIds: string[];
-  continuityBlocks: Array<{ routeId: string; pass: string; processingIndex: number; usedPreviousRoute: boolean; reasons: string[] }>;
+  continuityBlocks: Array<{ routeId: string; pass: string; processingIndex: number; usedPreviousRoute: boolean; reasons: string[]; blockers: { nodes: string[]; occupiedRoutes: string[]; nodeLabels: string[] } }>;
   dragState: {
     activeRoutingPosition: { x: number; y: number } | null;
     activeLivePosition: { x: number; y: number } | null;
@@ -44,6 +44,17 @@ let latestRouteTransitionReport: RouteTransitionReport | null = null;
 let pendingPostIdleSnapshot: PresentationDiagnosticSnapshot | null = null;
 let latestDragEntryReport: RouteTransitionReport | null = null;
 let latestPostIdleReport: RouteTransitionReport | null = null;
+
+type ActiveDragRemoteTransition = {
+  step: number;
+  routingPosition: { x: number; y: number } | null;
+  routeId: string;
+  pass: string | null;
+  usedPreviousRoute: boolean | null;
+  reasons: string[];
+  blockers: { nodes: string[]; occupiedRoutes: string[]; nodeLabels: string[] };
+};
+let activeDragRemoteTransitions: ActiveDragRemoteTransition[] = [];
 
 type DragTimingReport = {
   nodeId: string;
@@ -65,6 +76,7 @@ type DragTimingReport = {
   nodeLagDuringLongTaskPx: { median: number; p95: number; max: number } | null;
   nodeLagOutsideLongTaskPx: { median: number; p95: number; max: number } | null;
   durationMs: number;
+  remoteTransitions: ActiveDragRemoteTransition[];
 };
 
 type ActiveDragTiming = {
@@ -165,12 +177,52 @@ function routeTransitionReport(stage: RouteTransitionReport["stage"], from: Pres
         continuity.priorRouteHasOccupiedPathConflict ? "occupied-path conflict" : "",
         continuity.priorRouteHasLabelCollision ? "label collision" : "",
       ].filter(Boolean);
-      return [{ routeId, pass: decision.pass, processingIndex: decision.processingIndex, usedPreviousRoute: decision.usedPreviousRoute, reasons }];
+      return [{
+        routeId,
+        pass: decision.pass,
+        processingIndex: decision.processingIndex,
+        usedPreviousRoute: decision.usedPreviousRoute,
+        reasons,
+        blockers: {
+          nodes: [...decision.continuity.blockingNodeIds],
+          occupiedRoutes: [...decision.continuity.blockingOccupiedRouteIds],
+          nodeLabels: [...decision.continuity.blockingNodeLabelIds],
+        },
+      }];
     }),
     dragState: {
       activeRoutingPosition: positionFor(from, nodeId),
       activeLivePosition: from.liveDragPosition?.id === nodeId ? from.liveDragPosition.position : null,
       finalRoutingPosition: positionFor(to, nodeId),
+    },
+  };
+}
+
+function activeDragRemoteTransition(snapshot: PresentationDiagnosticSnapshot, routeId: string, nodeId: string, step: number): ActiveDragRemoteTransition {
+  const decision = [...snapshot.routeDecisions].reverse().find((candidate) =>
+    candidate.edgeId === routeId && (candidate.pass === "feedback" || candidate.pass === "first"),
+  );
+  const continuity = decision?.continuity;
+  const reasons = continuity === undefined ? ["no active routing decision"] : [
+    !continuity.previousRoutePresent ? "no previous route" : "",
+    !continuity.draggedNodePresent ? "no drag identity" : "",
+    continuity.isIncident ? "incident" : "",
+    !continuity.isEligibleShape ? "ineligible shape" : "",
+    continuity.priorRouteHasNodeInfluence ? "node influence" : "",
+    continuity.priorRouteHasOccupiedPathConflict ? "occupied-path conflict" : "",
+    continuity.priorRouteHasLabelCollision ? "label collision" : "",
+  ].filter(Boolean);
+  return {
+    step,
+    routingPosition: positionFor(snapshot, nodeId),
+    routeId,
+    pass: decision?.pass ?? null,
+    usedPreviousRoute: decision?.usedPreviousRoute ?? null,
+    reasons,
+    blockers: {
+      nodes: continuity ? [...continuity.blockingNodeIds] : [],
+      occupiedRoutes: continuity ? [...continuity.blockingOccupiedRouteIds] : [],
+      nodeLabels: continuity ? [...continuity.blockingNodeLabelIds] : [],
     },
   };
 }
@@ -256,6 +308,7 @@ function finishDragTiming(): void {
     nodeLagDuringLongTaskPx: summary(lagDuringLongTask),
     nodeLagOutsideLongTaskPx: summary(lagOutsideLongTask),
     durationMs: performance.now() - drag.startedAt,
+    remoteTransitions: activeDragRemoteTransitions,
   };
   window.dispatchEvent(new CustomEvent<DragTimingReport>(timingEvent, { detail: latestDragTimingReport }));
 }
@@ -293,6 +346,7 @@ document.addEventListener("pointerdown", (event) => {
   const center = nodeId ? nodeCenter(nodeId) : null;
   if (!nodeId || !center) return;
   latestDragPresentationSnapshot = null;
+  activeDragRemoteTransitions = [];
   dragEntryBaselineSnapshot = latestDiagnosticSnapshot;
   changedNonIncidentRouteIdsDuringActiveDrag = new Set();
   pendingDragEndSnapshot = null;
@@ -348,9 +402,13 @@ window.__liaisonScapePresentationDiagnosticSink = (snapshot) => {
     }
     if (latestDragPresentationSnapshot) {
       const edgesById = new Map(snapshot.edges.map((edge) => [edge.id, edge]));
-      for (const routeId of changedRouteIds(latestDragPresentationSnapshot, snapshot)) {
+      const changedRoutes = changedRouteIds(latestDragPresentationSnapshot, snapshot);
+      for (const routeId of changedRoutes) {
         const edge = edgesById.get(routeId);
-        if (edge && edge.sourceId !== activeDragTiming.nodeId && edge.targetId !== activeDragTiming.nodeId) changedNonIncidentRouteIdsDuringActiveDrag.add(routeId);
+        if (edge && edge.sourceId !== activeDragTiming.nodeId && edge.targetId !== activeDragTiming.nodeId) {
+          changedNonIncidentRouteIdsDuringActiveDrag.add(routeId);
+          activeDragRemoteTransitions.push(activeDragRemoteTransition(snapshot, routeId, activeDragTiming.nodeId, activeDragRemoteTransitions.length + 1));
+        }
       }
     }
     latestDragPresentationSnapshot = snapshot;
@@ -500,6 +558,10 @@ function DragTimingDiagnostics() {
       <li>non-incident continuity blocks: {routeTransition.continuityBlocks.map(({ routeId, pass, processingIndex, usedPreviousRoute, reasons }) => `${routeId} [${pass} #${processingIndex}; previous route ${usedPreviousRoute ? "used" : "not used"}: ${reasons.join(", ") || "no rejected continuity condition"}]`).join("; ") || "none"}</li>
       <li>changed node labels: {routeTransition.changedNodeLabelIds.join(", ") || "none"}; changed relation labels: {routeTransition.changedRelationLabelIds.join(", ") || "none"}</li>
     </ul>}
+    {report?.remoteTransitions.length ? <details>
+      <summary>active-drag remote route transitions ({report.remoteTransitions.length})</summary>
+      <ul>{report.remoteTransitions.map((transition) => <li key={`${transition.step}-${transition.routeId}`}>#{transition.step} {transition.routeId} at {transition.routingPosition ? `${format(transition.routingPosition.x)}, ${format(transition.routingPosition.y)}` : "n/a"}: {transition.pass ?? "no pass"}, previous route {transition.usedPreviousRoute === null ? "n/a" : transition.usedPreviousRoute ? "used" : "not used"}; {transition.reasons.join(", ") || "no rejection"}; blockers node {transition.blockers.nodes.join(", ") || "none"}, route {transition.blockers.occupiedRoutes.join(", ") || "none"}, label {transition.blockers.nodeLabels.join(", ") || "none"}.</li>)}</ul>
+    </details> : null}
     {entryTransition && <p>pointer-down / drag-entry transition: same node geometry {entryTransition.sameNodeGeometry ? "YES" : "NO"}; changed routes {entryTransition.changedRouteIds.join(", ") || "none"}; derived as {entryTransition.fromDerivationPhase} → {entryTransition.toDerivationPhase}.</p>}
     {postIdleTransition && <p>post-finalization idle transition: same node geometry {postIdleTransition.sameNodeGeometry ? "YES" : "NO"}; changed routes {postIdleTransition.changedRouteIds.join(", ") || "none"}; derived as {postIdleTransition.fromDerivationPhase} → {postIdleTransition.toDerivationPhase}.</p>}
   </details>;

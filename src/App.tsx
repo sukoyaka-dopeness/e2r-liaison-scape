@@ -344,6 +344,19 @@ export default function App() {
       presentationInputIdentityRef.current.map.set(positions, presentationInputId);
     }
     const draggedNodeId = presentationDraggedNodeId;
+    // Active routing deliberately defers its full label-feedback pass. For
+    // continuity safety, compare a prior remote route with the labels that
+    // were actually displayed in the prior frame, while keeping the dragged
+    // Node's label current. This avoids treating the feedback-to-provisional
+    // label representation change itself as a remote-route obstruction.
+    const activeContinuityNodeLabels = activeNodeDrag
+      ? graph.nodes.map((node, index) => node.id === draggedNodeId
+        ? provisionalNodeLabels[index]
+        : previousNodeLabelPlacements.current.get(node.id))
+      : [];
+    const continuityNodeLabels = activeNodeDrag && activeContinuityNodeLabels.every((label): label is LabelRect => label !== undefined)
+      ? activeContinuityNodeLabels
+      : undefined;
     const edges = graph.edges.map((edge) => ({
       ...edge,
       label: (() => {
@@ -365,6 +378,8 @@ export default function App() {
       previousAutomaticRoutes: new Map(previousAutomaticRoutes.current),
       draggedNodeId,
       activelyDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
+      continuityNodeLabels,
+      previousContinuityNodeLabels: activeNodeDrag ? previousNodeLabelPlacements.current : undefined,
       feedbackEnabled: dragRef.current?.kind !== "node",
       routeDecisionSink: routeDecisions === null ? undefined : (decision) => routeDecisions.push(decision),
     });

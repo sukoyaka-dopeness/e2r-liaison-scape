@@ -160,7 +160,7 @@ export function routeSamplesHaveOccupiedPathConflict(samples: Point[], occupiedP
   });
 }
 
-export function routeSamplesHaveLabelCollision(samples: Point[], labelRects: LabelRect[]): boolean {
+export function routeSamplesHaveLabelCollision(samples: Point[], labelRects: readonly LabelRect[]): boolean {
   return samples.some((sample) => labelRects.some((rect) => pointToRectDistance(sample, rect) === 0));
 }
 

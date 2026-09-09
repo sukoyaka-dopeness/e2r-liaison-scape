@@ -425,6 +425,53 @@ This remains a presentation-continuity correction only. It does not select a
 spacing candidate, alter automatic routing objectives, or change crossing-aware
 placement policy.
 
+## Active-drag remote locality correction
+
+The remaining active-drag churn was not a pointer-down or pointer-up state
+transition. A short real Product Saturn V drag previously changed four
+non-incident routes at the first active routing position (`y = 5.1` in graph
+space). The new per-step diagnostic identified only label blockers at that
+point: `nasa`, `eagle`, `columbia`, and `moon`; it found neither Node influence
+nor occupied-path conflict. This made the change reproducible as a
+presentation-input discontinuity rather than evidence that a small local move
+had made all four remote routes geometrically unsafe.
+
+The bounded cause is that idle presentation may have completed its one allowed
+label-feedback pass, while active drag deliberately defers that pass for
+pointer responsiveness. The next active route derivation used provisional
+labels. A previous remote route could then be rejected for intersecting a
+provisional label even where that same route/label relationship had already
+been displayed in the preceding feedback presentation.
+
+The correction supplies active continuity with two small snapshots: the
+current dragged Node label plus the prior displayed labels, and the prior
+displayed label map. A label collision blocks reuse only when it is new
+relative to that previous route/label pair. Node influence and occupied-path
+conflicts are unchanged hard blockers. Candidate generation still uses the
+current provisional labels, and finalization retains the existing feedback
+pass; this is not a remote-route freeze or a new routing objective.
+
+The Apollo fixture regression test records both sides of the boundary:
+
+| Saturn V movement | Expected changed routes |
+| --- | --- |
+| initial 14.8 graph units | only incident `entity-8`, `entity-10` |
+| 160 graph units into `entity-6` influence | `entity-6` plus incident `entity-8`, `entity-10` |
+
+In the production-like actual Product smoke check, a short downward Saturn V
+drag recorded no active non-incident transitions. A larger downward drag did
+reroute `entity-6`; the diagnostic first recorded a newly colliding current
+Saturn V label and then Saturn V Node influence. Pointer tracking remained
+responsive in both smoke gestures (roughly 1.2 ms pointer-to-render median in
+the CUA environment). This confirms the intended narrow behavior, but is not
+a substitute for user inspection of slow, reversed, and repeated physical
+drags.
+
+The development-only route-decision trace now identifies the exact Nodes,
+earlier occupied routes, and Node labels which rejected a remote continuity
+candidate. This lets later experiments distinguish safety-mandated propagation
+from avoidable presentation arbitration churn without changing persisted data.
+
 ## Validation and boundaries
 
 - `npm test`: `316/316 PASS`.
