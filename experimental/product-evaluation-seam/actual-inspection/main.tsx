@@ -84,6 +84,12 @@ type ActiveDragRemoteTransition = {
   routeId: string;
   pass: string | null;
   usedPreviousRoute: boolean | null;
+  /**
+   * Dev-only classification of why the preceding remote route could no
+   * longer remain selected. It deliberately reports "unclassified" rather
+   * than guessing a propagation mechanism that the Product did not prove.
+   */
+  classification: "direct-dragged-node" | "secondary-node" | "secondary-occupied-path" | "secondary-node-label" | "continuity-history" | "unclassified";
   reasons: string[];
   blockers: { nodes: string[]; occupiedRoutes: string[]; nodeLabels: string[] };
 };
@@ -350,12 +356,20 @@ function activeDragRemoteTransition(snapshot: PresentationDiagnosticSnapshot, ro
     continuity.priorRouteHasOccupiedPathConflict ? "occupied-path conflict" : "",
     continuity.priorRouteHasLabelCollision ? "label collision" : "",
   ].filter(Boolean);
+  const classification = continuity === undefined ? "unclassified" :
+    continuity.priorRouteHasNodeInfluence
+      ? continuity.blockingNodeIds.includes(nodeId) ? "direct-dragged-node" : "secondary-node"
+      : continuity.priorRouteHasOccupiedPathConflict ? "secondary-occupied-path"
+        : continuity.priorRouteHasLabelCollision ? "secondary-node-label"
+          : decision?.usedPreviousRoute ? "continuity-history"
+            : "unclassified";
   return {
     step,
     routingPosition: positionFor(snapshot, nodeId),
     routeId,
     pass: decision?.pass ?? null,
     usedPreviousRoute: decision?.usedPreviousRoute ?? null,
+    classification,
     reasons,
     blockers: {
       nodes: continuity ? [...continuity.blockingNodeIds] : [],
@@ -714,7 +728,7 @@ function DragTimingDiagnostics() {
     </ul>}
     {report?.remoteTransitions.length ? <details>
       <summary>active-drag remote route transitions ({report.remoteTransitions.length})</summary>
-      <ul>{report.remoteTransitions.map((transition) => <li key={`${transition.step}-${transition.routeId}`}>#{transition.step} {transition.routeId} at {transition.routingPosition ? `${format(transition.routingPosition.x)}, ${format(transition.routingPosition.y)}` : "n/a"}: {transition.pass ?? "no pass"}, previous route {transition.usedPreviousRoute === null ? "n/a" : transition.usedPreviousRoute ? "used" : "not used"}; {transition.reasons.join(", ") || "no rejection"}; blockers node {transition.blockers.nodes.join(", ") || "none"}, route {transition.blockers.occupiedRoutes.join(", ") || "none"}, label {transition.blockers.nodeLabels.join(", ") || "none"}.</li>)}</ul>
+      <ul>{report.remoteTransitions.map((transition) => <li key={`${transition.step}-${transition.routeId}`}>#{transition.step} {transition.routeId} at {transition.routingPosition ? `${format(transition.routingPosition.x)}, ${format(transition.routingPosition.y)}` : "n/a"}: <strong>{transition.classification}</strong>; {transition.pass ?? "no pass"}, previous route {transition.usedPreviousRoute === null ? "n/a" : transition.usedPreviousRoute ? "used" : "not used"}; {transition.reasons.join(", ") || "no rejection"}; blockers node {transition.blockers.nodes.join(", ") || "none"}, route {transition.blockers.occupiedRoutes.join(", ") || "none"}, label {transition.blockers.nodeLabels.join(", ") || "none"}.</li>)}</ul>
     </details> : null}
     {entryTransition && <p>pointer-down / drag-entry transition: same node geometry {entryTransition.sameNodeGeometry ? "YES" : "NO"}; changed routes {entryTransition.changedRouteIds.join(", ") || "none"}; derived as {entryTransition.fromDerivationPhase} → {entryTransition.toDerivationPhase}.</p>}
     {postIdleTransition && <p>post-finalization idle transition: same node geometry {postIdleTransition.sameNodeGeometry ? "YES" : "NO"}; changed routes {postIdleTransition.changedRouteIds.join(", ") || "none"}; derived as {postIdleTransition.fromDerivationPhase} → {postIdleTransition.toDerivationPhase}.</p>}
