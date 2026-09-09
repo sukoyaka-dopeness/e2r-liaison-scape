@@ -89,7 +89,7 @@ type ActiveDragRemoteTransition = {
    * longer remain selected. It deliberately reports "unclassified" rather
    * than guessing a propagation mechanism that the Product did not prove.
    */
-  classification: "direct-dragged-node" | "secondary-node" | "secondary-occupied-path" | "secondary-node-label" | "continuity-history" | "unclassified";
+  classification: "direct-recovery-history" | "direct-dragged-node" | "secondary-node" | "secondary-occupied-path" | "secondary-node-label" | "continuity-history" | "unclassified";
   reasons: string[];
   blockers: { nodes: string[]; occupiedRoutes: string[]; nodeLabels: string[] };
 };
@@ -356,8 +356,10 @@ function activeDragRemoteTransition(snapshot: PresentationDiagnosticSnapshot, ro
     continuity.priorRouteHasOccupiedPathConflict ? "occupied-path conflict" : "",
     continuity.priorRouteHasLabelCollision ? "label collision" : "",
   ].filter(Boolean);
-  const classification = continuity === undefined ? "unclassified" :
-    continuity.priorRouteHasNodeInfluence
+  const classification = decision?.recoveredCurrentRoute && decision.activeRecovery.provenanceMatchesActiveDrag
+    ? "direct-recovery-history"
+    : continuity === undefined ? "unclassified"
+    : continuity.priorRouteHasNodeInfluence
       ? continuity.blockingNodeIds.includes(nodeId) ? "direct-dragged-node" : "secondary-node"
       : continuity.priorRouteHasOccupiedPathConflict ? "secondary-occupied-path"
         : continuity.priorRouteHasLabelCollision ? "secondary-node-label"
