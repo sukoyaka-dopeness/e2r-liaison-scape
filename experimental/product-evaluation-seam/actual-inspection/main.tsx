@@ -28,6 +28,11 @@ type RouteTransitionReport = {
   changedNonIncidentRouteIdsDuringActiveDrag: string[];
   changedNodeLabelIds: string[];
   changedRelationLabelIds: string[];
+  relationLabelComparisons: Array<{
+    routeId: string;
+    from: { x: number; y: number; width: number; height: number } | null;
+    to: { x: number; y: number; width: number; height: number } | null;
+  }>;
   routeShapeComparisons: Array<{
     routeId: string;
     incident: boolean;
@@ -153,6 +158,10 @@ function routeShape(route: PresentationDiagnosticSnapshot["routedEdges"][number]
   };
 }
 
+function labelShape(label: { x: number; y: number; width: number; height: number } | undefined) {
+  return label ? { x: label.x, y: label.y, width: label.width, height: label.height } : null;
+}
+
 function positionFor(snapshot: PresentationDiagnosticSnapshot, nodeId: string): { x: number; y: number } | null {
   const node = snapshot.nodes.find(({ id }) => id === nodeId);
   return node ? snapshot.positions[nodeId] ?? node : null;
@@ -163,6 +172,8 @@ function routeTransitionReport(stage: RouteTransitionReport["stage"], from: Pres
   const edgesById = new Map(to.edges.map((edge) => [edge.id, edge]));
   const fromRoutes = new Map(from.routedEdges.map((route) => [route.id, route]));
   const toRoutes = new Map(to.routedEdges.map((route) => [route.id, route]));
+  const fromRelationLabels = new Map(from.relationLabels);
+  const toRelationLabels = new Map(to.relationLabels);
   return {
     nodeId,
     stage,
@@ -189,6 +200,11 @@ function routeTransitionReport(stage: RouteTransitionReport["stage"], from: Pres
         from: routeShape(before),
         to: routeShape(after),
       }] : [];
+    }),
+    relationLabelComparisons: changed.flatMap((routeId) => {
+      const before = fromRelationLabels.get(routeId);
+      const after = toRelationLabels.get(routeId);
+      return before || after ? [{ routeId, from: labelShape(before), to: labelShape(after) }] : [];
     }),
     continuityBlocks: changed.filter((id) => {
       const edge = edgesById.get(id);
@@ -589,6 +605,7 @@ function DragTimingDiagnostics() {
       <li>non-incident continuity blocks: {routeTransition.continuityBlocks.map(({ routeId, pass, processingIndex, usedPreviousRoute, reasons }) => `${routeId} [${pass} #${processingIndex}; previous route ${usedPreviousRoute ? "used" : "not used"}: ${reasons.join(", ") || "no rejected continuity condition"}]`).join("; ") || "none"}</li>
       <li>changed node labels: {routeTransition.changedNodeLabelIds.join(", ") || "none"}; changed relation labels: {routeTransition.changedRelationLabelIds.join(", ") || "none"}</li>
       <li>route shape transitions: {routeTransition.routeShapeComparisons.map(({ routeId, incident, from, to }) => `${routeId} (${incident ? "incident" : "remote"}) ${from.curved ? "curved" : "straight"} ${format(from.length)} → ${to.curved ? "curved" : "straight"} ${format(to.length)}`).join("; ") || "none"}</li>
+      <li>relation-label transitions: {routeTransition.relationLabelComparisons.map(({ routeId, from, to }) => `${routeId} ${from ? `${format(from.x)}, ${format(from.y)}` : "none"} → ${to ? `${format(to.x)}, ${format(to.y)}` : "none"}`).join("; ") || "none"}</li>
     </ul>}
     {report?.remoteTransitions.length ? <details>
       <summary>active-drag remote route transitions ({report.remoteTransitions.length})</summary>

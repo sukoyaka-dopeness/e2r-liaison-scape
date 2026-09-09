@@ -591,4 +591,66 @@ incident-route correction = NOT SELECTED
 active candidate scoring experiment = NEXT BOUNDED STEP
 governed Fresh lineage = NOT STARTED
 historical evidence = unchanged
+
+## Incident route and Relation-label coordination follow-up
+
+The current implementation separates these two operations. `routeGraphEdge()`
+receives Node positions, unrelated Node obstacles, occupied earlier paths, and
+the supplied Node-label rectangles. It does not receive Relation-label
+rectangles. `deriveAutomaticRelationLabels()` runs after routing and places a
+Relation label from the selected route, earlier Relation labels, Node points,
+and other route paths. Therefore a Relation label can visibly move when an
+incident route changes, but the Relation label is not itself a direct route
+candidate obstacle in the current Product implementation.
+
+This is PROVEN from the call graph. It changes the interpretation of the
+reported symptom: the active curve and the Relation-label movement can be
+correlated consequences of the same active route / provisional Node-label
+state, rather than a Relation label pushing the route and then being moved
+back.
+
+For the active Apollo 11 drag, the new development trace records both sets of
+geometry in the same pointer-up report. The earlier representative run showed
+`entity-8` changing from a curved active route to a straight final route;
+the follow-up trace also records the corresponding Relation-label rectangle
+transition. This makes route-before-label ordering observable, while avoiding
+any persistence or Product data change.
+
+`deriveAutomaticRelationLabels()` also deliberately ignores the previous
+automatic placement for an edge incident to the dragged Node. That is
+necessary for the label to follow a moving route, but it means the active
+Relation label may be reselected on each update. This is a plausible source of
+label motion and visual churn, not evidence that Relation-label geometry is
+causing the route curvature.
+
+### Current conclusion
+
+PROVEN:
+
+- Relation labels are downstream of automatic route selection.
+- Active and final route selection differ because active feedback is deferred
+  and final feedback is enabled.
+- Incident Relation labels are recomputed without their prior automatic
+  placement while the connected Node is dragged.
+
+STRONGLY SUPPORTED:
+
+- The observed active-only incident curvature is primarily a Node-label /
+  route-candidate scheduling issue. Relation-label movement is a visible
+  consequence and a possible contributor to perceived instability, but not a
+  current direct route-scoring input.
+
+UNRESOLVED:
+
+- Which active Node-label rectangle or occupied path causes the exact
+  `NASA -> Saturn V` curved candidate at each pointer position.
+- Whether preserving an incident Relation-label anchor during active drag
+  would improve readability without making the label lag behind its route.
+- Whether a bounded active candidate preference can remove only gratuitous
+  curvature while retaining genuine Node-label and occupied-path safety.
+
+No Relation-label-to-route feedback loop or global Relation-label obstacle
+change is introduced. The next implementation experiment, if selected, should
+compare one small candidate at a time against the current `01ae2c8` behaviour
+and must retain the existing remote-locality and responsiveness guards.
 ```
