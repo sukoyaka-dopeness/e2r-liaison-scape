@@ -39,26 +39,37 @@ function distanceToRect(point, rect) {
   return Math.hypot(dx, dy);
 }
 
-function segmentCrosses(a, b, c, d) {
-  const orient = (p, q, r) => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
-  const abC = orient(a, b, c); const abD = orient(a, b, d);
-  const cdA = orient(c, d, a); const cdB = orient(c, d, b);
-  return ((abC > 0 && abD < 0) || (abC < 0 && abD > 0))
-    && ((cdA > 0 && cdB < 0) || (cdA < 0 && cdB > 0));
+function segmentIntersectionDetails(a, b, c, d) {
+  const rx = b.x - a.x; const ry = b.y - a.y;
+  const sx = d.x - c.x; const sy = d.y - c.y;
+  const denominator = rx * sy - ry * sx;
+  if (Math.abs(denominator) < 1e-9) return null;
+  const qpx = c.x - a.x; const qpy = c.y - a.y;
+  const t = (qpx * sy - qpy * sx) / denominator;
+  const u = (qpx * ry - qpy * rx) / denominator;
+  if (t <= 0 || t >= 1 || u <= 0 || u >= 1) return null;
+  const firstLength = Math.hypot(rx, ry); const secondLength = Math.hypot(sx, sy);
+  const sine = Math.min(1, Math.abs(denominator) / Math.max(1e-9, firstLength * secondLength));
+  return { x: a.x + t * rx, y: a.y + t * ry, angleDegrees: Math.asin(sine) * 180 / Math.PI };
 }
 
-function crossingCount(routes) {
-  let count = 0;
+function crossingDiagnostics(routes, relationLabels) {
+  const labels = [...relationLabels.values()];
+  const diagnostics = [];
   for (let left = 0; left < routes.length; left += 1) for (let right = left + 1; right < routes.length; right += 1) {
     const first = routes[left]; const second = routes[right];
     if ([first.sourceId, first.targetId].some((id) => id === second.sourceId || id === second.targetId)) continue;
-    let hit = false;
-    for (let a = 1; a < first.samples.length && !hit; a += 1) for (let b = 1; b < second.samples.length; b += 1) {
-      if (segmentCrosses(first.samples[a - 1], first.samples[a], second.samples[b - 1], second.samples[b])) hit = true;
+    let detail = null;
+    for (let a = 1; a < first.samples.length && !detail; a += 1) for (let b = 1; b < second.samples.length && !detail; b += 1) {
+      detail = segmentIntersectionDetails(first.samples[a - 1], first.samples[a], second.samples[b - 1], second.samples[b]);
     }
-    if (hit) count += 1;
+    if (detail) diagnostics.push({
+      routes: [first.id, second.id],
+      ...detail,
+      relationLabelNear: labels.some((label) => distanceToRect(detail, label) < 24),
+    });
   }
-  return count;
+  return diagnostics;
 }
 
 function nodeFeasibility(positions) {
@@ -126,11 +137,12 @@ function presentationMetrics(positions) {
   const aspectPenalty = Math.max(0, 1.2 - aspectRatio) ** 2 * 10000;
   const fitScale = fitGraphView(Object.values(positions), 800, 500).scale;
   const feasibility = nodeFeasibility(positions);
-  const crossings = crossingCount(presentation.routedEdges);
+  const crossingDetails = crossingDiagnostics(presentation.routedEdges, presentation.relationLabels);
+  const crossings = crossingDetails.length;
   const routeMedian = lengths[Math.floor(lengths.length / 2)]; const routeMax = Math.max(...lengths);
   const score = crossings * 9000 + labelRouteHits * 6000 + labelNear20 * 700 + labelOverlap * 3000
     + routeMedian * 1.5 + routeMax * 0.5 + (extent[0] + extent[1]) * 0.35;
-  return { score, ...feasibility, extent, aspectRatio, aspectPenalty, fitScale, routeMedian, routeMax, crossings, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports };
+  return { score, ...feasibility, extent, aspectRatio, aspectPenalty, fitScale, routeMedian, routeMax, crossings, crossingDetails, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports };
 }
 
 const baselineAdjacency = new Map(graph.edges.map((edge) => {
@@ -381,6 +393,96 @@ function improveGlobalLabelAccommodation(startPositions) {
   };
 }
 
+function referenceAdjacencyMetrics(positions, referencePositions) {
+  const rows = graph.edges.map((edge) => {
+    const referenceSource = referencePositions[edge.sourceId];
+    const referenceTarget = referencePositions[edge.targetId];
+    const source = positions[edge.sourceId];
+    const target = positions[edge.targetId];
+    const referenceDistance = Math.hypot(referenceSource.x - referenceTarget.x, referenceSource.y - referenceTarget.y);
+    const distance = Math.hypot(source.x - target.x, source.y - target.y);
+    return { id: edge.id, sourceId: edge.sourceId, targetId: edge.targetId, referenceDistance, distance, ratio: distance / Math.max(1, referenceDistance) };
+  });
+  return {
+    rows,
+    minimumRatio: Math.min(...rows.map((row) => row.ratio)),
+    maximumRatio: Math.max(...rows.map((row) => row.ratio)),
+    outsideBroadBand: rows.filter((row) => row.ratio < 0.7 || row.ratio > 1.35).length,
+  };
+}
+
+function improveCrossingByAssignment(startPositions) {
+  let current = clonePositions(startPositions);
+  let metrics = presentationMetrics(current);
+  const reference = clonePositions(startPositions);
+  const initialUsableSpanPenalty = metrics.usableSpanPenalty;
+  let evaluations = 1; let rejectedConstraint = 0; let accepted = 0;
+  const objective = (candidateMetrics, candidate) => candidateMetrics.crossings * 100000
+    + candidateMetrics.labelRouteHits * 20000
+    + candidateMetrics.labelOverlap * 10000
+    + candidateMetrics.labelNear20 * 3000
+    + candidateMetrics.usableSpanPenalty * 3
+    + relativeAdjacencyPenalty(candidate, reference) * 4
+    + candidateMetrics.routeMedian * 2 + candidateMetrics.routeMax
+    + (candidateMetrics.extent[0] + candidateMetrics.extent[1]) * 0.1;
+  for (let sweep = 0; sweep < 2; sweep += 1) {
+    for (let left = 0; left < graph.nodes.length; left += 1) for (let right = left + 1; right < graph.nodes.length; right += 1) {
+      const firstId = graph.nodes[left].id; const secondId = graph.nodes[right].id;
+      const candidate = clonePositions(current);
+      [candidate[firstId], candidate[secondId]] = [candidate[secondId], candidate[firstId]];
+      const candidateMetrics = presentationMetrics(candidate); evaluations += 1;
+      const adjacency = referenceAdjacencyMetrics(candidate, reference);
+      if (candidateMetrics.labelRouteHits > 0 || candidateMetrics.labelOverlap > 0 || candidateMetrics.labelNear20 > 0
+        || candidateMetrics.usableSpanPenalty > initialUsableSpanPenalty * 2 + 64
+        || adjacency.outsideBroadBand > 0) { rejectedConstraint += 1; continue; }
+      if (objective(candidateMetrics, candidate) < objective(metrics, current)) { current = candidate; metrics = candidateMetrics; accepted += 1; }
+    }
+  }
+  return {
+    positions: current,
+    metrics,
+    source: "safe-vertical-compaction-v1",
+    structuralVariable: "Node-to-position assignment on a fixed coordinate scaffold",
+    adjacency: referenceAdjacencyMetrics(current, reference),
+    evaluations,
+    rejectedConstraint,
+    accepted,
+    sweeps: 2,
+    preservedScaffold: true,
+  };
+}
+
+function rebalanceVerticalSpaceWithoutHorizontalCompression(startPositions) {
+  const yValues = Object.values(startPositions).map((point) => point.y);
+  const centerY = yValues.reduce((total, value) => total + value, 0) / yValues.length;
+  const initialMetrics = presentationMetrics(startPositions);
+  const reference = clonePositions(startPositions);
+  const attempts = [];
+  for (const factor of [0.9, 0.85, 0.8, 0.75]) {
+    const positions = Object.fromEntries(Object.entries(startPositions).map(([id, point]) => [id, {
+      x: point.x,
+      y: centerY + (point.y - centerY) * factor,
+    }]));
+    const metrics = presentationMetrics(positions);
+    const adjacency = referenceAdjacencyMetrics(positions, reference);
+    const eligible = metrics.overlapPairs === 0
+      && metrics.labelRouteHits === 0
+      && metrics.labelOverlap === 0
+      && metrics.labelNear20 === 0
+      && metrics.usableSpanPenalty <= initialMetrics.usableSpanPenalty * 2 + 64
+      && adjacency.outsideBroadBand === 0;
+    attempts.push({ factor, positions, metrics, adjacency, eligible });
+  }
+  const selected = attempts.filter((attempt) => attempt.eligible).at(-1) ?? attempts[0];
+  return {
+    ...selected,
+    source: "safe-vertical-compaction-v1",
+    structuralVariable: "uniform vertical-space rebalance around graph centroid; x coordinates fixed",
+    attempts: attempts.map(({ factor, metrics, adjacency, eligible }) => ({ factor, metrics, adjacency, eligible })),
+    preservedHorizontalCoordinates: true,
+  };
+}
+
 const baseline = presentationMetrics(start);
 const baselineWithAdjacency = { metrics: baseline, adjacency: adjacencyMetrics(start) };
 const baselineRouteSupports = new Map(baseline.routeSupports.map((route) => [route.id, route]));
@@ -404,6 +506,8 @@ const safeVerticalCompaction = improveVerticalCompaction(balancedEdgeLength.posi
 const crossingAfterCompaction = improveCrossingAfterCompaction(safeVerticalCompaction.positions);
 const globalHorizontalTopology = principalAxisHorizontalRecomposition(crossingAfterCompaction.positions);
 const topologyAwareHorizontalRecomposition = improveGlobalLabelAccommodation(globalHorizontalTopology.positions);
+const crossingAwareReassignment = improveCrossingByAssignment(safeVerticalCompaction.positions);
+const verticalSpaceRebalance = rebalanceVerticalSpaceWithoutHorizontalCompression(safeVerticalCompaction.positions);
 console.log(JSON.stringify({
   contract: "LIAISONSCAPE-PRESENTATION-TOPOLOGY-RELAXATION-v1",
   diagnosticOnly: true,
@@ -424,4 +528,6 @@ console.log(JSON.stringify({
   crossingAfterCompaction,
   globalHorizontalTopology,
   topologyAwareHorizontalRecomposition,
+  crossingAwareReassignment,
+  verticalSpaceRebalance,
 }, null, 2));
