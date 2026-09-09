@@ -8,6 +8,9 @@ Status: local diagnostic record. This is not Product adoption, formal visual acc
 - `a38e01f` is a user-inspected promising snapshot for Apollo 11 wide control.
 - The user reported that route recovery and node-drag feel were substantially improved, with no observed ownership-popover residue during repeated node drags.
 - The snapshot is preserved as a comparison point; no new Fresh lineage is started.
+- The bounded counterfactual-reuse correction is a local follow-up to this
+  snapshot. It preserves the snapshot output while reducing duplicate
+  computation; it is not a spacing, routing, or locality adoption decision.
 
 The actual Product inspection surface used for the local check was:
 
@@ -22,6 +25,7 @@ The actual Product inspection surface used for the local check was:
 3. The feedback is bounded. The pipeline may perform one second pass when final node labels moved; it does not iterate to a fixed point and does not replace manual placement authority.
 4. The App recomputes the complete automatic presentation whenever `positions` changes. Routing is order-sensitive because `deriveAutomaticRoutes()` accumulates `occupiedPaths`; relation-label placement also evaluates the other route paths.
 5. The actual Product check used the real Apollo 11 node and route surface. A bounded Saturn V drag changed the visible selected-route geometry; the temporary coordinate was not saved.
+6. A post-correction actual Product smoke check again used the real Apollo 11 surface and a temporary Saturn V drag. The route diagnostic updated and no obvious visual freeze was observed in that single interaction. This is not a browser FPS or pointer-latency measurement.
 
 ### Strongly supported
 
@@ -56,9 +60,38 @@ The retained baseline is deliberately small:
 
 The existing Apollo 11 spacing/layout metrics remain the comparison source for geometry and visual footprint. No new candidate was selected from this checkpoint.
 
+## Bounded correction candidate
+
+The first bounded correction reuses the label-free counterfactual route set
+across the two possible feedback passes in
+`deriveBoundedAutomaticPresentation()`. That route set depends on graph
+geometry and manual route authority, not on the provisional/final label
+snapshot, so the reuse does not change presentation semantics.
+
+Changed path:
+
+- `src/graph-presentation.ts`
+
+The corrected output was byte-for-byte equivalent to a local uncached
+`a38e01f` reproduction for the Apollo 11 fixture. The same benchmark shape
+then measured:
+
+- optimized `a38e01f`: median `76.879 ms`, p95 `81.421 ms`
+- uncached `a38e01f`: median `101.928 ms`, p95 `108.097 ms`
+- median reduction: approximately `24.6%`
+
+This is a deterministic computation-cost correction, not an incremental
+locality solution. Remote route propagation remains unchanged by design.
+
 ## Interpretation and next bounded direction
 
-The current evidence supports treating `a38e01f` as a promising snapshot, not as a final solution. The next useful diagnostic is to add temporary candidate-score visibility for one representative node (starting with NASA) and to measure route propagation during a controlled drag. Any optimization should first target the repeated global recomputation and unnecessary feedback work; it should not silently change route, spacing, crossing, or manual-authority semantics.
+The current evidence supports treating `a38e01f` plus this correction as a
+promising snapshot, not as a final solution. The next useful diagnostic is to
+add temporary candidate-score visibility for one representative node (starting
+with NASA) and to measure route propagation during a controlled drag. Any
+further optimization should first target explicit dependency boundaries; it
+should not silently change route, spacing, crossing, or manual-authority
+semantics.
 
 Cross-sample audit, crossing-aware placement, parallel/self-loop redesign, and spacing selection remain out of scope.
 
@@ -66,7 +99,7 @@ Cross-sample audit, crossing-aware placement, parallel/self-loop redesign, and s
 
 - Apollo 11 actual Product surface inspected locally.
 - One bounded real-browser Saturn V drag performed; no coordinate save and no evidence generation.
-- Existing automated suite before this documentation checkpoint: `314/314 PASS`.
-- Existing lint/build and `git diff --check` were passing before this documentation checkpoint.
+- Automated suite after the correction: `314/314 PASS`.
+- Lint, build, and `git diff --check` passed after the correction.
 - Fresh10/Fresh11/Fresh12 historical evidence and the canonical Fresh12 review result were not read-modified or regenerated.
 - No governed Fresh lineage, push, tag, release, deploy, or publication was performed.

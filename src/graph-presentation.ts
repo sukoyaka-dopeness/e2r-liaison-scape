@@ -287,6 +287,17 @@ export function deriveBoundedAutomaticPresentation({
   activelyDraggedNodeId,
 }: BoundedAutomaticPresentationInput): BoundedAutomaticPresentation {
   const nodes = graph.nodes.map((node) => positions[node.id] ?? node);
+  // The label-free counterfactual depends only on graph geometry and manual
+  // route authority. Reuse it when the bounded feedback pass is repeated;
+  // recomputing it for each route-label snapshot adds cost without changing
+  // the dependency result.
+  const routesWithoutNodeLabels = deriveAutomaticRoutes({
+    graph,
+    positions,
+    edgeCurveOffsets,
+    selfLoopOverrides,
+    provisionalNodeLabels: [],
+  });
   const derivePass = (routeLabels: readonly LabelRect[]) => {
     const routedEdges = deriveAutomaticRoutes({
       graph,
@@ -294,13 +305,6 @@ export function deriveBoundedAutomaticPresentation({
       edgeCurveOffsets,
       selfLoopOverrides,
       provisionalNodeLabels: routeLabels,
-    });
-    const routesWithoutNodeLabels = deriveAutomaticRoutes({
-      graph,
-      positions,
-      edgeCurveOffsets,
-      selfLoopOverrides,
-      provisionalNodeLabels: [],
     });
     const routeById = new Map(routesWithoutNodeLabels.map((route) => [route.id, route]));
     const yieldingRoutes: RouteYieldPath[] = routedEdges.flatMap((route) => {
