@@ -74,6 +74,28 @@ const topologyAwareRelaxationPositions = {
   moon: { x: 368.534, y: -58.622 },
   hornet: { x: 156.701, y: -108.251 },
 };
+const labelLengthAwarePositions = {
+  armstrong: { x: -152.717, y: 363.208 },
+  aldrin: { x: 261.011, y: 595.891 },
+  collins: { x: -135.185, y: 141 },
+  nasa: { x: 238.196, y: 322.48 },
+  columbia: { x: 139.797, y: 136.267 },
+  eagle: { x: 327.422, y: 158.709 },
+  "saturn-v": { x: 5.156, y: -52.818 },
+  moon: { x: 401.534, y: -151.622 },
+  hornet: { x: 183.701, y: -255.251 },
+};
+const horizontalCanvasAwarePositions = {
+  armstrong: { x: -116.717, y: 312.208 },
+  aldrin: { x: 204.011, y: 490.891 },
+  collins: { x: -6.185, y: 177 },
+  nasa: { x: 145.196, y: 337.48 },
+  columbia: { x: 151.797, y: 31.267 },
+  eagle: { x: 321.422, y: 164.709 },
+  "saturn-v": { x: 11.156, y: -25.818 },
+  moon: { x: 452.534, y: -37.622 },
+  hornet: { x: 174.701, y: -96.251 },
+};
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -93,6 +115,8 @@ const candidateDescriptions = {
   "label-accommodation-v1": "Label-accommodation-aware refinement (mixed control)",
   "presentation-aware-relaxation-v1": "Presentation-aware bounded relaxation (diagnostic)",
   "topology-aware-relaxation-v1": "Topology-aware bounded relaxation (diagnostic)",
+  "label-length-aware-v1": "Label-length-aware refinement (mixed control)",
+  "horizontal-canvas-v1": "Horizontal-canvas refinement (mixed control)",
   "source-f0-160": "Source F0 solver, clearance 160",
   "fp1-ngp-420": "FP1-NGP negative control",
 } as const;
@@ -111,6 +135,8 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "label-accommodation-v1") return labelAccommodationAwarePositions;
   if (candidate === "presentation-aware-relaxation-v1") return presentationAwareRelaxationPositions;
   if (candidate === "topology-aware-relaxation-v1") return topologyAwareRelaxationPositions;
+  if (candidate === "label-length-aware-v1") return labelLengthAwarePositions;
+  if (candidate === "horizontal-canvas-v1") return horizontalCanvasAwarePositions;
   if (candidate === "fp1-ngp-420") return fp1NgpPositions;
   const graph = buildEntityGraph(dataset);
   if (candidate === "source-f0-160") {
@@ -163,19 +189,21 @@ function candidateUrl(candidate: CandidateId) {
 
 function CandidateMetrics() {
   const rows = useMemo(() => [
-    ["current", "3", "2", "187.9", "364.6", "510 × 677"],
-    ["local-search-v1", "3", "0", "177.9", "319.9", "423 × 677"],
-    ["local-search-v1-plus", "3", "0", "163.8", "363.3", "440 × 677"],
-    ["crossing-aware-v1", "1", "2", "116.1", "305.4", "391 × 545"],
-    ["label-accommodation-v1", "3", "1", "177.9", "464.4", "423 × 677"],
-    ["presentation-aware-relaxation-v1", "2", "0", "123.3", "382.5", "338 × 647"],
-    ["topology-aware-relaxation-v1", "3", "0", "127.4", "292.8", "386 × 581"],
-    ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542"],
-    ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420"],
+    ["current", "3", "2", "187.9", "364.6", "510 × 677", "0.753", "0.416"],
+    ["local-search-v1", "3", "0", "177.9", "319.9", "423 × 677", "0.625", "0.416"],
+    ["local-search-v1-plus", "3", "0", "163.8", "363.3", "440 × 677", "0.650", "0.416"],
+    ["crossing-aware-v1", "1", "2", "116.1", "305.4", "391 × 545", "0.718", "0.506"],
+    ["label-accommodation-v1", "3", "1", "177.9", "464.4", "423 × 677", "0.624", "0.416"],
+    ["presentation-aware-relaxation-v1", "2", "0", "123.3", "382.5", "338 × 647", "0.523", "0.433"],
+    ["topology-aware-relaxation-v1", "3", "0", "127.4", "292.8", "386 × 581", "0.665", "0.477"],
+    ["label-length-aware-v1", "3", "0", "329.6", "452.3", "554 × 851", "0.651", "0.337"],
+    ["horizontal-canvas-v1", "3", "0", "140.1", "394.8", "569 × 587", "0.970", "0.473"],
+    ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542", "0.893", "0.508"],
+    ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420", "1.000", "0.636"],
   ], []);
   return <section className="geometry-inspection-metrics" aria-label="Diagnostic geometry metrics">
     <strong>Diagnostic metrics only — not Product adoption</strong>
-    <table><thead><tr><th>candidate</th><th>crossings</th><th>label hits</th><th>route median</th><th>route max</th><th>node extent</th></tr></thead>
+    <table><thead><tr><th>candidate</th><th>crossings</th><th>label hits</th><th>route median</th><th>route max</th><th>node extent</th><th>aspect</th><th>fit scale</th></tr></thead>
       <tbody>{rows.map((row) => <tr key={row[0]}><td><code>{row[0]}</code></td>{row.slice(1).map((value) => <td key={value}>{value}</td>)}</tr>)}</tbody>
     </table>
   </section>;
@@ -191,7 +219,7 @@ function GeometryInspection() {
       <label>Candidate <select value={selectedCandidate} onChange={changeCandidate} aria-label="Geometry candidate">
         {Object.entries(candidateDescriptions).map(([id, description]) => <option key={id} value={id}>{description}</option>)}
       </select></label>
-      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Targeted local corridor refinement, Presentation-aware bounded relaxation, and Topology-aware bounded relaxation around Neil Armstrong / NASA / Lunar Module Eagle, then recheck Michael Collins / NASA, NASA / Saturn V, and Saturn V / Command Module Columbia. The crossing-aware and label-accommodation-aware entries are mixed diagnostic controls, not adoption decisions. Pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
+      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Targeted local corridor refinement with the factor controls: Label-length-aware refinement, Horizontal-canvas refinement, and the existing Bounded crossing refinement. Recheck Neil Armstrong / NASA / Lunar Module Eagle, Michael Collins / NASA, NASA / Saturn V, and Saturn V / Command Module Columbia. These are diagnostic comparisons, not adoption decisions. Pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
     </div>
     <CandidateMetrics />
     <App />

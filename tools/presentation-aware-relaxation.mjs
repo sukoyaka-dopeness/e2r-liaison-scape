@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { buildEntityGraph } from "../src/dataset.ts";
 import { deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
-import { placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
+import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
 import { INITIAL_ENTITY_CLEARANCE } from "../src/initial-entity-placement.ts";
 
 const fixturePath = "experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json";
@@ -88,6 +88,14 @@ function presentationMetrics(positions) {
   const labels = [...presentation.nodeLabels.values()];
   const labelRouteHits = presentation.routedEdges.filter((route) => routeSamplesHaveLabelCollision(route.samples, labels)).length;
   const labelNear20 = presentation.routedEdges.filter((route) => route.samples.some((point) => labels.some((label) => distanceToRect(point, label) < 20))).length;
+  const routeSupports = presentation.routedEdges.map((route) => {
+    const label = presentation.relationLabels.get(route.id);
+    const width = label?.width ?? 48;
+    const length = route.samples.slice(1).reduce((total, point, index) => total + Math.hypot(point.x - route.samples[index].x, point.y - route.samples[index].y), 0);
+    const minimumUsableLength = width * 4;
+    return { id: route.id, length, width, shortfall: Math.max(0, minimumUsableLength - length) };
+  });
+  const labelSupportPenalty = routeSupports.reduce((total, route) => total + (route.shortfall / 24) ** 2 * 250, 0);
   let labelOverlap = 0;
   for (let left = 0; left < labels.length; left += 1) for (let right = left + 1; right < labels.length; right += 1) {
     if (Math.abs(labels[left].x - labels[right].x) < (labels[left].width + labels[right].width) / 2
@@ -95,12 +103,15 @@ function presentationMetrics(positions) {
   }
   const x = Object.values(positions).map((point) => point.x); const y = Object.values(positions).map((point) => point.y);
   const extent = [Math.max(...x) - Math.min(...x), Math.max(...y) - Math.min(...y)];
+  const aspectRatio = extent[1] === 0 ? Infinity : extent[0] / extent[1];
+  const aspectPenalty = Math.max(0, 1.2 - aspectRatio) ** 2 * 10000;
+  const fitScale = fitGraphView(Object.values(positions), 800, 500).scale;
   const feasibility = nodeFeasibility(positions);
   const crossings = crossingCount(presentation.routedEdges);
   const routeMedian = lengths[Math.floor(lengths.length / 2)]; const routeMax = Math.max(...lengths);
   const score = crossings * 9000 + labelRouteHits * 6000 + labelNear20 * 700 + labelOverlap * 3000
     + routeMedian * 1.5 + routeMax * 0.5 + (extent[0] + extent[1]) * 0.35;
-  return { score, ...feasibility, extent, routeMedian, routeMax, crossings, labelRouteHits, labelNear20, labelOverlap };
+  return { score, ...feasibility, extent, aspectRatio, aspectPenalty, fitScale, routeMedian, routeMax, crossings, labelRouteHits, labelNear20, labelOverlap, labelSupportPenalty };
 }
 
 const baselineAdjacency = new Map(graph.edges.map((edge) => {
@@ -188,10 +199,36 @@ function improveTopology(startPositions) {
   return { positions: current, metrics, adjacency: adjacencyMetrics(current), evaluations, rejectedInfeasible, accepted, sweeps: 2, steps, directionCount: directions.length };
 }
 
+function improveFactor(startPositions, objective, targetIds) {
+  let current = clonePositions(startPositions);
+  let metrics = presentationMetrics(current);
+  let evaluations = 1; let rejectedInfeasible = 0; let rejectedBound = 0; let accepted = 0;
+  const directions = [
+    { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: -1, y: 1 },
+    { x: -1, y: 0 }, { x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 },
+  ];
+  const steps = [18, 9, 6];
+  for (let sweep = 0; sweep < 1; sweep += 1) {
+    for (const id of targetIds) for (const step of steps) for (const direction of directions) {
+      const candidate = clonePositions(current);
+      candidate[id] = { x: candidate[id].x + direction.x * step, y: candidate[id].y + direction.y * step };
+      const displacement = Math.hypot(candidate[id].x - startPositions[id].x, candidate[id].y - startPositions[id].y);
+      if (displacement > 96) { rejectedBound += 1; continue; }
+      const feasibility = nodeFeasibility(candidate);
+      if (feasibility.overlapPairs > 0) { rejectedInfeasible += 1; continue; }
+      const candidateMetrics = presentationMetrics(candidate); evaluations += 1;
+      if (objective(candidateMetrics, candidate) < objective(metrics, current)) { current = candidate; metrics = candidateMetrics; accepted += 1; }
+    }
+  }
+  return { positions: current, metrics, evaluations, rejectedInfeasible, rejectedBound, accepted, sweeps: 1, steps, directionCount: directions.length, maxNodeDisplacement: 96 };
+}
+
 const baseline = presentationMetrics(start);
 const baselineWithAdjacency = { metrics: baseline, adjacency: adjacencyMetrics(start) };
 const result = improve(start);
 const topologyAware = improveTopology(start);
+const labelLengthAware = improveFactor(start, (metrics) => metrics.score + metrics.labelSupportPenalty * 2, graph.nodes.map(({ id }) => id));
+const horizontalCanvasAware = improveFactor(start, (metrics) => metrics.score + metrics.aspectPenalty, graph.nodes.map(({ id }) => id));
 console.log(JSON.stringify({
   contract: "LIAISONSCAPE-PRESENTATION-TOPOLOGY-RELAXATION-v1",
   diagnosticOnly: true,
@@ -205,4 +242,6 @@ console.log(JSON.stringify({
   baseline: { positions: start, ...baselineWithAdjacency },
   presentationAware: result,
   topologyAware,
+  labelLengthAware,
+  horizontalCanvasAware,
 }, null, 2));
