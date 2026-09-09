@@ -69,6 +69,8 @@ export default function App() {
   const [viewportToolbarCollapsed, setViewportToolbarCollapsed] = useState(false);
   const [viewportToolbarPosition, setViewportToolbarPosition] = useState<{ x: number; y: number } | null>(null);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [liveDragPosition, setLiveDragPosition] = useState<{ id: string; position: { x: number; y: number } } | null>(null);
+  const [presentationRevision, setPresentationRevision] = useState(0);
   const [coordinatesDirty, setCoordinatesDirty] = useState(false);
   const adoptedCoordinateEntityIdsRef = useRef<Set<string>>(new Set());
   const [creationMode, setCreationMode] = useState<"entity" | "relation" | null>(null);
@@ -98,6 +100,8 @@ export default function App() {
   const manualRelationLabelAnchors = useRef(new Map<string, ManualRelationLabelAnchor>());
   const manualNodeLabelOffsets = useRef(new Map<string, { x: number; y: number }>());
   const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string; button: number; x: number; y: number; startX: number; startY: number; moved: boolean; startGraphPoint?: { x: number; y: number }; startNodePosition?: { x: number; y: number }; startLabelPosition?: { x: number; y: number }; startCurveOffset?: number; startCurveNormal?: { x: number; y: number }; startControlPoint?: { x: number; y: number }; startGrabFraction?: number; startRouteSamples?: Array<{ x: number; y: number }>; lastDesiredNormalDelta?: number; lastValidOffset?: number; lastValidGain?: number } | null>(null);
+  const pendingNodeDragPositionRef = useRef<{ id: string; position: { x: number; y: number } } | null>(null);
+  const nodeDragFrameRef = useRef<number | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
   const graphRef = useRef<SVGSVGElement>(null);
@@ -341,11 +345,12 @@ export default function App() {
       previousAutomaticRoutes: new Map(previousAutomaticRoutes.current),
       draggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
       activelyDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
+      feedbackEnabled: dragRef.current?.kind !== "node",
     });
     const completedAt = performance.now();
     publishPresentationTiming({ startedAt, completedAt, durationMs: completedAt - startedAt });
     return result;
-  }, [edgeCurveOffsets, graph, manualLabelRevision, positions, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+  }, [edgeCurveOffsets, graph, manualLabelRevision, positions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {
@@ -918,7 +923,30 @@ export default function App() {
     </div>
   );
 
-  function nodePosition(node: GraphNode) { return positions[node.id] ?? node; }
+  function nodePosition(node: GraphNode) {
+    return liveDragPosition?.id === node.id ? liveDragPosition.position : positions[node.id] ?? node;
+  }
+  function commitPendingNodeDragPosition() {
+    nodeDragFrameRef.current = null;
+    const pending = pendingNodeDragPositionRef.current;
+    pendingNodeDragPositionRef.current = null;
+    if (!pending) return;
+    setPositions((value) => ({ ...value, [pending.id]: pending.position }));
+  }
+  function queueNodeDragPosition(id: string, position: { x: number; y: number }) {
+    const pending = { id, position };
+    pendingNodeDragPositionRef.current = pending;
+    setLiveDragPosition(pending);
+    if (nodeDragFrameRef.current === null) nodeDragFrameRef.current = window.requestAnimationFrame(commitPendingNodeDragPosition);
+  }
+  function flushNodeDragPosition() {
+    if (nodeDragFrameRef.current !== null) window.cancelAnimationFrame(nodeDragFrameRef.current);
+    nodeDragFrameRef.current = null;
+    const pending = pendingNodeDragPositionRef.current;
+    pendingNodeDragPositionRef.current = null;
+    if (pending) setPositions((value) => ({ ...value, [pending.id]: pending.position }));
+    setLiveDragPosition(null);
+  }
   function graphPointForPointer(clientX: number, clientY: number) {
     const svg = graphRef.current;
     if (!svg) return null;
@@ -1117,7 +1145,7 @@ export default function App() {
       publishDragPointerProcessing({ nodeId: drag.id, eventTimeStamp: event.timeStamp, processedAt: performance.now(), clientX: event.clientX, clientY: event.clientY });
       setCoordinatesDirty(true);
       adoptedCoordinateEntityIdsRef.current.add(drag.id!);
-      setPositions((value) => ({ ...value, [drag.id!]: { ...drag.startNodePosition!, x: drag.startNodePosition!.x + currentPoint.x - drag.startGraphPoint!.x, y: drag.startNodePosition!.y + currentPoint.y - drag.startGraphPoint!.y } }));
+      queueNodeDragPosition(drag.id, { x: drag.startNodePosition.x + currentPoint.x - drag.startGraphPoint.x, y: drag.startNodePosition.y + currentPoint.y - drag.startGraphPoint.y });
     }
     else if (drag.kind === "node-label" && drag.id && moved) {
       const node = nodeMap.get(drag.id);
@@ -1280,6 +1308,10 @@ export default function App() {
       dragRef.current = null;
       pinchRef.current = null;
       return;
+    }
+    if (drag?.kind === "node" && drag.moved) {
+      flushNodeDragPosition();
+      setPresentationRevision((value) => value + 1);
     }
     pointersRef.current.delete(event.pointerId);
     pinchRef.current = null;
@@ -1797,7 +1829,7 @@ export default function App() {
                   </g>
                 </g>;
               })}
-              {displayedNodes.map((node) => { const position = nodePosition(node); return (
+              {displayedNodes.map((node) => { const position = nodePosition(node); const presentationPosition = positions[node.id] ?? node; return (
                  <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}${selectedId === node.id || hoveredEntityId === node.id || relationCreationPreview?.sourceId === node.id ? " handle-visible" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onPointerEnter={(event) => { if (event.pointerType === "mouse") setHoveredEntityId(node.id); }} onPointerLeave={(event) => { if (event.pointerType === "mouse") setHoveredEntityId((value) => value === node.id ? null : value); }} onContextMenu={(event) => openObjectContextFromPointer("entity", node.id, event)} onPointerDown={(event) => { event.stopPropagation(); if (event.pointerType === "mouse" && event.button !== 0) return; setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
                   <rect className="connection-handle-corridor" x="24" y="4" width="20" height="28" onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }} />
                   <circle className="connection-hit-target" cx="34" cy="16" r="12" onPointerDown={(event) => startRelationCreation(event, node.id)} />
@@ -1817,8 +1849,8 @@ export default function App() {
                     const descriptionLines = node.description.trim()
                       ? wrapNodeLabel(truncateNodeText(node.description, 28), 20)
                       : [];
-                    const offsetX = placement.x - position.x;
-                    const offsetY = placement.y - position.y;
+                    const offsetX = placement.x - presentationPosition.x;
+                    const offsetY = placement.y - presentationPosition.y;
                     const labelDistance = Math.max(1, Math.hypot(offsetX, offsetY));
                     const directionX = offsetX / labelDistance;
                     const directionY = offsetY / labelDistance;

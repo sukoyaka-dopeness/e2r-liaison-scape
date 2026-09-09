@@ -178,6 +178,39 @@ timing, it remains unresolved rather than being attributed to Product lag.
   locality questions, not evidence that the current pointer-tracking path is
   lagging.
 
+## Responsiveness correction candidate
+
+The bounded correction keeps the existing route/label derivation semantics but
+changes the scheduling boundary for an active Node drag:
+
+- the latest dragged Node position is kept in a lightweight live-drag state so
+  the Node visual can follow the pointer without waiting for route derivation;
+- route and label `positions` are updated at most once per animation frame,
+  with only the latest pending position retained;
+- the bounded final-label feedback pass is disabled during the active Node
+  drag, avoiding a second expensive derivation for the same pointer update;
+- the pending position is flushed on pointer end, and a revision-triggered
+  render runs the full feedback pass after `dragRef` is cleared.
+
+The live Node and its labels use the same drag delta, so deferred route/label
+geometry does not create a label jump. Routes can be at most one frame behind
+the live Node during the drag; the drag-end flush prevents stale final geometry
+or a snap-back from becoming authoritative. Manual route and label authority
+remain unchanged.
+
+The user-provided pre-correction physical run was `30` pointermoves,
+`52` presentation computations, `72.9 ms` presentation median, `12.0 / 24.0 /
+29.4 px` pointer-to-node lag median/p95/max, `179.3 ms` pointer-to-render p95,
+and `26` Long Tasks around `152–192 ms`. A bounded CUA smoke run after the
+correction produced `8` pointermoves and `12` recorded presentation samples;
+Saturn V measured `541.4 / 750.6 / 789.7 ms` presentation median/p95/max,
+`5.0 / 5.0 / 10.0 px` pointer-to-node lag median/p95/max, and `1.1 ms`
+pointer-to-render p95. The CUA run also observed very large host/runtime Long
+Tasks, so it is not a controlled numerical A/B against the user run. Its value
+here is the actual Product smoke result: the Node followed the gesture and no
+obvious visible freeze, route hysteresis, label jump, or drag-end snap-back was
+seen. User inspection remains required before adoption.
+
 ## Decision
 
 The candidate is retained as an inspection candidate, not selected for final
@@ -185,8 +218,9 @@ spacing/routing adoption. It demonstrates that some remote churn is caused by
 route-order continuity rather than direct obstacle safety, while the NASA
 crossing increase demonstrates that continuity must remain conditional.
 
-The candidate remains an inspection candidate, not a final adoption. The next
-useful checkpoint is user comparison of the actual Product behavior:
+The responsiveness change is a bounded local candidate, not a final Product
+adoption. The next useful checkpoint is user comparison of the actual Product
+behavior:
 
 - whether the preserved remote routes feel more stable during Saturn V drag;
 - whether the remaining flip/crossing in NASA drag is visually harmful;
@@ -194,19 +228,18 @@ useful checkpoint is user comparison of the actual Product behavior:
 - whether any responsiveness difference is noticeable during repeated drag.
 
 The timing instrumentation is intentionally dev-only and diagnostic. No
-drag-time coalescing, alternate presentation path, or Product responsiveness
-correction is selected from these measurements yet. The next useful diagnostic
-is a controlled same-browser comparison with a minimal instrumentation build
-and a browser/runtime trace that can separate event injection from synchronous
-presentation work. Only after that comparison, followed by actual Product
-visual inspection, should a bounded correction be considered.
+additional drag-time coalescing policy or locality redesign is selected yet.
+The current correction must first pass user inspection for pointer feel and
+visual continuity. A controlled same-browser comparison remains useful if the
+user still perceives lag, especially one that separates event injection from
+synchronous presentation work.
 
 Cross-sample audit, crossing-aware placement, parallel/self-loop redesign,
 spacing selection, and governed Fresh execution remain out of scope.
 
 ## Validation and boundaries
 
-- `npm test`: `315/315 PASS`.
+- `npm test`: `316/316 PASS`.
 - lint: PASS.
 - build: PASS.
 - `git diff --check`: PASS.

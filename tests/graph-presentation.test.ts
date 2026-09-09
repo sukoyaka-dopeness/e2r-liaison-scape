@@ -160,6 +160,24 @@ test("bounded presentation feedback uses final Node-label bounds exactly once", 
   );
 });
 
+test("active Node drag can defer bounded feedback until drag end", () => {
+  const provisional = [{ x: 100, y: -12, width: 80, height: 24, directionX: 0, directionY: 1 }];
+  const base = input({ provisionalNodeLabels: provisional });
+  const activeDrag = deriveBoundedAutomaticPresentation({
+    ...base,
+    feedbackEnabled: false,
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+  });
+  assert.equal(activeDrag.feedbackApplied, false);
+  assert.deepEqual(
+    activeDrag.routedEdges,
+    deriveAutomaticRoutes({ ...base, provisionalNodeLabels: provisional }),
+  );
+});
+
 test("bounded feedback preserves manual curve authority", () => {
   const base = input({ edgeCurveOffsets: { ab: 54 } });
   const presentation = deriveBoundedAutomaticPresentation({

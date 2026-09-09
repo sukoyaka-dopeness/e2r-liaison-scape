@@ -252,6 +252,7 @@ export type BoundedAutomaticPresentationInput = {
   previousAutomaticRoutes?: ReadonlyMap<string, DerivedAutomaticRoute>;
   draggedNodeId?: string;
   activelyDraggedNodeId?: string;
+  feedbackEnabled?: boolean;
 };
 
 export type BoundedAutomaticPresentation = {
@@ -305,6 +306,7 @@ export function deriveBoundedAutomaticPresentation({
   previousAutomaticRoutes,
   draggedNodeId,
   activelyDraggedNodeId,
+  feedbackEnabled = true,
 }: BoundedAutomaticPresentationInput): BoundedAutomaticPresentation {
   const nodes = graph.nodes.map((node) => positions[node.id] ?? node);
   // The label-free counterfactual depends only on graph geometry and manual
@@ -361,6 +363,6 @@ export function deriveBoundedAutomaticPresentation({
     .filter((label): label is LabelRect => label !== undefined);
   const feedbackApplied = finalRouteLabels.length === graph.nodes.length
     && finalRouteLabels.some((label, index) => labelGeometryMoved(provisionalNodeLabels[index], label));
-  const result = feedbackApplied ? derivePass(finalRouteLabels) : first;
-  return { ...result, feedbackApplied };
+  const result = feedbackEnabled && feedbackApplied ? derivePass(finalRouteLabels) : first;
+  return { ...result, feedbackApplied: feedbackEnabled && feedbackApplied };
 }
