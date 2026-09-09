@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "entities": [
+    {
+      "id": "source",
+      "name": "Source A",
+      "description": "Control-route source.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [{ "spaceId": "liaisonscape-graph", "values": { "x": 0, "y": 0 } }]
+        }
+      }
+    },
+    {
+      "id": "target",
+      "name": "Target B",
+      "description": "Control-route target.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [{ "spaceId": "liaisonscape-graph", "values": { "x": 400, "y": 0 } }]
+        }
+      }
+    },
+    {
+      "id": "obstacle",
+      "name": "Temporary obstacle",
+      "description": "Drag across the A-to-B route, then return exactly to this position.",
+      "extensions": {
+        "draft.github.sukoyaka-dopeness.coordinate": {
+          "coordinates": [{ "spaceId": "liaisonscape-graph", "values": { "x": 200, "y": 180 } }]
+        }
+      }
+    }
+  ],
+  "relations": [
+    { "id": "control-route", "name": "control route", "sourceId": "source", "targetId": "target" }
+  ],
+  "events": [],
+  "extensions": {
+    "metadata": { "datasetId": "liaisonscape-low-density-route-recovery-control", "title": "Low-density route-recovery control" },
+    "draft.github.sukoyaka-dopeness.coordinate": {
+      "specVersion": "0.1.0",
+      "spaces": [{
+        "id": "liaisonscape-graph",
+        "name": "LiaisonScape graph coordinates",
+        "kind": "cartesian-2d",
+        "components": {
+          "x": { "unit": "liaisonscape-user-unit", "positiveDirection": "display-right" },
+          "y": { "unit": "liaisonscape-user-unit", "positiveDirection": "display-down" }
+        }
+      }]
+    },
+    "draft.github.sukoyaka-dopeness.specification": {
+      "specVersion": "0.1.0",
+      "uses": [
+        { "extension": "metadata", "version": "1.0.0" },
+        { "extension": "draft.github.sukoyaka-dopeness.coordinate", "version": "0.1.0" }
+      ]
+    }
+  }
+}

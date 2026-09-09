@@ -26,6 +26,38 @@ function wideApolloSnapshot() {
   return { nodes: graph.nodes, edges, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels, routedEdges, relationLabels: [...relationLabels], nodeLabels: [...nodeLabels] };
 }
 
+test("low-density recovery control isolates a single temporary obstacle", () => {
+  const dataset = JSON.parse(readFileSync("experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-low-density.en.e2r.json", "utf8"));
+  const graphBase = buildEntityGraph(dataset);
+  const relationNames = new Map(dataset.relations.map((relation) => [relation.id, typeof relation.name === "string" ? relation.name : ""]));
+  const graph = { nodes: graphBase.nodes, edges: graphBase.edges.map((edge) => ({ ...edge, label: relationNames.get(edge.id) ?? "" })) };
+  const initialPositions = getStoredCoordinates(dataset);
+  const initial = deriveAutomaticRoutes({ graph, positions: initialPositions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels: [] });
+  const rerouted = deriveAutomaticRoutes({
+    graph,
+    positions: { ...initialPositions, obstacle: { x: 200, y: 0 } },
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: [],
+    previousAutomaticRoutes: new Map(initial.map((route) => [route.id, route])),
+    draggedNodeId: "obstacle",
+  });
+  const returned = deriveAutomaticRoutes({
+    graph,
+    positions: initialPositions,
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: [],
+    previousAutomaticRoutes: new Map(rerouted.map((route) => [route.id, route])),
+    draggedNodeId: "obstacle",
+  });
+  assert.equal(graph.nodes.length, 3);
+  assert.equal(graph.edges.length, 1);
+  assert.match(initial[0]!.path, / L /u);
+  assert.match(rerouted[0]!.path, / Q /u);
+  assert.equal(returned[0]!.path, initial[0]!.path);
+});
+
 test("wide Apollo routing diagnostic isolates provisional-label curvature", () => {
   const diagnostic = diagnoseRoute(wideApolloSnapshot(), "entity-10");
   assert.ok(diagnostic);
