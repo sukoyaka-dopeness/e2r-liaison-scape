@@ -1,5 +1,5 @@
 import type { GraphNode } from "./dataset.ts";
-import type { DerivedAutomaticRoute, RoutingGraphEdge, SelfLoopOverride } from "./graph-presentation.ts";
+import type { AutomaticRouteDecision, DerivedAutomaticRoute, RoutingGraphEdge, SelfLoopOverride } from "./graph-presentation.ts";
 import type { LabelRect, Point } from "./viewport.ts";
 
 /**
@@ -8,6 +8,16 @@ import type { LabelRect, Point } from "./viewport.ts";
  * install a sink, so this has no Product UI or persistence behavior.
  */
 export type PresentationDiagnosticSnapshot = {
+  /**
+   * Render-phase state from the actual Product. This is development-only
+   * observation metadata: it is neither persisted nor consumed by routing.
+   */
+  phase: "idle" | "node-drag-active" | "node-drag-finalizing";
+  draggedNodeId?: string;
+  liveDragPosition: { id: string; position: Point } | null;
+  presentationRevision: number;
+  feedbackApplied: boolean;
+  routeDecisions: readonly AutomaticRouteDecision[];
   nodes: readonly GraphNode[];
   edges: readonly RoutingGraphEdge[];
   positions: Readonly<Record<string, Point>>;

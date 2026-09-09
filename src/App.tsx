@@ -31,7 +31,7 @@ import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
 import { placeInitialEntities } from "./entity-placement";
 import { settleInitialPlacement, solveAutoLayout } from "./auto-layout";
-import { deriveBoundedAutomaticPresentation, type DerivedAutomaticRoute } from "./graph-presentation";
+import { deriveBoundedAutomaticPresentation, type AutomaticRouteDecision, type DerivedAutomaticRoute } from "./graph-presentation";
 import { publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming } from "./presentation-diagnostics";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
@@ -325,6 +325,13 @@ export default function App() {
       return manual ? { ...automatic, x: position.x + manual.x, y: position.y + manual.y } : automatic;
     }),
   [graph.nodes, positions]);
+  const activeNodeDrag = dragRef.current?.kind === "node";
+  const presentationDraggedNodeId = dragRef.current?.kind === "node" ? dragRef.current.id : finalizingNodeDragIdRef.current ?? undefined;
+  const presentationPhase = activeNodeDrag
+    ? "node-drag-active"
+    : presentationDraggedNodeId !== undefined
+      ? "node-drag-finalizing"
+      : "idle";
   const presentation = useMemo(() => {
     const startedAt = performance.now();
     let presentationInputId = presentationInputIdentityRef.current.map.get(positions);
@@ -333,8 +340,7 @@ export default function App() {
       presentationInputIdentityRef.current.nextId += 1;
       presentationInputIdentityRef.current.map.set(positions, presentationInputId);
     }
-    const activeNodeDrag = dragRef.current?.kind === "node";
-    const draggedNodeId = dragRef.current?.kind === "node" ? dragRef.current.id : finalizingNodeDragIdRef.current ?? undefined;
+    const draggedNodeId = presentationDraggedNodeId;
     const edges = graph.edges.map((edge) => ({
       ...edge,
       label: (() => {
@@ -342,6 +348,7 @@ export default function App() {
         return typeof relation?.name === "string" ? relation.name : "";
       })(),
     }));
+    const routeDecisions: AutomaticRouteDecision[] | null = import.meta.env.DEV ? [] : null;
     const result = deriveBoundedAutomaticPresentation({
       graph: { nodes: graph.nodes, edges },
       positions,
@@ -356,6 +363,7 @@ export default function App() {
       draggedNodeId,
       activelyDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
       feedbackEnabled: dragRef.current?.kind !== "node",
+      routeDecisionSink: routeDecisions === null ? undefined : (decision) => routeDecisions.push(decision),
     });
     const completedAt = performance.now();
     publishPresentationTiming({
@@ -367,8 +375,8 @@ export default function App() {
       activeNodeDrag,
       feedbackApplied: result.feedbackApplied,
     });
-    return result;
-  }, [edgeCurveOffsets, graph, manualLabelRevision, positions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+    return { ...result, routeDecisions: routeDecisions ?? [] };
+  }, [activeNodeDrag, edgeCurveOffsets, graph, manualLabelRevision, positions, presentationDraggedNodeId, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {
@@ -393,11 +401,19 @@ export default function App() {
     previousNodeLabelPlacements.current = new Map(nodeLabelPlacements);
     previousEdgeLabelPlacements.current = new Map(edgeLabelPlacements);
     previousAutomaticRoutes.current = new Map(routedEdges.map((route) => [route.id, route]));
-    finalizingNodeDragIdRef.current = null;
-  }, [edgeLabelPlacements, nodeLabelPlacements, routedEdges]);
+    // A queued active-drag render may commit after pointer-up. It must not
+    // consume the next finalizing presentation's continuity identity.
+    if (presentationPhase === "node-drag-finalizing") finalizingNodeDragIdRef.current = null;
+  }, [edgeLabelPlacements, nodeLabelPlacements, presentationPhase, routedEdges]);
   useEffect(() => {
     if (!dataset) return;
     publishPresentationDiagnostic({
+      phase: presentationPhase,
+      draggedNodeId: presentationDraggedNodeId,
+      liveDragPosition,
+      presentationRevision,
+      feedbackApplied: presentation.feedbackApplied,
+      routeDecisions: presentation.routeDecisions,
       nodes: graph.nodes,
       edges: routedEdges.map(({ id, sourceId, targetId, parallelIndex, parallelCount, label }) => ({ id, sourceId, targetId, parallelIndex, parallelCount, label })),
       positions,
@@ -408,7 +424,7 @@ export default function App() {
       relationLabels: Array.from(edgeLabelPlacements.entries()),
       nodeLabels: Array.from(nodeLabelPlacements.entries()),
     });
-  }, [dataset, edgeCurveOffsets, edgeLabelPlacements, graph.nodes, nodeLabelPlacements, positions, provisionalNodeLabels, routedEdges, selfLoopOverrides]);
+  }, [dataset, edgeCurveOffsets, edgeLabelPlacements, graph.nodes, liveDragPosition, nodeLabelPlacements, positions, presentationDraggedNodeId, presentationPhase, presentationRevision, provisionalNodeLabels, routedEdges, selfLoopOverrides, presentation.feedbackApplied]);
 
   function resetPreviousLabelPlacements() {
     previousNodeLabelPlacements.current.clear();
@@ -1330,6 +1346,10 @@ export default function App() {
     }
     if (drag?.kind === "node" && drag.moved) {
       finalizingNodeDragIdRef.current = drag.id ?? null;
+      // The final position must derive as a finalizing presentation, rather
+      // than as a still-active drag. React may synchronously render one of
+      // the state updates below before this handler returns.
+      dragRef.current = null;
       flushNodeDragPosition();
       setPresentationRevision((value) => value + 1);
     }

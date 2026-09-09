@@ -372,6 +372,20 @@ scoring, curvature limits, or crossing-aware placement.
 Cross-sample audit, crossing-aware placement, parallel/self-loop redesign,
 spacing selection, and governed Fresh execution remain out of scope.
 
+## Pointer-up locality follow-up
+
+Development-only trace now distinguishes queued active, finalizing, and idle
+presentations, their live/routing positions, label movement, and the exact
+continuity decision. A queued active-drag effect could erase the finalization
+identity before it was consumed; final drag state now clears before the final
+position flush, and the identity clears only after finalization. On actual
+Apollo 11 CUA traces, NASA's Hornet-Columbia route changed at finalization
+because final label collision safety rejected reuse (and another route also
+had an occupied-path conflict). Saturn's Hornet-Columbia prior route was
+reused, so its observed difference originated during active propagation. No
+unconditional remote-route freeze is selected; label-placement alternatives
+remain a separate experiment.
+
 ## Validation and boundaries
 
 - `npm test`: `316/316 PASS`.

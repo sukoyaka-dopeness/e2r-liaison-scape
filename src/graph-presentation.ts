@@ -4,6 +4,21 @@ import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, r
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
+export type AutomaticRouteDecision = {
+  edgeId: string;
+  pass: "label-free" | "first" | "feedback";
+  processingIndex: number;
+  usedPreviousRoute: boolean;
+  continuity: {
+    previousRoutePresent: boolean;
+    draggedNodePresent: boolean;
+    isIncident: boolean;
+    isEligibleShape: boolean;
+    priorRouteHasNodeInfluence: boolean;
+    priorRouteHasOccupiedPathConflict: boolean;
+    priorRouteHasLabelCollision: boolean;
+  };
+};
 
 export type AutomaticRoutingInput = {
   graph: { nodes: readonly GraphNode[]; edges: readonly RoutingGraphEdge[] };
@@ -13,6 +28,8 @@ export type AutomaticRoutingInput = {
   provisionalNodeLabels: readonly LabelRect[];
   previousAutomaticRoutes?: ReadonlyMap<string, DerivedAutomaticRoute>;
   draggedNodeId?: string;
+  routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
+  routeDecisionPass?: AutomaticRouteDecision["pass"];
 };
 
 export type DerivedAutomaticRoute = RoutingGraphEdge & Pick<
@@ -29,6 +46,8 @@ export function deriveAutomaticRoutes({
   provisionalNodeLabels,
   previousAutomaticRoutes,
   draggedNodeId,
+  routeDecisionSink,
+  routeDecisionPass = "first",
 }: AutomaticRoutingInput): DerivedAutomaticRoute[] {
   const occupiedPaths: Array<Array<Point>> = [];
   const overlapCounts = new Map<string, number>();
@@ -50,7 +69,7 @@ export function deriveAutomaticRoutes({
   }).sort(compareRoutingPriority);
   const automaticOrdinaryEdges = graph.edges.filter((edge) => !fixedEdges.some(({ id }) => id === edge.id))
     .sort(compareRoutingPriority);
-  for (const edge of [...fixedEdges, ...automaticOrdinaryEdges]) {
+  for (const [processingIndex, edge] of [...fixedEdges, ...automaticOrdinaryEdges].entries()) {
     const canonicalPhysicalSideSign = edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1;
     const sourceNode = nodeMap.get(edge.sourceId)!;
     const targetNode = nodeMap.get(edge.targetId)!;
@@ -80,19 +99,42 @@ export function deriveAutomaticRoutes({
       canonicalPhysicalSideSign,
     );
     const previousRoute = previousAutomaticRoutes?.get(edge.id);
-    const canPreservePreviousRoute = previousRoute !== undefined
-      && draggedNodeId !== undefined
-      && edge.sourceId !== draggedNodeId
-      && edge.targetId !== draggedNodeId
-      && edge.sourceId !== edge.targetId
+    const isIncident = edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId;
+    const isEligibleShape = edge.sourceId !== edge.targetId
       && edge.parallelCount === 1
       && edgeCurveOffsets[edge.id] === undefined
+      && previousRoute !== undefined
       && previousRoute.samples.length > 1
-      && route.samples.length > 1
-      && !routeSamplesHaveNodeInfluence(previousRoute.samples, obstacles)
-      && !routeSamplesHaveOccupiedPathConflict(previousRoute.samples, occupiedPaths)
-      && !routeSamplesHaveLabelCollision(previousRoute.samples, routeLabelRects);
+      && route.samples.length > 1;
+    const continuityCandidate = previousRoute !== undefined
+      && draggedNodeId !== undefined
+      && !isIncident
+      && isEligibleShape;
+    // Keep the existing lazy safety work: ordinary presentation without a
+    // continuity candidate does not pay these diagnostic-observable checks.
+    const priorRouteHasNodeInfluence = continuityCandidate && routeSamplesHaveNodeInfluence(previousRoute.samples, obstacles);
+    const priorRouteHasOccupiedPathConflict = continuityCandidate && routeSamplesHaveOccupiedPathConflict(previousRoute.samples, occupiedPaths);
+    const priorRouteHasLabelCollision = continuityCandidate && routeSamplesHaveLabelCollision(previousRoute.samples, routeLabelRects);
+    const canPreservePreviousRoute = continuityCandidate
+      && !priorRouteHasNodeInfluence
+      && !priorRouteHasOccupiedPathConflict
+      && !priorRouteHasLabelCollision;
     const selectedRoute = canPreservePreviousRoute ? previousRoute : route;
+    routeDecisionSink?.({
+      edgeId: edge.id,
+      pass: routeDecisionPass,
+      processingIndex,
+      usedPreviousRoute: canPreservePreviousRoute,
+      continuity: {
+        previousRoutePresent: previousRoute !== undefined,
+        draggedNodePresent: draggedNodeId !== undefined,
+        isIncident,
+        isEligibleShape,
+        priorRouteHasNodeInfluence,
+        priorRouteHasOccupiedPathConflict,
+        priorRouteHasLabelCollision,
+      },
+    });
     const routeWithoutObstacles = edge.parallelCount > 1
       && edge.sourceId !== edge.targetId
       && !isOverlappingPair
@@ -253,6 +295,7 @@ export type BoundedAutomaticPresentationInput = {
   draggedNodeId?: string;
   activelyDraggedNodeId?: string;
   feedbackEnabled?: boolean;
+  routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
 };
 
 export type BoundedAutomaticPresentation = {
@@ -307,6 +350,7 @@ export function deriveBoundedAutomaticPresentation({
   draggedNodeId,
   activelyDraggedNodeId,
   feedbackEnabled = true,
+  routeDecisionSink,
 }: BoundedAutomaticPresentationInput): BoundedAutomaticPresentation {
   const nodes = graph.nodes.map((node) => positions[node.id] ?? node);
   // The label-free counterfactual depends only on graph geometry and manual
@@ -319,8 +363,10 @@ export function deriveBoundedAutomaticPresentation({
     edgeCurveOffsets,
     selfLoopOverrides,
     provisionalNodeLabels: [],
+    routeDecisionSink,
+    routeDecisionPass: "label-free",
   });
-  const derivePass = (routeLabels: readonly LabelRect[]) => {
+  const derivePass = (routeLabels: readonly LabelRect[], routeDecisionPass: AutomaticRouteDecision["pass"]) => {
     const routedEdges = deriveAutomaticRoutes({
       graph,
       positions,
@@ -329,6 +375,8 @@ export function deriveBoundedAutomaticPresentation({
       provisionalNodeLabels: routeLabels,
       previousAutomaticRoutes,
       draggedNodeId,
+      routeDecisionSink,
+      routeDecisionPass,
     });
     const routeById = new Map(routesWithoutNodeLabels.map((route) => [route.id, route]));
     const yieldingRoutes: RouteYieldPath[] = routedEdges.flatMap((route) => {
@@ -357,12 +405,12 @@ export function deriveBoundedAutomaticPresentation({
     return { routedEdges, relationLabels, nodeLabels };
   };
 
-  const first = derivePass(provisionalNodeLabels);
+  const first = derivePass(provisionalNodeLabels, "first");
   const finalRouteLabels = graph.nodes
     .map((node, index) => first.nodeLabels.get(node.id) ?? provisionalNodeLabels[index])
     .filter((label): label is LabelRect => label !== undefined);
   const feedbackApplied = finalRouteLabels.length === graph.nodes.length
     && finalRouteLabels.some((label, index) => labelGeometryMoved(provisionalNodeLabels[index], label));
-  const result = feedbackEnabled && feedbackApplied ? derivePass(finalRouteLabels) : first;
+  const result = feedbackEnabled && feedbackApplied ? derivePass(finalRouteLabels, "feedback") : first;
   return { ...result, feedbackApplied: feedbackEnabled && feedbackApplied };
 }

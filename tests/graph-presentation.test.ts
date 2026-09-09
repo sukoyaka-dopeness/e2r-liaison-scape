@@ -91,6 +91,36 @@ test("active local Node drag preserves a safe previous non-incident route", () =
   assert.deepEqual(moved.find(({ id }) => id === "cd"), initial.find(({ id }) => id === "cd"));
 });
 
+test("route decision trace records safe non-incident continuity without changing routing", () => {
+  const graph = {
+    nodes: [
+      { id: "a", label: "A", description: "", x: 0, y: 0 },
+      { id: "b", label: "B", description: "", x: 120, y: 0 },
+      { id: "c", label: "C", description: "", x: 240, y: 200 },
+      { id: "d", label: "D", description: "", x: 440, y: 200 },
+    ],
+    edges: [
+      { id: "ab", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1, label: "AB" },
+      { id: "cd", sourceId: "c", targetId: "d", parallelIndex: 0, parallelCount: 1, label: "CD" },
+    ],
+  };
+  const positions = { a: { x: 0, y: 0 }, b: { x: 120, y: 0 }, c: { x: 240, y: 200 }, d: { x: 440, y: 200 } };
+  const initial = deriveAutomaticRoutes({ graph, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels: [] });
+  const decisions: Array<{ edgeId: string; usedPreviousRoute: boolean }> = [];
+  const moved = deriveAutomaticRoutes({
+    graph,
+    positions: { ...positions, a: { x: 0, y: 40 } },
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: [],
+    previousAutomaticRoutes: new Map(initial.map((route) => [route.id, route])),
+    draggedNodeId: "a",
+    routeDecisionSink: (decision) => decisions.push(decision),
+  });
+  assert.deepEqual(moved.find(({ id }) => id === "cd"), initial.find(({ id }) => id === "cd"));
+  assert.equal(decisions.find(({ edgeId }) => edgeId === "cd")?.usedPreviousRoute, true);
+});
+
 test("finalizing Node drag preserves a safe previous non-incident route", () => {
   const graph = {
     nodes: [
