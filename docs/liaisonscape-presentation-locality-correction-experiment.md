@@ -481,3 +481,114 @@ from avoidable presentation arbitration churn without changing persisted data.
 - Fresh10/Fresh11/Fresh12 historical evidence and the canonical Fresh12 review result: unchanged.
 - New governed Fresh lineage: NOT STARTED.
 - Push, tag, release, deploy, and publication: NOT PERFORMED.
+
+## Incident-route drag-time curvature diagnosis
+
+The next bounded checkpoint investigates a different locality boundary: an
+incident automatic route can be visibly curved during an active Node drag and
+return to a straighter route at pointer-up. This is not treated as permission
+to freeze incident routes. An incident route must follow changed endpoint
+geometry and may still need to avoid Nodes, labels, or occupied paths.
+
+### Direct implementation trace
+
+`deriveBoundedAutomaticPresentation()` always derives the active `first` pass
+with `feedbackEnabled = false` while a Node is being dragged. At pointer-up,
+the finalizing pass enables the existing feedback pass. Automatic continuity
+reuse is deliberately limited to non-incident edges (`!isIncident`), because a
+route whose endpoint moved cannot reuse its previous samples unchanged. The
+incident route therefore re-enters `routeGraphEdge()` candidate scoring on each
+active geometry update. That scorer evaluates the straight candidate and
+offset candidates using Node influence, earlier occupied paths, and the label
+rectangles supplied by the current pass.
+
+This establishes the following boundary as PROVEN:
+
+```text
+active Node position
+  -> provisional labels
+  -> feedback deferred
+  -> incident route candidate scoring
+
+pointer-up / finalizing
+  -> final label placement
+  -> feedback pass enabled
+  -> incident route candidate scoring again
+```
+
+The active and final passes therefore do not necessarily score the same
+candidate set, even when the endpoint movement is small. The current code has
+no automatic incident-route offset hysteresis or continuity preference; the
+previous-route continuity mechanism cannot be applied verbatim to a changed
+endpoint.
+
+### Actual Product trace
+
+In the production-like Apollo 11 inspection surface at spacing 220, a bounded
+Saturn V drag (47 screen pixels, 8 pointer moves) recorded:
+
+| Route | Active drag-time | Pointer-up finalizing | Interpretation |
+| --- | --- | --- | --- |
+| `entity-8` NASA -> Saturn V | curved, length 339.3 | straight, length 263.5 | active-only curvature |
+| `entity-10` Saturn V -> Columbia | straight, length 98.5 | straight, length 97.3 | no meaningful curvature transition |
+
+The active pass reported `feedbackApplied = false`; the finalizing pass used
+the feedback-enabled presentation. The same trace had no pointer-down route
+jump and no non-incident route in the pointer-up delta. It did record one
+active remote transition (`entity-6`) caused by a newly colliding Saturn V
+label; that is a separate label-safety propagation and not evidence that the
+incident curvature itself should be suppressed.
+
+The same actual surface showed pointer-to-render around 1.0 ms median and no
+visible node snap-back in this gesture. The new development-only report now
+prints route-shape transitions for every changed route, including incident
+versus remote classification and sampled route length. This makes the
+active-to-final shape change observable without changing Product persistence.
+
+### Causal classification
+
+PROVEN:
+
+- Active and final presentations intentionally use different feedback
+  schedules.
+- Incident routes are recomputed rather than continuity-reused when their
+  endpoint moves.
+- `routeGraphEdge()` selects among straight and curved offset candidates using
+  the pass's label rectangles and previously occupied paths.
+- The observed `entity-8` active curve disappears when the final feedback
+  pass selects the straight route for the same inspected gesture.
+
+STRONGLY SUPPORTED:
+
+- The active-only curvature is caused by the interaction between provisional
+  label geometry and incident candidate scoring, rather than by pointer lag or
+  a pointer-up state-only rerender.
+- A bounded remedy should target active incident candidate stability or label
+  input consistency, while preserving genuine obstacle-driven rerouting.
+
+UNRESOLVED:
+
+- At the exact active snapshot, whether the winning curved candidate was
+  forced primarily by the dragged Saturn V label, another label, an occupied
+  path, or their combined score. The current route decision trace explains
+  continuity rejection but does not expose every candidate score for incident
+  edges.
+- Whether the best correction is a limited active feedback pass, a stable
+  incident-route candidate preference, or a more explicit separation of
+  endpoint-label clearance from route clearance.
+
+No incident-route correction is selected in this diagnostic checkpoint. A
+global straightness preference or unconditional reuse would risk hiding real
+Node/label/path conflicts and would undo the safety boundary established by
+`01ae2c8`.
+
+### Checkpoint state
+
+```text
+01ae2c8 = preserved as USER-INSPECTED ACTIVE-DRAG LOCALITY GOOD SNAPSHOT
+incident-route diagnosis = RECORDED
+incident-route correction = NOT SELECTED
+active candidate scoring experiment = NEXT BOUNDED STEP
+governed Fresh lineage = NOT STARTED
+historical evidence = unchanged
+```

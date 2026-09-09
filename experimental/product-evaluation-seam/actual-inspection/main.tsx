@@ -28,6 +28,12 @@ type RouteTransitionReport = {
   changedNonIncidentRouteIdsDuringActiveDrag: string[];
   changedNodeLabelIds: string[];
   changedRelationLabelIds: string[];
+  routeShapeComparisons: Array<{
+    routeId: string;
+    incident: boolean;
+    from: { curved: boolean; length: number; controlPoint: { x: number; y: number } | null };
+    to: { curved: boolean; length: number; controlPoint: { x: number; y: number } | null };
+  }>;
   continuityBlocks: Array<{ routeId: string; pass: string; processingIndex: number; usedPreviousRoute: boolean; reasons: string[]; blockers: { nodes: string[]; occupiedRoutes: string[]; nodeLabels: string[] } }>;
   dragState: {
     activeRoutingPosition: { x: number; y: number } | null;
@@ -135,6 +141,18 @@ function changedLabelIds(left: readonly [string, { x: number; y: number; width: 
   }).map(([id]) => id);
 }
 
+function routeLength(samples: readonly { x: number; y: number }[]): number {
+  return samples.slice(1).reduce((total, point, index) => total + Math.hypot(point.x - samples[index]!.x, point.y - samples[index]!.y), 0);
+}
+
+function routeShape(route: PresentationDiagnosticSnapshot["routedEdges"][number]) {
+  return {
+    curved: route.path.includes(" Q ") || route.path.includes(" A "),
+    length: routeLength(route.samples),
+    controlPoint: route.controlPoint ? { x: route.controlPoint.x, y: route.controlPoint.y } : null,
+  };
+}
+
 function positionFor(snapshot: PresentationDiagnosticSnapshot, nodeId: string): { x: number; y: number } | null {
   const node = snapshot.nodes.find(({ id }) => id === nodeId);
   return node ? snapshot.positions[nodeId] ?? node : null;
@@ -143,6 +161,8 @@ function positionFor(snapshot: PresentationDiagnosticSnapshot, nodeId: string): 
 function routeTransitionReport(stage: RouteTransitionReport["stage"], from: PresentationDiagnosticSnapshot, to: PresentationDiagnosticSnapshot, nodeId: string, changedNonIncidentRouteIdsDuringActiveDrag: string[]): RouteTransitionReport {
   const changed = changedRouteIds(from, to);
   const edgesById = new Map(to.edges.map((edge) => [edge.id, edge]));
+  const fromRoutes = new Map(from.routedEdges.map((route) => [route.id, route]));
+  const toRoutes = new Map(to.routedEdges.map((route) => [route.id, route]));
   return {
     nodeId,
     stage,
@@ -159,6 +179,17 @@ function routeTransitionReport(stage: RouteTransitionReport["stage"], from: Pres
     changedNonIncidentRouteIdsDuringActiveDrag,
     changedNodeLabelIds: changedLabelIds(from.nodeLabels, to.nodeLabels),
     changedRelationLabelIds: changedLabelIds(from.relationLabels, to.relationLabels),
+    routeShapeComparisons: changed.flatMap((routeId) => {
+      const before = fromRoutes.get(routeId);
+      const after = toRoutes.get(routeId);
+      const edge = edgesById.get(routeId);
+      return before && after && edge ? [{
+        routeId,
+        incident: edge.sourceId === nodeId || edge.targetId === nodeId,
+        from: routeShape(before),
+        to: routeShape(after),
+      }] : [];
+    }),
     continuityBlocks: changed.filter((id) => {
       const edge = edgesById.get(id);
       return edge !== undefined && edge.sourceId !== nodeId && edge.targetId !== nodeId;
@@ -557,6 +588,7 @@ function DragTimingDiagnostics() {
       <li>non-incident changes during active drag: {routeTransition.changedNonIncidentRouteIdsDuringActiveDrag.join(", ") || "none"}</li>
       <li>non-incident continuity blocks: {routeTransition.continuityBlocks.map(({ routeId, pass, processingIndex, usedPreviousRoute, reasons }) => `${routeId} [${pass} #${processingIndex}; previous route ${usedPreviousRoute ? "used" : "not used"}: ${reasons.join(", ") || "no rejected continuity condition"}]`).join("; ") || "none"}</li>
       <li>changed node labels: {routeTransition.changedNodeLabelIds.join(", ") || "none"}; changed relation labels: {routeTransition.changedRelationLabelIds.join(", ") || "none"}</li>
+      <li>route shape transitions: {routeTransition.routeShapeComparisons.map(({ routeId, incident, from, to }) => `${routeId} (${incident ? "incident" : "remote"}) ${from.curved ? "curved" : "straight"} ${format(from.length)} → ${to.curved ? "curved" : "straight"} ${format(to.length)}`).join("; ") || "none"}</li>
     </ul>}
     {report?.remoteTransitions.length ? <details>
       <summary>active-drag remote route transitions ({report.remoteTransitions.length})</summary>
