@@ -300,3 +300,114 @@ test("wide Apollo round trip restores the fresh safe remote route after obstacle
   assert.equal(returnedRoute.path, initialRoute.path);
   assert.equal(decisions.find(({ edgeId }) => edgeId === "entity-6")?.recoveredCurrentRoute, true);
 });
+
+test("finalizing Apollo retains a safe active incident route but rejects an unsafe one", () => {
+  const dataset = JSON.parse(readFileSync("experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json", "utf8"));
+  const graphBase = buildEntityGraph(dataset);
+  const relationNames = new Map(dataset.relations.map((relation) => [relation.id, typeof relation.name === "string" ? relation.name : ""]));
+  const graph = { nodes: graphBase.nodes, edges: graphBase.edges.map((edge) => ({ ...edge, label: relationNames.get(edge.id) ?? "" })) };
+  const positions = getStoredCoordinates(dataset);
+  const labels = (current: Record<string, { x: number; y: number }>) => graph.nodes.map((node) => placeNodeLabel(
+    current[node.id] ?? node,
+    node.label,
+    node.description,
+    [],
+    graph.nodes.filter(({ id }) => id !== node.id).map((other) => current[other.id] ?? other),
+    [],
+  ));
+  const initial = deriveBoundedAutomaticPresentation({
+    graph,
+    positions,
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: labels(positions),
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+  });
+  const activeAt = (delta: { x: number; y: number }) => {
+    const moved = { ...positions, armstrong: { x: positions.armstrong!.x + delta.x, y: positions.armstrong!.y + delta.y } };
+    const active = deriveBoundedAutomaticPresentation({
+      graph,
+      positions: moved,
+      edgeCurveOffsets: {},
+      selfLoopOverrides: {},
+      provisionalNodeLabels: labels(moved),
+      previousNodeLabelPlacements: new Map(initial.nodeLabels),
+      previousRelationLabelPlacements: new Map(initial.relationLabels),
+      manualNodeLabelOffsets: new Map(),
+      manualRelationLabelAnchors: new Map(),
+      previousAutomaticRoutes: new Map(initial.routedEdges.map((route) => [route.id, route])),
+      draggedNodeId: "armstrong",
+      activeDraggedNodeId: "armstrong",
+      activelyDraggedNodeId: "armstrong",
+      continuityNodeLabels: graph.nodes.map((node) => initial.nodeLabels.get(node.id)!),
+      previousContinuityNodeLabels: new Map(initial.nodeLabels),
+      feedbackEnabled: false,
+    });
+    const final = (
+      preserveSafeIncidentPreviousRoute: boolean,
+      finalPositions: Record<string, { x: number; y: number }> = moved,
+    ) => {
+      const decisions: Parameters<NonNullable<Parameters<typeof deriveBoundedAutomaticPresentation>[0]["routeDecisionSink"]>>[0][] = [];
+      const result = deriveBoundedAutomaticPresentation({
+        graph,
+        positions: finalPositions,
+        edgeCurveOffsets: {},
+        selfLoopOverrides: {},
+        provisionalNodeLabels: labels(finalPositions),
+        previousNodeLabelPlacements: new Map(active.nodeLabels),
+        previousRelationLabelPlacements: new Map(active.relationLabels),
+        manualNodeLabelOffsets: new Map(),
+        manualRelationLabelAnchors: new Map(),
+        previousAutomaticRoutes: new Map(active.routedEdges.map((route) => [route.id, route])),
+        draggedNodeId: "armstrong",
+        preserveSafeIncidentPreviousRoute,
+        feedbackEnabled: true,
+        routeDecisionSink: (decision) => decisions.push(decision),
+      });
+      return { result, decisions };
+    };
+    return { active, final };
+  };
+
+  // This representative move currently yields a high-side active curve and a
+  // straight final candidate. The active route is clear of the final Node,
+  // label, and occupied-path inputs, so finalization should retain it.
+  const safe = activeAt({ x: -80, y: -40 });
+  const safeActive = safe.active.routedEdges.find(({ id }) => id === "entity-4")!;
+  const safeFreshFinal = safe.final(false).result.routedEdges.find(({ id }) => id === "entity-4")!;
+  const safeRetained = safe.final(true);
+  const safeRetainedRoute = safeRetained.result.routedEdges.find(({ id }) => id === "entity-4")!;
+  assert.match(safeActive.path, / Q /);
+  assert.match(safeFreshFinal.path, / L /);
+  assert.equal(safeRetainedRoute.path, safeActive.path);
+  assert.equal(
+    safeRetained.decisions.find(({ edgeId, pass }) => edgeId === "entity-4" && pass === "feedback")?.usedPreviousRoute,
+    true,
+  );
+  const advancedRelease = {
+    ...positions,
+    armstrong: { x: positions.armstrong!.x - 79, y: positions.armstrong!.y - 40 },
+  };
+  const safeAdvanced = safe.final(true, advancedRelease).result.routedEdges.find(({ id }) => id === "entity-4")!;
+  assert.notEqual(safeAdvanced.path, safeActive.path);
+
+  // Moving upward through Apollo's crowded corridor creates an active route
+  // that enters final Node influence. The same finalization authority must
+  // reject it rather than retaining visual continuity unsafely.
+  const unsafe = activeAt({ x: 0, y: -80 });
+  const unsafeActive = unsafe.active.routedEdges.find(({ id }) => id === "entity-4")!;
+  const unsafeFreshFinal = unsafe.final(false).result.routedEdges.find(({ id }) => id === "entity-4")!;
+  const unsafeRetained = unsafe.final(true);
+  const unsafeRetainedRoute = unsafeRetained.result.routedEdges.find(({ id }) => id === "entity-4")!;
+  assert.match(unsafeActive.path, / Q /);
+  assert.match(unsafeFreshFinal.path, / L /);
+  assert.equal(unsafeRetainedRoute.path, unsafeFreshFinal.path);
+  assert.notEqual(unsafeRetainedRoute.path, unsafeActive.path);
+  assert.equal(
+    unsafeRetained.decisions.find(({ edgeId, pass }) => edgeId === "entity-4" && pass === "feedback")?.usedPreviousRoute,
+    false,
+  );
+});

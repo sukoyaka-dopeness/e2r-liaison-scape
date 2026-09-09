@@ -382,6 +382,11 @@ export default function App() {
       previousAutomaticRoutes: new Map(previousAutomaticRoutes.current),
       draggedNodeId,
       activeDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
+      // The finalizing pass receives the route that was rendered in the last
+      // active frame at this same position. It may retain an incident route
+      // only after the normal final node, label, and occupied-path safety
+      // checks succeed; ordinary active routing never gets this authority.
+      preserveSafeIncidentPreviousRoute: presentationPhase === "node-drag-finalizing",
       activelyDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
       continuityNodeLabels,
       previousContinuityNodeLabels: activeNodeDrag ? previousNodeLabelPlacements.current : undefined,

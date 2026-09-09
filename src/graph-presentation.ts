@@ -54,6 +54,12 @@ export type AutomaticRoutingInput = {
   draggedNodeId?: string;
   /** Active-only route scoring context; finalizing passes leave this undefined. */
   activeDraggedNodeId?: string;
+  /**
+   * Explicit finalizing-only continuity authority for an incident route whose
+   * previous geometry was rendered at the same Node position. The normal
+   * safety predicates still decide whether that route may be retained.
+   */
+  preserveSafeIncidentPreviousRoute?: boolean;
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
   routeDecisionPass?: AutomaticRouteDecision["pass"];
 };
@@ -62,6 +68,9 @@ export type DerivedAutomaticRoute = RoutingGraphEdge & Pick<
   ReturnType<typeof routeGraphEdge>,
   "path" | "samples" | "labelPoint" | "controlPoint"
 > & {
+  /** Endpoint geometry that produced this derived path; used only for bounded continuity checks. */
+  sourcePosition?: Point;
+  targetPosition?: Point;
   parallelSolverEligible: boolean;
   /**
    * The Node that directly forced this non-incident route away from its prior
@@ -83,6 +92,7 @@ export function deriveAutomaticRoutes({
   previousAutomaticRoutes,
   draggedNodeId,
   activeDraggedNodeId,
+  preserveSafeIncidentPreviousRoute = false,
   routeDecisionSink,
   routeDecisionPass = "first",
 }: AutomaticRoutingInput): DerivedAutomaticRoute[] {
@@ -170,9 +180,20 @@ export function deriveAutomaticRoutes({
       && previousRoute !== undefined
       && previousRoute.samples.length > 1
       && route.samples.length > 1;
+    // An incident route can only be reused at finalization when it was drawn
+    // for these exact endpoints in the last active frame. Pointer processing
+    // may leave a last active sample behind the final release coordinate, so
+    // phase identity alone is not enough to reuse its path safely.
+    const incidentFinalizationContinuity = isIncident
+      && activeDraggedNodeId === undefined
+      && preserveSafeIncidentPreviousRoute
+      && previousRoute?.sourcePosition?.x === source.x
+      && previousRoute.sourcePosition.y === source.y
+      && previousRoute.targetPosition?.x === target.x
+      && previousRoute.targetPosition.y === target.y;
     const continuityCandidate = previousRoute !== undefined
       && draggedNodeId !== undefined
-      && !isIncident
+      && (!isIncident || incidentFinalizationContinuity)
       && isEligibleShape;
     // Keep the existing lazy safety work: ordinary presentation without a
     // continuity candidate does not pay these diagnostic-observable checks.
@@ -336,6 +357,8 @@ export function deriveAutomaticRoutes({
     occupiedPaths.push(selectedRoute.samples);
     occupiedPathIds.push(edge.id);
     routedById.set(edge.id, {
+      sourcePosition: { x: source.x, y: source.y },
+      targetPosition: { x: target.x, y: target.y },
       path: selectedRoute.path,
       samples: selectedRoute.samples,
       labelPoint: selectedRoute.labelPoint,
@@ -449,6 +472,8 @@ export type BoundedAutomaticPresentationInput = {
   previousAutomaticRoutes?: ReadonlyMap<string, DerivedAutomaticRoute>;
   draggedNodeId?: string;
   activeDraggedNodeId?: string;
+  /** See AutomaticRoutingInput.preserveSafeIncidentPreviousRoute. */
+  preserveSafeIncidentPreviousRoute?: boolean;
   activelyDraggedNodeId?: string;
   continuityNodeLabels?: readonly LabelRect[];
   previousContinuityNodeLabels?: ReadonlyMap<string, LabelRect>;
@@ -507,6 +532,7 @@ export function deriveBoundedAutomaticPresentation({
   previousAutomaticRoutes,
   draggedNodeId,
   activeDraggedNodeId,
+  preserveSafeIncidentPreviousRoute,
   activelyDraggedNodeId,
   continuityNodeLabels,
   previousContinuityNodeLabels,
@@ -539,6 +565,7 @@ export function deriveBoundedAutomaticPresentation({
       previousAutomaticRoutes,
       draggedNodeId,
       activeDraggedNodeId,
+      preserveSafeIncidentPreviousRoute,
       routeDecisionSink,
       routeDecisionPass,
     });
