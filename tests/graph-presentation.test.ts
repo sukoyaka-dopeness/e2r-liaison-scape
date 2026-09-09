@@ -310,6 +310,77 @@ test("finalizing Node drag preserves a safe previous non-incident route", () => 
   assert.deepEqual(final.routedEdges.find(({ id }) => id === "cd"), active.routedEdges.find(({ id }) => id === "cd"));
 });
 
+test("active drag rejects a remote route that crosses the live dragged Node label", () => {
+  const graph = {
+    nodes: [
+      { id: "source", label: "Source", description: "", x: -69.187, y: 192.649 },
+      { id: "target", label: "Target", description: "", x: 147.532, y: 95.874 },
+      { id: "saturn-v", label: "Saturn V", description: "", x: 40.8, y: 148.3 },
+    ],
+    edges: [{ id: "ab", sourceId: "source", targetId: "target", parallelIndex: 0, parallelCount: 1, label: "operates" }],
+  };
+  const label = {
+    x: -50.3837401536047,
+    y: 87.37297270377717,
+    width: 135.5,
+    height: 48,
+    directionX: -0.8314696123025455,
+    directionY: -0.555570233019602,
+  };
+  const clearLabel = { ...label, x: 1000, y: 1000 };
+  const previousGeometry = routeGraphEdge(
+    { x: graph.nodes[0]!.x, y: graph.nodes[0]!.y },
+    { x: graph.nodes[1]!.x, y: graph.nodes[1]!.y },
+    0,
+    1,
+    [],
+    [],
+    false,
+    0,
+    -96,
+  );
+  const decisions: Array<{
+    pass: string;
+    usedPreviousRoute: boolean;
+    continuity: { priorRouteHasLabelCollision: boolean; blockingNodeLabelIds: readonly string[] };
+    candidateDiagnostics: readonly { offset: number; selected: boolean }[];
+  }> = [];
+  const presentation = deriveAutomaticRoutes({
+    graph,
+    positions: {
+      source: { x: -69.187, y: 192.649 },
+      target: { x: 147.532, y: 95.874 },
+      "saturn-v": { x: 40.8, y: 148.3 },
+    },
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: [clearLabel, clearLabel, label],
+    continuityNodeLabels: [clearLabel, clearLabel, label],
+    previousContinuityNodeLabels: new Map([["saturn-v", label]]),
+    previousAutomaticRoutes: new Map([[
+      "ab",
+      { ...graph.edges[0], ...previousGeometry, parallelSolverEligible: false },
+    ]]),
+    draggedNodeId: "saturn-v",
+    activeDraggedNodeId: "saturn-v",
+    routeDecisionSink: (decision) => decisions.push({
+      pass: decision.pass,
+      usedPreviousRoute: decision.usedPreviousRoute,
+      continuity: {
+        priorRouteHasLabelCollision: decision.continuity.priorRouteHasLabelCollision,
+        blockingNodeLabelIds: decision.continuity.blockingNodeLabelIds,
+      },
+      candidateDiagnostics: decision.candidateDiagnostics.map(({ offset, selected }) => ({ offset, selected })),
+    }),
+  });
+  const decision = decisions.find(({ pass }) => pass === "first")!;
+  assert.equal(decision.continuity.priorRouteHasLabelCollision, true);
+  assert.deepEqual(decision.continuity.blockingNodeLabelIds, ["saturn-v"]);
+  assert.equal(decision.usedPreviousRoute, false);
+  assert.equal(decision.candidateDiagnostics.find(({ selected }) => selected)!.offset, 108);
+  assert.notEqual(presentation[0]!.path, previousGeometry.path);
+});
+
 test("current curve offsets drive route and control-point recomputation", () => {
   const first = deriveAutomaticRoutes(input())[0]!;
   const second = deriveAutomaticRoutes(input({ edgeCurveOffsets: { ab: 54 } }))[0]!;

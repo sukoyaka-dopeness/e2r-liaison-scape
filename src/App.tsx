@@ -346,12 +346,16 @@ export default function App() {
     const draggedNodeId = presentationDraggedNodeId;
     // Active routing deliberately defers its full label-feedback pass. For
     // continuity safety, compare a prior remote route with the labels that
-    // were actually displayed in the prior frame, while keeping the dragged
-    // Node's label current. This avoids treating the feedback-to-provisional
-    // label representation change itself as a remote-route obstruction.
+    // were actually displayed in the prior frame. The dragged Node is not
+    // replaced with its provisional placement here: the active Node-label
+    // solver can settle at a different side of the Node, and routing against
+    // that provisional-only rectangle would let a remote route occupy the
+    // label that is visibly rendered in the same frame. The previous
+    // displayed label is the bounded, one-frame-lagged safety authority;
+    // missing initial state falls back to the provisional rectangle.
     const activeContinuityNodeLabels = activeNodeDrag
       ? graph.nodes.map((node, index) => node.id === draggedNodeId
-        ? provisionalNodeLabels[index]
+        ? previousNodeLabelPlacements.current.get(node.id) ?? provisionalNodeLabels[index]
         : previousNodeLabelPlacements.current.get(node.id))
       : [];
     const continuityNodeLabels = activeNodeDrag && activeContinuityNodeLabels.every((label): label is LabelRect => label !== undefined)

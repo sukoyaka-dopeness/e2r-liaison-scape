@@ -189,9 +189,17 @@ export function deriveAutomaticRoutes({
         const nodeId = graph.nodes[index]?.id ?? `label-${index}`;
         const priorLabel = previousContinuityNodeLabels?.get(nodeId);
         // A label/route overlap that the immediately preceding presentation
-        // already displayed is not a new active-drag safety regression. It
-        // must not alone trigger a remote route flip before label feedback.
-        return priorLabel && routeSamplesHaveLabelCollision(previousRoute.samples, [priorLabel]) ? [] : [nodeId];
+        // already displayed is not a new active-drag safety regression for a
+        // stationary label; it must not alone trigger unrelated remote-route
+        // churn before label feedback. The dragged Node is different: its
+        // label is live in the active frame, so a remote route crossing that
+        // displayed label must be treated as unsafe even when the same
+        // overlap was present in the preceding frame. Otherwise active
+        // routing can visibly occupy the label and finalization alone will
+        // flip the route after the authoritative label pass.
+        return nodeId !== draggedNodeId
+          && priorLabel
+          && routeSamplesHaveLabelCollision(previousRoute.samples, [priorLabel]) ? [] : [nodeId];
       })
       : [];
     const priorRouteHasLabelCollision = collidingContinuityNodeLabelIds.length > 0;
