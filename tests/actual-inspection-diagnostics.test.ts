@@ -175,6 +175,53 @@ test("active Apollo drag preserves locality and necessary crowded incident routi
   assert.match(nasaActiveRoute.path, / Q /);
   assert.match(nasaFinalRoute.path, / Q /);
   assert.equal(nasaActiveRoute.path, nasaFinalRoute.path);
+
+  // Mirror the Product's committed active-drag lifecycle rather than jumping
+  // directly from an obstructed position back to the origin. A direct route
+  // may first recover to an intermediate fresh curve before its original
+  // route is available; that must not discard the direct-obstacle origin.
+  const stagedActive = (
+    previous: ReturnType<typeof deriveBoundedAutomaticPresentation>,
+    y: number,
+  ) => {
+    const positions = { ...basePositions, "saturn-v": { x: basePositions["saturn-v"]!.x, y } };
+    const labels = provisionalLabels(positions);
+    return deriveBoundedAutomaticPresentation({
+      graph,
+      positions,
+      edgeCurveOffsets: {},
+      selfLoopOverrides: {},
+      provisionalNodeLabels: labels,
+      previousNodeLabelPlacements: new Map(previous.nodeLabels),
+      previousRelationLabelPlacements: new Map(previous.relationLabels),
+      manualNodeLabelOffsets: new Map(),
+      manualRelationLabelAnchors: new Map(),
+      previousAutomaticRoutes: new Map(previous.routedEdges.map((route) => [route.id, route])),
+      draggedNodeId: "saturn-v",
+      activeDraggedNodeId: "saturn-v",
+      activelyDraggedNodeId: "saturn-v",
+      continuityNodeLabels: graph.nodes.map((node, index) => node.id === "saturn-v" ? labels[index]! : previous.nodeLabels.get(node.id)!),
+      previousContinuityNodeLabels: new Map(previous.nodeLabels),
+      feedbackEnabled: false,
+    });
+  };
+  let staged = stagedActive(initial, 120);
+  assert.equal(staged.routedEdges.find(({ id }) => id === "entity-6")?.activeRecoveryObstacleId, "saturn-v");
+  staged = stagedActive(staged, 150);
+  staged = stagedActive(staged, 170);
+  assert.deepEqual(staged.routedEdges.filter(({ activeRecoveryObstacleId }) => activeRecoveryObstacleId === "saturn-v").map(({ id }) => id), ["entity-3", "entity-6"]);
+  staged = stagedActive(staged, 140);
+  // The intermediate fresh candidate for entity-6 is still curved here. Its
+  // provenance must survive so the later safe original can recover actively.
+  assert.equal(staged.routedEdges.find(({ id }) => id === "entity-6")?.activeRecoveryObstacleId, "saturn-v");
+  staged = stagedActive(staged, 110);
+  staged = stagedActive(staged, 80);
+  staged = stagedActive(staged, 40);
+  staged = stagedActive(staged, basePositions["saturn-v"]!.y);
+  assert.equal(
+    staged.routedEdges.find(({ id }) => id === "entity-6")?.path,
+    initial.routedEdges.find(({ id }) => id === "entity-6")?.path,
+  );
 });
 
 test("wide Apollo round trip restores the fresh safe remote route after obstacle removal", () => {

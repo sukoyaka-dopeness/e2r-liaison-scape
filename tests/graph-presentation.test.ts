@@ -156,7 +156,7 @@ test("active drag eagerly recovers only a detour directly caused by that Node", 
     routeDecisionSink: (decision) => decisions.push(decision),
   });
   assert.equal(activeReturn[0]!.path, initial[0]!.path);
-  assert.equal(activeReturn[0]!.activeRecoveryObstacleId, undefined);
+  assert.equal(activeReturn[0]!.activeRecoveryObstacleId, "obstacle");
   assert.equal(decisions[0]!.usedPreviousRoute, false);
   assert.equal(decisions[0]!.recoveredCurrentRoute, true);
 });

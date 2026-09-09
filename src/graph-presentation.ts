@@ -11,6 +11,18 @@ export type AutomaticRouteDecision = {
   usedPreviousRoute: boolean;
   /** A finalizing pass discarded an otherwise safe historical detour for the current safe route. */
   recoveredCurrentRoute: boolean;
+  /**
+   * Development-only active-recovery state. It explains whether a fresh route
+   * was eligible to replace a direct-obstacle detour during the current drag.
+   */
+  activeRecovery: {
+    previousRouteObstacleId?: string;
+    provenanceMatchesActiveDrag: boolean;
+    freshRouteIsSafe: boolean;
+    freshRouteHasNodeInfluence: boolean;
+    freshRouteHasOccupiedPathConflict: boolean;
+    freshRouteHasLabelCollision: boolean;
+  };
   continuity: {
     previousRoutePresent: boolean;
     draggedNodePresent: boolean;
@@ -203,9 +215,19 @@ export function deriveAutomaticRoutes({
       && freshRouteIsSafe
       && (activeDraggedNodeId === undefined || canRecoverDuringActiveDrag);
     const selectedRoute = canPreservePreviousRoute && !canRecoverCurrentRoute ? previousRoute : route;
-    const activeRecoveryObstacleId = selectedRoute === previousRoute
-      ? previousRoute.activeRecoveryObstacleId
-      : priorRouteBlockedByDraggedNode ? draggedNodeId : undefined;
+    // A direct-obstacle recovery can legitimately pass through a safe but
+    // still-curved fresh candidate before the original/equivalent route is
+    // available again. Keep its bounded origin for the rest of this active
+    // drag so that an intermediate fresh selection does not prematurely turn
+    // the route back into an ordinary remote-continuity candidate. The origin
+    // is deliberately dropped for finalizing/idle presentation.
+    const continuingDirectRecovery = activeDraggedNodeId !== undefined
+      && previousRoute?.activeRecoveryObstacleId === activeDraggedNodeId;
+    const activeRecoveryObstacleId = activeDraggedNodeId === undefined
+      ? undefined
+      : selectedRoute === previousRoute
+        ? previousRoute.activeRecoveryObstacleId
+        : priorRouteBlockedByDraggedNode || continuingDirectRecovery ? activeDraggedNodeId : undefined;
     // Compute explanatory identities only for the opt-in development sink.
     // The normal Product path retains the original constant-cost predicates.
     const blockingNodeIds = routeDecisionSink !== undefined && priorRouteHasNodeInfluence
@@ -224,6 +246,14 @@ export function deriveAutomaticRoutes({
       processingIndex,
       usedPreviousRoute: canPreservePreviousRoute && !canRecoverCurrentRoute,
       recoveredCurrentRoute: canRecoverCurrentRoute,
+      activeRecovery: {
+        previousRouteObstacleId: previousRoute?.activeRecoveryObstacleId,
+        provenanceMatchesActiveDrag: canRecoverDuringActiveDrag,
+        freshRouteIsSafe,
+        freshRouteHasNodeInfluence,
+        freshRouteHasOccupiedPathConflict,
+        freshRouteHasLabelCollision,
+      },
       continuity: {
         previousRoutePresent: previousRoute !== undefined,
         draggedNodePresent: draggedNodeId !== undefined,
