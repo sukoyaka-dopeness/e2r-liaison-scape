@@ -1,6 +1,6 @@
 import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelRect, type Point, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelRect, type Point, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -22,6 +22,7 @@ export type AutomaticRouteDecision = {
     blockingOccupiedRouteIds: readonly string[];
     blockingNodeLabelIds: readonly string[];
   };
+  candidateDiagnostics: readonly RouteCandidateDiagnostic[];
 };
 
 export type AutomaticRoutingInput = {
@@ -30,12 +31,14 @@ export type AutomaticRoutingInput = {
   edgeCurveOffsets: Readonly<Record<string, number>>;
   selfLoopOverrides: Readonly<Record<string, SelfLoopOverride>>;
   provisionalNodeLabels: readonly LabelRect[];
-  /** Labels used only to validate a previous route's active-drag continuity. */
+  /** Active-drag label snapshot used for route scoring and continuity safety. */
   continuityNodeLabels?: readonly LabelRect[];
   /** Labels displayed with the previous route, for distinguishing a new collision from an accepted prior one. */
   previousContinuityNodeLabels?: ReadonlyMap<string, LabelRect>;
   previousAutomaticRoutes?: ReadonlyMap<string, DerivedAutomaticRoute>;
   draggedNodeId?: string;
+  /** Active-only route scoring context; finalizing passes leave this undefined. */
+  activeDraggedNodeId?: string;
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
   routeDecisionPass?: AutomaticRouteDecision["pass"];
 };
@@ -56,6 +59,7 @@ export function deriveAutomaticRoutes({
   previousContinuityNodeLabels,
   previousAutomaticRoutes,
   draggedNodeId,
+  activeDraggedNodeId,
   routeDecisionSink,
   routeDecisionPass = "first",
 }: AutomaticRoutingInput): DerivedAutomaticRoute[] {
@@ -63,7 +67,13 @@ export function deriveAutomaticRoutes({
   const occupiedPathIds: string[] = [];
   const overlapCounts = new Map<string, number>();
   const nodeMap = new Map(graph.nodes.map((node) => [node.id, node]));
-  const routeLabelRects = [...provisionalNodeLabels];
+  // During active drag, use the labels that were actually displayed in the
+  // preceding presentation for stationary Nodes, plus the current label for
+  // the dragged Node. This avoids scoring a route against a provisional
+  // endpoint-label position that the bounded feedback pass immediately
+  // replaces. Idle/final presentations leave this undefined and retain the
+  // original provisional-label input.
+  const routeLabelRects = [...(continuityNodeLabels ?? provisionalNodeLabels)];
   const continuityLabelRects = continuityNodeLabels ?? routeLabelRects;
   const routedById = new Map<string, Omit<DerivedAutomaticRoute, keyof RoutingGraphEdge>>();
   const compareRoutingPriority = (left: RoutingGraphEdge, right: RoutingGraphEdge) =>
@@ -96,6 +106,14 @@ export function deriveAutomaticRoutes({
     const overlapKey = `${source.x}\u0000${source.y}`;
     const overlapIndex = isOverlappingPair ? (overlapCounts.get(overlapKey) ?? 0) : 0;
     if (isOverlappingPair) overlapCounts.set(overlapKey, overlapIndex + 1);
+    const isIncident = edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId;
+    const routeLabelsForEdge = activeDraggedNodeId !== undefined && isIncident
+      ? routeLabelRects.filter((_, index) => {
+        const nodeId = graph.nodes[index]?.id;
+        return nodeId !== edge.sourceId && nodeId !== edge.targetId;
+      })
+      : routeLabelRects;
+    const candidateDiagnostics: RouteCandidateDiagnostic[] = [];
     const route = routeGraphEdge(
       source,
       target,
@@ -107,11 +125,11 @@ export function deriveAutomaticRoutes({
       overlapIndex,
       edgeCurveOffsets[edge.id],
       selfLoopOverrides[edge.id],
-      routeLabelRects,
+      routeLabelsForEdge,
       canonicalPhysicalSideSign,
+      routeDecisionSink ? (candidates) => candidateDiagnostics.push(...candidates) : undefined,
     );
     const previousRoute = previousAutomaticRoutes?.get(edge.id);
-    const isIncident = edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId;
     const isEligibleShape = edge.sourceId !== edge.targetId
       && edge.parallelCount === 1
       && edgeCurveOffsets[edge.id] === undefined
@@ -172,6 +190,7 @@ export function deriveAutomaticRoutes({
         blockingOccupiedRouteIds,
         blockingNodeLabelIds,
       },
+      candidateDiagnostics,
     });
     const routeWithoutObstacles = edge.parallelCount > 1
       && edge.sourceId !== edge.targetId
@@ -332,6 +351,7 @@ export type BoundedAutomaticPresentationInput = {
   manualRelationLabelAnchors: ReadonlyMap<string, ManualRelationLabelAnchor>;
   previousAutomaticRoutes?: ReadonlyMap<string, DerivedAutomaticRoute>;
   draggedNodeId?: string;
+  activeDraggedNodeId?: string;
   activelyDraggedNodeId?: string;
   continuityNodeLabels?: readonly LabelRect[];
   previousContinuityNodeLabels?: ReadonlyMap<string, LabelRect>;
@@ -389,6 +409,7 @@ export function deriveBoundedAutomaticPresentation({
   manualRelationLabelAnchors,
   previousAutomaticRoutes,
   draggedNodeId,
+  activeDraggedNodeId,
   activelyDraggedNodeId,
   continuityNodeLabels,
   previousContinuityNodeLabels,
@@ -420,6 +441,7 @@ export function deriveBoundedAutomaticPresentation({
       previousContinuityNodeLabels,
       previousAutomaticRoutes,
       draggedNodeId,
+      activeDraggedNodeId,
       routeDecisionSink,
       routeDecisionPass,
     });

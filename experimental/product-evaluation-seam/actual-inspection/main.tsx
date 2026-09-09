@@ -2,6 +2,7 @@ import { StrictMode, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import App from "../../../src/App";
 import type { DragPointerProcessingSample, PresentationDiagnosticSnapshot, PresentationTimingSample } from "../../../src/presentation-diagnostics";
+import type { RouteCandidateDiagnostic } from "../../../src/viewport";
 import "../../../src/styles.css";
 import "./actual-inspection.css";
 import { diagnoseRoute } from "./routing-diagnostics";
@@ -38,6 +39,8 @@ type RouteTransitionReport = {
     incident: boolean;
     from: { curved: boolean; length: number; controlPoint: { x: number; y: number } | null };
     to: { curved: boolean; length: number; controlPoint: { x: number; y: number } | null };
+    fromCandidates: readonly RouteCandidateDiagnostic[];
+    toCandidates: readonly RouteCandidateDiagnostic[];
   }>;
   continuityBlocks: Array<{ routeId: string; pass: string; processingIndex: number; usedPreviousRoute: boolean; reasons: string[]; blockers: { nodes: string[]; occupiedRoutes: string[]; nodeLabels: string[] } }>;
   dragState: {
@@ -162,6 +165,18 @@ function labelShape(label: { x: number; y: number; width: number; height: number
   return label ? { x: label.x, y: label.y, width: label.width, height: label.height } : null;
 }
 
+function routeDecisionFor(snapshot: PresentationDiagnosticSnapshot, routeId: string) {
+  return [...snapshot.routeDecisions].reverse().find((candidate) =>
+    candidate.edgeId === routeId && (candidate.pass === "feedback" || candidate.pass === "first"),
+  );
+}
+
+function candidateSummary(candidates: readonly RouteCandidateDiagnostic[]): string {
+  const selected = candidates.find((candidate) => candidate.selected);
+  if (!selected) return "none";
+  return `offset ${selected.offset.toFixed(1)}, score ${selected.score.toFixed(1)}, node ${selected.nodeOverlapScore.toFixed(1)}, occupied ${selected.occupiedPathConflict ? "yes" : "no"}, label ${selected.labelPressure.toFixed(1)}`;
+}
+
 function positionFor(snapshot: PresentationDiagnosticSnapshot, nodeId: string): { x: number; y: number } | null {
   const node = snapshot.nodes.find(({ id }) => id === nodeId);
   return node ? snapshot.positions[nodeId] ?? node : null;
@@ -194,11 +209,15 @@ function routeTransitionReport(stage: RouteTransitionReport["stage"], from: Pres
       const before = fromRoutes.get(routeId);
       const after = toRoutes.get(routeId);
       const edge = edgesById.get(routeId);
+      const beforeDecision = routeDecisionFor(from, routeId);
+      const afterDecision = routeDecisionFor(to, routeId);
       return before && after && edge ? [{
         routeId,
         incident: edge.sourceId === nodeId || edge.targetId === nodeId,
         from: routeShape(before),
         to: routeShape(after),
+        fromCandidates: beforeDecision?.candidateDiagnostics ?? [],
+        toCandidates: afterDecision?.candidateDiagnostics ?? [],
       }] : [];
     }),
     relationLabelComparisons: changed.flatMap((routeId) => {
@@ -605,6 +624,7 @@ function DragTimingDiagnostics() {
       <li>non-incident continuity blocks: {routeTransition.continuityBlocks.map(({ routeId, pass, processingIndex, usedPreviousRoute, reasons }) => `${routeId} [${pass} #${processingIndex}; previous route ${usedPreviousRoute ? "used" : "not used"}: ${reasons.join(", ") || "no rejected continuity condition"}]`).join("; ") || "none"}</li>
       <li>changed node labels: {routeTransition.changedNodeLabelIds.join(", ") || "none"}; changed relation labels: {routeTransition.changedRelationLabelIds.join(", ") || "none"}</li>
       <li>route shape transitions: {routeTransition.routeShapeComparisons.map(({ routeId, incident, from, to }) => `${routeId} (${incident ? "incident" : "remote"}) ${from.curved ? "curved" : "straight"} ${format(from.length)} → ${to.curved ? "curved" : "straight"} ${format(to.length)}`).join("; ") || "none"}</li>
+      <li>selected candidate scores: {routeTransition.routeShapeComparisons.map(({ routeId, fromCandidates, toCandidates }) => `${routeId} active [${candidateSummary(fromCandidates)}] → final [${candidateSummary(toCandidates)}]`).join("; ") || "none"}</li>
       <li>relation-label transitions: {routeTransition.relationLabelComparisons.map(({ routeId, from, to }) => `${routeId} ${from ? `${format(from.x)}, ${format(from.y)}` : "none"} → ${to ? `${format(to.x)}, ${format(to.y)}` : "none"}`).join("; ") || "none"}</li>
     </ul>}
     {report?.remoteTransitions.length ? <details>

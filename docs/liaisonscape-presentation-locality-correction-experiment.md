@@ -653,4 +653,43 @@ No Relation-label-to-route feedback loop or global Relation-label obstacle
 change is introduced. The next implementation experiment, if selected, should
 compare one small candidate at a time against the current `01ae2c8` behaviour
 and must retain the existing remote-locality and responsiveness guards.
+
+## Active incident candidate-selection correction
+
+The same-geometry candidate trace isolated the active-only curvature. With the
+Apollo 11 fixture and Saturn V moved by 45 graph units, `entity-8` (NASA ->
+Saturn V) selected an offset-36 curved candidate during the active first pass.
+The straight offset-0 candidate had `labelPressure = 100000` because the
+active route was scored against the endpoint Node-label rectangles; its score
+was therefore `100000`, while the selected candidate's score was approximately
+`5439.7`. In the final feedback pass at the same positions, label placement
+had settled and the straight candidate had score `0`, so offset `0` was
+selected.
+
+The bounded correction applies only while a Node is actively dragged and only
+to an incident automatic route. Its candidate scorer omits the route's source
+and target Node-label rectangles, because those labels belong to the moving
+route endpoints and are recomputed by the same presentation after routing.
+All unrelated Node-label rectangles, Node influence obstacles, occupied-path
+checks, route ordering, and final feedback remain unchanged. Idle and final
+passes retain the original label input. This prevents an endpoint's provisional
+label position from forcing a transient detour that the immediately following
+feedback pass will remove; it does not add a global straightness preference or
+freeze incident routes.
+
+The focused Apollo regression now confirms that the 45-unit active move keeps
+`entity-8` straight while the existing locality cases still require exactly
+the incident `entity-8`/`entity-10` changes for a small move and additionally
+reroute remote `entity-6` once genuine Node influence is reached. The route
+candidate trace is exposed only through the existing development diagnostic
+sink, so persisted Dataset and evidence output are unaffected.
+
+### Current decision
+
+The endpoint-label candidate correction is selected as a bounded Product
+implementation candidate and is ready for actual Product user inspection. It
+does not select spacing, crossing-aware placement, global routing
+optimization, or governed evidence execution. A physical user check must
+confirm that the active incident route follows naturally, relation labels stay
+readable, and genuine obstacle-driven reroutes remain acceptable.
 ```

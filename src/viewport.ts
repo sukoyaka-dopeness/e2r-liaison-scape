@@ -622,6 +622,16 @@ function sampleCubicCurve(start: Point, control1: Point, control2: Point, end: P
   });
 }
 
+export type RouteCandidateDiagnostic = {
+  offset: number;
+  nodeOverlapScore: number;
+  occupiedPathConflict: boolean;
+  labelPressure: number;
+  score: number;
+  preservesBaseSide: boolean;
+  selected: boolean;
+};
+
 export function routeGraphEdge(
   source: Point,
   target: Point,
@@ -635,6 +645,7 @@ export function routeGraphEdge(
   manualSelfLoop?: { orientation: number; radius: number },
   labelRects: LabelRect[] = [],
   canonicalPhysicalSideSign = 1,
+  candidateTraceSink?: (candidates: readonly RouteCandidateDiagnostic[]) => void,
 ): { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point } {
   if (source.x === target.x && source.y === target.y && selfRelation) {
     if (manualSelfLoop === undefined) return selectAutomaticSelfLoopGeometry(source, parallelIndex, obstacles);
@@ -785,6 +796,7 @@ export function routeGraphEdge(
   let bestScore = Infinity;
   let bestSidePreservingGeometry: ReturnType<typeof geometryForOffset> | null = null;
   let bestSidePreservingScore = Infinity;
+  const candidateDiagnostics: Array<Omit<RouteCandidateDiagnostic, "selected">> = [];
   for (const candidateOffset of offsets) {
     const geometry = geometryForOffset(candidateOffset);
     const { samples } = geometry;
@@ -815,18 +827,34 @@ export function routeGraphEdge(
       return total + (distance < halo ? (halo - distance) ** 2 * 20 : 0);
     }, 0);
     const score = nodeOverlapScore * 100 + (overlapsEdge ? 10000 : 0) + labelPressure + Math.abs(candidateOffset) * .01;
+    const preservesBaseSide = Math.sign(candidateOffset) === Math.sign(baseOffset);
+    candidateDiagnostics.push({
+      offset: candidateOffset,
+      nodeOverlapScore,
+      occupiedPathConflict: overlapsEdge,
+      labelPressure,
+      score,
+      preservesBaseSide,
+    });
     if (score < bestScore) {
       bestGeometry = geometry;
       bestScore = score;
     }
-    const preservesBaseSide = Math.sign(candidateOffset) === Math.sign(baseOffset);
     const isExistingSafeCandidate = nodeOverlapScore === 0 && !overlapsEdge && labelPressure === 0;
     if (preservesBaseSide && isExistingSafeCandidate && score < bestSidePreservingScore) {
       bestSidePreservingGeometry = geometry;
       bestSidePreservingScore = score;
     }
   }
-  return bestSidePreservingGeometry ?? bestGeometry ?? geometryForOffset(baseOffset);
+  const selectedGeometry = bestSidePreservingGeometry ?? bestGeometry ?? geometryForOffset(baseOffset);
+  const selectedOffset = selectedGeometry === bestSidePreservingGeometry
+    ? candidateDiagnostics.find((candidate) => candidate.score === bestSidePreservingScore)?.offset
+    : candidateDiagnostics.find((candidate) => candidate.score === bestScore)?.offset;
+  candidateTraceSink?.(candidateDiagnostics.map((candidate) => ({
+    ...candidate,
+    selected: candidate.offset === selectedOffset,
+  })));
+  return selectedGeometry;
 }
 
 function shortestAngularDistance(left: number, right: number): number {

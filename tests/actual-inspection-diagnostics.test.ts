@@ -78,6 +78,7 @@ test("active Apollo drag ignores an already accepted remote label overlap but st
       manualRelationLabelAnchors: new Map(),
       previousAutomaticRoutes: new Map(initial.routedEdges.map((route) => [route.id, route])),
       draggedNodeId: "saturn-v",
+      activeDraggedNodeId: "saturn-v",
       activelyDraggedNodeId: "saturn-v",
       continuityNodeLabels: graph.nodes.map((node, index) => node.id === "saturn-v" ? labels[index]! : initial.nodeLabels.get(node.id)!),
       previousContinuityNodeLabels: new Map(initial.nodeLabels),
@@ -92,6 +93,10 @@ test("active Apollo drag ignores an already accepted remote label overlap but st
   // particular, existing NASA-label overlap must not make unrelated routes
   // flip merely because active drag defers full feedback.
   assert.deepEqual(changedIds(activePresentation(14.8)), ["entity-8", "entity-10"]);
+  // The same active label snapshot removes the provisional-label ghost
+  // obstacle from the incident NASA -> Saturn V route: a small active move
+  // keeps its straight candidate instead of waiting for pointer-up feedback.
+  assert.match(activePresentation(45).routedEdges.find(({ id }) => id === "entity-8")!.path, / L /);
   // Once Saturn V enters entity-6's influence, that remote route remains free
   // to reroute: active continuity is not an unconditional visual freeze.
   assert.deepEqual(changedIds(activePresentation(160)), ["entity-6", "entity-8", "entity-10"]);

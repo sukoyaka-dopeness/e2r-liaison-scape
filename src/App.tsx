@@ -377,6 +377,7 @@ export default function App() {
       manualRelationLabelAnchors: new Map(manualRelationLabelAnchors.current),
       previousAutomaticRoutes: new Map(previousAutomaticRoutes.current),
       draggedNodeId,
+      activeDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
       activelyDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
       continuityNodeLabels,
       previousContinuityNodeLabels: activeNodeDrag ? previousNodeLabelPlacements.current : undefined,
