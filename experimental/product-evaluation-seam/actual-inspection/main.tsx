@@ -1,7 +1,7 @@
 import { StrictMode, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import App from "../../../src/App";
-import type { PresentationDiagnosticSnapshot } from "../../../src/presentation-diagnostics";
+import type { PresentationDiagnosticSnapshot, PresentationTimingSample } from "../../../src/presentation-diagnostics";
 import "../../../src/styles.css";
 import "./actual-inspection.css";
 import { diagnoseRoute } from "./routing-diagnostics";
@@ -14,6 +14,128 @@ const localDatasetUrl = `${import.meta.env.BASE_URL}experimental/product-evaluat
 const originalFetch = window.fetch.bind(window);
 const diagnosticEvent = "liaisonscape:presentation-diagnostic";
 let latestDiagnosticSnapshot: PresentationDiagnosticSnapshot | null = null;
+
+type DragTimingReport = {
+  nodeId: string;
+  pointerMoves: number;
+  presentationComputations: number;
+  presentationDurationMs: { median: number; p95: number; max: number } | null;
+  renderSamples: number;
+  pointerToRenderMs: { median: number; p95: number; max: number } | null;
+  pointerToNodeLagPx: { median: number; p95: number; max: number } | null;
+  durationMs: number;
+};
+
+type ActiveDragTiming = {
+  pointerId: number;
+  nodeId: string;
+  startedAt: number;
+  pointerMoves: number;
+  computationDurations: number[];
+  renderLatencies: number[];
+  nodeLagPixels: number[];
+  latestPointer: { x: number; y: number };
+  latestPointerAt: number;
+  grabOffset: { x: number; y: number };
+  framePending: boolean;
+};
+
+let activeDragTiming: ActiveDragTiming | null = null;
+let latestDragTimingReport: DragTimingReport | null = null;
+const timingEvent = "liaisonscape:presentation-timing";
+
+function percentile(values: number[], ratio: number): number | null {
+  if (!values.length) return null;
+  const sorted = [...values].sort((left, right) => left - right);
+  return sorted[Math.min(sorted.length - 1, Math.floor((sorted.length - 1) * ratio))]!;
+}
+
+function summary(values: number[]): { median: number; p95: number; max: number } | null {
+  if (!values.length) return null;
+  return { median: percentile(values, 0.5)!, p95: percentile(values, 0.95)!, max: Math.max(...values) };
+}
+
+function nodeCenter(nodeId: string): { x: number; y: number } | null {
+  const element = document.querySelector<SVGGElement>(`g[data-entity-id="${CSS.escape(nodeId)}"]`);
+  if (!element) return null;
+  const rect = element.querySelector<SVGRectElement>(".entity-body")?.getBoundingClientRect();
+  if (!rect) return null;
+  return { x: (rect.left + rect.right) / 2, y: (rect.top + rect.bottom) / 2 };
+}
+
+function sampleRenderedDrag(): void {
+  const drag = activeDragTiming;
+  if (!drag) return;
+  drag.framePending = false;
+  const center = nodeCenter(drag.nodeId);
+  if (center) {
+    const expected = { x: drag.latestPointer.x + drag.grabOffset.x, y: drag.latestPointer.y + drag.grabOffset.y };
+    drag.nodeLagPixels.push(Math.hypot(center.x - expected.x, center.y - expected.y));
+    drag.renderLatencies.push(performance.now() - drag.latestPointerAt);
+  }
+}
+
+function scheduleRenderedDragSample(): void {
+  const drag = activeDragTiming;
+  if (!drag || drag.framePending) return;
+  drag.framePending = true;
+  window.requestAnimationFrame(() => window.requestAnimationFrame(sampleRenderedDrag));
+}
+
+function finishDragTiming(): void {
+  const drag = activeDragTiming;
+  if (!drag) return;
+  activeDragTiming = null;
+  latestDragTimingReport = {
+    nodeId: drag.nodeId,
+    pointerMoves: drag.pointerMoves,
+    presentationComputations: drag.computationDurations.length,
+    presentationDurationMs: summary(drag.computationDurations),
+    renderSamples: drag.renderLatencies.length,
+    pointerToRenderMs: summary(drag.renderLatencies),
+    pointerToNodeLagPx: summary(drag.nodeLagPixels),
+    durationMs: performance.now() - drag.startedAt,
+  };
+  window.dispatchEvent(new CustomEvent<DragTimingReport>(timingEvent, { detail: latestDragTimingReport }));
+}
+
+window.__liaisonScapePresentationTimingSink = (sample: PresentationTimingSample) => {
+  if (activeDragTiming) activeDragTiming.computationDurations.push(sample.durationMs);
+};
+
+document.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0) return;
+  const node = (event.target as Element | null)?.closest<SVGGElement>("g[data-entity-id]");
+  if (!node) return;
+  const nodeId = node.dataset.entityId;
+  const center = nodeId ? nodeCenter(nodeId) : null;
+  if (!nodeId || !center) return;
+  activeDragTiming = {
+    pointerId: event.pointerId,
+    nodeId,
+    startedAt: performance.now(),
+    pointerMoves: 0,
+    computationDurations: [],
+    renderLatencies: [],
+    nodeLagPixels: [],
+    latestPointer: { x: event.clientX, y: event.clientY },
+    latestPointerAt: performance.now(),
+    grabOffset: { x: center.x - event.clientX, y: center.y - event.clientY },
+    framePending: false,
+  };
+}, true);
+
+document.addEventListener("pointermove", (event) => {
+  const drag = activeDragTiming;
+  if (!drag || drag.pointerId !== event.pointerId) return;
+  drag.pointerMoves += 1;
+  drag.latestPointer = { x: event.clientX, y: event.clientY };
+  drag.latestPointerAt = performance.now();
+  scheduleRenderedDragSample();
+}, true);
+
+document.addEventListener("pointerup", (event) => { if (activeDragTiming?.pointerId === event.pointerId) finishDragTiming(); }, true);
+document.addEventListener("pointercancel", (event) => { if (activeDragTiming?.pointerId === event.pointerId) finishDragTiming(); }, true);
 
 window.__liaisonScapePresentationDiagnosticSink = (snapshot) => {
   latestDiagnosticSnapshot = snapshot;
@@ -103,6 +225,25 @@ function PresentationDiagnostics() {
   </details>;
 }
 
+function DragTimingDiagnostics() {
+  const [report, setReport] = useState<DragTimingReport | null>(latestDragTimingReport);
+  useEffect(() => {
+    const receive = (event: Event) => setReport((event as CustomEvent<DragTimingReport>).detail);
+    window.addEventListener(timingEvent, receive);
+    return () => window.removeEventListener(timingEvent, receive);
+  }, []);
+  const format = (value: number | null | undefined, digits = 1) => value === null || value === undefined ? "n/a" : value.toFixed(digits);
+  return <details className="actual-inspection-drag-timing" open>
+    <summary>Dev-only drag timing diagnostic</summary>
+    {report ? <p><strong>{report.nodeId}</strong>: {report.pointerMoves} pointermoves, {report.presentationComputations} presentation computations, {report.renderSamples} render samples, duration {format(report.durationMs)} ms.</p> : <p>No completed node drag measured yet.</p>}
+    {report && <ul>
+      <li>presentation duration median / p95 / max: {format(report.presentationDurationMs?.median)} / {format(report.presentationDurationMs?.p95)} / {format(report.presentationDurationMs?.max)} ms</li>
+      <li>pointer→render median / p95 / max: {format(report.pointerToRenderMs?.median)} / {format(report.pointerToRenderMs?.p95)} / {format(report.pointerToRenderMs?.max)} ms</li>
+      <li>pointer→node lag median / p95 / max: {format(report.pointerToNodeLagPx?.median)} / {format(report.pointerToNodeLagPx?.p95)} / {format(report.pointerToNodeLagPx?.max)} px</li>
+    </ul>}
+  </details>;
+}
+
 function ActualProductInspection() {
   function changeSpacing(event: React.ChangeEvent<HTMLSelectElement>) {
     const next = event.target.value;
@@ -126,6 +267,7 @@ function ActualProductInspection() {
       <span className="actual-inspection-seam-note">Reloads the actual Product workspace with the selected diagnostic fixture.</span>
     </div>
     <PresentationDiagnostics />
+    <DragTimingDiagnostics />
     <App />
   </>;
 }

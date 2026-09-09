@@ -19,12 +19,23 @@ export type PresentationDiagnosticSnapshot = {
   nodeLabels: readonly [string, LabelRect][];
 };
 
+export type PresentationTimingSample = {
+  startedAt: number;
+  completedAt: number;
+  durationMs: number;
+};
+
 declare global {
   interface Window {
     __liaisonScapePresentationDiagnosticSink?: (snapshot: PresentationDiagnosticSnapshot) => void;
+    __liaisonScapePresentationTimingSink?: (sample: PresentationTimingSample) => void;
   }
 }
 
 export function publishPresentationDiagnostic(snapshot: PresentationDiagnosticSnapshot): void {
   if (import.meta.env.DEV) window.__liaisonScapePresentationDiagnosticSink?.(snapshot);
+}
+
+export function publishPresentationTiming(sample: PresentationTimingSample): void {
+  if (import.meta.env.DEV) window.__liaisonScapePresentationTimingSink?.(sample);
 }

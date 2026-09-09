@@ -71,8 +71,74 @@ The real Product surface was inspected at:
 Physical Saturn V and NASA drags were performed through the actual Product
 surface. The route diagnostic and temporary coordinate state updated during
 each drag. No coordinate save was performed; reloading restored the fixture.
-No obvious visible freeze was observed in these bounded interactions, but
-browser FPS and pointer-to-render latency remain unmeasured.
+No obvious visible freeze, edge hysteresis, or snap-back was observed in these
+bounded interactions. A later dev-only timing seam measured the current
+`2ccbb34` surface as follows:
+
+| Drag | Pointer moves | Presentation computations | Presentation median / p95 / max | Pointer→sampled render median / p95 / max | Pointer→node lag median / p95 / max |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Saturn V | 8 | 16 | 79.0 / 121.0 / 143.8 ms | 1.1 / 1.2 / 1.3 ms | 6.3 / 6.3 / 6.3 px |
+| NASA | 8 | 16 | 83.7 / 101.6 / 141.0 ms | 1.0 / 1.1 / 1.2 ms | 6.3 / 6.3 / 6.3 px |
+
+The measurement seam records the real Product `pointermove`, the node-body
+rendered center, and a two-`requestAnimationFrame` DOM sample. It is a
+bounded sampled latency signal, not browser FPS or a complete event-queue
+trace; dropped/coalesced events and Long Task attribution were not measured.
+The presentation duration is captured around the actual `App` presentation
+derivation. It should therefore be compared with the pure-function benchmark,
+but not treated as a frame-rate guarantee.
+
+The historical `a38e01f` and `98d10e0` surfaces were also opened in isolated
+temporary worktrees and received one physical Saturn V and one physical NASA
+drag each under the same fixture and viewport. Both completed with no obvious
+visible freeze or snap-back. Those historical surfaces did not contain the
+timing seam, so their physical checks are qualitative only. One `98d10e0`
+NASA action had a longer automation completion wait than the other bounded
+actions; because this was a single helper-level observation without in-page
+timing, it remains unresolved rather than being attributed to Product lag.
+
+## Pointer responsiveness diagnosis
+
+### Proven
+
+- `a38e01f` is the first of these snapshots that adds the label-yielding
+  route-free counterfactual and can trigger a bounded second presentation pass.
+  The existing warm pure-function benchmark rises from `26.7 ms` median before
+  it to `101.9 ms` median at `a38e01f`.
+- `98d10e0` hoists and reuses the label-free counterfactual without changing
+  presentation output. Its warm pure-function median is `76.9 ms`.
+- `2ccbb34` adds conditional previous-route validation during active Node drag.
+  Its warm pure-function active-drag comparison was `79.545 ms` median / `85.165
+  ms` p95 with the previous route set versus `81.331 ms` / `87.132 ms` without
+  it.
+- On the current actual Product surface, the sampled pointer-to-render signal
+  remained about `1 ms` and normalized pointer-to-node lag was about `6.3 px`
+  for both representative drags. The node visibly followed the pointer in the
+  bounded checks.
+
+### Strongly supported
+
+- The principal computational regression risk enters with `a38e01f`, not with
+  the locality branch itself: its extra route/label work explains the large
+  pure-function increase, while `98d10e0` recovers a substantial part of that
+  cost without changing the visual result.
+- `2ccbb34` did not show a meaningful additional computation penalty in either
+  the pure benchmark or the current in-page timing samples. It is therefore
+  unlikely to be the primary source of the previously perceived pointer lag.
+- The perceived improvement from `a38e01f` onward is not explained by
+  computation time alone. Browser scheduling, React state/render cadence, the
+  CUA gesture cadence, and the distinction between a next sampled DOM update
+  and a full end-to-end frame trace remain relevant.
+
+### Unresolved
+
+- A causal physical latency ranking between the historical snapshots cannot be
+  established from one qualitative drag per node because only the current
+  snapshot has the timing seam.
+- Browser FPS, event coalescing, and Long Task attribution remain unmeasured.
+- The remaining remote route flip and NASA crossing change are presentation
+  locality questions, not evidence that the current pointer-tracking path is
+  lagging.
 
 ## Decision
 
@@ -81,12 +147,19 @@ spacing/routing adoption. It demonstrates that some remote churn is caused by
 route-order continuity rather than direct obstacle safety, while the NASA
 crossing increase demonstrates that continuity must remain conditional.
 
-The next useful checkpoint is user comparison of the actual Product behavior:
+The candidate remains an inspection candidate, not a final adoption. The next
+useful checkpoint is user comparison of the actual Product behavior:
 
 - whether the preserved remote routes feel more stable during Saturn V drag;
 - whether the remaining flip/crossing in NASA drag is visually harmful;
 - whether route recovery and label yielding still feel natural;
 - whether any responsiveness difference is noticeable during repeated drag.
+
+The timing instrumentation is intentionally dev-only and diagnostic. No
+drag-time coalescing or alternate presentation path is selected from these
+measurements yet; a correction would need to preserve immediate pointer
+tracking, sufficiently current/stable route and label presentation, and an
+authoritative final presentation at drag end.
 
 Cross-sample audit, crossing-aware placement, parallel/self-loop redesign,
 spacing selection, and governed Fresh execution remain out of scope.

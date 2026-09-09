@@ -32,7 +32,7 @@ import { placeInitialEntity } from "./initial-entity-placement";
 import { placeInitialEntities } from "./entity-placement";
 import { settleInitialPlacement, solveAutoLayout } from "./auto-layout";
 import { deriveBoundedAutomaticPresentation, type DerivedAutomaticRoute } from "./graph-presentation";
-import { publishPresentationDiagnostic } from "./presentation-diagnostics";
+import { publishPresentationDiagnostic, publishPresentationTiming } from "./presentation-diagnostics";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
@@ -320,6 +320,7 @@ export default function App() {
     }),
   [graph.nodes, positions]);
   const presentation = useMemo(() => {
+    const startedAt = performance.now();
     const edges = graph.edges.map((edge) => ({
       ...edge,
       label: (() => {
@@ -327,7 +328,7 @@ export default function App() {
         return typeof relation?.name === "string" ? relation.name : "";
       })(),
     }));
-    return deriveBoundedAutomaticPresentation({
+    const result = deriveBoundedAutomaticPresentation({
       graph: { nodes: graph.nodes, edges },
       positions,
       edgeCurveOffsets,
@@ -341,6 +342,9 @@ export default function App() {
       draggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
       activelyDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
     });
+    const completedAt = performance.now();
+    publishPresentationTiming({ startedAt, completedAt, durationMs: completedAt - startedAt });
+    return result;
   }, [edgeCurveOffsets, graph, manualLabelRevision, positions, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
