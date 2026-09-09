@@ -92,10 +92,29 @@ function presentationMetrics(positions) {
     const label = presentation.relationLabels.get(route.id);
     const width = label?.width ?? 48;
     const length = route.samples.slice(1).reduce((total, point, index) => total + Math.hypot(point.x - route.samples[index].x, point.y - route.samples[index].y), 0);
-    const minimumUsableLength = width * 4;
-    return { id: route.id, length, width, shortfall: Math.max(0, minimumUsableLength - length) };
+    const first = route.samples[0] ?? { x: 0, y: 0 };
+    const last = route.samples[route.samples.length - 1] ?? first;
+    const directLength = Math.hypot(last.x - first.x, last.y - first.y);
+    const straightness = directLength / Math.max(1, length);
+    const horizontalSpan = Math.abs(last.x - first.x);
+    const horizontalRatio = horizontalSpan / Math.max(1, directLength);
+    const shallowAngleTarget = horizontalRatio >= 0.55;
+    const usableSpan = shallowAngleTarget ? horizontalSpan * straightness : null;
+    const minimumUsableSpan = shallowAngleTarget ? width + 48 : null;
+    return {
+      id: route.id,
+      length,
+      width,
+      horizontalSpan,
+      horizontalRatio,
+      shallowAngleTarget,
+      straightness,
+      usableSpan,
+      minimumUsableSpan,
+      usableShortfall: shallowAngleTarget ? Math.max(0, minimumUsableSpan - usableSpan) : 0,
+    };
   });
-  const labelSupportPenalty = routeSupports.reduce((total, route) => total + (route.shortfall / 24) ** 2 * 250, 0);
+  const usableSpanPenalty = routeSupports.reduce((total, route) => total + (route.usableShortfall / 18) ** 2 * 160, 0);
   let labelOverlap = 0;
   for (let left = 0; left < labels.length; left += 1) for (let right = left + 1; right < labels.length; right += 1) {
     if (Math.abs(labels[left].x - labels[right].x) < (labels[left].width + labels[right].width) / 2
@@ -111,7 +130,7 @@ function presentationMetrics(positions) {
   const routeMedian = lengths[Math.floor(lengths.length / 2)]; const routeMax = Math.max(...lengths);
   const score = crossings * 9000 + labelRouteHits * 6000 + labelNear20 * 700 + labelOverlap * 3000
     + routeMedian * 1.5 + routeMax * 0.5 + (extent[0] + extent[1]) * 0.35;
-  return { score, ...feasibility, extent, aspectRatio, aspectPenalty, fitScale, routeMedian, routeMax, crossings, labelRouteHits, labelNear20, labelOverlap, labelSupportPenalty };
+  return { score, ...feasibility, extent, aspectRatio, aspectPenalty, fitScale, routeMedian, routeMax, crossings, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports };
 }
 
 const baselineAdjacency = new Map(graph.edges.map((edge) => {
@@ -225,10 +244,23 @@ function improveFactor(startPositions, objective, targetIds) {
 
 const baseline = presentationMetrics(start);
 const baselineWithAdjacency = { metrics: baseline, adjacency: adjacencyMetrics(start) };
+const baselineRouteSupports = new Map(baseline.routeSupports.map((route) => [route.id, route]));
+function balancedLengthPenalty(metrics) {
+  return metrics.routeSupports.reduce((total, route) => {
+    const baselineRoute = baselineRouteSupports.get(route.id) ?? route;
+    if (!route.shallowAngleTarget || !baselineRoute.shallowAngleTarget) return total;
+    const preferredLower = Math.max(route.minimumUsableSpan, baselineRoute.usableSpan * 0.76);
+    const preferredUpper = Math.max(route.minimumUsableSpan, baselineRoute.usableSpan * 1.18);
+    const shortfall = Math.max(0, preferredLower - route.usableSpan);
+    const excess = Math.max(0, route.usableSpan - preferredUpper);
+    return total + (shortfall / 18) ** 2 * 160 + (excess / 32) ** 2 * 60;
+  }, 0);
+}
 const result = improve(start);
 const topologyAware = improveTopology(start);
-const labelLengthAware = improveFactor(start, (metrics) => metrics.score + metrics.labelSupportPenalty * 2, graph.nodes.map(({ id }) => id));
+const labelLengthAware = improveFactor(start, (metrics) => metrics.score + metrics.usableSpanPenalty * 2, graph.nodes.map(({ id }) => id));
 const horizontalCanvasAware = improveFactor(start, (metrics) => metrics.score + metrics.aspectPenalty, graph.nodes.map(({ id }) => id));
+const balancedEdgeLength = improveFactor(start, (metrics) => metrics.score + metrics.aspectPenalty + balancedLengthPenalty(metrics), graph.nodes.map(({ id }) => id));
 console.log(JSON.stringify({
   contract: "LIAISONSCAPE-PRESENTATION-TOPOLOGY-RELAXATION-v1",
   diagnosticOnly: true,
@@ -244,4 +276,5 @@ console.log(JSON.stringify({
   topologyAware,
   labelLengthAware,
   horizontalCanvasAware,
+  balancedEdgeLength,
 }, null, 2));

@@ -96,6 +96,17 @@ const horizontalCanvasAwarePositions = {
   moon: { x: 452.534, y: -37.622 },
   hornet: { x: 174.701, y: -96.251 },
 };
+const balancedEdgeLengthPositions = {
+  armstrong: { x: -116.717, y: 312.208 },
+  aldrin: { x: 204.011, y: 490.891 },
+  collins: { x: -102.185, y: 153 },
+  nasa: { x: 139.196, y: 325.48 },
+  columbia: { x: 145.797, y: 55.267 },
+  eagle: { x: 336.422, y: 158.709 },
+  "saturn-v": { x: -33.844, y: -43.818 },
+  moon: { x: 407.534, y: -64.622 },
+  hornet: { x: 156.701, y: -87.251 },
+};
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -117,6 +128,7 @@ const candidateDescriptions = {
   "topology-aware-relaxation-v1": "Topology-aware bounded relaxation (diagnostic)",
   "label-length-aware-v1": "Label-length-aware refinement (mixed control)",
   "horizontal-canvas-v1": "Horizontal-canvas refinement (mixed control)",
+  "balanced-edge-length-v1": "Horizontal canvas with balanced Edge length (diagnostic)",
   "source-f0-160": "Source F0 solver, clearance 160",
   "fp1-ngp-420": "FP1-NGP negative control",
 } as const;
@@ -137,6 +149,7 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "topology-aware-relaxation-v1") return topologyAwareRelaxationPositions;
   if (candidate === "label-length-aware-v1") return labelLengthAwarePositions;
   if (candidate === "horizontal-canvas-v1") return horizontalCanvasAwarePositions;
+  if (candidate === "balanced-edge-length-v1") return balancedEdgeLengthPositions;
   if (candidate === "fp1-ngp-420") return fp1NgpPositions;
   const graph = buildEntityGraph(dataset);
   if (candidate === "source-f0-160") {
@@ -189,21 +202,22 @@ function candidateUrl(candidate: CandidateId) {
 
 function CandidateMetrics() {
   const rows = useMemo(() => [
-    ["current", "3", "2", "187.9", "364.6", "510 × 677", "0.753", "0.416"],
-    ["local-search-v1", "3", "0", "177.9", "319.9", "423 × 677", "0.625", "0.416"],
-    ["local-search-v1-plus", "3", "0", "163.8", "363.3", "440 × 677", "0.650", "0.416"],
-    ["crossing-aware-v1", "1", "2", "116.1", "305.4", "391 × 545", "0.718", "0.506"],
-    ["label-accommodation-v1", "3", "1", "177.9", "464.4", "423 × 677", "0.624", "0.416"],
-    ["presentation-aware-relaxation-v1", "2", "0", "123.3", "382.5", "338 × 647", "0.523", "0.433"],
-    ["topology-aware-relaxation-v1", "3", "0", "127.4", "292.8", "386 × 581", "0.665", "0.477"],
-    ["label-length-aware-v1", "3", "0", "329.6", "452.3", "554 × 851", "0.651", "0.337"],
-    ["horizontal-canvas-v1", "3", "0", "140.1", "394.8", "569 × 587", "0.970", "0.473"],
-    ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542", "0.893", "0.508"],
-    ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420", "1.000", "0.636"],
+    ["current", "3", "2", "187.9", "364.6", "510 × 677", "0.753", "0.416", "—"],
+    ["local-search-v1", "3", "0", "177.9", "319.9", "423 × 677", "0.625", "0.416", "—"],
+    ["local-search-v1-plus", "3", "0", "163.8", "363.3", "440 × 677", "0.650", "0.416", "3043"],
+    ["crossing-aware-v1", "1", "2", "116.1", "305.4", "391 × 545", "0.718", "0.506", "—"],
+    ["label-accommodation-v1", "3", "1", "177.9", "464.4", "423 × 677", "0.624", "0.416", "—"],
+    ["presentation-aware-relaxation-v1", "2", "0", "123.3", "382.5", "338 × 647", "0.523", "0.433", "15338"],
+    ["topology-aware-relaxation-v1", "3", "0", "127.4", "292.8", "386 × 581", "0.665", "0.477", "9453"],
+    ["label-length-aware-v1", "3", "0", "185.9", "394.6", "485 × 653", "0.727", "0.365", "0"],
+    ["horizontal-canvas-v1", "3", "0", "140.1", "394.8", "569 × 587", "0.970", "0.473", "4624"],
+    ["balanced-edge-length-v1", "3", "0", "192.4", "410.9", "524 × 578", "0.907", "0.480", "15"],
+    ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542", "0.893", "0.508", "—"],
+    ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420", "1.000", "0.636", "—"],
   ], []);
   return <section className="geometry-inspection-metrics" aria-label="Diagnostic geometry metrics">
     <strong>Diagnostic metrics only — not Product adoption</strong>
-    <table><thead><tr><th>candidate</th><th>crossings</th><th>label hits</th><th>route median</th><th>route max</th><th>node extent</th><th>aspect</th><th>fit scale</th></tr></thead>
+    <table><thead><tr><th>candidate</th><th>crossings</th><th>label hits</th><th>route median</th><th>route max</th><th>node extent</th><th>aspect</th><th>fit scale</th><th>usable span penalty</th></tr></thead>
       <tbody>{rows.map((row) => <tr key={row[0]}><td><code>{row[0]}</code></td>{row.slice(1).map((value) => <td key={value}>{value}</td>)}</tr>)}</tbody>
     </table>
   </section>;
@@ -219,7 +233,7 @@ function GeometryInspection() {
       <label>Candidate <select value={selectedCandidate} onChange={changeCandidate} aria-label="Geometry candidate">
         {Object.entries(candidateDescriptions).map(([id, description]) => <option key={id} value={id}>{description}</option>)}
       </select></label>
-      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Targeted local corridor refinement with the factor controls: Label-length-aware refinement, Horizontal-canvas refinement, and the existing Bounded crossing refinement. Recheck Neil Armstrong / NASA / Lunar Module Eagle, Michael Collins / NASA, NASA / Saturn V, and Saturn V / Command Module Columbia. These are diagnostic comparisons, not adoption decisions. Pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
+      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Targeted local corridor refinement with Horizontal-canvas refinement and the new Horizontal canvas with balanced Edge length. Recheck Neil Armstrong / NASA / Lunar Module Eagle, Michael Collins / NASA, NASA / Saturn V, Saturn V / Command Module Columbia, and the crowded NASA corridor. These are diagnostic comparisons, not adoption decisions. Pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
     </div>
     <CandidateMetrics />
     <App />
