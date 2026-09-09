@@ -313,6 +313,74 @@ function improveCrossingAfterCompaction(startPositions) {
   return { positions: current, metrics, evaluations, rejectedInfeasible, rejectedConstraint, accepted, sweeps: 1, steps, maxNodeDisplacement: 48 };
 }
 
+function principalAxisHorizontalRecomposition(startPositions) {
+  const points = Object.values(startPositions);
+  const centroid = points.reduce((sum, point) => ({ x: sum.x + point.x, y: sum.y + point.y }), { x: 0, y: 0 });
+  centroid.x /= points.length;
+  centroid.y /= points.length;
+  const covariance = points.reduce((sum, point) => {
+    const dx = point.x - centroid.x;
+    const dy = point.y - centroid.y;
+    return { xx: sum.xx + dx * dx, xy: sum.xy + dx * dy, yy: sum.yy + dy * dy };
+  }, { xx: 0, xy: 0, yy: 0 });
+  const axisAngle = 0.5 * Math.atan2(2 * covariance.xy, covariance.xx - covariance.yy);
+  const cos = Math.cos(-axisAngle);
+  const sin = Math.sin(-axisAngle);
+  const positions = Object.fromEntries(Object.entries(startPositions).map(([id, point]) => {
+    const dx = point.x - centroid.x;
+    const dy = point.y - centroid.y;
+    return [id, { x: centroid.x + dx * cos - dy * sin, y: centroid.y + dx * sin + dy * cos }];
+  }));
+  return {
+    positions,
+    metrics: presentationMetrics(positions),
+    transform: "centroid-preserving principal-axis rotation",
+    axisAngleRadians: axisAngle,
+    source: "crossing-after-compaction-v1",
+  };
+}
+
+function improveGlobalLabelAccommodation(startPositions) {
+  let current = clonePositions(startPositions);
+  let metrics = presentationMetrics(current);
+  const reference = clonePositions(startPositions);
+  let evaluations = 1; let rejectedInfeasible = 0; let rejectedConstraint = 0; let accepted = 0;
+  const directions = [
+    { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 },
+    { x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }, { x: 1, y: -1 },
+  ];
+  const steps = [12, 6];
+  const objective = (candidateMetrics, candidate) => candidateMetrics.crossings * 9000
+    + candidateMetrics.labelRouteHits * 6000
+    + candidateMetrics.labelOverlap * 3000
+    + candidateMetrics.labelNear20 * 700
+    + candidateMetrics.usableSpanPenalty * 2
+    + relativeAdjacencyPenalty(candidate, reference) * 2
+    + candidateMetrics.routeMedian * 1.5 + candidateMetrics.routeMax * 0.5
+    + (candidateMetrics.extent[0] + candidateMetrics.extent[1]) * 0.25;
+  for (const node of graph.nodes) for (const step of steps) for (const direction of directions) {
+    const candidate = clonePositions(current);
+    candidate[node.id] = { x: candidate[node.id].x + direction.x * step, y: candidate[node.id].y + direction.y * step };
+    if (Math.hypot(candidate[node.id].x - startPositions[node.id].x, candidate[node.id].y - startPositions[node.id].y) > 48) { rejectedConstraint += 1; continue; }
+    const feasibility = nodeFeasibility(candidate);
+    if (feasibility.overlapPairs > 0) { rejectedInfeasible += 1; continue; }
+    const candidateMetrics = presentationMetrics(candidate); evaluations += 1;
+    if (candidateMetrics.labelRouteHits > 0 || candidateMetrics.labelOverlap > 0) { rejectedConstraint += 1; continue; }
+    if (objective(candidateMetrics, candidate) < objective(metrics, current)) { current = candidate; metrics = candidateMetrics; accepted += 1; }
+  }
+  return {
+    positions: current,
+    metrics,
+    source: "global-horizontal-topology-v1",
+    evaluations,
+    rejectedInfeasible,
+    rejectedConstraint,
+    accepted,
+    steps,
+    maxNodeDisplacement: 48,
+  };
+}
+
 const baseline = presentationMetrics(start);
 const baselineWithAdjacency = { metrics: baseline, adjacency: adjacencyMetrics(start) };
 const baselineRouteSupports = new Map(baseline.routeSupports.map((route) => [route.id, route]));
@@ -334,6 +402,8 @@ const horizontalCanvasAware = improveFactor(start, (metrics) => metrics.score + 
 const balancedEdgeLength = improveFactor(start, (metrics) => metrics.score + metrics.aspectPenalty + balancedLengthPenalty(metrics), graph.nodes.map(({ id }) => id));
 const safeVerticalCompaction = improveVerticalCompaction(balancedEdgeLength.positions);
 const crossingAfterCompaction = improveCrossingAfterCompaction(safeVerticalCompaction.positions);
+const globalHorizontalTopology = principalAxisHorizontalRecomposition(crossingAfterCompaction.positions);
+const topologyAwareHorizontalRecomposition = improveGlobalLabelAccommodation(globalHorizontalTopology.positions);
 console.log(JSON.stringify({
   contract: "LIAISONSCAPE-PRESENTATION-TOPOLOGY-RELAXATION-v1",
   diagnosticOnly: true,
@@ -352,4 +422,6 @@ console.log(JSON.stringify({
   balancedEdgeLength,
   safeVerticalCompaction,
   crossingAfterCompaction,
+  globalHorizontalTopology,
+  topologyAwareHorizontalRecomposition,
 }, null, 2));

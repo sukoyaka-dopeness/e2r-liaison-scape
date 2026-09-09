@@ -129,6 +129,28 @@ const crossingAfterCompactionPositions = {
   moon: { x: 407.534, y: -52.622 },
   hornet: { x: 168.701, y: -48.251 },
 };
+const globalHorizontalTopologyPositions = {
+  armstrong: { x: -134.0465391339618, y: 45.09264205164071 },
+  aldrin: { x: -96.97798947530262, y: 398.36791305033864 },
+  collins: { x: 15.2778960549082, y: -66.2072202282605 },
+  nasa: { x: -12.48795861293533, y: 258.06150610156027 },
+  columbia: { x: 212.03663646862498, y: 112.63015193932537 },
+  eagle: { x: 230.64408039010652, y: 326.44714148811903 },
+  "saturn-v": { x: 186.85772011104916, y: -97.72656955313896 },
+  moon: { x: 451.15162688523276, y: 255.88448816711832 },
+  hornet: { x: 308.45952731227834, y: 64.31394698329733 },
+};
+const topologyAwareHorizontalRecompositionPositions = {
+  armstrong: { x: -92.0465391339618, y: 63.09264205164071 },
+  aldrin: { x: -78.97798947530262, y: 374.36791305033864 },
+  collins: { x: 15.2778960549082, y: -66.2072202282605 },
+  nasa: { x: -12.48795861293533, y: 258.06150610156027 },
+  columbia: { x: 182.03663646862498, y: 142.63015193932537 },
+  eagle: { x: 218.64408039010652, y: 326.44714148811903 },
+  "saturn-v": { x: 174.85772011104916, y: -61.72656955313896 },
+  moon: { x: 415.15162688523276, y: 279.8844881671183 },
+  hornet: { x: 308.45952731227834, y: 64.31394698329733 },
+};
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -153,6 +175,8 @@ const candidateDescriptions = {
   "balanced-edge-length-v1": "Horizontal canvas with balanced Edge length (diagnostic)",
   "safe-vertical-compaction-v1": "Balanced Edge length with safe vertical compaction (diagnostic)",
   "crossing-after-compaction-v1": "Bounded crossing refinement after compaction (diagnostic)",
+  "global-horizontal-topology-v1": "Global horizontal recomposition (topology-first)",
+  "topology-aware-horizontal-recomposition-v1": "Topology-aware horizontal recomposition (label-aware)",
   "source-f0-160": "Source F0 solver, clearance 160",
   "fp1-ngp-420": "FP1-NGP negative control",
 } as const;
@@ -176,6 +200,8 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "balanced-edge-length-v1") return balancedEdgeLengthPositions;
   if (candidate === "safe-vertical-compaction-v1") return safeVerticalCompactionPositions;
   if (candidate === "crossing-after-compaction-v1") return crossingAfterCompactionPositions;
+  if (candidate === "global-horizontal-topology-v1") return globalHorizontalTopologyPositions;
+  if (candidate === "topology-aware-horizontal-recomposition-v1") return topologyAwareHorizontalRecompositionPositions;
   if (candidate === "fp1-ngp-420") return fp1NgpPositions;
   const graph = buildEntityGraph(dataset);
   if (candidate === "source-f0-160") {
@@ -240,6 +266,8 @@ function CandidateMetrics() {
     ["balanced-edge-length-v1", "3", "0", "192.4", "410.9", "524 × 578", "0.907", "0.480", "15"],
     ["safe-vertical-compaction-v1", "3", "0", "189.6", "404.0", "524 × 541", "0.970", "0.510", "6"],
     ["crossing-after-compaction-v1", "3", "0", "180.9", "393.8", "516 × 529", "0.976", "0.520", "6"],
+    ["global-horizontal-topology-v1", "3", "0", "171.5", "381.6", "585 × 496", "1.180", "0.550", "10322"],
+    ["topology-aware-horizontal-recomposition-v1", "3", "0", "141.5", "327.4", "507 × 441", "1.151", "0.610", "5502"],
     ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542", "0.893", "0.508", "—"],
     ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420", "1.000", "0.636", "—"],
   ], []);
@@ -261,7 +289,7 @@ function GeometryInspection() {
       <label>Candidate <select value={selectedCandidate} onChange={changeCandidate} aria-label="Geometry candidate">
         {Object.entries(candidateDescriptions).map(([id, description]) => <option key={id} value={id}>{description}</option>)}
       </select></label>
-      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Targeted local corridor refinement, Horizontal canvas with balanced Edge length, Balanced Edge length with safe vertical compaction, and Bounded crossing refinement after compaction. Recheck Neil Armstrong / NASA / Lunar Module Eagle, Michael Collins / NASA, NASA / Saturn V, Saturn V / Command Module Columbia, and the crowded NASA corridor. These are diagnostic comparisons, not adoption decisions; the crossing pass did not reduce the raw crossing count in this fixture. Pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
+      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Targeted local corridor refinement, the current compaction candidate, Global horizontal recomposition, and Topology-aware horizontal recomposition. Recheck Neil Armstrong / NASA / Lunar Module Eagle, Michael Collins / NASA, NASA / Saturn V, Saturn V / Command Module Columbia, and the crowded NASA corridor. These are diagnostic comparisons, not adoption decisions; the horizontal candidates change the global axis, while pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
     </div>
     <CandidateMetrics />
     <App />
