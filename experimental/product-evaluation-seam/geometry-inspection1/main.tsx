@@ -19,6 +19,17 @@ const localSearchPositions = {
   moon: { x: 380.534, y: -64.622 },
   hornet: { x: 156.701, y: -168.251 },
 };
+const targetedLocalCorridorPositions = {
+  armstrong: { x: -59.717, y: 357.208 },
+  aldrin: { x: 222.011, y: 508.891 },
+  collins: { x: -42.185, y: 159.000 },
+  nasa: { x: 145.196, y: 337.480 },
+  columbia: { x: 172.797, y: 73.267 },
+  eagle: { x: 327.422, y: 158.709 },
+  "saturn-v": { x: 11.156, y: -25.818 },
+  moon: { x: 380.534, y: -64.622 },
+  hornet: { x: 156.701, y: -168.251 },
+};
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -33,6 +44,7 @@ const fp1NgpPositions = {
 const candidateDescriptions = {
   current: "Stored Apollo 220 baseline",
   "local-search-v1": "Deterministic local geometry candidate",
+  "local-search-v1-plus": "Targeted local corridor refinement",
   "source-f0-160": "Source F0 solver, clearance 160",
   "fp1-ngp-420": "FP1-NGP negative control",
 } as const;
@@ -46,6 +58,7 @@ function cloneValue<T>(value: T): T {
 
 function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "local-search-v1") return localSearchPositions;
+  if (candidate === "local-search-v1-plus") return targetedLocalCorridorPositions;
   if (candidate === "fp1-ngp-420") return fp1NgpPositions;
   const graph = buildEntityGraph(dataset);
   if (candidate === "source-f0-160") {
@@ -100,6 +113,7 @@ function CandidateMetrics() {
   const rows = useMemo(() => [
     ["current", "3", "2", "187.9", "364.6", "510 × 677"],
     ["local-search-v1", "3", "0", "177.9", "319.9", "423 × 677"],
+    ["local-search-v1-plus", "3", "0", "163.8", "363.3", "440 × 677"],
     ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542"],
     ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420"],
   ], []);
@@ -121,7 +135,7 @@ function GeometryInspection() {
       <label>Candidate <select value={selectedCandidate} onChange={changeCandidate} aria-label="Geometry candidate">
         {Object.entries(candidateDescriptions).map(([id, description]) => <option key={id} value={id}>{description}</option>)}
       </select></label>
-      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Start with entity-3, entity-6, entity-8, and entity-10 in the dense Edge corridors.</span>
+      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Compare the targeted refinement around Neil Armstrong / NASA / Lunar Module Eagle, then recheck Michael Collins / NASA, NASA / Saturn V, and Saturn V / Command Module Columbia.</span>
     </div>
     <CandidateMetrics />
     <App />
