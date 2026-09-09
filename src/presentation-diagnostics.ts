@@ -23,6 +23,10 @@ export type PresentationTimingSample = {
   startedAt: number;
   completedAt: number;
   durationMs: number;
+  presentationInputId: number;
+  presentationRevision: number;
+  activeNodeDrag: boolean;
+  feedbackApplied: boolean;
 };
 
 export type DragPointerProcessingSample = {

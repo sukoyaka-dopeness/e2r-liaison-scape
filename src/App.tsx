@@ -96,6 +96,7 @@ export default function App() {
   const previousNodeLabelPlacements = useRef(new Map<string, LabelRect>());
   const previousEdgeLabelPlacements = useRef(new Map<string, LabelRect>());
   const previousAutomaticRoutes = useRef(new Map<string, DerivedAutomaticRoute>());
+  const presentationInputIdentityRef = useRef<{ map: WeakMap<object, number>; nextId: number }>({ map: new WeakMap(), nextId: 0 });
   const relationLabelVisualState = useRef(new Map<string, RelationLabelVisualState>());
   const manualRelationLabelAnchors = useRef(new Map<string, ManualRelationLabelAnchor>());
   const manualNodeLabelOffsets = useRef(new Map<string, { x: number; y: number }>());
@@ -325,6 +326,13 @@ export default function App() {
   [graph.nodes, positions]);
   const presentation = useMemo(() => {
     const startedAt = performance.now();
+    let presentationInputId = presentationInputIdentityRef.current.map.get(positions);
+    if (presentationInputId === undefined) {
+      presentationInputId = presentationInputIdentityRef.current.nextId;
+      presentationInputIdentityRef.current.nextId += 1;
+      presentationInputIdentityRef.current.map.set(positions, presentationInputId);
+    }
+    const activeNodeDrag = dragRef.current?.kind === "node";
     const edges = graph.edges.map((edge) => ({
       ...edge,
       label: (() => {
@@ -348,7 +356,15 @@ export default function App() {
       feedbackEnabled: dragRef.current?.kind !== "node",
     });
     const completedAt = performance.now();
-    publishPresentationTiming({ startedAt, completedAt, durationMs: completedAt - startedAt });
+    publishPresentationTiming({
+      startedAt,
+      completedAt,
+      durationMs: completedAt - startedAt,
+      presentationInputId,
+      presentationRevision,
+      activeNodeDrag,
+      feedbackApplied: result.feedbackApplied,
+    });
     return result;
   }, [edgeCurveOffsets, graph, manualLabelRevision, positions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;

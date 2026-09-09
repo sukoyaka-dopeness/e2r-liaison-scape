@@ -7,6 +7,7 @@ Status: bounded local experiment. This is not Product adoption, formal visual ac
 - `d773ad8` = known-good bounded label-route fallback.
 - `a38e01f` = user-inspected promising node-label yielding snapshot.
 - `98d10e0` = output-preserving label-free counterfactual reuse.
+- `06913e2` = user-observed responsiveness improvement candidate; not Product adoption.
 
 The experiment preserves the `a38e01f`/`98d10e0` presentation semantics and
 tests only whether safe, non-incident automatic routes can retain their prior
@@ -210,6 +211,49 @@ Tasks, so it is not a controlled numerical A/B against the user run. Its value
 here is the actual Product smoke result: the Node followed the gesture and no
 obvious visible freeze, route hysteresis, label jump, or drag-end snap-back was
 seen. User inspection remains required before adoption.
+
+## User observation and computation breakdown
+
+The user subsequently reported that `06913e2` may have restored a closer,
+more synchronous pointer-to-Node feel. That observation is retained as
+promising Product evidence, while the user-side tail remains unresolved:
+
+| Signal | User-side measurement after `06913e2` | Pre-correction measurement |
+| --- | ---: | ---: |
+| Pointer moves / raw presentation computations | 89 / 166 | 30 / 52 |
+| Presentation median / p95 / max | 45.6 / 58.0 / 89.3 ms | 72.9 ms median |
+| Pointer-to-Node lag median / p95 / max | 5.8 / 79.6 / 179.1 px | 12.0 / 24.0 / 29.4 px |
+| Pointer-to-render p95 | 120.2 ms | 179.3 ms |
+| Event age median | 10.5 ms | not recorded |
+| Latest-versus-processed pointer max | 0.0 px | not recorded |
+| Coalesced samples | 503 | not recorded |
+| Long Tasks | approximately 89–161 ms, numerous | approximately 152–192 ms × 26 |
+
+The enhanced diagnostic then classified one actual Product CUA drag as `12`
+raw presentation samples from `6` unique `positions` identities, with `6`
+duplicate computations, `0` feedback passes, and `8` pointermoves. Both
+actual inspection entry points run the App under React `<StrictMode>`; the
+unique/duplicate split therefore strongly supports development StrictMode
+render-phase re-invocation as the explanation for much of the apparent
+`166 > 89` multiplicity. The raw count must not be treated as production
+presentation work. The route/label first pass and rAF position flush remain
+necessary work; the deferred feedback pass was not observed during the active
+drag.
+
+The user-side `79.6 / 179.1 px` tail cannot yet be called visible lag. The
+zero latest-versus-processed distance argues against an input-position backlog,
+while the lower pointer-to-render p95 and the user's improved median feel argue
+that the common path improved. The tail may be caused by Long Task intervals,
+stop/reversal sampling, or the sampling point itself. Current diagnostics do
+not prove which; user inspection is required. In the CUA classification run,
+the available samples fell outside recorded Long Task windows, so no causal
+lag correlation was claimed.
+
+Presentation medians near `45.6 ms` together with `89–161 ms` Long Tasks are
+consistent with duplicated development render work plus React commit/paint or
+runtime scheduling, but do not prove that all Long Task time is Product
+presentation work. The next diagnostic boundary is a production-like build or
+non-StrictMode inspection run, not more locality logic.
 
 ## Decision
 

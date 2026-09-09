@@ -19,6 +19,9 @@ type DragTimingReport = {
   nodeId: string;
   pointerMoves: number;
   presentationComputations: number;
+  uniquePresentationInputs: number;
+  duplicatePresentationComputations: number;
+  feedbackPassComputations: number;
   presentationDurationMs: { median: number; p95: number; max: number } | null;
   renderSamples: number;
   pointerToRenderMs: { median: number; p95: number; max: number } | null;
@@ -29,6 +32,8 @@ type DragTimingReport = {
   latestVsProcessedPointerPx: { median: number; p95: number; max: number } | null;
   coalescedEvents: number;
   longTaskDurationsMs: number[];
+  nodeLagDuringLongTaskPx: { median: number; p95: number; max: number } | null;
+  nodeLagOutsideLongTaskPx: { median: number; p95: number; max: number } | null;
   durationMs: number;
 };
 
@@ -38,14 +43,18 @@ type ActiveDragTiming = {
   startedAt: number;
   pointerMoves: number;
   computationDurations: number[];
+  presentationInputIds: number[];
+  feedbackPassComputations: number;
   renderLatencies: number[];
   processedRenderLatencies: number[];
   nodeLagPixels: number[];
+  nodeLagSamples: Array<{ at: number; lag: number }>;
   eventAges: number[];
   processingAges: number[];
   latestVsProcessedPointerPixels: number[];
   coalescedEvents: number;
   longTaskDurationsMs: number[];
+  longTaskWindows: Array<{ start: number; end: number }>;
   latestPointer: { x: number; y: number };
   latestPointerAt: number;
   latestProcessedAt: number;
@@ -90,7 +99,9 @@ function sampleRenderedDrag(): void {
   const center = nodeCenter(drag.nodeId);
   if (center) {
     const expected = { x: drag.latestPointer.x + drag.grabOffset.x, y: drag.latestPointer.y + drag.grabOffset.y };
-    drag.nodeLagPixels.push(Math.hypot(center.x - expected.x, center.y - expected.y));
+    const lag = Math.hypot(center.x - expected.x, center.y - expected.y);
+    drag.nodeLagPixels.push(lag);
+    drag.nodeLagSamples.push({ at: performance.now(), lag });
     drag.renderLatencies.push(performance.now() - drag.latestPointerAt);
     drag.processedRenderLatencies.push(performance.now() - drag.latestProcessedAt);
   }
@@ -106,11 +117,21 @@ function scheduleRenderedDragSample(): void {
 function finishDragTiming(): void {
   const drag = activeDragTiming;
   if (!drag) return;
+  const lagDuringLongTask = drag.nodeLagSamples
+    .filter(({ at }) => drag.longTaskWindows.some(({ start, end }) => at >= start && at <= end))
+    .map(({ lag }) => lag);
+  const lagOutsideLongTask = drag.nodeLagSamples
+    .filter(({ at }) => !drag.longTaskWindows.some(({ start, end }) => at >= start && at <= end))
+    .map(({ lag }) => lag);
+  const uniquePresentationInputs = new Set(drag.presentationInputIds).size;
   activeDragTiming = null;
   latestDragTimingReport = {
     nodeId: drag.nodeId,
     pointerMoves: drag.pointerMoves,
     presentationComputations: drag.computationDurations.length,
+    uniquePresentationInputs,
+    duplicatePresentationComputations: drag.computationDurations.length - uniquePresentationInputs,
+    feedbackPassComputations: drag.feedbackPassComputations,
     presentationDurationMs: summary(drag.computationDurations),
     renderSamples: drag.renderLatencies.length,
     pointerToRenderMs: summary(drag.renderLatencies),
@@ -121,13 +142,18 @@ function finishDragTiming(): void {
     latestVsProcessedPointerPx: summary(drag.latestVsProcessedPointerPixels),
     coalescedEvents: drag.coalescedEvents,
     longTaskDurationsMs: drag.longTaskDurationsMs,
+    nodeLagDuringLongTaskPx: summary(lagDuringLongTask),
+    nodeLagOutsideLongTaskPx: summary(lagOutsideLongTask),
     durationMs: performance.now() - drag.startedAt,
   };
   window.dispatchEvent(new CustomEvent<DragTimingReport>(timingEvent, { detail: latestDragTimingReport }));
 }
 
 window.__liaisonScapePresentationTimingSink = (sample: PresentationTimingSample) => {
-  if (activeDragTiming) activeDragTiming.computationDurations.push(sample.durationMs);
+  if (!activeDragTiming) return;
+  activeDragTiming.computationDurations.push(sample.durationMs);
+  activeDragTiming.presentationInputIds.push(sample.presentationInputId);
+  if (sample.feedbackApplied) activeDragTiming.feedbackPassComputations += 1;
 };
 
 window.__liaisonScapeDragPointerProcessingSink = (sample: DragPointerProcessingSample) => {
@@ -141,7 +167,10 @@ window.__liaisonScapeDragPointerProcessingSink = (sample: DragPointerProcessingS
 
 const longTaskObserver = typeof PerformanceObserver === "undefined" ? null : new PerformanceObserver((list) => {
   if (!activeDragTiming) return;
-  for (const entry of list.getEntries()) activeDragTiming.longTaskDurationsMs.push(entry.duration);
+  for (const entry of list.getEntries()) {
+    activeDragTiming.longTaskDurationsMs.push(entry.duration);
+    activeDragTiming.longTaskWindows.push({ start: entry.startTime, end: entry.startTime + entry.duration });
+  }
 });
 try { longTaskObserver?.observe({ type: "longtask", buffered: false }); } catch { /* unsupported in this browser */ }
 
@@ -158,14 +187,18 @@ document.addEventListener("pointerdown", (event) => {
     startedAt: performance.now(),
     pointerMoves: 0,
     computationDurations: [],
+    presentationInputIds: [],
+    feedbackPassComputations: 0,
     renderLatencies: [],
     processedRenderLatencies: [],
     nodeLagPixels: [],
+    nodeLagSamples: [],
     eventAges: [],
     processingAges: [],
     latestVsProcessedPointerPixels: [],
     coalescedEvents: 0,
     longTaskDurationsMs: [],
+    longTaskWindows: [],
     latestPointer: { x: event.clientX, y: event.clientY },
     latestPointerAt: performance.now(),
     latestProcessedAt: performance.now(),
@@ -290,9 +323,11 @@ function DragTimingDiagnostics() {
     {report ? <p><strong>{report.nodeId}</strong>: {report.pointerMoves} pointermoves, {report.presentationComputations} presentation computations, {report.renderSamples} render samples, duration {format(report.durationMs)} ms.</p> : <p>No completed node drag measured yet.</p>}
     {report && <ul>
       <li>presentation duration median / p95 / max: {format(report.presentationDurationMs?.median)} / {format(report.presentationDurationMs?.p95)} / {format(report.presentationDurationMs?.max)} ms</li>
+      <li>presentation inputs / duplicate computations / feedback passes: {report.uniquePresentationInputs} / {report.duplicatePresentationComputations} / {report.feedbackPassComputations}</li>
       <li>pointer→render median / p95 / max: {format(report.pointerToRenderMs?.median)} / {format(report.pointerToRenderMs?.p95)} / {format(report.pointerToRenderMs?.max)} ms</li>
       <li>processed pointer→render median / p95 / max: {format(report.processedToRenderMs?.median)} / {format(report.processedToRenderMs?.p95)} / {format(report.processedToRenderMs?.max)} ms</li>
       <li>pointer→node lag median / p95 / max: {format(report.pointerToNodeLagPx?.median)} / {format(report.pointerToNodeLagPx?.p95)} / {format(report.pointerToNodeLagPx?.max)} px</li>
+      <li>node lag during / outside Long Tasks (median / p95 / max): {format(report.nodeLagDuringLongTaskPx?.median)} / {format(report.nodeLagDuringLongTaskPx?.p95)} / {format(report.nodeLagDuringLongTaskPx?.max)} px; {format(report.nodeLagOutsideLongTaskPx?.median)} / {format(report.nodeLagOutsideLongTaskPx?.p95)} / {format(report.nodeLagOutsideLongTaskPx?.max)} px</li>
       <li>event age / processing age median: {format(report.eventAgeMs?.median)} / {format(report.processingAgeMs?.median)} ms; latest-vs-processed pointer max: {format(report.latestVsProcessedPointerPx?.max)} px; coalesced samples: {report.coalescedEvents}</li>
       <li>Long Tasks during drag: {report.longTaskDurationsMs.length ? report.longTaskDurationsMs.map((duration) => `${duration.toFixed(1)} ms`).join(", ") : "none observed"}</li>
     </ul>}
