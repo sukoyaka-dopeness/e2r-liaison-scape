@@ -327,12 +327,15 @@ export default function App() {
   [graph.nodes, positions]);
   const activeNodeDrag = dragRef.current?.kind === "node";
   const presentationDraggedNodeId = dragRef.current?.kind === "node" ? dragRef.current.id : finalizingNodeDragIdRef.current ?? undefined;
-  const presentationPhase = activeNodeDrag
+  const presentationPhase: "idle" | "node-drag-active" | "node-drag-finalizing" = activeNodeDrag
     ? "node-drag-active"
     : presentationDraggedNodeId !== undefined
       ? "node-drag-finalizing"
       : "idle";
   const presentation = useMemo(() => {
+    // Drag refs are interaction state, not geometry input. Do not re-route or
+    // re-label merely because a pointer enters or leaves a drag phase.
+    const derivationPhase = presentationPhase;
     const startedAt = performance.now();
     let presentationInputId = presentationInputIdentityRef.current.map.get(positions);
     if (presentationInputId === undefined) {
@@ -375,8 +378,8 @@ export default function App() {
       activeNodeDrag,
       feedbackApplied: result.feedbackApplied,
     });
-    return { ...result, routeDecisions: routeDecisions ?? [] };
-  }, [activeNodeDrag, edgeCurveOffsets, graph, manualLabelRevision, positions, presentationDraggedNodeId, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+    return { ...result, derivationPhase, routeDecisions: routeDecisions ?? [] };
+  }, [edgeCurveOffsets, graph, manualLabelRevision, positions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {
@@ -409,6 +412,7 @@ export default function App() {
     if (!dataset) return;
     publishPresentationDiagnostic({
       phase: presentationPhase,
+      derivationPhase: presentation.derivationPhase,
       draggedNodeId: presentationDraggedNodeId,
       liveDragPosition,
       presentationRevision,
@@ -424,7 +428,7 @@ export default function App() {
       relationLabels: Array.from(edgeLabelPlacements.entries()),
       nodeLabels: Array.from(nodeLabelPlacements.entries()),
     });
-  }, [dataset, edgeCurveOffsets, edgeLabelPlacements, graph.nodes, liveDragPosition, nodeLabelPlacements, positions, presentationDraggedNodeId, presentationPhase, presentationRevision, provisionalNodeLabels, routedEdges, selfLoopOverrides, presentation.feedbackApplied]);
+  }, [dataset, edgeCurveOffsets, edgeLabelPlacements, graph.nodes, liveDragPosition, nodeLabelPlacements, positions, presentationDraggedNodeId, presentationPhase, presentationRevision, provisionalNodeLabels, routedEdges, selfLoopOverrides, presentation.derivationPhase, presentation.feedbackApplied]);
 
   function resetPreviousLabelPlacements() {
     previousNodeLabelPlacements.current.clear();

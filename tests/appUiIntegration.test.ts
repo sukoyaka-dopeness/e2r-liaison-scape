@@ -7,6 +7,7 @@ import { createServer } from "vite";
 import { createDomTestEnvironment } from "./helpers/dom-test-environment.ts";
 import type { Dataset } from "../src/models.ts";
 import type { RelationLineStyle } from "../src/presentation-extension.ts";
+import type { PresentationDiagnosticSnapshot } from "../src/presentation-diagnostics.ts";
 
 const presentationExtensionId = "draft.github.sukoyaka-dopeness.liaisonscape-presentation";
 
@@ -122,7 +123,7 @@ async function setProbeName(environment: ReturnType<typeof createDomTestEnvironm
   await act(async () => { (environment.document.querySelector(`#${id}`) as HTMLButtonElement).click(); });
 }
 
-async function withProductionApp({ locale = "en", dataset, callback }: { locale?: "en" | "ja"; dataset?: Dataset; callback: (environment: ReturnType<typeof createDomTestEnvironment>) => Promise<void> }) {
+async function withProductionApp({ locale = "en", dataset, beforeRender, callback }: { locale?: "en" | "ja"; dataset?: Dataset; beforeRender?: (environment: ReturnType<typeof createDomTestEnvironment>) => void; callback: (environment: ReturnType<typeof createDomTestEnvironment>) => Promise<void> }) {
   const environment = createDomTestEnvironment({
     url: dataset
       ? "https://liaisonscape.test/#datasetUrl=https%3A%2F%2Fdata.example%2Fdataset.json"
@@ -135,6 +136,7 @@ async function withProductionApp({ locale = "en", dataset, callback }: { locale?
   environment.window.scrollTo = () => {};
   environment.window.HTMLElement.prototype.scrollIntoView = () => {};
   if (dataset) environment.installGlobal("fetch", async () => ({ ok: true, text: async () => JSON.stringify(dataset) }));
+  beforeRender?.(environment);
   const container = environment.document.createElement("div");
   environment.document.body.append(container);
 
@@ -480,6 +482,55 @@ test("dismisses a placement ownership popover when a node drag starts", async ()
     await dispatchPointer(body, "pointerover");
     assert.ok(environment.document.querySelector(".placement-hover-popover"));
   }});
+});
+
+test("keeps the derived route and label presentation stable when node drag state starts without geometry movement", async () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [
+      { id: "entity-source", name: "Source" },
+      { id: "entity-target", name: "Target" },
+      { id: "entity-remote", name: "Remote" },
+    ],
+    events: [],
+    relations: [
+      { id: "relation-source-target", sourceId: "entity-source", targetId: "entity-target", name: "Connects" },
+      { id: "relation-remote-target", sourceId: "entity-remote", targetId: "entity-target", name: "References" },
+    ],
+  };
+  const snapshots: PresentationDiagnosticSnapshot[] = [];
+  await withProductionApp({
+    dataset,
+    beforeRender: (environment) => {
+      environment.window.__liaisonScapePresentationDiagnosticSink = (snapshot) => snapshots.push(snapshot);
+    },
+    callback: async (environment) => {
+      environment.installGlobal("SVGSVGElement", environment.window.SVGSVGElement);
+      environment.window.SVGSVGElement.prototype.setPointerCapture = function setPointerCapture() {};
+      const body = environment.document.querySelector('[data-entity-id="entity-source"] .entity-body') as SVGRectElement;
+      assert.ok(body);
+      const idle = snapshots.at(-1);
+      assert.ok(idle);
+      assert.equal(idle.phase, "idle");
+      const event = new environment.window.Event("pointerdown", { bubbles: true, cancelable: true });
+      Object.defineProperties(event, {
+        button: { value: 0 },
+        clientX: { value: 120 },
+        clientY: { value: 140 },
+        pointerId: { value: 1 },
+        pointerType: { value: "mouse" },
+      });
+      await act(async () => { body.dispatchEvent(event); });
+      const active = snapshots.at(-1);
+      assert.ok(active);
+      assert.equal(active.phase, "node-drag-active");
+      assert.equal(active.derivationPhase, "idle");
+      assert.deepEqual(active.positions, idle.positions);
+      assert.deepEqual(active.routedEdges, idle.routedEdges);
+      assert.deepEqual(active.relationLabels, idle.relationLabels);
+      assert.deepEqual(active.nodeLabels, idle.nodeLabels);
+    },
+  });
 });
 
 test("implements the collapsible viewport toolbar interaction contract", async () => {

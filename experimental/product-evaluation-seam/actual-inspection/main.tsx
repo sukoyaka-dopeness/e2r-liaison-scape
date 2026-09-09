@@ -17,8 +17,11 @@ const diagnosticEvent = "liaisonscape:presentation-diagnostic";
 let latestDiagnosticSnapshot: PresentationDiagnosticSnapshot | null = null;
 type RouteTransitionReport = {
   nodeId: string;
+  stage: "entry" | "pointer-up" | "post-idle";
   fromPhase: PresentationDiagnosticSnapshot["phase"];
   toPhase: PresentationDiagnosticSnapshot["phase"];
+  fromDerivationPhase: PresentationDiagnosticSnapshot["derivationPhase"];
+  toDerivationPhase: PresentationDiagnosticSnapshot["derivationPhase"];
   sameNodeGeometry: boolean;
   changedRouteIds: string[];
   changedNonIncidentRouteIds: string[];
@@ -33,10 +36,14 @@ type RouteTransitionReport = {
   };
 };
 let latestDragPresentationSnapshot: PresentationDiagnosticSnapshot | null = null;
+let dragEntryBaselineSnapshot: PresentationDiagnosticSnapshot | null = null;
 let changedNonIncidentRouteIdsDuringActiveDrag = new Set<string>();
 let pendingDragEndSnapshot: PresentationDiagnosticSnapshot | null = null;
 let pendingActiveDragRemoteChanges: string[] = [];
 let latestRouteTransitionReport: RouteTransitionReport | null = null;
+let pendingPostIdleSnapshot: PresentationDiagnosticSnapshot | null = null;
+let latestDragEntryReport: RouteTransitionReport | null = null;
+let latestPostIdleReport: RouteTransitionReport | null = null;
 
 type DragTimingReport = {
   nodeId: string;
@@ -89,6 +96,8 @@ let activeDragTiming: ActiveDragTiming | null = null;
 let latestDragTimingReport: DragTimingReport | null = null;
 const timingEvent = "liaisonscape:presentation-timing";
 const routeTransitionEvent = "liaisonscape:route-transition-diagnostic";
+const dragEntryEvent = "liaisonscape:drag-entry-diagnostic";
+const postIdleEvent = "liaisonscape:post-idle-diagnostic";
 
 function sameNodeGeometry(left: PresentationDiagnosticSnapshot, right: PresentationDiagnosticSnapshot): boolean {
   return left.nodes.every((node) => {
@@ -119,13 +128,16 @@ function positionFor(snapshot: PresentationDiagnosticSnapshot, nodeId: string): 
   return node ? snapshot.positions[nodeId] ?? node : null;
 }
 
-function routeTransitionReport(from: PresentationDiagnosticSnapshot, to: PresentationDiagnosticSnapshot, nodeId: string, changedNonIncidentRouteIdsDuringActiveDrag: string[]): RouteTransitionReport {
+function routeTransitionReport(stage: RouteTransitionReport["stage"], from: PresentationDiagnosticSnapshot, to: PresentationDiagnosticSnapshot, nodeId: string, changedNonIncidentRouteIdsDuringActiveDrag: string[]): RouteTransitionReport {
   const changed = changedRouteIds(from, to);
   const edgesById = new Map(to.edges.map((edge) => [edge.id, edge]));
   return {
     nodeId,
+    stage,
     fromPhase: from.phase,
     toPhase: to.phase,
+    fromDerivationPhase: from.derivationPhase,
+    toDerivationPhase: to.derivationPhase,
     sameNodeGeometry: sameNodeGeometry(from, to),
     changedRouteIds: changed,
     changedNonIncidentRouteIds: changed.filter((id) => {
@@ -281,6 +293,7 @@ document.addEventListener("pointerdown", (event) => {
   const center = nodeId ? nodeCenter(nodeId) : null;
   if (!nodeId || !center) return;
   latestDragPresentationSnapshot = null;
+  dragEntryBaselineSnapshot = latestDiagnosticSnapshot;
   changedNonIncidentRouteIdsDuringActiveDrag = new Set();
   pendingDragEndSnapshot = null;
   pendingActiveDragRemoteChanges = [];
@@ -328,6 +341,11 @@ document.addEventListener("pointercancel", (event) => { if (activeDragTiming?.po
 window.__liaisonScapePresentationDiagnosticSink = (snapshot) => {
   latestDiagnosticSnapshot = snapshot;
   if (activeDragTiming && snapshot.phase === "node-drag-active") {
+    if (dragEntryBaselineSnapshot) {
+      latestDragEntryReport = routeTransitionReport("entry", dragEntryBaselineSnapshot, snapshot, activeDragTiming.nodeId, []);
+      window.dispatchEvent(new CustomEvent<RouteTransitionReport>(dragEntryEvent, { detail: latestDragEntryReport }));
+      dragEntryBaselineSnapshot = null;
+    }
     if (latestDragPresentationSnapshot) {
       const edgesById = new Map(snapshot.edges.map((edge) => [edge.id, edge]));
       for (const routeId of changedRouteIds(latestDragPresentationSnapshot, snapshot)) {
@@ -338,9 +356,15 @@ window.__liaisonScapePresentationDiagnosticSink = (snapshot) => {
     latestDragPresentationSnapshot = snapshot;
   }
   else if (pendingDragEndSnapshot && snapshot.phase !== "node-drag-active") {
-    latestRouteTransitionReport = routeTransitionReport(pendingDragEndSnapshot, snapshot, latestDragTimingReport?.nodeId ?? "unknown", pendingActiveDragRemoteChanges);
+    latestRouteTransitionReport = routeTransitionReport("pointer-up", pendingDragEndSnapshot, snapshot, latestDragTimingReport?.nodeId ?? "unknown", pendingActiveDragRemoteChanges);
     window.dispatchEvent(new CustomEvent<RouteTransitionReport>(routeTransitionEvent, { detail: latestRouteTransitionReport }));
     pendingDragEndSnapshot = null;
+    pendingPostIdleSnapshot = snapshot.phase === "node-drag-finalizing" ? snapshot : null;
+  }
+  else if (pendingPostIdleSnapshot && snapshot.phase === "idle") {
+    latestPostIdleReport = routeTransitionReport("post-idle", pendingPostIdleSnapshot, snapshot, latestDragTimingReport?.nodeId ?? "unknown", []);
+    window.dispatchEvent(new CustomEvent<RouteTransitionReport>(postIdleEvent, { detail: latestPostIdleReport }));
+    pendingPostIdleSnapshot = null;
   }
   window.dispatchEvent(new CustomEvent<PresentationDiagnosticSnapshot>(diagnosticEvent, { detail: snapshot }));
 };
@@ -431,6 +455,8 @@ function PresentationDiagnostics() {
 function DragTimingDiagnostics() {
   const [report, setReport] = useState<DragTimingReport | null>(latestDragTimingReport);
   const [routeTransition, setRouteTransition] = useState<RouteTransitionReport | null>(latestRouteTransitionReport);
+  const [entryTransition, setEntryTransition] = useState<RouteTransitionReport | null>(latestDragEntryReport);
+  const [postIdleTransition, setPostIdleTransition] = useState<RouteTransitionReport | null>(latestPostIdleReport);
   useEffect(() => {
     const receive = (event: Event) => setReport((event as CustomEvent<DragTimingReport>).detail);
     window.addEventListener(timingEvent, receive);
@@ -440,6 +466,16 @@ function DragTimingDiagnostics() {
     const receive = (event: Event) => setRouteTransition((event as CustomEvent<RouteTransitionReport>).detail);
     window.addEventListener(routeTransitionEvent, receive);
     return () => window.removeEventListener(routeTransitionEvent, receive);
+  }, []);
+  useEffect(() => {
+    const receive = (event: Event) => setEntryTransition((event as CustomEvent<RouteTransitionReport>).detail);
+    window.addEventListener(dragEntryEvent, receive);
+    return () => window.removeEventListener(dragEntryEvent, receive);
+  }, []);
+  useEffect(() => {
+    const receive = (event: Event) => setPostIdleTransition((event as CustomEvent<RouteTransitionReport>).detail);
+    window.addEventListener(postIdleEvent, receive);
+    return () => window.removeEventListener(postIdleEvent, receive);
   }, []);
   const format = (value: number | null | undefined, digits = 1) => value === null || value === undefined ? "n/a" : value.toFixed(digits);
   return <details className="actual-inspection-drag-timing" open>
@@ -457,13 +493,15 @@ function DragTimingDiagnostics() {
     </ul>}
     {routeTransition && <p>drag-time → pointer-up route transition: same node geometry {routeTransition.sameNodeGeometry ? "YES" : "NO"}; changed routes {routeTransition.changedRouteIds.join(", ") || "none"}.</p>}
     {routeTransition && <ul>
-      <li>transition phase: {routeTransition.fromPhase} → {routeTransition.toPhase}; same routing geometry: {routeTransition.sameNodeGeometry ? "YES" : "NO"}</li>
+      <li>transition phase: {routeTransition.fromPhase} → {routeTransition.toPhase}; derived as {routeTransition.fromDerivationPhase} → {routeTransition.toDerivationPhase}; same routing geometry: {routeTransition.sameNodeGeometry ? "YES" : "NO"}</li>
       <li>drag-state positions: active routing {routeTransition.dragState.activeRoutingPosition ? `${format(routeTransition.dragState.activeRoutingPosition.x)}, ${format(routeTransition.dragState.activeRoutingPosition.y)}` : "n/a"}; active live {routeTransition.dragState.activeLivePosition ? `${format(routeTransition.dragState.activeLivePosition.x)}, ${format(routeTransition.dragState.activeLivePosition.y)}` : "n/a"}; final routing {routeTransition.dragState.finalRoutingPosition ? `${format(routeTransition.dragState.finalRoutingPosition.x)}, ${format(routeTransition.dragState.finalRoutingPosition.y)}` : "n/a"}</li>
       <li>non-incident changed routes: {routeTransition.changedNonIncidentRouteIds.join(", ") || "none"}</li>
       <li>non-incident changes during active drag: {routeTransition.changedNonIncidentRouteIdsDuringActiveDrag.join(", ") || "none"}</li>
       <li>non-incident continuity blocks: {routeTransition.continuityBlocks.map(({ routeId, pass, processingIndex, usedPreviousRoute, reasons }) => `${routeId} [${pass} #${processingIndex}; previous route ${usedPreviousRoute ? "used" : "not used"}: ${reasons.join(", ") || "no rejected continuity condition"}]`).join("; ") || "none"}</li>
       <li>changed node labels: {routeTransition.changedNodeLabelIds.join(", ") || "none"}; changed relation labels: {routeTransition.changedRelationLabelIds.join(", ") || "none"}</li>
     </ul>}
+    {entryTransition && <p>pointer-down / drag-entry transition: same node geometry {entryTransition.sameNodeGeometry ? "YES" : "NO"}; changed routes {entryTransition.changedRouteIds.join(", ") || "none"}; derived as {entryTransition.fromDerivationPhase} → {entryTransition.toDerivationPhase}.</p>}
+    {postIdleTransition && <p>post-finalization idle transition: same node geometry {postIdleTransition.sameNodeGeometry ? "YES" : "NO"}; changed routes {postIdleTransition.changedRouteIds.join(", ") || "none"}; derived as {postIdleTransition.fromDerivationPhase} → {postIdleTransition.toDerivationPhase}.</p>}
   </details>;
 }
 

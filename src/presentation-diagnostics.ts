@@ -13,6 +13,12 @@ export type PresentationDiagnosticSnapshot = {
    * observation metadata: it is neither persisted nor consumed by routing.
    */
   phase: "idle" | "node-drag-active" | "node-drag-finalizing";
+  /**
+   * Phase at which the displayed routes and labels were derived. This can
+   * intentionally differ from `phase` when a drag-state-only render reuses a
+   * safe existing presentation.
+   */
+  derivationPhase: "idle" | "node-drag-active" | "node-drag-finalizing";
   draggedNodeId?: string;
   liveDragPosition: { id: string; position: Point } | null;
   presentationRevision: number;

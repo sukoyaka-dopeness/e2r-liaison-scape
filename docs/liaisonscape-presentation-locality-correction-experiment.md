@@ -386,6 +386,45 @@ reused, so its observed difference originated during active propagation. No
 unconditional remote-route freeze is selected; label-placement alternatives
 remain a separate experiment.
 
+## Drag-state presentation continuity
+
+An Apollo 11 Product inspection exposed a separate boundary from geometry
+updates: entering Node drag state could cause an immediate route/label
+derivation even before the Node position changed. The cause was the App-level
+presentation memo key: `activeNodeDrag` and `presentationDraggedNodeId` were
+dependencies even though both values originate in interaction refs rather than
+in routing geometry. A Node pointer-down also brings the Node's layer forward,
+which can render App and thereby make that state-only dependency observable.
+
+The bounded correction removes drag-state refs from the presentation memo key.
+The presentation continues to derive when a queued Node position is committed,
+or when `presentationRevision` explicitly requests the finalizing pass. It
+therefore retains the existing safety behaviour for a genuine geometry change,
+including final label feedback and unsafe-route rejection, while reusing the
+last safe presentation for `idle → active` and `finalizing → idle` render-only
+transitions. Development diagnostics now publish both the current interaction
+phase and the phase that actually derived the displayed output, so this reuse
+is observable rather than implicit.
+
+The production-like (`strictMode=off`) Apollo 11 CUA smoke trace recorded:
+
+| Transition | Same Node geometry | Changed routes | Derived presentation |
+| --- | --- | --- | --- |
+| idle → drag-active at pointer-down | YES | none | idle → idle |
+| active → finalizing after a real Saturn V move | NO | `entity-4`, `entity-6`, `entity-8`, `entity-10` | active → finalizing |
+| finalizing → idle after an unrelated UI render | YES | none | finalizing → finalizing |
+
+The second row is intentionally not treated as a regression: its final Node
+position differs, and the two non-incident changes had final-label collision
+blocks recorded by the existing continuity diagnostics. The first and third
+rows establish the narrow invariant for drag state alone. An App integration
+test guards the pointer-down case by asserting exact equality of positions,
+routes, relation labels, and Node labels while the UI phase changes to active.
+
+This remains a presentation-continuity correction only. It does not select a
+spacing candidate, alter automatic routing objectives, or change crossing-aware
+placement policy.
+
 ## Validation and boundaries
 
 - `npm test`: `316/316 PASS`.
