@@ -16,7 +16,7 @@ export type AutomaticRouteDecision = {
    * was eligible to replace a direct-obstacle detour during the current drag.
    */
   activeRecovery: {
-    previousRouteObstacleId?: string;
+    previousRouteDirectRecoveryObstacleId?: string;
     provenanceMatchesActiveDrag: boolean;
     freshRouteIsSafe: boolean;
     freshRouteHasNodeInfluence: boolean;
@@ -62,8 +62,12 @@ export type DerivedAutomaticRoute = RoutingGraphEdge & Pick<
   "path" | "samples" | "labelPoint" | "controlPoint"
 > & {
   parallelSolverEligible: boolean;
-  /** The active-drag Node that directly forced this non-incident route away from its prior safe geometry. */
-  activeRecoveryObstacleId?: string;
+  /**
+   * The Node that directly forced this non-incident route away from its prior
+   * safe geometry. It survives an unchanged committed detour so a later drag
+   * of that same Node can recover without broadening remote-route churn.
+   */
+  directRecoveryObstacleId?: string;
 };
 
 /** Pure Product-owned automatic route derivation. App state arrives as snapshots. */
@@ -208,8 +212,9 @@ export function deriveAutomaticRoutes({
     const freshRouteIsSafe = !freshRouteHasNodeInfluence
       && !freshRouteHasOccupiedPathConflict
       && !freshRouteHasLabelCollision;
+    const previousDirectRecoveryMatchesDrag = previousRoute?.directRecoveryObstacleId === draggedNodeId;
     const canRecoverDuringActiveDrag = activeDraggedNodeId !== undefined
-      && previousRoute!.activeRecoveryObstacleId === draggedNodeId;
+      && previousDirectRecoveryMatchesDrag;
     const canRecoverCurrentRoute = canPreservePreviousRoute
       && previousRoute!.path !== route.path
       && freshRouteIsSafe
@@ -217,17 +222,20 @@ export function deriveAutomaticRoutes({
     const selectedRoute = canPreservePreviousRoute && !canRecoverCurrentRoute ? previousRoute : route;
     // A direct-obstacle recovery can legitimately pass through a safe but
     // still-curved fresh candidate before the original/equivalent route is
-    // available again. Keep its bounded origin for the rest of this active
-    // drag so that an intermediate fresh selection does not prematurely turn
-    // the route back into an ordinary remote-continuity candidate. The origin
-    // is deliberately dropped for finalizing/idle presentation.
-    const continuingDirectRecovery = activeDraggedNodeId !== undefined
-      && previousRoute?.activeRecoveryObstacleId === activeDraggedNodeId;
-    const activeRecoveryObstacleId = activeDraggedNodeId === undefined
-      ? undefined
-      : selectedRoute === previousRoute
-        ? previousRoute.activeRecoveryObstacleId
-        : priorRouteBlockedByDraggedNode || continuingDirectRecovery ? activeDraggedNodeId : undefined;
+    // available again. Keep its bounded cause through an unchanged committed
+    // detour as well: a later drag of the same Node has the same narrowly
+    // scoped authority, while other Nodes and unmarked remote routes retain
+    // ordinary continuity reuse.
+    const unchangedCommittedDetour = draggedNodeId === undefined
+      && previousRoute?.directRecoveryObstacleId !== undefined
+      && previousRoute.path === route.path;
+    const directRecoveryObstacleId = selectedRoute === previousRoute
+      ? previousRoute.directRecoveryObstacleId
+      : priorRouteBlockedByDraggedNode
+        ? draggedNodeId
+        : previousDirectRecoveryMatchesDrag || unchangedCommittedDetour
+          ? previousRoute?.directRecoveryObstacleId
+          : undefined;
     // Compute explanatory identities only for the opt-in development sink.
     // The normal Product path retains the original constant-cost predicates.
     const blockingNodeIds = routeDecisionSink !== undefined && priorRouteHasNodeInfluence
@@ -247,7 +255,7 @@ export function deriveAutomaticRoutes({
       usedPreviousRoute: canPreservePreviousRoute && !canRecoverCurrentRoute,
       recoveredCurrentRoute: canRecoverCurrentRoute,
       activeRecovery: {
-        previousRouteObstacleId: previousRoute?.activeRecoveryObstacleId,
+        previousRouteDirectRecoveryObstacleId: previousRoute?.directRecoveryObstacleId,
         provenanceMatchesActiveDrag: canRecoverDuringActiveDrag,
         freshRouteIsSafe,
         freshRouteHasNodeInfluence,
@@ -321,7 +329,7 @@ export function deriveAutomaticRoutes({
       labelPoint: selectedRoute.labelPoint,
       controlPoint: selectedRoute.controlPoint,
       parallelSolverEligible,
-      activeRecoveryObstacleId,
+      directRecoveryObstacleId,
     });
   }
   return graph.edges.map((edge) => ({ ...edge, ...routedById.get(edge.id)! }));

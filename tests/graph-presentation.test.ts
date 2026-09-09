@@ -145,7 +145,7 @@ test("active drag eagerly recovers only a detour directly caused by that Node", 
     activeDraggedNodeId: "obstacle",
   });
   assert.match(activeObstacle[0]!.path, / Q /u);
-  assert.equal(activeObstacle[0]!.activeRecoveryObstacleId, "obstacle");
+  assert.equal(activeObstacle[0]!.directRecoveryObstacleId, "obstacle");
   const decisions: Array<{ usedPreviousRoute: boolean; recoveredCurrentRoute: boolean }> = [];
   const activeReturn = deriveAutomaticRoutes({
     ...common,
@@ -156,7 +156,7 @@ test("active drag eagerly recovers only a detour directly caused by that Node", 
     routeDecisionSink: (decision) => decisions.push(decision),
   });
   assert.equal(activeReturn[0]!.path, initial[0]!.path);
-  assert.equal(activeReturn[0]!.activeRecoveryObstacleId, "obstacle");
+  assert.equal(activeReturn[0]!.directRecoveryObstacleId, "obstacle");
   assert.equal(decisions[0]!.usedPreviousRoute, false);
   assert.equal(decisions[0]!.recoveredCurrentRoute, true);
 });

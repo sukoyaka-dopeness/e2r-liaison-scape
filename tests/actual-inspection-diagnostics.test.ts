@@ -206,20 +206,62 @@ test("active Apollo drag preserves locality and necessary crowded incident routi
     });
   };
   let staged = stagedActive(initial, 120);
-  assert.equal(staged.routedEdges.find(({ id }) => id === "entity-6")?.activeRecoveryObstacleId, "saturn-v");
+  assert.equal(staged.routedEdges.find(({ id }) => id === "entity-6")?.directRecoveryObstacleId, "saturn-v");
   staged = stagedActive(staged, 150);
   staged = stagedActive(staged, 170);
-  assert.deepEqual(staged.routedEdges.filter(({ activeRecoveryObstacleId }) => activeRecoveryObstacleId === "saturn-v").map(({ id }) => id), ["entity-3", "entity-6"]);
+  assert.deepEqual(staged.routedEdges.filter(({ directRecoveryObstacleId }) => directRecoveryObstacleId === "saturn-v").map(({ id }) => id), ["entity-3", "entity-6"]);
   staged = stagedActive(staged, 140);
   // The intermediate fresh candidate for entity-6 is still curved here. Its
   // provenance must survive so the later safe original can recover actively.
-  assert.equal(staged.routedEdges.find(({ id }) => id === "entity-6")?.activeRecoveryObstacleId, "saturn-v");
+  assert.equal(staged.routedEdges.find(({ id }) => id === "entity-6")?.directRecoveryObstacleId, "saturn-v");
   staged = stagedActive(staged, 110);
   staged = stagedActive(staged, 80);
   staged = stagedActive(staged, 40);
   staged = stagedActive(staged, basePositions["saturn-v"]!.y);
   assert.equal(
     staged.routedEdges.find(({ id }) => id === "entity-6")?.path,
+    initial.routedEdges.find(({ id }) => id === "entity-6")?.path,
+  );
+
+  // Commit a still-necessary detour, then start a second drag of the same
+  // obstacle. Current safety is enough to recover because the committed
+  // direct cause remains bounded to this Node and this route alone.
+  const blockedPositions = { ...basePositions, "saturn-v": { x: basePositions["saturn-v"]!.x, y: 120 } };
+  const firstDragDetour = stagedActive(initial, 120);
+  const committedDetour = deriveBoundedAutomaticPresentation({
+    graph,
+    positions: blockedPositions,
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: provisionalLabels(blockedPositions),
+    previousNodeLabelPlacements: new Map(firstDragDetour.nodeLabels),
+    previousRelationLabelPlacements: new Map(firstDragDetour.relationLabels),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+    previousAutomaticRoutes: new Map(firstDragDetour.routedEdges.map((route) => [route.id, route])),
+    draggedNodeId: "saturn-v",
+    feedbackEnabled: true,
+  });
+  assert.equal(committedDetour.routedEdges.find(({ id }) => id === "entity-6")?.directRecoveryObstacleId, "saturn-v");
+  // A quiet idle render must retain the same bounded cause as well; users do
+  // not have to begin the second drag in the finalizing render's exact tick.
+  const idleCommittedDetour = deriveBoundedAutomaticPresentation({
+    graph,
+    positions: blockedPositions,
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: provisionalLabels(blockedPositions),
+    previousNodeLabelPlacements: new Map(committedDetour.nodeLabels),
+    previousRelationLabelPlacements: new Map(committedDetour.relationLabels),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+    previousAutomaticRoutes: new Map(committedDetour.routedEdges.map((route) => [route.id, route])),
+    feedbackEnabled: true,
+  });
+  assert.equal(idleCommittedDetour.routedEdges.find(({ id }) => id === "entity-6")?.directRecoveryObstacleId, "saturn-v");
+  const secondDragReturn = stagedActive(idleCommittedDetour, basePositions["saturn-v"]!.y);
+  assert.equal(
+    secondDragReturn.routedEdges.find(({ id }) => id === "entity-6")?.path,
     initial.routedEdges.find(({ id }) => id === "entity-6")?.path,
   );
 });
