@@ -63,6 +63,17 @@ const presentationAwareRelaxationPositions = {
   moon: { x: 332.534, y: -40.622 },
   hornet: { x: 156.701, y: -138.251 },
 };
+const topologyAwareRelaxationPositions = {
+  armstrong: { x: -17.717, y: 357.208 },
+  aldrin: { x: 216.011, y: 472.891 },
+  collins: { x: -0.18500000000000022, y: 189 },
+  nasa: { x: 151.196, y: 331.48 },
+  columbia: { x: 160.797, y: 97.267 },
+  eagle: { x: 303.422, y: 182.709 },
+  "saturn-v": { x: 35.156, y: -1.8180000000000014 },
+  moon: { x: 368.534, y: -58.622 },
+  hornet: { x: 156.701, y: -108.251 },
+};
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -81,6 +92,7 @@ const candidateDescriptions = {
   "crossing-aware-v1": "Crossing-aware refinement (mixed control)",
   "label-accommodation-v1": "Label-accommodation-aware refinement (mixed control)",
   "presentation-aware-relaxation-v1": "Presentation-aware bounded relaxation (diagnostic)",
+  "topology-aware-relaxation-v1": "Topology-aware bounded relaxation (diagnostic)",
   "source-f0-160": "Source F0 solver, clearance 160",
   "fp1-ngp-420": "FP1-NGP negative control",
 } as const;
@@ -98,6 +110,7 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "crossing-aware-v1") return crossingAwarePositions;
   if (candidate === "label-accommodation-v1") return labelAccommodationAwarePositions;
   if (candidate === "presentation-aware-relaxation-v1") return presentationAwareRelaxationPositions;
+  if (candidate === "topology-aware-relaxation-v1") return topologyAwareRelaxationPositions;
   if (candidate === "fp1-ngp-420") return fp1NgpPositions;
   const graph = buildEntityGraph(dataset);
   if (candidate === "source-f0-160") {
@@ -156,6 +169,7 @@ function CandidateMetrics() {
     ["crossing-aware-v1", "1", "2", "116.1", "305.4", "391 × 545"],
     ["label-accommodation-v1", "3", "1", "177.9", "464.4", "423 × 677"],
     ["presentation-aware-relaxation-v1", "2", "0", "123.3", "382.5", "338 × 647"],
+    ["topology-aware-relaxation-v1", "3", "0", "127.4", "292.8", "386 × 581"],
     ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542"],
     ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420"],
   ], []);
@@ -177,7 +191,7 @@ function GeometryInspection() {
       <label>Candidate <select value={selectedCandidate} onChange={changeCandidate} aria-label="Geometry candidate">
         {Object.entries(candidateDescriptions).map(([id, description]) => <option key={id} value={id}>{description}</option>)}
       </select></label>
-      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance; the relaxation candidate has zero overlap and 140.6 units minimum Node separation. Compare the targeted refinement and the presentation-aware relaxation around Neil Armstrong / NASA / Lunar Module Eagle, then recheck Michael Collins / NASA, NASA / Saturn V, and Saturn V / Command Module Columbia. The crossing-aware and label-accommodation-aware entries are mixed diagnostic controls, not adoption decisions. Pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
+      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Targeted local corridor refinement, Presentation-aware bounded relaxation, and Topology-aware bounded relaxation around Neil Armstrong / NASA / Lunar Module Eagle, then recheck Michael Collins / NASA, NASA / Saturn V, and Saturn V / Command Module Columbia. The crossing-aware and label-accommodation-aware entries are mixed diagnostic controls, not adoption decisions. Pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
     </div>
     <CandidateMetrics />
     <App />

@@ -103,6 +103,43 @@ function presentationMetrics(positions) {
   return { score, ...feasibility, extent, routeMedian, routeMax, crossings, labelRouteHits, labelNear20, labelOverlap };
 }
 
+const baselineAdjacency = new Map(graph.edges.map((edge) => {
+  const source = start[edge.sourceId]; const target = start[edge.targetId];
+  return [edge.id, Math.hypot(source.x - target.x, source.y - target.y)];
+}));
+const ADJACENCY_BAND_PENALTY = 500;
+
+function adjacencyMetrics(positions) {
+  const rows = graph.edges.map((edge) => {
+    const source = positions[edge.sourceId]; const target = positions[edge.targetId];
+    const distance = Math.hypot(source.x - target.x, source.y - target.y);
+    const baseline = baselineAdjacency.get(edge.id);
+    const lower = Math.max(INITIAL_ENTITY_CLEARANCE, baseline * 0.8);
+    const upper = baseline * 1.1;
+    return { id: edge.id, sourceId: edge.sourceId, targetId: edge.targetId, distance, baseline, lower, upper };
+  });
+  const outsideBand = rows.filter((row) => row.distance < row.lower || row.distance > row.upper);
+  const stretch = rows.filter((row) => row.distance > row.upper);
+  const penalty = rows.reduce((total, row) => {
+    const excess = row.distance < row.lower ? row.lower - row.distance : Math.max(0, row.distance - row.upper);
+    return total + (excess / 24) ** 2 * (row.distance > row.upper ? 2.5 : 1.5) * ADJACENCY_BAND_PENALTY;
+  }, 0);
+  const distances = rows.map((row) => row.distance).sort((a, b) => a - b);
+  return {
+    rows,
+    outsideBand: outsideBand.length,
+    stretched: stretch.length,
+    median: distances[Math.floor(distances.length / 2)],
+    minimum: Math.min(...distances),
+    maximum: Math.max(...distances),
+    penalty,
+  };
+}
+
+function topologyScore(metrics, positions) {
+  return metrics.score + adjacencyMetrics(positions).penalty;
+}
+
 function improve(startPositions) {
   let current = clonePositions(startPositions);
   let metrics = presentationMetrics(current);
@@ -127,12 +164,45 @@ function improve(startPositions) {
   return { positions: current, metrics, evaluations, rejectedInfeasible, accepted, sweeps: 2, steps, directionCount: directions.length };
 }
 
+function improveTopology(startPositions) {
+  let current = clonePositions(startPositions);
+  let metrics = presentationMetrics(current);
+  let evaluations = 1; let rejectedInfeasible = 0; let accepted = 0;
+  const directions = [
+    { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: -1, y: 1 },
+    { x: -1, y: 0 }, { x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 },
+  ];
+  const steps = [24, 12, 6];
+  for (let sweep = 0; sweep < 2; sweep += 1) {
+    for (const node of graph.nodes) {
+      for (const step of steps) for (const direction of directions) {
+        const candidate = clonePositions(current);
+        candidate[node.id] = { x: candidate[node.id].x + direction.x * step, y: candidate[node.id].y + direction.y * step };
+        const feasibility = nodeFeasibility(candidate);
+        if (feasibility.overlapPairs > 0) { rejectedInfeasible += 1; continue; }
+        const candidateMetrics = presentationMetrics(candidate); evaluations += 1;
+        if (topologyScore(candidateMetrics, candidate) < topologyScore(metrics, current)) { current = candidate; metrics = candidateMetrics; accepted += 1; }
+      }
+    }
+  }
+  return { positions: current, metrics, adjacency: adjacencyMetrics(current), evaluations, rejectedInfeasible, accepted, sweeps: 2, steps, directionCount: directions.length };
+}
+
 const baseline = presentationMetrics(start);
+const baselineWithAdjacency = { metrics: baseline, adjacency: adjacencyMetrics(start) };
 const result = improve(start);
+const topologyAware = improveTopology(start);
 console.log(JSON.stringify({
-  contract: "LIAISONSCAPE-PRESENTATION-AWARE-RELAXATION-v1",
+  contract: "LIAISONSCAPE-PRESENTATION-TOPOLOGY-RELAXATION-v1",
   diagnosticOnly: true,
   hardBoundary: { rule: "INITIAL_ENTITY_CLEARANCE", value: INITIAL_ENTITY_CLEARANCE, overlapRejected: true },
-  baseline: { positions: start, metrics: baseline },
-  result,
+  adjacencyRegularization: {
+    reference: "local-search-v1-plus",
+    preferredBand: { lowerRatio: 0.8, upperRatio: 1.1, minimumAbsolute: INITIAL_ENTITY_CLEARANCE },
+    penaltyWeight: ADJACENCY_BAND_PENALTY,
+    purpose: "diagnostic bounded stretch control; not a Product threshold",
+  },
+  baseline: { positions: start, ...baselineWithAdjacency },
+  presentationAware: result,
+  topologyAware,
 }, null, 2));
