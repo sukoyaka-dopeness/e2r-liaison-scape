@@ -1,6 +1,6 @@
 import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, type LabelRect, type Point, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelRect, type Point, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -11,6 +11,8 @@ export type AutomaticRoutingInput = {
   edgeCurveOffsets: Readonly<Record<string, number>>;
   selfLoopOverrides: Readonly<Record<string, SelfLoopOverride>>;
   provisionalNodeLabels: readonly LabelRect[];
+  previousAutomaticRoutes?: ReadonlyMap<string, DerivedAutomaticRoute>;
+  draggedNodeId?: string;
 };
 
 export type DerivedAutomaticRoute = RoutingGraphEdge & Pick<
@@ -25,6 +27,8 @@ export function deriveAutomaticRoutes({
   edgeCurveOffsets,
   selfLoopOverrides,
   provisionalNodeLabels,
+  previousAutomaticRoutes,
+  draggedNodeId,
 }: AutomaticRoutingInput): DerivedAutomaticRoute[] {
   const occupiedPaths: Array<Array<Point>> = [];
   const overlapCounts = new Map<string, number>();
@@ -75,6 +79,20 @@ export function deriveAutomaticRoutes({
       routeLabelRects,
       canonicalPhysicalSideSign,
     );
+    const previousRoute = previousAutomaticRoutes?.get(edge.id);
+    const canPreservePreviousRoute = previousRoute !== undefined
+      && draggedNodeId !== undefined
+      && edge.sourceId !== draggedNodeId
+      && edge.targetId !== draggedNodeId
+      && edge.sourceId !== edge.targetId
+      && edge.parallelCount === 1
+      && edgeCurveOffsets[edge.id] === undefined
+      && previousRoute.samples.length > 1
+      && route.samples.length > 1
+      && !routeSamplesHaveNodeInfluence(previousRoute.samples, obstacles)
+      && !routeSamplesHaveOccupiedPathConflict(previousRoute.samples, occupiedPaths)
+      && !routeSamplesHaveLabelCollision(previousRoute.samples, routeLabelRects);
+    const selectedRoute = canPreservePreviousRoute ? previousRoute : route;
     const routeWithoutObstacles = edge.parallelCount > 1
       && edge.sourceId !== edge.targetId
       && !isOverlappingPair
@@ -111,7 +129,7 @@ export function deriveAutomaticRoutes({
       : null;
     const obstacleComparison = routeWithoutObstacles === null
       ? null
-      : compareRouteGeometry(routeWithoutObstacles.samples, route.samples);
+      : compareRouteGeometry(routeWithoutObstacles.samples, selectedRoute.samples);
     const occupiedPathComparison = routeWithoutObstacles === null || routeWithoutObstaclesOrOccupiedPaths === null
       ? null
       : compareRouteGeometry(routeWithoutObstaclesOrOccupiedPaths.samples, routeWithoutObstacles.samples);
@@ -120,12 +138,12 @@ export function deriveAutomaticRoutes({
       && !isOverlappingPair
       && obstacleComparison?.equivalent === true
       && occupiedPathComparison?.equivalent === true;
-    occupiedPaths.push(route.samples);
+    occupiedPaths.push(selectedRoute.samples);
     routedById.set(edge.id, {
-      path: route.path,
-      samples: route.samples,
-      labelPoint: route.labelPoint,
-      controlPoint: route.controlPoint,
+      path: selectedRoute.path,
+      samples: selectedRoute.samples,
+      labelPoint: selectedRoute.labelPoint,
+      controlPoint: selectedRoute.controlPoint,
       parallelSolverEligible,
     });
   }
@@ -231,6 +249,7 @@ export type BoundedAutomaticPresentationInput = {
   previousRelationLabelPlacements: ReadonlyMap<string, LabelRect>;
   manualNodeLabelOffsets: ReadonlyMap<string, ManualNodeLabelOffset>;
   manualRelationLabelAnchors: ReadonlyMap<string, ManualRelationLabelAnchor>;
+  previousAutomaticRoutes?: ReadonlyMap<string, DerivedAutomaticRoute>;
   draggedNodeId?: string;
   activelyDraggedNodeId?: string;
 };
@@ -283,6 +302,7 @@ export function deriveBoundedAutomaticPresentation({
   previousRelationLabelPlacements,
   manualNodeLabelOffsets,
   manualRelationLabelAnchors,
+  previousAutomaticRoutes,
   draggedNodeId,
   activelyDraggedNodeId,
 }: BoundedAutomaticPresentationInput): BoundedAutomaticPresentation {
@@ -305,6 +325,8 @@ export function deriveBoundedAutomaticPresentation({
       edgeCurveOffsets,
       selfLoopOverrides,
       provisionalNodeLabels: routeLabels,
+      previousAutomaticRoutes,
+      draggedNodeId,
     });
     const routeById = new Map(routesWithoutNodeLabels.map((route) => [route.id, route]));
     const yieldingRoutes: RouteYieldPath[] = routedEdges.flatMap((route) => {

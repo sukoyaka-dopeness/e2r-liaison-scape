@@ -31,7 +31,7 @@ import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
 import { placeInitialEntities } from "./entity-placement";
 import { settleInitialPlacement, solveAutoLayout } from "./auto-layout";
-import { deriveBoundedAutomaticPresentation } from "./graph-presentation";
+import { deriveBoundedAutomaticPresentation, type DerivedAutomaticRoute } from "./graph-presentation";
 import { publishPresentationDiagnostic } from "./presentation-diagnostics";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
@@ -93,6 +93,7 @@ export default function App() {
   const cleanDatasetBaseline = useRef<Dataset | null>(null);
   const previousNodeLabelPlacements = useRef(new Map<string, LabelRect>());
   const previousEdgeLabelPlacements = useRef(new Map<string, LabelRect>());
+  const previousAutomaticRoutes = useRef(new Map<string, DerivedAutomaticRoute>());
   const relationLabelVisualState = useRef(new Map<string, RelationLabelVisualState>());
   const manualRelationLabelAnchors = useRef(new Map<string, ManualRelationLabelAnchor>());
   const manualNodeLabelOffsets = useRef(new Map<string, { x: number; y: number }>());
@@ -336,6 +337,7 @@ export default function App() {
       previousRelationLabelPlacements: new Map(previousEdgeLabelPlacements.current),
       manualNodeLabelOffsets: new Map(manualNodeLabelOffsets.current),
       manualRelationLabelAnchors: new Map(manualRelationLabelAnchors.current),
+      previousAutomaticRoutes: new Map(previousAutomaticRoutes.current),
       draggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
       activelyDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
     });
@@ -363,7 +365,8 @@ export default function App() {
   useEffect(() => {
     previousNodeLabelPlacements.current = new Map(nodeLabelPlacements);
     previousEdgeLabelPlacements.current = new Map(edgeLabelPlacements);
-  }, [edgeLabelPlacements, nodeLabelPlacements]);
+    previousAutomaticRoutes.current = new Map(routedEdges.map((route) => [route.id, route]));
+  }, [edgeLabelPlacements, nodeLabelPlacements, routedEdges]);
   useEffect(() => {
     if (!dataset) return;
     publishPresentationDiagnostic({
@@ -382,6 +385,7 @@ export default function App() {
   function resetPreviousLabelPlacements() {
     previousNodeLabelPlacements.current.clear();
     previousEdgeLabelPlacements.current.clear();
+    previousAutomaticRoutes.current.clear();
     relationLabelVisualState.current.clear();
     manualRelationLabelAnchors.current.clear();
     manualNodeLabelOffsets.current.clear();

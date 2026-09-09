@@ -141,6 +141,29 @@ export function routeSamplesHaveNodeInfluence(samples: Point[], obstacles: Point
     Math.hypot(sample.x - obstacle.x, sample.y - obstacle.y) < RELATION_ROUTE_NODE_INFLUENCE_RADIUS));
 }
 
+export function routeSamplesHaveOccupiedPathConflict(samples: Point[], occupiedPaths: Point[][]): boolean {
+  const innerSamples = samples.slice(5, -5);
+  return occupiedPaths.some((occupiedPath) => {
+    const occupiedInnerSamples = occupiedPath.slice(5, -5);
+    let consecutiveNearDistance = 0;
+    let previousPoint: Point | null = null;
+    for (const point of innerSamples) {
+      const isNear = occupiedInnerSamples.some((occupiedPoint) =>
+        Math.hypot(point.x - occupiedPoint.x, point.y - occupiedPoint.y) < 8);
+      consecutiveNearDistance = isNear && previousPoint
+        ? consecutiveNearDistance + Math.hypot(point.x - previousPoint.x, point.y - previousPoint.y)
+        : 0;
+      previousPoint = isNear ? point : null;
+      if (consecutiveNearDistance >= 24) return true;
+    }
+    return false;
+  });
+}
+
+export function routeSamplesHaveLabelCollision(samples: Point[], labelRects: LabelRect[]): boolean {
+  return samples.some((sample) => labelRects.some((rect) => pointToRectDistance(sample, rect) === 0));
+}
+
 export function solveVisibleRouteOffset({
   startOffset,
   startSamples,

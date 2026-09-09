@@ -63,6 +63,34 @@ test("current Node positions drive route recomputation", () => {
   assert.notDeepEqual(first.samples, second.samples);
 });
 
+test("active local Node drag preserves a safe previous non-incident route", () => {
+  const graph = {
+    nodes: [
+      { id: "a", label: "A", description: "", x: 0, y: 0 },
+      { id: "b", label: "B", description: "", x: 120, y: 0 },
+      { id: "c", label: "C", description: "", x: 240, y: 200 },
+      { id: "d", label: "D", description: "", x: 440, y: 200 },
+    ],
+    edges: [
+      { id: "ab", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1, label: "AB" },
+      { id: "cd", sourceId: "c", targetId: "d", parallelIndex: 0, parallelCount: 1, label: "CD" },
+    ],
+  };
+  const positions = { a: { x: 0, y: 0 }, b: { x: 120, y: 0 }, c: { x: 240, y: 200 }, d: { x: 440, y: 200 } };
+  const initial = deriveAutomaticRoutes({ graph, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels: [] });
+  const movedPositions = { ...positions, a: { x: 0, y: 40 } };
+  const moved = deriveAutomaticRoutes({
+    graph,
+    positions: movedPositions,
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: [],
+    previousAutomaticRoutes: new Map(initial.map((route) => [route.id, route])),
+    draggedNodeId: "a",
+  });
+  assert.deepEqual(moved.find(({ id }) => id === "cd"), initial.find(({ id }) => id === "cd"));
+});
+
 test("current curve offsets drive route and control-point recomputation", () => {
   const first = deriveAutomaticRoutes(input())[0]!;
   const second = deriveAutomaticRoutes(input({ edgeCurveOffsets: { ab: 54 } }))[0]!;
