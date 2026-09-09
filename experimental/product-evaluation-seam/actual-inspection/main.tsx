@@ -1,6 +1,7 @@
 import { StrictMode, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import App from "../../../src/App";
+import type { AutomaticRouteDecision } from "../../../src/graph-presentation";
 import type { DragPointerProcessingSample, PresentationDiagnosticSnapshot, PresentationTimingSample } from "../../../src/presentation-diagnostics";
 import type { RouteCandidateDiagnostic } from "../../../src/viewport";
 import "../../../src/styles.css";
@@ -42,6 +43,22 @@ type RouteTransitionReport = {
     fromCandidates: readonly RouteCandidateDiagnostic[];
     toCandidates: readonly RouteCandidateDiagnostic[];
   }>;
+  remoteRouteOutcomes: Array<{
+    routeId: string;
+    classification: "transient" | "persistent";
+    active: {
+      changedFromDragStart: boolean;
+      shape: ReturnType<typeof routeShape>;
+      selectedCandidate: RouteCandidateDiagnostic | null;
+      continuity: AutomaticRouteDecision["continuity"] | null;
+    };
+    final: {
+      changedFromDragStart: boolean;
+      shape: ReturnType<typeof routeShape>;
+      selectedCandidate: RouteCandidateDiagnostic | null;
+      continuity: AutomaticRouteDecision["continuity"] | null;
+    };
+  }>;
   continuityBlocks: Array<{ routeId: string; pass: string; processingIndex: number; usedPreviousRoute: boolean; reasons: string[]; blockers: { nodes: string[]; occupiedRoutes: string[]; nodeLabels: string[] } }>;
   dragState: {
     activeRoutingPosition: { x: number; y: number } | null;
@@ -51,9 +68,11 @@ type RouteTransitionReport = {
 };
 let latestDragPresentationSnapshot: PresentationDiagnosticSnapshot | null = null;
 let dragEntryBaselineSnapshot: PresentationDiagnosticSnapshot | null = null;
+let dragStartPresentationSnapshot: PresentationDiagnosticSnapshot | null = null;
 let changedNonIncidentRouteIdsDuringActiveDrag = new Set<string>();
 let pendingDragEndSnapshot: PresentationDiagnosticSnapshot | null = null;
 let pendingActiveDragRemoteChanges: string[] = [];
+let activeRemoteRouteSnapshots = new Map<string, PresentationDiagnosticSnapshot>();
 let latestRouteTransitionReport: RouteTransitionReport | null = null;
 let pendingPostIdleSnapshot: PresentationDiagnosticSnapshot | null = null;
 let latestDragEntryReport: RouteTransitionReport | null = null;
@@ -171,10 +190,62 @@ function routeDecisionFor(snapshot: PresentationDiagnosticSnapshot, routeId: str
   );
 }
 
+function selectedCandidateFor(snapshot: PresentationDiagnosticSnapshot, routeId: string): RouteCandidateDiagnostic | null {
+  return routeDecisionFor(snapshot, routeId)?.candidateDiagnostics.find((candidate) => candidate.selected) ?? null;
+}
+
+function remoteRouteOutcomes(
+  start: PresentationDiagnosticSnapshot | null,
+  final: PresentationDiagnosticSnapshot,
+  activeSnapshots: ReadonlyMap<string, PresentationDiagnosticSnapshot>,
+): RouteTransitionReport["remoteRouteOutcomes"] {
+  if (!start) return [];
+  const startRoutes = new Map(start.routedEdges.map((route) => [route.id, route]));
+  const finalRoutes = new Map(final.routedEdges.map((route) => [route.id, route]));
+  return [...activeSnapshots.entries()].flatMap(([routeId, active]) => {
+    const startRoute = startRoutes.get(routeId);
+    const activeRoute = active.routedEdges.find((route) => route.id === routeId);
+    const finalRoute = finalRoutes.get(routeId);
+    if (!startRoute || !activeRoute || !finalRoute) return [];
+    const activeChangedFromDragStart = startRoute.path !== activeRoute.path;
+    const finalChangedFromDragStart = startRoute.path !== finalRoute.path;
+    return [{
+      routeId,
+      classification: finalChangedFromDragStart ? "persistent" : "transient",
+      active: {
+        changedFromDragStart: activeChangedFromDragStart,
+        shape: routeShape(activeRoute),
+        selectedCandidate: selectedCandidateFor(active, routeId),
+        continuity: routeDecisionFor(active, routeId)?.continuity ?? null,
+      },
+      final: {
+        changedFromDragStart: finalChangedFromDragStart,
+        shape: routeShape(finalRoute),
+        selectedCandidate: selectedCandidateFor(final, routeId),
+        continuity: routeDecisionFor(final, routeId)?.continuity ?? null,
+      },
+    }];
+  });
+}
+
 function candidateSummary(candidates: readonly RouteCandidateDiagnostic[]): string {
   const selected = candidates.find((candidate) => candidate.selected);
   if (!selected) return "none";
   return `offset ${selected.offset.toFixed(1)}, score ${selected.score.toFixed(1)}, node ${selected.nodeOverlapScore.toFixed(1)}, occupied ${selected.occupiedPathConflict ? "yes" : "no"}, label ${selected.labelPressure.toFixed(1)}`;
+}
+
+function continuitySummary(continuity: AutomaticRouteDecision["continuity"] | null): string {
+  if (!continuity) return "n/a";
+  const blockers = [
+    continuity.blockingNodeIds.length ? `node ${continuity.blockingNodeIds.join(",")}` : "",
+    continuity.blockingOccupiedRouteIds.length ? `route ${continuity.blockingOccupiedRouteIds.join(",")}` : "",
+    continuity.blockingNodeLabelIds.length ? `label ${continuity.blockingNodeLabelIds.join(",")}` : "",
+  ].filter(Boolean);
+  return `${continuity.usedPreviousRoute ? "reused" : "rerouted"}${blockers.length ? ` (${blockers.join("; ")})` : ""}`;
+}
+
+function remoteOutcomeSummary(outcome: RouteTransitionReport["remoteRouteOutcomes"][number]): string {
+  return `${outcome.routeId} ${outcome.classification}: active ${outcome.active.shape.curved ? "curved" : "straight"} [${candidateSummary(outcome.active.selectedCandidate ? [outcome.active.selectedCandidate] : [])}; ${continuitySummary(outcome.active.continuity)}] → final ${outcome.final.shape.curved ? "curved" : "straight"} [${candidateSummary(outcome.final.selectedCandidate ? [outcome.final.selectedCandidate] : [])}; ${continuitySummary(outcome.final.continuity)}]`;
 }
 
 function positionFor(snapshot: PresentationDiagnosticSnapshot, nodeId: string): { x: number; y: number } | null {
@@ -182,7 +253,7 @@ function positionFor(snapshot: PresentationDiagnosticSnapshot, nodeId: string): 
   return node ? snapshot.positions[nodeId] ?? node : null;
 }
 
-function routeTransitionReport(stage: RouteTransitionReport["stage"], from: PresentationDiagnosticSnapshot, to: PresentationDiagnosticSnapshot, nodeId: string, changedNonIncidentRouteIdsDuringActiveDrag: string[]): RouteTransitionReport {
+function routeTransitionReport(stage: RouteTransitionReport["stage"], from: PresentationDiagnosticSnapshot, to: PresentationDiagnosticSnapshot, nodeId: string, changedNonIncidentRouteIdsDuringActiveDrag: string[], dragStart: PresentationDiagnosticSnapshot | null = null, activeSnapshots: ReadonlyMap<string, PresentationDiagnosticSnapshot> = new Map()): RouteTransitionReport {
   const changed = changedRouteIds(from, to);
   const edgesById = new Map(to.edges.map((edge) => [edge.id, edge]));
   const fromRoutes = new Map(from.routedEdges.map((route) => [route.id, route]));
@@ -220,6 +291,7 @@ function routeTransitionReport(stage: RouteTransitionReport["stage"], from: Pres
         toCandidates: afterDecision?.candidateDiagnostics ?? [],
       }] : [];
     }),
+    remoteRouteOutcomes: remoteRouteOutcomes(dragStart, to, activeSnapshots),
     relationLabelComparisons: changed.flatMap((routeId) => {
       const before = fromRelationLabels.get(routeId);
       const after = toRelationLabels.get(routeId);
@@ -413,6 +485,8 @@ document.addEventListener("pointerdown", (event) => {
   if (!nodeId || !center) return;
   latestDragPresentationSnapshot = null;
   activeDragRemoteTransitions = [];
+  dragStartPresentationSnapshot = latestDiagnosticSnapshot;
+  activeRemoteRouteSnapshots = new Map();
   dragEntryBaselineSnapshot = latestDiagnosticSnapshot;
   changedNonIncidentRouteIdsDuringActiveDrag = new Set();
   pendingDragEndSnapshot = null;
@@ -464,6 +538,12 @@ window.__liaisonScapePresentationDiagnosticSink = (snapshot) => {
     if (dragEntryBaselineSnapshot) {
       latestDragEntryReport = routeTransitionReport("entry", dragEntryBaselineSnapshot, snapshot, activeDragTiming.nodeId, []);
       window.dispatchEvent(new CustomEvent<RouteTransitionReport>(dragEntryEvent, { detail: latestDragEntryReport }));
+      const entryChangedRoutes = changedRouteIds(dragEntryBaselineSnapshot, snapshot);
+      const edgesById = new Map(snapshot.edges.map((edge) => [edge.id, edge]));
+      for (const routeId of entryChangedRoutes) {
+        const edge = edgesById.get(routeId);
+        if (edge && edge.sourceId !== activeDragTiming.nodeId && edge.targetId !== activeDragTiming.nodeId) activeRemoteRouteSnapshots.set(routeId, snapshot);
+      }
       dragEntryBaselineSnapshot = null;
     }
     if (latestDragPresentationSnapshot) {
@@ -473,6 +553,7 @@ window.__liaisonScapePresentationDiagnosticSink = (snapshot) => {
         const edge = edgesById.get(routeId);
         if (edge && edge.sourceId !== activeDragTiming.nodeId && edge.targetId !== activeDragTiming.nodeId) {
           changedNonIncidentRouteIdsDuringActiveDrag.add(routeId);
+          activeRemoteRouteSnapshots.set(routeId, snapshot);
           activeDragRemoteTransitions.push(activeDragRemoteTransition(snapshot, routeId, activeDragTiming.nodeId, activeDragRemoteTransitions.length + 1));
         }
       }
@@ -480,7 +561,7 @@ window.__liaisonScapePresentationDiagnosticSink = (snapshot) => {
     latestDragPresentationSnapshot = snapshot;
   }
   else if (pendingDragEndSnapshot && snapshot.phase !== "node-drag-active") {
-    latestRouteTransitionReport = routeTransitionReport("pointer-up", pendingDragEndSnapshot, snapshot, latestDragTimingReport?.nodeId ?? "unknown", pendingActiveDragRemoteChanges);
+    latestRouteTransitionReport = routeTransitionReport("pointer-up", pendingDragEndSnapshot, snapshot, latestDragTimingReport?.nodeId ?? "unknown", pendingActiveDragRemoteChanges, dragStartPresentationSnapshot, activeRemoteRouteSnapshots);
     window.dispatchEvent(new CustomEvent<RouteTransitionReport>(routeTransitionEvent, { detail: latestRouteTransitionReport }));
     pendingDragEndSnapshot = null;
     pendingPostIdleSnapshot = snapshot.phase === "node-drag-finalizing" ? snapshot : null;
@@ -625,6 +706,7 @@ function DragTimingDiagnostics() {
       <li>changed node labels: {routeTransition.changedNodeLabelIds.join(", ") || "none"}; changed relation labels: {routeTransition.changedRelationLabelIds.join(", ") || "none"}</li>
       <li>route shape transitions: {routeTransition.routeShapeComparisons.map(({ routeId, incident, from, to }) => `${routeId} (${incident ? "incident" : "remote"}) ${from.curved ? "curved" : "straight"} ${format(from.length)} → ${to.curved ? "curved" : "straight"} ${format(to.length)}`).join("; ") || "none"}</li>
       <li>selected candidate scores: {routeTransition.routeShapeComparisons.map(({ routeId, fromCandidates, toCandidates }) => `${routeId} active [${candidateSummary(fromCandidates)}] → final [${candidateSummary(toCandidates)}]`).join("; ") || "none"}</li>
+      <li>remote route outcomes: {routeTransition.remoteRouteOutcomes.map(remoteOutcomeSummary).join("; ") || "none"}</li>
       <li>relation-label transitions: {routeTransition.relationLabelComparisons.map(({ routeId, from, to }) => `${routeId} ${from ? `${format(from.x)}, ${format(from.y)}` : "none"} → ${to ? `${format(to.x)}, ${format(to.y)}` : "none"}`).join("; ") || "none"}</li>
     </ul>}
     {report?.remoteTransitions.length ? <details>

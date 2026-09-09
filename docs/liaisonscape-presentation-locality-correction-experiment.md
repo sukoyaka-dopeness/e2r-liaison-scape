@@ -734,4 +734,63 @@ selected from this checkpoint. Any future change must first show a genuinely
 safe alternative to the Columbia-blocked straight route; a global straightness
 preference or broader obstacle relaxation is not justified by the current
 evidence.
+
+## Remote-route transient versus persistent arbitration
+
+The next pure Product sweep separated two remote-route outcomes without
+changing Product routing behavior.
+
+### Transient remote change
+
+With Saturn V moved diagonally by `(45, 45)` graph units, remote
+`entity-6` (`Collins -> Columbia`) became curved in the active presentation
+and returned to straight in the final presentation at the same geometry.
+The active decision selected offset `72` with score `0.72`; its straight
+candidate had zero Node overlap and zero occupied-path conflict but
+`labelPressure = 100000`. The continuity decision rejected the previous
+straight route only for a new `saturn-v` Node-label collision. In the final
+feedback presentation, the straight candidate selected with score `0` and
+continuity had no blocker.
+
+This is PROVEN as an active/final arbitration difference. It is not evidence
+that remote routes should be frozen unconditionally. The narrow candidate for
+future work is to determine whether a moving dragged-label collision can be
+deferred safely or should instead move the label/route immediately; no such
+behavior correction is selected here.
+
+### Persistent remote change
+
+With NASA moved left by `45` graph units, remote `entity-4` (`Armstrong ->
+Eagle`) selected offset `-96` in both active and final presentations. The
+straight candidate had Node-overlap score approximately `15701.5`, label
+pressure approximately `1070.8` in active scoring, and total score about
+`1571224.9`. The continuity decision identified `nasa` as the Node-influence
+blocker; occupied-path conflict was false and the label blocker set was
+empty. The final route remained curved with the same selected offset.
+
+This is PROVEN as a persistent safety reroute caused by the dragged NASA Node
+entering the prior remote route's influence. It is not the earlier transient
+label-state churn and does not justify a straightness preference.
+
+### Diagnostic boundary
+
+The actual inspection seam now retains the active route snapshot that caused
+each remote change and compares it with the pointer-up final snapshot. It
+reports `transient` when the route differs from drag start during active drag
+but the final route returns to the drag-start geometry, and `persistent` when
+the final route retains a different geometry. The report includes the active
+and final selected candidate components plus continuity blockers. This is
+development-only observation and does not feed route selection or persistence.
+
+The initial Node-label / Edge overlap issue remains a separate layout and
+label-placement investigation. It is intentionally not mixed with remote
+route arbitration.
+
+### Current decision
+
+Remote locality overall remains UNRESOLVED. The transient case is the next
+candidate-selection question; the persistent case is currently an allowed
+necessary reroute. No remote-route freeze, active feedback re-enablement, or
+global obstacle relaxation is introduced. User inspection of the diagnostic
+classification remains required before selecting another correction.
 ```
