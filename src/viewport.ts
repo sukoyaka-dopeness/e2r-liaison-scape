@@ -646,6 +646,7 @@ export function routeGraphEdge(
   labelRects: LabelRect[] = [],
   canonicalPhysicalSideSign = 1,
   candidateTraceSink?: (candidates: readonly RouteCandidateDiagnostic[]) => void,
+  preferredSideSign = 0,
 ): { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point } {
   if (source.x === target.x && source.y === target.y && selfRelation) {
     if (manualSelfLoop === undefined) return selectAutomaticSelfLoopGeometry(source, parallelIndex, obstacles);
@@ -796,6 +797,11 @@ export function routeGraphEdge(
   let bestScore = Infinity;
   let bestSidePreservingGeometry: ReturnType<typeof geometryForOffset> | null = null;
   let bestSidePreservingScore = Infinity;
+  let bestSafeGeometry: ReturnType<typeof geometryForOffset> | null = null;
+  let bestSafeScore = Infinity;
+  let bestPreferredSideGeometry: ReturnType<typeof geometryForOffset> | null = null;
+  let bestPreferredSideScore = Infinity;
+  let bestPreferredSideOffset: number | null = null;
   const candidateDiagnostics: Array<Omit<RouteCandidateDiagnostic, "selected">> = [];
   for (const candidateOffset of offsets) {
     const geometry = geometryForOffset(candidateOffset);
@@ -840,14 +846,42 @@ export function routeGraphEdge(
       bestGeometry = geometry;
       bestScore = score;
     }
+    // A safe candidate has no hard geometry conflict. Soft label halo
+    // pressure remains a quality signal and may be compared, but it must not
+    // prevent a bounded side-continuity preference from stabilizing two
+    // otherwise usable route families.
+    const isSafeCandidate = nodeOverlapScore === 0 && !overlapsEdge && labelPressure < 100000;
+    if (isSafeCandidate && score < bestSafeScore) {
+      bestSafeGeometry = geometry;
+      bestSafeScore = score;
+    }
+    if (isSafeCandidate && preferredSideSign !== 0 && Math.sign(candidateOffset) === preferredSideSign && score < bestPreferredSideScore) {
+      bestPreferredSideGeometry = geometry;
+      bestPreferredSideScore = score;
+      bestPreferredSideOffset = candidateOffset;
+    }
     const isExistingSafeCandidate = nodeOverlapScore === 0 && !overlapsEdge && labelPressure === 0;
     if (preservesBaseSide && isExistingSafeCandidate && score < bestSidePreservingScore) {
       bestSidePreservingGeometry = geometry;
       bestSidePreservingScore = score;
     }
   }
-  const selectedGeometry = bestSidePreservingGeometry ?? bestGeometry ?? geometryForOffset(baseOffset);
-  const selectedOffset = selectedGeometry === bestSidePreservingGeometry
+  const bestSafeOffset = bestSafeGeometry === null
+    ? null
+    : candidateDiagnostics.find((candidate) => candidate.score === bestSafeScore)?.offset ?? null;
+  const sameCurvatureFamily = bestPreferredSideOffset !== null && bestSafeOffset !== null
+    && (bestPreferredSideOffset === 0) === (bestSafeOffset === 0)
+    && (bestPreferredSideOffset === 0 || Math.abs(Math.abs(bestPreferredSideOffset) - Math.abs(bestSafeOffset)) <= 24);
+  const preferredSideIsNearEquivalent = bestPreferredSideGeometry !== null
+    && bestSafeGeometry !== null
+    && sameCurvatureFamily
+    && bestPreferredSideScore <= bestSafeScore * 1.1 + 12;
+  const selectedGeometry = preferredSideIsNearEquivalent
+    ? bestPreferredSideGeometry!
+    : bestSidePreservingGeometry ?? bestGeometry ?? geometryForOffset(baseOffset);
+  const selectedOffset = selectedGeometry === bestPreferredSideGeometry
+    ? bestPreferredSideOffset
+    : selectedGeometry === bestSidePreservingGeometry
     ? candidateDiagnostics.find((candidate) => candidate.score === bestSidePreservingScore)?.offset
     : candidateDiagnostics.find((candidate) => candidate.score === bestScore)?.offset;
   candidateTraceSink?.(candidateDiagnostics.map((candidate) => ({

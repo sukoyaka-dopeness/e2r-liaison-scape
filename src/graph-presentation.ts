@@ -113,6 +113,18 @@ export function deriveAutomaticRoutes({
         return nodeId !== edge.sourceId && nodeId !== edge.targetId;
       })
       : routeLabelRects;
+    const previousRoute = previousAutomaticRoutes?.get(edge.id);
+    const previousRouteSideSign = draggedNodeId !== undefined
+      && !isIncident
+      && edge.parallelCount === 1
+      && edgeCurveOffsets[edge.id] === undefined
+      && previousRoute?.samples.length
+      && previousRoute.controlPoint
+      ? Math.sign(
+        (target.x - source.x) * (previousRoute.controlPoint.y - (source.y + target.y) / 2)
+        - (target.y - source.y) * (previousRoute.controlPoint.x - (source.x + target.x) / 2),
+      )
+      : 0;
     const candidateDiagnostics: RouteCandidateDiagnostic[] = [];
     const route = routeGraphEdge(
       source,
@@ -128,8 +140,8 @@ export function deriveAutomaticRoutes({
       routeLabelsForEdge,
       canonicalPhysicalSideSign,
       routeDecisionSink ? (candidates) => candidateDiagnostics.push(...candidates) : undefined,
+      previousRouteSideSign,
     );
-    const previousRoute = previousAutomaticRoutes?.get(edge.id);
     const isEligibleShape = edge.sourceId !== edge.targetId
       && edge.parallelCount === 1
       && edgeCurveOffsets[edge.id] === undefined

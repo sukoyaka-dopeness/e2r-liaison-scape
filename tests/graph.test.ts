@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { COORDINATE_DRAFT_EXTENSION_ID, COORDINATE_EXTENSION_ID, applyStoredCoordinates, buildEntityGraph, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type Dataset, type GraphEdge } from "../src/dataset.ts";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, getEntityAttachment, graphEdgePath, minimumPathToLabelRectDistance, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, wrapNodeLabel, zoomScale } from "../src/viewport.ts";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, getEntityAttachment, graphEdgePath, minimumPathToLabelRectDistance, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, wrapNodeLabel, zoomScale, type RouteCandidateDiagnostic } from "../src/viewport.ts";
 import { interpolateLabelRect, isLabelTransitionPathSafe, reconcileRelationLabelVisualState } from "../src/relation-label-presentation.ts";
 
 test("automatic Relation routing treats node labels as rectangular obstacles", () => {
@@ -1214,6 +1214,55 @@ test("node-label route halo anticipates a route just outside hard clearance", ()
   const second = placeNodeLabel({ x: 100, y: 100 }, "Node", "", [], [], routeNearPreferredCandidate);
   assert.notDeepEqual(first, { x: 100, y: 150, width: 48, height: 20, directionX: 0, directionY: 1 });
   assert.deepEqual(first, second);
+});
+
+test("safe near-equivalent route candidates prefer the previous remote side", () => {
+  const traces: RouteCandidateDiagnostic[][] = [];
+  const route = routeGraphEdge(
+    { x: 0, y: 0 },
+    { x: 300, y: 0 },
+    0,
+    1,
+    [{ x: 150, y: 0 }],
+    [],
+    false,
+    0,
+    undefined,
+    undefined,
+    [],
+    1,
+    (candidates) => traces.push([...candidates]),
+    -1,
+  );
+  const selected = traces[0]!.find((candidate) => candidate.selected)!;
+  assert.equal(Math.sign(selected.offset), -1);
+  assert.equal(selected.nodeOverlapScore, 0);
+  assert.equal(selected.occupiedPathConflict, false);
+  assert.equal(selected.labelPressure, 0);
+  assert.match(route.path, / Q /);
+});
+
+test("route-side continuity does not override a better candidate", () => {
+  const traces: RouteCandidateDiagnostic[][] = [];
+  routeGraphEdge(
+    { x: 0, y: 0 },
+    { x: 300, y: 0 },
+    0,
+    1,
+    [],
+    [],
+    false,
+    0,
+    undefined,
+    undefined,
+    [{ x: 120, y: -300, width: 60, height: 299, directionX: 0, directionY: 1 }],
+    1,
+    (candidates) => traces.push([...candidates]),
+    -1,
+  );
+  const selected = traces[0]!.find((candidate) => candidate.selected)!;
+  assert.equal(selected.offset, 0);
+  assert.equal(selected.labelPressure, 0);
 });
 
 test("node labels yield a stable prior placement when a safe route alternative exists", () => {
