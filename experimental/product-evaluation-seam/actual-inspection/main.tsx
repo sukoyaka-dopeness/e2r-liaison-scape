@@ -8,6 +8,7 @@ import { diagnoseRoute } from "./routing-diagnostics";
 
 const diagnosticDatasetUrl = "https://diagnostic.liaisonscape.invalid/apollo-11-product-inspection.en.e2r.json";
 const spacingVariant = new URL(window.location.href).searchParams.get("spacing") ?? "control";
+const strictModeOff = new URL(window.location.href).searchParams.get("strictMode") === "off";
 const allowedSpacingVariants = new Set(["control", "108", "120", "132", "144", "160", "180", "200", "220"]);
 const selectedSpacingVariant = allowedSpacingVariants.has(spacingVariant) ? spacingVariant : "control";
 const localDatasetUrl = `${import.meta.env.BASE_URL}experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-${selectedSpacingVariant}.en.e2r.json`;
@@ -337,12 +338,14 @@ function DragTimingDiagnostics() {
 function ActualProductInspection() {
   function changeSpacing(event: React.ChangeEvent<HTMLSelectElement>) {
     const next = event.target.value;
-    window.location.href = `${window.location.pathname}?spacing=${encodeURIComponent(next)}`;
+    const params = new URLSearchParams(window.location.search);
+    params.set("spacing", next);
+    window.location.href = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
   }
 
   return <>
     <div className="actual-inspection-seam" aria-label="Diagnostic fixture controls">
-      <span>Dev-only fixture input</span>
+      <span>Actual Product diagnostic fixture · {strictModeOff ? "production-like / StrictMode off (Vite dev)" : "development / StrictMode on"}</span>
       <label>Spacing <select value={selectedSpacingVariant} onChange={changeSpacing} aria-label="Spacing candidate">
         <option value="control">control / 96</option>
         <option value="108">108</option>
@@ -362,4 +365,4 @@ function ActualProductInspection() {
   </>;
 }
 
-createRoot(document.getElementById("root")!).render(<StrictMode><ActualProductInspection /></StrictMode>);
+createRoot(document.getElementById("root")!).render(strictModeOff ? <ActualProductInspection /> : <StrictMode><ActualProductInspection /></StrictMode>);

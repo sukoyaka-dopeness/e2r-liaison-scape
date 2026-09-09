@@ -278,6 +278,49 @@ visual continuity. A controlled same-browser comparison remains useful if the
 user still perceives lag, especially one that separates event injection from
 synchronous presentation work.
 
+## Production-like StrictMode comparison
+
+The actual inspection seam now accepts `strictMode=off`. This keeps the real
+`src/App.tsx`, the real Apollo 11 fixture, and the real node-drag path, while
+omitting only the diagnostic seam's React development `<StrictMode>` wrapper.
+The Vite development server remains in use, so this is a production-like
+comparison surface, not a release-build performance claim. The visible seam
+label identifies the mode to prevent the two runs from being confused.
+
+The current development CUA classification had `12` raw presentation samples
+from `6` unique position identities, `6` duplicate computations, and `0`
+feedback passes. Two bounded drags on the StrictMode-off surface produced:
+
+| Drag | Raw / unique / duplicate | Presentation median / p95 / max | Pointer-to-render median / p95 / max | Node lag median / p95 / max | Event age median | Long Tasks |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Saturn V | 5 / 5 / 0 | 698.7 / 713.8 / 782.6 ms | 1.4 / 1.5 / 1.9 ms | 5.0 / 10.0 / 10.0 px | 795.2 ms | 86, 815, 787, 993, 829 ms |
+| NASA | 6 / 6 / 0 | 519.0 / 613.4 / 837.6 ms | 1.3 / 1.5 / 1.7 ms | 5.0 / 5.0 / 5.0 px | 712.7 ms | 57, 122, 896, 713, 933, 887 ms |
+
+These CUA measurements are diagnostic only and are not a controlled numerical
+A/B against the user's physical-input sample. They prove that the duplicate
+computation classification disappears when the wrapper's StrictMode is off;
+they do not prove that the remaining Long Tasks or event age belong to Product
+presentation work. The very large automation/runtime intervals and the low
+pointer-to-render/node-lag samples are internally inconsistent with treating
+the raw elapsed time as physical pointer latency. The result supports keeping
+`06913e2` as the current responsiveness candidate without another correction.
+
+### Comparison conclusion
+
+- Development duplicate computations: CONFIRMED; the StrictMode-off run had
+  none.
+- Production-like actual Product responsiveness: not contradicted by the
+  bounded smoke run; the Node followed both gestures without visible freeze or
+  snap-back.
+- Long Tasks: observed in both diagnostic contexts, but their Product versus
+  Vite/Edge/CUA attribution remains UNRESOLVED.
+- Release-build responsiveness and a controlled physical same-browser A/B:
+  UNRESOLVED.
+
+No further drag-performance correction is selected from this checkpoint.
+Routing/label yielding, remote route propagation, and route-flip behavior stay
+separate presentation questions.
+
 Cross-sample audit, crossing-aware placement, parallel/self-loop redesign,
 spacing selection, and governed Fresh execution remain out of scope.
 
