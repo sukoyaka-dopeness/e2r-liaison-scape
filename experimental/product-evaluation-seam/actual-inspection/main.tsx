@@ -18,6 +18,8 @@ const originalFetch = window.fetch.bind(window);
 const diagnosticEvent = "liaisonscape:presentation-diagnostic";
 let latestDiagnosticSnapshot: PresentationDiagnosticSnapshot | null = null;
 type RouteTransitionReport = {
+  sessionId: number;
+  pointerMoves: number;
   nodeId: string;
   stage: "entry" | "pointer-up" | "post-idle";
   fromPhase: PresentationDiagnosticSnapshot["phase"];
@@ -73,6 +75,7 @@ let dragEntryBaselineSnapshot: PresentationDiagnosticSnapshot | null = null;
 let dragStartPresentationSnapshot: PresentationDiagnosticSnapshot | null = null;
 let changedNonIncidentRouteIdsDuringActiveDrag = new Set<string>();
 let pendingDragEndSnapshot: PresentationDiagnosticSnapshot | null = null;
+let pendingDragSession: { sessionId: number; pointerId: number; nodeId: string; pointerMoves: number } | null = null;
 let pendingActiveDragRemoteChanges: string[] = [];
 let activeRemoteRouteSnapshots = new Map<string, PresentationDiagnosticSnapshot>();
 let latestRouteTransitionReport: RouteTransitionReport | null = null;
@@ -98,6 +101,8 @@ type ActiveDragRemoteTransition = {
 let activeDragRemoteTransitions: ActiveDragRemoteTransition[] = [];
 
 type DragTimingReport = {
+  sessionId: number;
+  pointerId: number;
   nodeId: string;
   pointerMoves: number;
   presentationComputations: number;
@@ -121,6 +126,7 @@ type DragTimingReport = {
 };
 
 type ActiveDragTiming = {
+  sessionId: number;
   pointerId: number;
   nodeId: string;
   startedAt: number;
@@ -147,6 +153,7 @@ type ActiveDragTiming = {
 
 let activeDragTiming: ActiveDragTiming | null = null;
 let latestDragTimingReport: DragTimingReport | null = null;
+let nextDragSessionId = 1;
 const timingEvent = "liaisonscape:presentation-timing";
 const routeTransitionEvent = "liaisonscape:route-transition-diagnostic";
 const dragEntryEvent = "liaisonscape:drag-entry-diagnostic";
@@ -267,7 +274,7 @@ function positionFor(snapshot: PresentationDiagnosticSnapshot, nodeId: string): 
   return node ? snapshot.positions[nodeId] ?? node : null;
 }
 
-function routeTransitionReport(stage: RouteTransitionReport["stage"], from: PresentationDiagnosticSnapshot, to: PresentationDiagnosticSnapshot, nodeId: string, changedNonIncidentRouteIdsDuringActiveDrag: string[], dragStart: PresentationDiagnosticSnapshot | null = null, activeSnapshots: ReadonlyMap<string, PresentationDiagnosticSnapshot> = new Map()): RouteTransitionReport {
+function routeTransitionReport(stage: RouteTransitionReport["stage"], from: PresentationDiagnosticSnapshot, to: PresentationDiagnosticSnapshot, nodeId: string, changedNonIncidentRouteIdsDuringActiveDrag: string[], dragStart: PresentationDiagnosticSnapshot | null = null, activeSnapshots: ReadonlyMap<string, PresentationDiagnosticSnapshot> = new Map(), sessionId = 0, pointerMoves = 0): RouteTransitionReport {
   const changed = changedRouteIds(from, to);
   const edgesById = new Map(to.edges.map((edge) => [edge.id, edge]));
   const fromRoutes = new Map(from.routedEdges.map((route) => [route.id, route]));
@@ -275,6 +282,8 @@ function routeTransitionReport(stage: RouteTransitionReport["stage"], from: Pres
   const fromRelationLabels = new Map(from.relationLabels);
   const toRelationLabels = new Map(to.relationLabels);
   return {
+    sessionId,
+    pointerMoves,
     nodeId,
     stage,
     fromPhase: from.phase,
@@ -444,6 +453,7 @@ function finishDragTiming(): void {
   const drag = activeDragTiming;
   if (!drag) return;
   pendingDragEndSnapshot = latestDragPresentationSnapshot;
+  pendingDragSession = { sessionId: drag.sessionId, pointerId: drag.pointerId, nodeId: drag.nodeId, pointerMoves: drag.pointerMoves };
   pendingActiveDragRemoteChanges = [...changedNonIncidentRouteIdsDuringActiveDrag];
   const lagDuringLongTask = drag.nodeLagSamples
     .filter(({ at }) => drag.longTaskWindows.some(({ start, end }) => at >= start && at <= end))
@@ -454,6 +464,8 @@ function finishDragTiming(): void {
   const uniquePresentationInputs = new Set(drag.presentationInputIds).size;
   activeDragTiming = null;
   latestDragTimingReport = {
+    sessionId: drag.sessionId,
+    pointerId: drag.pointerId,
     nodeId: drag.nodeId,
     pointerMoves: drag.pointerMoves,
     presentationComputations: drag.computationDurations.length,
@@ -517,8 +529,10 @@ document.addEventListener("pointerdown", (event) => {
   dragEntryBaselineSnapshot = latestDiagnosticSnapshot;
   changedNonIncidentRouteIdsDuringActiveDrag = new Set();
   pendingDragEndSnapshot = null;
+  pendingDragSession = null;
   pendingActiveDragRemoteChanges = [];
   activeDragTiming = {
+    sessionId: nextDragSessionId,
     pointerId: event.pointerId,
     nodeId,
     startedAt: performance.now(),
@@ -542,6 +556,7 @@ document.addEventListener("pointerdown", (event) => {
     grabOffset: { x: center.x - event.clientX, y: center.y - event.clientY },
     framePending: false,
   };
+  nextDragSessionId += 1;
 }, true);
 
 document.addEventListener("pointermove", (event) => {
@@ -588,9 +603,11 @@ window.__liaisonScapePresentationDiagnosticSink = (snapshot) => {
     latestDragPresentationSnapshot = snapshot;
   }
   else if (pendingDragEndSnapshot && snapshot.phase !== "node-drag-active") {
-    latestRouteTransitionReport = routeTransitionReport("pointer-up", pendingDragEndSnapshot, snapshot, latestDragTimingReport?.nodeId ?? "unknown", pendingActiveDragRemoteChanges, dragStartPresentationSnapshot, activeRemoteRouteSnapshots);
+    const session = pendingDragSession;
+    latestRouteTransitionReport = routeTransitionReport("pointer-up", pendingDragEndSnapshot, snapshot, session?.nodeId ?? "unknown", pendingActiveDragRemoteChanges, dragStartPresentationSnapshot, activeRemoteRouteSnapshots, session?.sessionId ?? 0, session?.pointerMoves ?? 0);
     window.dispatchEvent(new CustomEvent<RouteTransitionReport>(routeTransitionEvent, { detail: latestRouteTransitionReport }));
     pendingDragEndSnapshot = null;
+    pendingDragSession = null;
     pendingPostIdleSnapshot = snapshot.phase === "node-drag-finalizing" ? snapshot : null;
   }
   else if (pendingPostIdleSnapshot && snapshot.phase === "idle") {
@@ -715,7 +732,7 @@ function DragTimingDiagnostics() {
   const format = (value: number | null | undefined, digits = 1) => value === null || value === undefined ? "n/a" : value.toFixed(digits);
   return <details className="actual-inspection-drag-timing" open>
     <summary>Dev-only drag timing diagnostic</summary>
-    {report ? <p><strong>{report.nodeId}</strong>: {report.pointerMoves} pointermoves, {report.presentationComputations} presentation computations, {report.renderSamples} render samples, duration {format(report.durationMs)} ms.</p> : <p>No completed node drag measured yet.</p>}
+    {report ? <p>drag session <strong>#{report.sessionId}</strong> · node <strong>{report.nodeId}</strong> · {report.pointerMoves} pointermoves, {report.presentationComputations} presentation computations, {report.renderSamples} render samples, duration {format(report.durationMs)} ms.</p> : <p>No completed node drag measured yet.</p>}
     {report && <ul>
       <li>presentation duration median / p95 / max: {format(report.presentationDurationMs?.median)} / {format(report.presentationDurationMs?.p95)} / {format(report.presentationDurationMs?.max)} ms</li>
       <li>presentation inputs / duplicate computations / feedback passes: {report.uniquePresentationInputs} / {report.duplicatePresentationComputations} / {report.feedbackPassComputations}</li>
@@ -726,7 +743,7 @@ function DragTimingDiagnostics() {
       <li>event age / processing age median: {format(report.eventAgeMs?.median)} / {format(report.processingAgeMs?.median)} ms; latest-vs-processed pointer max: {format(report.latestVsProcessedPointerPx?.max)} px; coalesced samples: {report.coalescedEvents}</li>
       <li>Long Tasks during drag: {report.longTaskDurationsMs.length ? report.longTaskDurationsMs.map((duration) => `${duration.toFixed(1)} ms`).join(", ") : "none observed"}</li>
     </ul>}
-    {routeTransition && <p>drag-time → pointer-up route transition: same node geometry {routeTransition.sameNodeGeometry ? "YES" : "NO"}; changed routes {routeTransition.changedRouteIds.join(", ") || "none"}.</p>}
+    {routeTransition && <p>drag session <strong>#{routeTransition.sessionId}</strong> · node <strong>{routeTransition.nodeId}</strong> · captured {routeTransition.pointerMoves} pointermoves · drag-time → pointer-up route transition: same node geometry {routeTransition.sameNodeGeometry ? "YES" : "NO"}; changed routes {routeTransition.changedRouteIds.join(", ") || "none"}.</p>}
     {routeTransition && <ul>
       <li>transition phase: {routeTransition.fromPhase} → {routeTransition.toPhase}; derived as {routeTransition.fromDerivationPhase} → {routeTransition.toDerivationPhase}; same routing geometry: {routeTransition.sameNodeGeometry ? "YES" : "NO"}</li>
       <li>drag-state positions: active routing {routeTransition.dragState.activeRoutingPosition ? `${format(routeTransition.dragState.activeRoutingPosition.x)}, ${format(routeTransition.dragState.activeRoutingPosition.y)}` : "n/a"}; active live {routeTransition.dragState.activeLivePosition ? `${format(routeTransition.dragState.activeLivePosition.x)}, ${format(routeTransition.dragState.activeLivePosition.y)}` : "n/a"}; final routing {routeTransition.dragState.finalRoutingPosition ? `${format(routeTransition.dragState.finalRoutingPosition.x)}, ${format(routeTransition.dragState.finalRoutingPosition.y)}` : "n/a"}</li>
