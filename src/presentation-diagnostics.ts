@@ -25,10 +25,19 @@ export type PresentationTimingSample = {
   durationMs: number;
 };
 
+export type DragPointerProcessingSample = {
+  nodeId: string;
+  eventTimeStamp: number;
+  processedAt: number;
+  clientX: number;
+  clientY: number;
+};
+
 declare global {
   interface Window {
     __liaisonScapePresentationDiagnosticSink?: (snapshot: PresentationDiagnosticSnapshot) => void;
     __liaisonScapePresentationTimingSink?: (sample: PresentationTimingSample) => void;
+    __liaisonScapeDragPointerProcessingSink?: (sample: DragPointerProcessingSample) => void;
   }
 }
 
@@ -38,4 +47,8 @@ export function publishPresentationDiagnostic(snapshot: PresentationDiagnosticSn
 
 export function publishPresentationTiming(sample: PresentationTimingSample): void {
   if (import.meta.env.DEV) window.__liaisonScapePresentationTimingSink?.(sample);
+}
+
+export function publishDragPointerProcessing(sample: DragPointerProcessingSample): void {
+  if (import.meta.env.DEV) window.__liaisonScapeDragPointerProcessingSink?.(sample);
 }

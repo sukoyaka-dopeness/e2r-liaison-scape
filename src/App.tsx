@@ -32,7 +32,7 @@ import { placeInitialEntity } from "./initial-entity-placement";
 import { placeInitialEntities } from "./entity-placement";
 import { settleInitialPlacement, solveAutoLayout } from "./auto-layout";
 import { deriveBoundedAutomaticPresentation, type DerivedAutomaticRoute } from "./graph-presentation";
-import { publishPresentationDiagnostic, publishPresentationTiming } from "./presentation-diagnostics";
+import { publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming } from "./presentation-diagnostics";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
@@ -1113,7 +1113,12 @@ export default function App() {
     else if (drag.kind === "edge" && drag.id && drag.button === 0) {
       if (moved) { dragRef.current = { ...dragRef.current!, kind: "edge-curve" }; applyOriginAnchoredEdgeCurveDrag(dragRef.current!, currentPoint); }
     }
-    else if (drag.kind === "node" && drag.id && moved && drag.startNodePosition && drag.startGraphPoint) { setCoordinatesDirty(true); adoptedCoordinateEntityIdsRef.current.add(drag.id!); setPositions((value) => ({ ...value, [drag.id!]: { ...drag.startNodePosition!, x: drag.startNodePosition!.x + currentPoint.x - drag.startGraphPoint!.x, y: drag.startNodePosition!.y + currentPoint.y - drag.startGraphPoint!.y } })); }
+    else if (drag.kind === "node" && drag.id && moved && drag.startNodePosition && drag.startGraphPoint) {
+      publishDragPointerProcessing({ nodeId: drag.id, eventTimeStamp: event.timeStamp, processedAt: performance.now(), clientX: event.clientX, clientY: event.clientY });
+      setCoordinatesDirty(true);
+      adoptedCoordinateEntityIdsRef.current.add(drag.id!);
+      setPositions((value) => ({ ...value, [drag.id!]: { ...drag.startNodePosition!, x: drag.startNodePosition!.x + currentPoint.x - drag.startGraphPoint!.x, y: drag.startNodePosition!.y + currentPoint.y - drag.startGraphPoint!.y } }));
+    }
     else if (drag.kind === "node-label" && drag.id && moved) {
       const node = nodeMap.get(drag.id);
       const current = nodeLabelPlacements.get(drag.id);

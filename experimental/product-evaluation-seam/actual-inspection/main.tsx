@@ -1,7 +1,7 @@
 import { StrictMode, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import App from "../../../src/App";
-import type { PresentationDiagnosticSnapshot, PresentationTimingSample } from "../../../src/presentation-diagnostics";
+import type { DragPointerProcessingSample, PresentationDiagnosticSnapshot, PresentationTimingSample } from "../../../src/presentation-diagnostics";
 import "../../../src/styles.css";
 import "./actual-inspection.css";
 import { diagnoseRoute } from "./routing-diagnostics";
@@ -22,7 +22,13 @@ type DragTimingReport = {
   presentationDurationMs: { median: number; p95: number; max: number } | null;
   renderSamples: number;
   pointerToRenderMs: { median: number; p95: number; max: number } | null;
+  processedToRenderMs: { median: number; p95: number; max: number } | null;
   pointerToNodeLagPx: { median: number; p95: number; max: number } | null;
+  eventAgeMs: { median: number; p95: number; max: number } | null;
+  processingAgeMs: { median: number; p95: number; max: number } | null;
+  latestVsProcessedPointerPx: { median: number; p95: number; max: number } | null;
+  coalescedEvents: number;
+  longTaskDurationsMs: number[];
   durationMs: number;
 };
 
@@ -33,9 +39,16 @@ type ActiveDragTiming = {
   pointerMoves: number;
   computationDurations: number[];
   renderLatencies: number[];
+  processedRenderLatencies: number[];
   nodeLagPixels: number[];
+  eventAges: number[];
+  processingAges: number[];
+  latestVsProcessedPointerPixels: number[];
+  coalescedEvents: number;
+  longTaskDurationsMs: number[];
   latestPointer: { x: number; y: number };
   latestPointerAt: number;
+  latestProcessedAt: number;
   grabOffset: { x: number; y: number };
   framePending: boolean;
 };
@@ -55,6 +68,13 @@ function summary(values: number[]): { median: number; p95: number; max: number }
   return { median: percentile(values, 0.5)!, p95: percentile(values, 0.95)!, max: Math.max(...values) };
 }
 
+function performanceTimeStamp(timeStamp: number): number | null {
+  if (!Number.isFinite(timeStamp)) return null;
+  const now = performance.now();
+  const relative = Math.abs(now - timeStamp) < 86400000 ? timeStamp : timeStamp - performance.timeOrigin;
+  return Number.isFinite(relative) ? relative : null;
+}
+
 function nodeCenter(nodeId: string): { x: number; y: number } | null {
   const element = document.querySelector<SVGGElement>(`g[data-entity-id="${CSS.escape(nodeId)}"]`);
   if (!element) return null;
@@ -72,6 +92,7 @@ function sampleRenderedDrag(): void {
     const expected = { x: drag.latestPointer.x + drag.grabOffset.x, y: drag.latestPointer.y + drag.grabOffset.y };
     drag.nodeLagPixels.push(Math.hypot(center.x - expected.x, center.y - expected.y));
     drag.renderLatencies.push(performance.now() - drag.latestPointerAt);
+    drag.processedRenderLatencies.push(performance.now() - drag.latestProcessedAt);
   }
 }
 
@@ -93,7 +114,13 @@ function finishDragTiming(): void {
     presentationDurationMs: summary(drag.computationDurations),
     renderSamples: drag.renderLatencies.length,
     pointerToRenderMs: summary(drag.renderLatencies),
+    processedToRenderMs: summary(drag.processedRenderLatencies),
     pointerToNodeLagPx: summary(drag.nodeLagPixels),
+    eventAgeMs: summary(drag.eventAges),
+    processingAgeMs: summary(drag.processingAges),
+    latestVsProcessedPointerPx: summary(drag.latestVsProcessedPointerPixels),
+    coalescedEvents: drag.coalescedEvents,
+    longTaskDurationsMs: drag.longTaskDurationsMs,
     durationMs: performance.now() - drag.startedAt,
   };
   window.dispatchEvent(new CustomEvent<DragTimingReport>(timingEvent, { detail: latestDragTimingReport }));
@@ -102,6 +129,21 @@ function finishDragTiming(): void {
 window.__liaisonScapePresentationTimingSink = (sample: PresentationTimingSample) => {
   if (activeDragTiming) activeDragTiming.computationDurations.push(sample.durationMs);
 };
+
+window.__liaisonScapeDragPointerProcessingSink = (sample: DragPointerProcessingSample) => {
+  const drag = activeDragTiming;
+  if (!drag || drag.nodeId !== sample.nodeId) return;
+  drag.latestProcessedAt = sample.processedAt;
+  const eventAt = performanceTimeStamp(sample.eventTimeStamp);
+  if (eventAt !== null) drag.processingAges.push(sample.processedAt - eventAt);
+  drag.latestVsProcessedPointerPixels.push(Math.hypot(drag.latestPointer.x - sample.clientX, drag.latestPointer.y - sample.clientY));
+};
+
+const longTaskObserver = typeof PerformanceObserver === "undefined" ? null : new PerformanceObserver((list) => {
+  if (!activeDragTiming) return;
+  for (const entry of list.getEntries()) activeDragTiming.longTaskDurationsMs.push(entry.duration);
+});
+try { longTaskObserver?.observe({ type: "longtask", buffered: false }); } catch { /* unsupported in this browser */ }
 
 document.addEventListener("pointerdown", (event) => {
   if (event.button !== 0) return;
@@ -117,9 +159,16 @@ document.addEventListener("pointerdown", (event) => {
     pointerMoves: 0,
     computationDurations: [],
     renderLatencies: [],
+    processedRenderLatencies: [],
     nodeLagPixels: [],
+    eventAges: [],
+    processingAges: [],
+    latestVsProcessedPointerPixels: [],
+    coalescedEvents: 0,
+    longTaskDurationsMs: [],
     latestPointer: { x: event.clientX, y: event.clientY },
     latestPointerAt: performance.now(),
+    latestProcessedAt: performance.now(),
     grabOffset: { x: center.x - event.clientX, y: center.y - event.clientY },
     framePending: false,
   };
@@ -129,6 +178,9 @@ document.addEventListener("pointermove", (event) => {
   const drag = activeDragTiming;
   if (!drag || drag.pointerId !== event.pointerId) return;
   drag.pointerMoves += 1;
+  const eventAt = performanceTimeStamp(event.timeStamp);
+  if (eventAt !== null) drag.eventAges.push(performance.now() - eventAt);
+  drag.coalescedEvents += typeof event.getCoalescedEvents === "function" ? event.getCoalescedEvents().length : 1;
   drag.latestPointer = { x: event.clientX, y: event.clientY };
   drag.latestPointerAt = performance.now();
   scheduleRenderedDragSample();
@@ -239,7 +291,10 @@ function DragTimingDiagnostics() {
     {report && <ul>
       <li>presentation duration median / p95 / max: {format(report.presentationDurationMs?.median)} / {format(report.presentationDurationMs?.p95)} / {format(report.presentationDurationMs?.max)} ms</li>
       <li>pointer→render median / p95 / max: {format(report.pointerToRenderMs?.median)} / {format(report.pointerToRenderMs?.p95)} / {format(report.pointerToRenderMs?.max)} ms</li>
+      <li>processed pointer→render median / p95 / max: {format(report.processedToRenderMs?.median)} / {format(report.processedToRenderMs?.p95)} / {format(report.processedToRenderMs?.max)} ms</li>
       <li>pointer→node lag median / p95 / max: {format(report.pointerToNodeLagPx?.median)} / {format(report.pointerToNodeLagPx?.p95)} / {format(report.pointerToNodeLagPx?.max)} px</li>
+      <li>event age / processing age median: {format(report.eventAgeMs?.median)} / {format(report.processingAgeMs?.median)} ms; latest-vs-processed pointer max: {format(report.latestVsProcessedPointerPx?.max)} px; coalesced samples: {report.coalescedEvents}</li>
+      <li>Long Tasks during drag: {report.longTaskDurationsMs.length ? report.longTaskDurationsMs.map((duration) => `${duration.toFixed(1)} ms`).join(", ") : "none observed"}</li>
     </ul>}
   </details>;
 }

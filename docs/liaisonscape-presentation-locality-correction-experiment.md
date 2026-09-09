@@ -88,6 +88,25 @@ The presentation duration is captured around the actual `App` presentation
 derivation. It should therefore be compared with the pure-function benchmark,
 but not treated as a frame-rate guarantee.
 
+The enhanced end-to-end diagnostic seam then added processed-pointer timing,
+event timestamp age, processing age, coalesced samples, latest-versus-processed
+pointer distance, and Long Task observation. It produced these current-surface
+measurements:
+
+| Drag | Presentation median / p95 / max | Pointer→sampled render median / p95 / max | Processed pointer→render median / p95 / max | Event age / processing age median | Latest-vs-processed max | Coalesced |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Saturn V | 896.8 / 1188.9 / 1259.6 ms | 4.2 / 8.4 / 10.6 ms | 3.7 / 6.0 / 7.2 ms | 2365.9 / 2366.3 ms | 0.0 px | 8 |
+| Saturn V (warm repeat) | 852.3 / 1056.8 / 1220.6 ms | 4.2 / 8.0 / 9.0 ms | 3.8 / 4.3 / 5.7 ms | 2211.1 / 2211.6 ms | 0.0 px | 8 |
+| NASA | 908.7 / 1148.2 / 1177.0 ms | 4.6 / 4.9 / 5.4 ms | 1.4 / 4.3 / 4.9 ms | 2337.2 / 2338.0 ms | 0.0 px | 8 |
+
+Long Tasks overlapping the diagnostic intervals included approximately
+`1.7–2.6 s` entries. The earlier approximately-1-ms value therefore measured
+only latest captured `pointermove` to a two-rAF DOM sample; it did not measure
+event age, React processing, or presentation derivation. These are page-observed
+diagnostic signals, not physical-input latency or acceptance metrics. Event
+injection, host/browser scheduling, and tasks that began before the gesture can
+affect them; the Long Task observer is not a precise attribution profiler.
+
 The historical `a38e01f` and `98d10e0` surfaces were also opened in isolated
 temporary worktrees and received one physical Saturn V and one physical NASA
 drag each under the same fixture and viewport. Both completed with no obvious
@@ -115,6 +134,15 @@ timing, it remains unresolved rather than being attributed to Product lag.
   remained about `1 ms` and normalized pointer-to-node lag was about `6.3 px`
   for both representative drags. The node visibly followed the pointer in the
   bounded checks.
+- The enhanced seam observed no spatially newer pointer sample waiting behind
+  the processed sample in the captured drags: latest-versus-processed pointer
+  distance was at most `0 px`. This rules out a spatial backlog in those
+  observations, but does not identify the source of the user-visible delay.
+- The same seam observed event timestamps roughly `2.2–2.4 s` old at
+  processing and presentation derivation durations roughly `0.85–1.26 s`
+  median/max in the current dev session, with Long Tasks overlapping the
+  interval. These are real page-observed runtime signals, not evidence of a
+  particular physical input device or browser subsystem.
 
 ### Strongly supported
 
@@ -125,17 +153,27 @@ timing, it remains unresolved rather than being attributed to Product lag.
 - `2ccbb34` did not show a meaningful additional computation penalty in either
   the pure benchmark or the current in-page timing samples. It is therefore
   unlikely to be the primary source of the previously perceived pointer lag.
-- The perceived improvement from `a38e01f` onward is not explained by
-  computation time alone. Browser scheduling, React state/render cadence, the
-  CUA gesture cadence, and the distinction between a next sampled DOM update
-  and a full end-to-end frame trace remain relevant.
+- The current large in-page derivation and Long Task observations support a
+  synchronous main-thread/runtime contribution, but do not distinguish Product
+  work from Edge, Vite development runtime, or automation scheduling.
+- A safe future responsiveness correction would likely need to separate an
+  immediate node visual position from expensive route/label derivation, allow
+  intermediate work to be superseded, and force one authoritative full
+  presentation at drag end. That is only a candidate direction: it risks
+  stale routes, labels, or snap-back and needs a controlled A/B plus user
+  inspection before implementation.
 
 ### Unresolved
 
 - A causal physical latency ranking between the historical snapshots cannot be
   established from one qualitative drag per node because only the current
   snapshot has the timing seam.
-- Browser FPS, event coalescing, and Long Task attribution remain unmeasured.
+- Whether the large event age is caused by the Product, CUA injection, Edge,
+  Vite development runtime, or their interaction remains unresolved. The
+  timestamp-age signal alone must not be read as physical input latency.
+- Browser FPS and precise Long Task attribution remain unresolved. Historical
+  snapshots lack equivalent instrumentation, so the current measurements do
+  not establish an A/B regression across `a38e01f`, `98d10e0`, and `2ccbb34`.
 - The remaining remote route flip and NASA crossing change are presentation
   locality questions, not evidence that the current pointer-tracking path is
   lagging.
@@ -156,10 +194,12 @@ useful checkpoint is user comparison of the actual Product behavior:
 - whether any responsiveness difference is noticeable during repeated drag.
 
 The timing instrumentation is intentionally dev-only and diagnostic. No
-drag-time coalescing or alternate presentation path is selected from these
-measurements yet; a correction would need to preserve immediate pointer
-tracking, sufficiently current/stable route and label presentation, and an
-authoritative final presentation at drag end.
+drag-time coalescing, alternate presentation path, or Product responsiveness
+correction is selected from these measurements yet. The next useful diagnostic
+is a controlled same-browser comparison with a minimal instrumentation build
+and a browser/runtime trace that can separate event injection from synchronous
+presentation work. Only after that comparison, followed by actual Product
+visual inspection, should a bounded correction be considered.
 
 Cross-sample audit, crossing-aware placement, parallel/self-loop redesign,
 spacing selection, and governed Fresh execution remain out of scope.
