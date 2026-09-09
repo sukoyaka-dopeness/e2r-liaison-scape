@@ -30,6 +30,28 @@ const targetedLocalCorridorPositions = {
   moon: { x: 380.534, y: -64.622 },
   hornet: { x: 156.701, y: -168.251 },
 };
+const crossingAwarePositions = {
+  armstrong: { x: 81.52195178196578, y: 353.2847031633761 },
+  aldrin: { x: 259.7062286929358, y: 430.1699006272331 },
+  collins: { x: 76.32957767356187, y: 138.12092444915325 },
+  nasa: { x: 130.49487076849863, y: 312.98512095043066 },
+  columbia: { x: 221.9353670498617, y: 119.05140035670064 },
+  eagle: { x: 343.39085336332016, y: 262.924370141413 },
+  "saturn-v": { x: -31.796044546104158, y: -3.1044108905196204 },
+  moon: { x: 359.18434549022095, y: -92.58917084520496 },
+  hornet: { x: 92.39689847726747, y: -114.41400735836851 },
+};
+const labelAccommodationAwarePositions = {
+  armstrong: { x: -16.800818856626748, y: 401.9538301018924 },
+  aldrin: { x: 222.011, y: 508.891 },
+  collins: { x: -42.185, y: 159 },
+  nasa: { x: 200.31500974535382, y: 456.76359694681133 },
+  columbia: { x: 172.797, y: 73.267 },
+  eagle: { x: 373.4656226719991, y: 216.58198437142744 },
+  "saturn-v": { x: 11.156, y: -25.818 },
+  moon: { x: 380.534, y: -64.622 },
+  hornet: { x: 156.701, y: -168.251 },
+};
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -45,6 +67,8 @@ const candidateDescriptions = {
   current: "Stored Apollo 220 baseline",
   "local-search-v1": "Deterministic local geometry candidate",
   "local-search-v1-plus": "Targeted local corridor refinement",
+  "crossing-aware-v1": "Crossing-aware refinement (mixed control)",
+  "label-accommodation-v1": "Label-accommodation-aware refinement (mixed control)",
   "source-f0-160": "Source F0 solver, clearance 160",
   "fp1-ngp-420": "FP1-NGP negative control",
 } as const;
@@ -59,6 +83,8 @@ function cloneValue<T>(value: T): T {
 function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "local-search-v1") return localSearchPositions;
   if (candidate === "local-search-v1-plus") return targetedLocalCorridorPositions;
+  if (candidate === "crossing-aware-v1") return crossingAwarePositions;
+  if (candidate === "label-accommodation-v1") return labelAccommodationAwarePositions;
   if (candidate === "fp1-ngp-420") return fp1NgpPositions;
   const graph = buildEntityGraph(dataset);
   if (candidate === "source-f0-160") {
@@ -114,6 +140,8 @@ function CandidateMetrics() {
     ["current", "3", "2", "187.9", "364.6", "510 × 677"],
     ["local-search-v1", "3", "0", "177.9", "319.9", "423 × 677"],
     ["local-search-v1-plus", "3", "0", "163.8", "363.3", "440 × 677"],
+    ["crossing-aware-v1", "1", "2", "116.1", "305.4", "391 × 545"],
+    ["label-accommodation-v1", "3", "1", "177.9", "464.4", "423 × 677"],
     ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542"],
     ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420"],
   ], []);
@@ -135,7 +163,7 @@ function GeometryInspection() {
       <label>Candidate <select value={selectedCandidate} onChange={changeCandidate} aria-label="Geometry candidate">
         {Object.entries(candidateDescriptions).map(([id, description]) => <option key={id} value={id}>{description}</option>)}
       </select></label>
-      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Compare the targeted refinement around Neil Armstrong / NASA / Lunar Module Eagle, then recheck Michael Collins / NASA, NASA / Saturn V, and Saturn V / Command Module Columbia.</span>
+      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Compare the targeted refinement around Neil Armstrong / NASA / Lunar Module Eagle, then recheck Michael Collins / NASA, NASA / Saturn V, and Saturn V / Command Module Columbia. The crossing-aware and label-accommodation-aware entries are mixed diagnostic controls, not adoption decisions. Pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
     </div>
     <CandidateMetrics />
     <App />

@@ -75,5 +75,42 @@ function improve(start, next, rounds = 100) {
   return { positions: current, metrics };
 }
 
-const result = improve(localSearch, random(81273), 100);
-console.log(JSON.stringify({ start: presentationMetrics(localSearch), result }, null, 2));
+function improveWithScore(start, next, targetIds, scoreOf, rounds = 100) {
+  let current = clone(start), metrics = presentationMetrics(current);
+  for (let round = 0; round < rounds; round += 1) {
+    const id = targetIds[Math.floor(next() * targetIds.length)];
+    const candidate = clone(current);
+    const amplitude = 120 - round * 0.6;
+    candidate[id] = { x: candidate[id].x + (next() - 0.5) * amplitude, y: candidate[id].y + (next() - 0.5) * amplitude };
+    const candidateMetrics = presentationMetrics(candidate);
+    if (scoreOf(candidateMetrics) < scoreOf(metrics) || next() < 0.025) { current = candidate; metrics = candidateMetrics; }
+  }
+  return { positions: current, metrics };
+}
+
+const startLocalPlus = {
+  armstrong: { x: 31.342, y: 373.958 }, aldrin: { x: 222.011, y: 508.891 }, collins: { x: -42.185, y: 159 },
+  nasa: { x: 167.263, y: 316.949 }, columbia: { x: 172.797, y: 73.267 }, eagle: { x: 359.027, y: 191.533 },
+  "saturn-v": { x: 11.156, y: -25.818 }, moon: { x: 380.534, y: -64.622 }, hornet: { x: 156.701, y: -168.251 },
+};
+const localPlus = {
+  armstrong: { x: -59.717, y: 357.208 }, aldrin: { x: 222.011, y: 508.891 }, collins: { x: -42.185, y: 159 },
+  nasa: { x: 145.196, y: 337.480 }, columbia: { x: 172.797, y: 73.267 }, eagle: { x: 327.422, y: 158.709 },
+  "saturn-v": { x: 11.156, y: -25.818 }, moon: { x: 380.534, y: -64.622 }, hornet: { x: 156.701, y: -168.251 },
+};
+const crossingScore = (metrics) => metrics.crossings * 12000 + metrics.labelRouteHits * 6000 + metrics.crowdedRepresentative * 500
+  + metrics.routeMedian * 1.5 + metrics.routeMax * 0.5 + (metrics.extent[0] + metrics.extent[1]) * 0.25;
+const baselineRepresentative = new Map([["entity-3", 8.2], ["entity-6", 13.9], ["entity-8", 19.6], ["entity-10", 24.8]]);
+const labelAccommodationScore = (metrics) => {
+  const representativeRegression = metrics.representative.reduce((total, row) => total + Math.max(0, (baselineRepresentative.get(row.id) ?? 0) - row.competingDistance) * 2500, 0);
+  return (metrics.entity1.competingDistance < 20 ? (20 - metrics.entity1.competingDistance) * 1400 : 0)
+    + representativeRegression + metrics.crowdedRepresentative * 1600 + metrics.labelRouteHits * 8000
+    + metrics.crossings * 3500 + metrics.routeMedian * 1.2 + metrics.routeMax * 0.4 + (metrics.extent[0] + metrics.extent[1]) * 0.2;
+};
+const crossing = improveWithScore(startLocalPlus, random(98127), graph.nodes.map(({ id }) => id), crossingScore, 100);
+const accommodation = improveWithScore(localPlus, random(98128), ["armstrong", "nasa", "eagle"], labelAccommodationScore, 100);
+console.log(JSON.stringify({
+  localPlus: { metrics: presentationMetrics(localPlus) },
+  crossingAware: crossing,
+  labelAccommodationAware: accommodation,
+}, null, 2));
