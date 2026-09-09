@@ -91,6 +91,51 @@ test("active local Node drag preserves a safe previous non-incident route", () =
   assert.deepEqual(moved.find(({ id }) => id === "cd"), initial.find(({ id }) => id === "cd"));
 });
 
+test("finalizing Node drag preserves a safe previous non-incident route", () => {
+  const graph = {
+    nodes: [
+      { id: "a", label: "A", description: "", x: 0, y: 0 },
+      { id: "b", label: "B", description: "", x: 120, y: 0 },
+      { id: "c", label: "C", description: "", x: 240, y: 200 },
+      { id: "d", label: "D", description: "", x: 440, y: 200 },
+    ],
+    edges: [
+      { id: "ab", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1, label: "AB" },
+      { id: "cd", sourceId: "c", targetId: "d", parallelIndex: 0, parallelCount: 1, label: "CD" },
+    ],
+  };
+  const positions = { a: { x: 0, y: 0 }, b: { x: 120, y: 0 }, c: { x: 240, y: 200 }, d: { x: 440, y: 200 } };
+  const movedPositions = { ...positions, a: { x: 0, y: 40 } };
+  const common = {
+    graph,
+    positions: movedPositions,
+    edgeCurveOffsets: {},
+    selfLoopOverrides: {},
+    provisionalNodeLabels: [],
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+  };
+  const initial = deriveBoundedAutomaticPresentation({ ...common, positions });
+  const active = deriveBoundedAutomaticPresentation({
+    ...common,
+    previousAutomaticRoutes: new Map(initial.routedEdges.map((route) => [route.id, route])),
+    draggedNodeId: "a",
+    activelyDraggedNodeId: "a",
+    feedbackEnabled: false,
+  });
+  const final = deriveBoundedAutomaticPresentation({
+    ...common,
+    previousAutomaticRoutes: new Map(active.routedEdges.map((route) => [route.id, route])),
+    previousNodeLabelPlacements: new Map(active.nodeLabels),
+    previousRelationLabelPlacements: new Map(active.relationLabels),
+    draggedNodeId: "a",
+    feedbackEnabled: true,
+  });
+  assert.deepEqual(final.routedEdges.find(({ id }) => id === "cd"), active.routedEdges.find(({ id }) => id === "cd"));
+});
+
 test("current curve offsets drive route and control-point recomputation", () => {
   const first = deriveAutomaticRoutes(input())[0]!;
   const second = deriveAutomaticRoutes(input({ edgeCurveOffsets: { ab: 54 } }))[0]!;

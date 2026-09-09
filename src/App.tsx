@@ -101,6 +101,7 @@ export default function App() {
   const manualRelationLabelAnchors = useRef(new Map<string, ManualRelationLabelAnchor>());
   const manualNodeLabelOffsets = useRef(new Map<string, { x: number; y: number }>());
   const dragRef = useRef<{ kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string; button: number; x: number; y: number; startX: number; startY: number; moved: boolean; startGraphPoint?: { x: number; y: number }; startNodePosition?: { x: number; y: number }; startLabelPosition?: { x: number; y: number }; startCurveOffset?: number; startCurveNormal?: { x: number; y: number }; startControlPoint?: { x: number; y: number }; startGrabFraction?: number; startRouteSamples?: Array<{ x: number; y: number }>; lastDesiredNormalDelta?: number; lastValidOffset?: number; lastValidGain?: number } | null>(null);
+  const finalizingNodeDragIdRef = useRef<string | null>(null);
   const pendingNodeDragPositionRef = useRef<{ id: string; position: { x: number; y: number } } | null>(null);
   const nodeDragFrameRef = useRef<number | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
@@ -333,6 +334,7 @@ export default function App() {
       presentationInputIdentityRef.current.map.set(positions, presentationInputId);
     }
     const activeNodeDrag = dragRef.current?.kind === "node";
+    const draggedNodeId = dragRef.current?.kind === "node" ? dragRef.current.id : finalizingNodeDragIdRef.current ?? undefined;
     const edges = graph.edges.map((edge) => ({
       ...edge,
       label: (() => {
@@ -351,7 +353,7 @@ export default function App() {
       manualNodeLabelOffsets: new Map(manualNodeLabelOffsets.current),
       manualRelationLabelAnchors: new Map(manualRelationLabelAnchors.current),
       previousAutomaticRoutes: new Map(previousAutomaticRoutes.current),
-      draggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
+      draggedNodeId,
       activelyDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
       feedbackEnabled: dragRef.current?.kind !== "node",
     });
@@ -391,6 +393,7 @@ export default function App() {
     previousNodeLabelPlacements.current = new Map(nodeLabelPlacements);
     previousEdgeLabelPlacements.current = new Map(edgeLabelPlacements);
     previousAutomaticRoutes.current = new Map(routedEdges.map((route) => [route.id, route]));
+    finalizingNodeDragIdRef.current = null;
   }, [edgeLabelPlacements, nodeLabelPlacements, routedEdges]);
   useEffect(() => {
     if (!dataset) return;
@@ -1326,6 +1329,7 @@ export default function App() {
       return;
     }
     if (drag?.kind === "node" && drag.moved) {
+      finalizingNodeDragIdRef.current = drag.id ?? null;
       flushNodeDragPosition();
       setPresentationRevision((value) => value + 1);
     }

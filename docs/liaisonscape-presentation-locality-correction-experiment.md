@@ -321,6 +321,54 @@ No further drag-performance correction is selected from this checkpoint.
 Routing/label yielding, remote route propagation, and route-flip behavior stay
 separate presentation questions.
 
+## Pointer-up route continuity correction
+
+The production-like actual inspection reproduced the relevant boundary. Before
+the correction, a bounded Saturn V drag reported changes in
+`entity-6, entity-7, entity-8, entity-10, entity-11` between the last observed
+drag-time snapshot and pointer-up. That particular CUA trace did not have the
+same final node geometry in both snapshots because the final flush and the
+diagnostic sampling point are separate; it therefore did not by itself prove
+that every change was gratuitous.
+
+The pure Product presentation comparison removed that ambiguity. With the
+same final positions and the active route map as the previous-route input,
+removing `draggedNodeId` changed eight routes. Keeping the continuity boundary
+but enabling final feedback changed only three routes. This establishes that
+pointer-up was not merely displaying the live position late: it was changing
+the route-arbitration state.
+
+### Root cause
+
+`endGraphPointer()` flushed the latest Node position and scheduled the final
+presentation, then cleared `dragRef`. The next `App` presentation therefore
+passed no `draggedNodeId` to `deriveAutomaticRoutes()`. Its existing
+previous-route preservation is intentionally conditional on that ID, so
+non-incident routes were eligible for a fresh occupied-path/label-obstacle
+arbitration at pointer-up. The final bounded label-feedback pass could further
+change the route input. Incident routes must still be allowed to reroute because
+their endpoint geometry changed.
+
+### Bounded correction
+
+`App` now retains the completed Node's ID in a ref for exactly the one
+pointer-up presentation. The final presentation keeps feedback enabled and
+continues to use the existing safety checks: previous routes are reused only
+when they remain clear of Node influence, occupied paths, and final label
+rectangles. The ref is cleared by the presentation effect without scheduling a
+second route recomputation. This preserves safe non-incident continuity while
+leaving incident and newly unsafe routes authoritative to reroute.
+
+The post-correction actual Product trace changed only incident routes:
+
+| Drag | Routes changed at pointer-up | Interpretation |
+| --- | --- | --- |
+| Saturn V | `entity-8`, `entity-10` | Both are incident to Saturn V; allowed reroute |
+| NASA | `entity-1`, `entity-2`, `entity-3`, `entity-8` | All are incident to NASA; allowed reroute |
+
+This is a bounded interaction correction, not a change to spacing, route
+scoring, curvature limits, or crossing-aware placement.
+
 Cross-sample audit, crossing-aware placement, parallel/self-loop redesign,
 spacing selection, and governed Fresh execution remain out of scope.
 
