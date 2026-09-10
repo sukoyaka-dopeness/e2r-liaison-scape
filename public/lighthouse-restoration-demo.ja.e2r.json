@@ -4,182 +4,52 @@
     {
       "id": "lighthouse",
       "name": "旧港の灯台",
-      "description": "地域で使い続けるため修復される歴史的な灯台。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            {
-              "spaceId": "liaisonscape-graph",
-              "values": {
-                "x": 500,
-                "y": 320
-              }
-            }
-          ]
-        }
-      }
+      "description": "地域で使い続けるため修復される歴史的な灯台。"
     },
     {
       "id": "clara",
       "name": "クララ・ベネット",
-      "description": "修復プロジェクトの責任者で構造技師。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            {
-              "spaceId": "liaisonscape-graph",
-              "values": {
-                "x": 350,
-                "y": 180
-              }
-            }
-          ]
-        }
-      }
+      "description": "修復プロジェクトの責任者で構造技師。"
     },
     {
       "id": "elias",
       "name": "イライアス・ワード",
-      "description": "灯台の歴史を知る元灯台守。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            {
-              "spaceId": "liaisonscape-graph",
-              "values": {
-                "x": 150,
-                "y": 180
-              }
-            }
-          ]
-        }
-      }
+      "description": "灯台の歴史を知る元灯台守。"
     },
     {
       "id": "maya",
       "name": "マヤ・リード",
-      "description": "灯台システムを担当する電気技師。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            {
-              "spaceId": "liaisonscape-graph",
-              "values": {
-                "x": 470,
-                "y": 480
-              }
-            }
-          ]
-        }
-      }
+      "description": "灯台システムを担当する電気技師。"
     },
     {
       "id": "thomas",
       "name": "トーマス・ヘイル",
-      "description": "修復チームを支える石工技師。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            {
-              "spaceId": "liaisonscape-graph",
-              "values": {
-                "x": 300,
-                "y": 480
-              }
-            }
-          ]
-        }
-      }
+      "description": "修復チームを支える石工技師。"
     },
     {
       "id": "sofia",
       "name": "ソフィア・モレノ",
-      "description": "灯台の歴史を記録するアーキビスト。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            {
-              "spaceId": "liaisonscape-graph",
-              "values": {
-                "x": 150,
-                "y": 340
-              }
-            }
-          ]
-        }
-      }
+      "description": "灯台の歴史を記録するアーキビスト。"
     },
     {
       "id": "daniel",
       "name": "ダニエル・ブルックス",
-      "description": "地域の支援を調整する港のボランティア。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            {
-              "spaceId": "liaisonscape-graph",
-              "values": {
-                "x": 600,
-                "y": 250
-              }
-            }
-          ]
-        }
-      }
+      "description": "地域の支援を調整する港のボランティア。"
     },
     {
       "id": "beacon",
       "name": "灯台システム",
-      "description": "灯台内部の照明と監視設備。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            {
-              "spaceId": "liaisonscape-graph",
-              "values": {
-                "x": 620,
-                "y": 520
-              }
-            }
-          ]
-        }
-      }
+      "description": "灯台内部の照明と監視設備。"
     },
     {
       "id": "archive",
       "name": "港の歴史資料館",
-      "description": "港の設計図、写真、物語を保存する資料館。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            {
-              "spaceId": "liaisonscape-graph",
-              "values": {
-                "x": 150,
-                "y": 520
-              }
-            }
-          ]
-        }
-      }
+      "description": "港の設計図、写真、物語を保存する資料館。"
     },
     {
       "id": "authority",
       "name": "港湾局",
-      "description": "港と灯台の敷地を管理する公的機関。",
-      "extensions": {
-        "draft.github.sukoyaka-dopeness.coordinate": {
-          "coordinates": [
-            {
-              "spaceId": "liaisonscape-graph",
-              "values": {
-                "x": 650,
-                "y": 380
-              }
-            }
-          ]
-        }
-      }
+      "description": "港と灯台の敷地を管理する公的機関。"
     }
   ],
   "events": [
@@ -497,26 +367,6 @@
       "datasetId": "example-lighthouse-restoration-ja-v2",
       "title": "灯台修復プロジェクト"
     },
-    "draft.github.sukoyaka-dopeness.coordinate": {
-      "specVersion": "0.1.0",
-      "spaces": [
-        {
-          "id": "liaisonscape-graph",
-          "name": "LiaisonScape graph coordinates",
-          "kind": "cartesian-2d",
-          "components": {
-            "x": {
-              "unit": "liaisonscape-user-unit",
-              "positiveDirection": "display-right"
-            },
-            "y": {
-              "unit": "liaisonscape-user-unit",
-              "positiveDirection": "display-down"
-            }
-          }
-        }
-      ]
-    },
     "draft.github.sukoyaka-dopeness.specification": {
       "specVersion": "0.1.0",
       "uses": [
@@ -527,10 +377,6 @@
         {
           "extension": "history",
           "version": "1.0.0"
-        },
-        {
-          "extension": "draft.github.sukoyaka-dopeness.coordinate",
-          "version": "0.1.0"
         },
         {
           "extension": "draft.github.sukoyaka-dopeness.liaisonscape-presentation",

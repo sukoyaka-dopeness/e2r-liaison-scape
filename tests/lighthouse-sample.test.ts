@@ -18,14 +18,15 @@ async function readSample(file: string) {
   return parsed;
 }
 
-test("Lighthouse samples are valid, positioned, connected, and round-trip unchanged", async () => {
+test("Lighthouse samples are valid, coordinate-less, connected, and round-trip unchanged", async () => {
   const [english, japanese] = await Promise.all(files.map(readSample));
 
   for (const sample of [english, japanese]) {
     assert.equal(sample.entities.length, 10);
     assert.equal(sample.events.length, 11);
     assert.equal(sample.relations.length, 28);
-    assert.equal(Object.keys(sample.entities.filter((entity: any) => entity.extensions?.["draft.github.sukoyaka-dopeness.coordinate"])).length, 10);
+    assert.equal(sample.extensions?.["draft.github.sukoyaka-dopeness.coordinate"], undefined);
+    assert.equal(sample.entities.filter((entity: any) => entity.extensions?.["draft.github.sukoyaka-dopeness.coordinate"]).length, 0);
     assert.equal(sample.relations.filter((relation: any) => relation.sourceId === relation.targetId).length, 2);
     assert.equal(sample.relations.filter((relation: any) => relation.sourceId === "clara" && relation.targetId === "thomas").length, 2);
     assert.equal(sample.relations.filter((relation: any) => sample.events.some((event: any) => event.id === relation.sourceId)).length, 14);

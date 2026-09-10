@@ -37,7 +37,8 @@ Home provides a sample action for the current locale:
 The Lighthouse Restoration Project sample contains ten Entities, eleven
 Events, person-centered Entity-to-Entity Relations, Event endpoint Relations,
 self-Relations, a parallel Relation pair, History data, and LiaisonScape
-Coordinate Draft data.
+Presentation data. It intentionally contains no saved Coordinate data, so
+opening the sample exercises LiaisonScape's automatic initial placement.
 The same Dataset structure is designed to offer a graph view in LiaisonScape
 and a timeline/event view in NarrativeLine.
 
