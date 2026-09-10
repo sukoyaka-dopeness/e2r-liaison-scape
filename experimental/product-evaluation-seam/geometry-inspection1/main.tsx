@@ -8,8 +8,11 @@ import "./main.css";
 
 const diagnosticDatasetUrl = "https://diagnostic.liaisonscape.invalid/apollo-11-product-inspection.en.e2r.json";
 const fixtureKind = new URL(window.location.href).searchParams.get("fixture") ?? "apollo";
+const isApolloPublic = fixtureKind === "apollo-public";
 const selectedFixtureKind = new Set(["apollo", "linkscape", "lighthouse"]).has(fixtureKind) ? fixtureKind : "apollo";
-const fixtureUrl = selectedFixtureKind === "linkscape"
+const fixtureUrl = isApolloPublic
+  ? "http://127.0.0.1:4180/apollo-11-mission.en.e2r.json"
+  : selectedFixtureKind === "linkscape"
   ? `${import.meta.env.BASE_URL}examples/linkscape-relation-sample.e2r.json`
   : selectedFixtureKind === "lighthouse"
     ? `${import.meta.env.BASE_URL}public/lighthouse-restoration-demo.en.e2r.json`
@@ -263,7 +266,8 @@ const fp1NgpPositions = {
   "saturn-v": { x: 420, y: 420 },
 };
 const candidateDescriptions = {
-  current: "Stored Apollo 220 baseline",
+  current: "Current Product baseline (coordinate-less public sample)",
+  "product-seed-clearance-120": "Current Product seed / nodeClearance 120 (diagnostic)",
   "local-search-v1": "Deterministic local geometry candidate",
   "local-search-v1-plus": "Targeted local corridor refinement",
   "crossing-aware-v1": "Crossing-aware refinement (mixed control)",
@@ -294,6 +298,13 @@ function cloneValue<T>(value: T): T {
 }
 
 function coordinateMap(dataset: any, candidate: CandidateId) {
+  if (candidate === "product-seed-clearance-120") {
+    const graph = buildEntityGraph(dataset);
+    return solveAutoLayout({
+      entities: graph.nodes.map(({ id }) => ({ id })),
+      relations: graph.edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
+    }, { nodeClearance: 120, iterations: 3 });
+  }
   if (selectedFixtureKind !== "apollo" && (candidate === "generic-crossing-search-v1" || candidate === "post-structural-relaxation-v1")) {
     const family = candidate === "generic-crossing-search-v1" ? "generic" : "post";
     return generalizationPositions[selectedFixtureKind as "linkscape" | "lighthouse"][family];
@@ -340,6 +351,26 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
 function materializeCandidate(dataset: any, candidate: CandidateId) {
   const next = cloneValue(dataset);
   const positions = coordinateMap(next, candidate);
+  if (Object.keys(positions).length > 0) {
+    const extensions = next.extensions ?? (next.extensions = {});
+    extensions["draft.github.sukoyaka-dopeness.coordinate"] ??= {
+      specVersion: "0.1.0",
+      spaces: [{
+        id: "liaisonscape-graph",
+        name: "LiaisonScape graph coordinates",
+        kind: "cartesian-2d",
+        components: {
+          x: { unit: "liaisonscape-user-unit", positiveDirection: "display-right" },
+          y: { unit: "liaisonscape-user-unit", positiveDirection: "display-down" },
+        },
+      }],
+    };
+    const specification = extensions["draft.github.sukoyaka-dopeness.specification"] ?? (extensions["draft.github.sukoyaka-dopeness.specification"] = { specVersion: "0.1.0", uses: [] });
+    specification.uses ??= [];
+    if (!specification.uses.some((use: any) => use.extension === "draft.github.sukoyaka-dopeness.coordinate")) {
+      specification.uses.push({ extension: "draft.github.sukoyaka-dopeness.coordinate", version: "0.1.0" });
+    }
+  }
   for (const entity of next.entities) {
     const position = positions[entity.id];
     const values = entity.extensions?.["draft.github.sukoyaka-dopeness.coordinate"]?.coordinates?.[0]?.values;
@@ -377,7 +408,7 @@ function candidateUrl(candidate: CandidateId) {
 }
 
 function CandidateMetrics() {
-  if (selectedFixtureKind !== "apollo") return <p className="geometry-inspection-metrics">Generalization fixture: compare the actual Product canvas directly; the Apollo metric table is intentionally not reused.</p>;
+  if (isApolloPublic || selectedFixtureKind !== "apollo") return <p className="geometry-inspection-metrics">Coordinate-less public-sample comparison: machine metrics from the stored-coordinate diagnostic table are intentionally not reused here. Compare the actual Product canvas directly.</p>;
   const rows = useMemo(() => [
     ["current", "3", "2", "187.9", "364.6", "510 × 677", "0.753", "0.416", "—"],
     ["local-search-v1", "3", "0", "177.9", "319.9", "423 × 677", "0.625", "0.416", "—"],
@@ -415,7 +446,7 @@ function GeometryInspection() {
   };
   return <>
     <div className="geometry-inspection-seam" aria-label="Geometry candidate controls">
-      <span>Actual Product geometry candidate inspection / {selectedFixtureKind}</span>
+      <span>Actual Product geometry candidate inspection / {isApolloPublic ? "apollo-public" : selectedFixtureKind}</span>
       <label>Candidate <select value={selectedCandidate} onChange={changeCandidate} aria-label="Geometry candidate">
         {Object.entries(candidateDescriptions).map(([id, description]) => <option key={id} value={id}>{description}</option>)}
       </select></label>
