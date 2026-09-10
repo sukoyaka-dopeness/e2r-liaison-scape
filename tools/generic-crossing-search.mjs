@@ -24,6 +24,9 @@ const relaxationTargeting = process.env.E2R_RELAXATION_TARGETING ?? "full";
 const parsedRelaxationLatticeStep = Number.parseFloat(process.env.E2R_RELAXATION_LATTICE_STEP ?? "0");
 const relaxationLatticeStep = Number.isFinite(parsedRelaxationLatticeStep) && parsedRelaxationLatticeStep > 0 ? parsedRelaxationLatticeStep : 0;
 const relaxationLatticeProbe = process.env.E2R_RELAXATION_LATTICE_PROBE === "1" || relaxationLatticeStep > 0;
+const relaxationCheapScreenMode = process.env.E2R_RELAXATION_CHEAP_SCREEN ?? "off";
+const relaxationCheapScreenEnabled = relaxationCheapScreenMode === "on";
+const relaxationCheapScreenProbe = relaxationCheapScreenEnabled || relaxationCheapScreenMode === "probe";
 const edges = graph.edges.map((edge) => ({
   ...edge,
   label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
@@ -387,6 +390,23 @@ function constrainedRelaxationScore(metrics, positions, referencePositions) {
   return metrics.usableSpanPenalty * 6 + metrics.routeMedian * 2 + metrics.routeMax + (metrics.extent[0] + metrics.extent[1]) * 0.20
     + localityPenalty * 9000 + edgeLengthPenalty;
 }
+function constrainedRelaxationLowerBound(positions) {
+  const endpointAttachmentBound = 96;
+  const directLengths = edges.map((edge) => Math.max(0, Math.hypot(positions[edge.sourceId].x - positions[edge.targetId].x, positions[edge.sourceId].y - positions[edge.targetId].y) - endpointAttachmentBound)).sort((left, right) => left - right);
+  const localityFree = 0;
+  const edgeLengthLowerBound = edges.reduce((sum, edge) => {
+    const direct = Math.max(0, Math.hypot(positions[edge.sourceId].x - positions[edge.targetId].x, positions[edge.sourceId].y - positions[edge.targetId].y) - endpointAttachmentBound);
+    return sum + Math.max(0, direct - 480) ** 2 / 480;
+  }, 0);
+  const extentX = Math.max(...Object.values(positions).map((point) => point.x)) - Math.min(...Object.values(positions).map((point) => point.x));
+  const extentY = Math.max(...Object.values(positions).map((point) => point.y)) - Math.min(...Object.values(positions).map((point) => point.y));
+  // Every routed polyline is at least as long as its attachment-point chord.
+  // The conservative 96-unit subtraction bounds the two Node-boundary
+  // offsets from the Node-center chord used by the relaxation score. The
+  // median and maximum therefore have these lower bounds; locality and
+  // usable-span terms are non-negative and can be omitted.
+  return directLengths[Math.floor(directLengths.length / 2)] * 2 + Math.max(...directLengths) + (extentX + extentY) * 0.20 + localityFree + edgeLengthLowerBound;
+}
 function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacement = 48) {
   const inputPositions = clonePositions(startPositions);
   const referencePositions = quantizePositions(startPositions, relaxationLatticeStep); let current = clonePositions(referencePositions);
@@ -396,6 +416,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   const configuredCandidateKeys = relaxationLatticeProbe ? new Set() : null;
   const hypotheticalKeys = relaxationLatticeProbe ? new Map([1, 2, 4].map((step) => [step, new Set()])) : null;
   let candidateRequests = 0; let fractionalCandidateRequests = 0;
+  const cheapScreenStats = relaxationCheapScreenProbe ? { considered: 0, rejected: 0, overlapRejected: 0, lowerBoundRejected: 0, lowerBoundViolations: 0, lowerBoundSamples: [], acceptedTrace: [] } : null;
   const directions = Array.from({ length: 8 }, (_, index) => index * Math.PI / 4);
   const steps = [18, 9, 6];
   for (const id of ids) {
@@ -413,9 +434,28 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       if (relaxationLatticeProbe) configuredCandidateKeys.add(positionsKey(candidate));
       const displacement = Math.hypot(candidate[id].x - referencePositions[id].x, candidate[id].y - referencePositions[id].y);
       if (displacement > maxDisplacement) continue;
+      const cheapOverlap = relaxationCheapScreenProbe ? nodeFeasibility(candidate).overlapPairs > 0 : false;
+      const cheapLowerBound = relaxationCheapScreenProbe ? constrainedRelaxationLowerBound(candidate) : null;
+      const lowerBoundReject = cheapLowerBound !== null && Number.isFinite(currentScore) && cheapLowerBound >= currentScore;
+      if (cheapScreenStats) {
+        cheapScreenStats.considered += 1;
+        if (cheapLowerBound !== null && cheapScreenStats.lowerBoundSamples.length < 12) cheapScreenStats.lowerBoundSamples.push(cheapLowerBound);
+      }
+      if (relaxationCheapScreenEnabled && (cheapOverlap || lowerBoundReject)) {
+        if (cheapScreenStats) {
+          cheapScreenStats.rejected += 1;
+          if (cheapOverlap) cheapScreenStats.overlapRejected += 1;
+          if (lowerBoundReject) cheapScreenStats.lowerBoundRejected += 1;
+        }
+        continue;
+      }
       const metrics = presentationMetrics(candidate); evaluated += 1;
       const score = constrainedRelaxationScore(metrics, candidate, referencePositions);
-      if (score < currentScore) { current = candidate; currentMetrics = metrics; currentScore = score; acceptedMoves += 1; }
+      if (cheapScreenStats && cheapLowerBound !== null && Number.isFinite(score) && cheapLowerBound > score + 1e-9) cheapScreenStats.lowerBoundViolations += 1;
+      if (score < currentScore) {
+        if (cheapScreenStats) cheapScreenStats.acceptedTrace.push({ nodeId: id, step, angle, scoreBefore: currentScore, scoreAfter: score });
+        current = candidate; currentMetrics = metrics; currentScore = score; acceptedMoves += 1;
+      }
       if (score < bestScore) { best = candidate; bestMetrics = metrics; bestScore = score; }
     }
   }
@@ -438,6 +478,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       hypotheticalUniqueStates: relaxationLatticeProbe ? Object.fromEntries([...hypotheticalKeys].map(([step, keys]) => [step, keys.size])) : null,
     },
     inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0,
+    cheapScreen: cheapScreenStats ? { mode: relaxationCheapScreenMode, ...cheapScreenStats } : null,
   };
 }
 function derivePressureNeighborhood(metrics, positions) {
@@ -505,7 +546,7 @@ function genericSearch() {
   const minimumStructuralCrossings = structuralCandidates.length > 0 ? Math.min(...structuralCandidates.map((candidate) => candidate.structuralCrossings)) : null;
   const boundedFallback = minimumStructuralCrossings === null ? [] : structuralCandidates.filter((candidate) => candidate.structuralCrossings === minimumStructuralCrossings);
   finishProfileStage("stage2-presentation-and-relaxation");
-  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, relaxationLatticeStep, pressureTargetingFallback, pressureNeighborhood, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
+  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, relaxationLatticeStep, relaxationCheapScreenMode, pressureTargetingFallback, pressureNeighborhood, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
 }
 function complexityProbe() {
   return [9, 10, 12, 16, 25].map((nodeCount) => ({
@@ -544,7 +585,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, relaxationLatticeStep, relaxationLatticeProbe },
+  searchBudget: { presentationFinalistLimit, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));
