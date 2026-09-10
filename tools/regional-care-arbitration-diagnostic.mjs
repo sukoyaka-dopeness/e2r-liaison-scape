@@ -1,0 +1,339 @@
+import fs from "node:fs";
+import { buildEntityGraph } from "../src/dataset.ts";
+import { deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
+import { curveOffsetFromControlPoint, fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
+
+const fixturePath = process.argv[2];
+const positionsPath = process.argv[3];
+if (!fixturePath || !positionsPath) throw new Error("Usage: node regional-care-arbitration-diagnostic.mjs <fixture.json> <generic-search-output.json>");
+
+function readJson(path) {
+  const bytes = fs.readFileSync(path);
+  const text = bytes[0] === 0xff && bytes[1] === 0xfe
+    ? bytes.subarray(2).toString("utf16le")
+    : bytes.toString("utf8").replace(/^\ufeff/, "");
+  return JSON.parse(text);
+}
+
+const dataset = readJson(fixturePath);
+const search = readJson(positionsPath);
+const positions = search.selected.positions;
+const graph = buildEntityGraph(dataset);
+const edges = graph.edges.map((edge) => ({
+  ...edge,
+  label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
+}));
+const nodeById = new Map(graph.nodes.map((node) => [node.id, node]));
+const residualRelations = ["r03", "r16", "r18"];
+
+const emptyState = {
+  previousNodeLabelPlacements: new Map(),
+  previousRelationLabelPlacements: new Map(),
+  manualNodeLabelOffsets: new Map(),
+  manualRelationLabelAnchors: new Map(),
+};
+
+function routeLength(samples) {
+  return samples.slice(1).reduce((total, point, index) => total + Math.hypot(
+    point.x - samples[index].x,
+    point.y - samples[index].y,
+  ), 0);
+}
+
+function innerSamples(route) {
+  return route.samples.length > 8 ? route.samples.slice(4, -4) : route.samples;
+}
+
+function segmentIntersection(a, b, c, d) {
+  const rx = b.x - a.x; const ry = b.y - a.y;
+  const sx = d.x - c.x; const sy = d.y - c.y;
+  const denominator = rx * sy - ry * sx;
+  if (Math.abs(denominator) < 1e-9) return false;
+  const qpx = c.x - a.x; const qpy = c.y - a.y;
+  const t = (qpx * sy - qpy * sx) / denominator;
+  const u = (qpx * ry - qpy * rx) / denominator;
+  return t > 0 && t < 1 && u > 0 && u < 1;
+}
+
+function crossingCount(routes) {
+  let count = 0;
+  for (let left = 0; left < routes.length; left += 1) for (let right = left + 1; right < routes.length; right += 1) {
+    if ([routes[left].sourceId, routes[left].targetId].some((id) => id === routes[right].sourceId || id === routes[right].targetId)) continue;
+    const hit = routes[left].samples.some((a, index) => routes[right].samples.some((c, otherIndex) => index > 0 && otherIndex > 0
+      && segmentIntersection(routes[left].samples[index - 1], a, routes[right].samples[otherIndex - 1], c)));
+    if (hit) count += 1;
+  }
+  return count;
+}
+
+function provisionalLabels() {
+  return graph.nodes.map((node) => placeNodeLabel(
+    positions[node.id],
+    node.label,
+    node.description,
+    [],
+    graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]),
+    [],
+  ));
+}
+
+function render({ edgeCurveOffsets = {}, feedbackEnabled = true, manualNodeLabelOffsets = new Map(), provisionalNodeLabels = provisionalLabels() } = {}) {
+  const passes = [];
+  const decisions = [];
+  const presentation = deriveBoundedAutomaticPresentation({
+    graph: { nodes: graph.nodes, edges },
+    positions,
+    edgeCurveOffsets,
+    selfLoopOverrides: {},
+    provisionalNodeLabels,
+    ...emptyState,
+    manualNodeLabelOffsets,
+    feedbackEnabled,
+    routeDecisionSink: (decision) => decisions.push(decision),
+    presentationPassSink: (pass, routes, relationLabels, nodeLabels) => passes.push({ pass, routes, relationLabels, nodeLabels }),
+  });
+  return { presentation, passes, decisions };
+}
+
+function measure(presentation) {
+  const labels = [...presentation.nodeLabels.entries()].map(([id, rect]) => ({ id, rect }));
+  const hitDetails = [];
+  const nearRelationIds = [];
+  const routeSummaries = presentation.routedEdges.map((route) => {
+    const conflicts = labels.flatMap(({ id, rect }) => {
+      if (!routeSamplesHaveLabelCollision(route.samples, [rect])) return [];
+      const innerHit = routeSamplesHaveLabelCollision(innerSamples(route), [rect]);
+      return [{ labelId: id, endpointLabel: id === route.sourceId || id === route.targetId, innerHit, endpointOnly: !innerHit }];
+    });
+    if (conflicts.length > 0) hitDetails.push({
+      relationId: route.id,
+      sourceId: route.sourceId,
+      targetId: route.targetId,
+      conflicts,
+      endpointOnly: conflicts.every((conflict) => conflict.endpointOnly),
+    });
+    const near = route.samples.some((point) => labels.some(({ rect }) => {
+      const dx = Math.max(Math.abs(point.x - rect.x) - rect.width / 2, 0);
+      const dy = Math.max(Math.abs(point.y - rect.y) - rect.height / 2, 0);
+      return Math.hypot(dx, dy) < 20;
+    }));
+    if (near) nearRelationIds.push(route.id);
+    return { relationId: route.id, routeLength: routeLength(route.samples), near };
+  });
+  const lengths = routeSummaries.map((route) => route.routeLength).sort((left, right) => left - right);
+  const x = Object.values(positions).map((point) => point.x);
+  const y = Object.values(positions).map((point) => point.y);
+  return {
+    hitDetails,
+    hitRelationIds: hitDetails.map((detail) => detail.relationId),
+    nearRelationIds,
+    crossings: crossingCount(presentation.routedEdges),
+    routeMedian: lengths[Math.floor(lengths.length / 2)],
+    routeMax: Math.max(...lengths),
+    extent: [Math.max(...x) - Math.min(...x), Math.max(...y) - Math.min(...y)],
+    fit: fitGraphView(Object.values(positions), 800, 500).scale,
+    feedbackApplied: presentation.feedbackApplied,
+  };
+}
+
+function decisionSummary(rendered, relationId) {
+  return rendered.decisions
+    .filter((decision) => decision.edgeId === relationId)
+    .map((decision) => ({
+      pass: decision.pass,
+      processingIndex: decision.processingIndex,
+      usedPreviousRoute: decision.usedPreviousRoute,
+      candidateOffsets: decision.candidateDiagnostics.filter((candidate) => candidate.selected).map((candidate) => candidate.offset),
+      candidateCount: decision.candidateDiagnostics.length,
+      blockingNodeLabelIds: decision.continuity.blockingNodeLabelIds,
+      activeRecovery: decision.activeRecovery,
+    }));
+}
+
+function summaryForRelation(metrics, relationId) {
+  const detail = metrics.hitDetails.find((candidate) => candidate.relationId === relationId);
+  return detail ? {
+    relationId,
+    hit: true,
+    conflicts: detail.conflicts,
+    endpointOnly: detail.endpointOnly,
+  } : { relationId, hit: false, conflicts: [] };
+}
+
+function compareCandidate(candidate) {
+  return [candidate.globalHits, candidate.globalCrossings, candidate.globalNear, candidate.routeMax, candidate.routeMedian];
+}
+
+function selectBest(candidates) {
+  return candidates.slice().sort((left, right) => {
+    const a = compareCandidate(left); const b = compareCandidate(right);
+    for (let index = 0; index < a.length; index += 1) if (a[index] !== b[index]) return a[index] - b[index];
+    return Math.abs(left.displacement ?? 0) - Math.abs(right.displacement ?? 0);
+  })[0] ?? null;
+}
+
+const baseRendered = render();
+const base = measure(baseRendered.presentation);
+const firstPass = baseRendered.passes.find((pass) => pass.pass === "first");
+const feedbackPass = baseRendered.passes.find((pass) => pass.pass === "feedback");
+const noFeedbackRendered = render({ feedbackEnabled: false });
+const noFeedback = measure(noFeedbackRendered.presentation);
+const routeOffsets = [0, ...[-1, 1].flatMap((sign) => [24, 48, 72, 96, 120, 144, 168, 192].map((value) => sign * value))];
+
+const routeSideAlternatives = residualRelations.map((relationId) => {
+  const alternatives = routeOffsets.map((offset) => {
+    const rendered = render({ edgeCurveOffsets: { [relationId]: offset } });
+    const metrics = measure(rendered.presentation);
+    return {
+      offset,
+      localHit: metrics.hitRelationIds.includes(relationId),
+      globalHits: metrics.hitRelationIds.length,
+      globalNear: metrics.nearRelationIds.length,
+      globalCrossings: metrics.crossings,
+      routeMedian: metrics.routeMedian,
+      routeMax: metrics.routeMax,
+      extent: metrics.extent,
+      fit: metrics.fit,
+    };
+  });
+  const hitFree = alternatives.filter((candidate) => !candidate.localHit);
+  const best = selectBest(hitFree.map((candidate) => ({ ...candidate, displacement: candidate.offset })));
+  return { relationId, hitFreeOffsets: hitFree.map((candidate) => candidate.offset), best };
+});
+
+function labelCandidates(nodeId, label) {
+  const node = positions[nodeId];
+  return Array.from({ length: 32 }, (_, index) => {
+    const angle = Math.PI / 2 + index * Math.PI / 16;
+    const directionX = Math.cos(angle);
+    const directionY = Math.sin(angle);
+    const distance = 40 + Math.abs(directionX) * label.width / 2 + Math.abs(directionY) * label.height / 2;
+    return {
+      index,
+      label: { ...label, x: node.x + directionX * distance, y: node.y + directionY * distance, directionX, directionY },
+    };
+  });
+}
+
+const baseLabels = baseRendered.presentation.nodeLabels;
+const nodeLabelAlternatives = residualRelations.map((relationId) => {
+  const detail = base.hitDetails.find((candidate) => candidate.relationId === relationId);
+  const labelIds = detail?.conflicts.map((conflict) => conflict.labelId) ?? [];
+  const alternatives = [];
+  for (const labelId of labelIds) {
+    const currentLabel = baseLabels.get(labelId);
+    if (!currentLabel) continue;
+    for (const candidate of labelCandidates(labelId, currentLabel)) {
+      const node = positions[labelId];
+      const offsets = new Map([[labelId, { x: candidate.label.x - node.x, y: candidate.label.y - node.y }]]);
+      const nextProvisional = provisionalLabels();
+      const nodeIndex = graph.nodes.findIndex(({ id }) => id === labelId);
+      nextProvisional[nodeIndex] = candidate.label;
+      const rendered = render({ manualNodeLabelOffsets: offsets, provisionalNodeLabels: nextProvisional });
+      const metrics = measure(rendered.presentation);
+      alternatives.push({
+        labelId,
+        candidateIndex: candidate.index,
+        displacement: Math.hypot(offsets.get(labelId).x, offsets.get(labelId).y),
+        localHit: metrics.hitRelationIds.includes(relationId),
+        globalHits: metrics.hitRelationIds.length,
+        globalNear: metrics.nearRelationIds.length,
+        globalCrossings: metrics.crossings,
+        routeMedian: metrics.routeMedian,
+        routeMax: metrics.routeMax,
+        extent: metrics.extent,
+        fit: metrics.fit,
+      });
+    }
+  }
+  const hitFree = alternatives.filter((candidate) => !candidate.localHit);
+  return {
+    relationId,
+    labelIds,
+    hitFreeCount: hitFree.length,
+    bestHitFree: selectBest(hitFree),
+    bestAny: selectBest(alternatives),
+  };
+});
+
+const r16FirstRoute = firstPass?.routes.find((route) => route.id === "r16");
+const r16Source = positions[r16FirstRoute?.sourceId];
+const r16Target = positions[r16FirstRoute?.targetId];
+const r16FirstOffset = r16FirstRoute && r16Source && r16Target
+  ? curveOffsetFromControlPoint(r16Source, r16Target, r16FirstRoute.controlPoint)
+  : null;
+const feedbackArbitration = r16FirstOffset === null ? null : (() => {
+  const rendered = render({ edgeCurveOffsets: { r16: r16FirstOffset }, feedbackEnabled: true });
+  const metrics = measure(rendered.presentation);
+  return {
+    preservedFirstPassRouteOffset: r16FirstOffset,
+    metrics,
+    r16: summaryForRelation(metrics, "r16"),
+    decisions: decisionSummary(rendered, "r16"),
+  };
+})();
+
+const feedbackLabelRetention = ["r03", "r16", "r18"].flatMap((relationId) => {
+  const detail = base.hitDetails.find((candidate) => candidate.relationId === relationId);
+  return (detail?.conflicts ?? []).map(({ labelId }) => {
+    const firstLabel = firstPass?.nodeLabels.get(labelId);
+    if (!firstLabel) return { relationId, labelId, unavailable: true };
+    const node = positions[labelId];
+    const offsets = new Map([[labelId, { x: firstLabel.x - node.x, y: firstLabel.y - node.y }]]);
+    const nextProvisional = provisionalLabels();
+    const nodeIndex = graph.nodes.findIndex(({ id }) => id === labelId);
+    nextProvisional[nodeIndex] = firstLabel;
+    const rendered = render({ manualNodeLabelOffsets: offsets, provisionalNodeLabels: nextProvisional, feedbackEnabled: true });
+    const metrics = measure(rendered.presentation);
+    return {
+      relationId,
+      labelId,
+      firstPassLabelRetained: true,
+      metrics,
+      local: summaryForRelation(metrics, relationId),
+      decisions: decisionSummary(rendered, relationId),
+    };
+  });
+});
+
+const hitClassifications = residualRelations.map((relationId) => {
+  const detail = base.hitDetails.find((candidate) => candidate.relationId === relationId);
+  const route = routeSideAlternatives.find((candidate) => candidate.relationId === relationId);
+  const labels = nodeLabelAlternatives.find((candidate) => candidate.relationId === relationId);
+  return {
+    relationId,
+    conflicts: detail?.conflicts ?? [],
+    endpointOnly: detail?.endpointOnly ?? false,
+    routeSideHasLocalHitFree: (route?.hitFreeOffsets.length ?? 0) > 0,
+    nodeLabelHasLocalHitFree: (labels?.hitFreeCount ?? 0) > 0,
+    routeSideBestGlobal: route?.best ?? null,
+    nodeLabelBestGlobal: labels?.bestHitFree ?? null,
+    classification: relationId === "r16"
+      ? "feedback-dependent"
+      : (labels?.hitFreeCount ?? 0) > 0 ? "Node-label-placement-sensitive" : "routing-limited-or-joint-interaction",
+  };
+});
+
+console.log(JSON.stringify({
+  contract: "LIAISONSCAPE-REGIONAL-CARE-ARBITRATION-DIAGNOSTIC-v1",
+  diagnosticOnly: true,
+  geometryFixed: true,
+  fixturePath,
+  positionsPath,
+  base,
+  firstPass: firstPass ? measure({ routedEdges: firstPass.routes, relationLabels: firstPass.relationLabels, nodeLabels: firstPass.nodeLabels, feedbackApplied: false }) : null,
+  feedbackPass: feedbackPass ? measure({ routedEdges: feedbackPass.routes, relationLabels: feedbackPass.relationLabels, nodeLabels: feedbackPass.nodeLabels, feedbackApplied: false }) : null,
+  noFeedback,
+  residualRelations,
+  hitClassifications,
+  routeSideAlternatives,
+  nodeLabelAlternatives,
+  feedbackArbitration,
+  feedbackLabelRetention,
+  routeDecisionEvidence: Object.fromEntries(residualRelations.map((relationId) => [relationId, decisionSummary(baseRendered, relationId)])),
+  relationLabelCausality: {
+    currentHitPredicate: "route samples against final Node-label rectangles",
+    relationLabelsAreDownstreamOfRouteSelection: true,
+    directSwitchForResidualHits: false,
+  },
+}, null, 2));
