@@ -1,6 +1,6 @@
 import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelRect, type Point, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelRect, type Point, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -61,6 +61,8 @@ export type AutomaticRoutingInput = {
    */
   preserveSafeIncidentPreviousRoute?: boolean;
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
+  /** Opt-in candidate-generation cache; arbitration remains uncached. */
+  candidateCache?: RouteCandidateCache;
   routeDecisionPass?: AutomaticRouteDecision["pass"];
   /** Diagnostic-only canonical prefix replay. Normal Product calls omit it. */
   replayPrefix?: {
@@ -100,6 +102,7 @@ export function deriveAutomaticRoutes({
   activeDraggedNodeId,
   preserveSafeIncidentPreviousRoute = false,
   routeDecisionSink,
+  candidateCache,
   routeDecisionPass = "first",
   replayPrefix,
   replayPrefixSink,
@@ -204,6 +207,7 @@ export function deriveAutomaticRoutes({
       canonicalPhysicalSideSign,
       routeDecisionSink ? (candidates) => candidateDiagnostics.push(...candidates) : undefined,
       previousRouteSideSign,
+      candidateCache,
     );
     const isEligibleShape = edge.sourceId !== edge.targetId
       && edge.parallelCount === 1
@@ -510,6 +514,8 @@ export type BoundedAutomaticPresentationInput = {
   previousContinuityNodeLabels?: ReadonlyMap<string, LabelRect>;
   feedbackEnabled?: boolean;
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
+  /** Opt-in candidate-generation cache; arbitration remains uncached. */
+  candidateCache?: RouteCandidateCache;
   /** Diagnostic-only replay input for the first canonical route pass. */
   replayPrefix?: AutomaticRoutingInput["replayPrefix"];
   replayPrefixSink?: (edgeIds: readonly string[]) => void;
@@ -578,6 +584,7 @@ export function deriveBoundedAutomaticPresentation({
   previousContinuityNodeLabels,
   feedbackEnabled = true,
   routeDecisionSink,
+  candidateCache,
   replayPrefix,
   replayPrefixSink,
   presentationPassSink,
@@ -594,6 +601,7 @@ export function deriveBoundedAutomaticPresentation({
     selfLoopOverrides,
     provisionalNodeLabels: [],
     routeDecisionSink,
+    candidateCache,
     routeDecisionPass: "label-free",
   });
   const derivePass = (routeLabels: readonly LabelRect[], routeDecisionPass: AutomaticRouteDecision["pass"]) => {
@@ -609,6 +617,7 @@ export function deriveBoundedAutomaticPresentation({
       draggedNodeId,
       activeDraggedNodeId,
       preserveSafeIncidentPreviousRoute,
+      candidateCache,
       routeDecisionSink,
       routeDecisionPass,
       replayPrefix: routeDecisionPass === "first" ? replayPrefix : undefined,

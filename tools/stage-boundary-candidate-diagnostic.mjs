@@ -43,21 +43,25 @@ function crossingCount(routes) {
   return count;
 }
 
-function render(spec, positions, manualRelationLabelAnchors = new Map()) {
+function render(spec, positions, manualRelationLabelAnchors = new Map(), candidateCache) {
   const graph = buildEntityGraph(spec.dataset);
   const edges = graph.edges.map((edge) => ({ ...edge, label: spec.dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "" }));
   const provisionalNodeLabels = graph.nodes.map((node) => placeNodeLabel(positions[node.id], node.label, node.description, [], graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), []));
   const decisions = [];
+  const startedAt = performance.now();
+  const startingStats = candidateCache?.stats ? { ...candidateCache.stats } : null;
   const presentation = deriveBoundedAutomaticPresentation({
     graph: { nodes: graph.nodes, edges }, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels,
     previousNodeLabelPlacements: new Map(), previousRelationLabelPlacements: new Map(), manualNodeLabelOffsets: new Map(), manualRelationLabelAnchors,
     routeDecisionSink: (decision) => decisions.push(decision),
+    candidateCache,
   });
   const labels = [...presentation.nodeLabels.values()];
   const lengths = presentation.routedEdges.map((route) => routeLength(route.samples)).sort((a, b) => a - b);
   const xs = Object.values(positions).map((point) => point.x); const ys = Object.values(positions).map((point) => point.y);
   const candidateSets = Object.fromEntries(decisions.map((decision) => [`${decision.pass}:${decision.edgeId}`, signature(decision.candidateDiagnostics)]));
   const candidateCount = decisions.reduce((sum, decision) => sum + decision.candidateDiagnostics.length, 0);
+  const stats = candidateCache?.stats && startingStats ? Object.fromEntries(Object.keys(candidateCache.stats).map((key) => [key, candidateCache.stats[key] - startingStats[key]])) : null;
   return {
     graph,
     presentation,
@@ -66,6 +70,8 @@ function render(spec, positions, manualRelationLabelAnchors = new Map()) {
     nodeLabelSignatures: mapSignatures(presentation.nodeLabels),
     candidateSets,
     candidateCount,
+    elapsedMs: Number((performance.now() - startedAt).toFixed(3)),
+    cacheStats: stats,
     decisionCounts: Object.fromEntries(["label-free", "first", "feedback"].map((pass) => [pass, decisions.filter((decision) => decision.pass === pass).length])),
     metrics: {
       hardHits: presentation.routedEdges.filter((route) => routeSamplesHaveLabelCollision(route.samples, labels)).map((route) => route.id),
@@ -84,14 +90,19 @@ function runFixture(name, fixturePath, positionsPath) {
   const dataset = readJson(fixturePath);
   const spec = { dataset };
   const basePositions = selectedPositions(positionsPath);
-  const baseline = render(spec, basePositions);
+  const candidateCache = { entries: new Map(), stats: { lookups: 0, hits: 0, misses: 0 } };
+  const baseline = render(spec, basePositions, new Map(), candidateCache);
+  const uncachedRepeat = render(spec, basePositions);
+  const exactRepeat = render(spec, basePositions, new Map(), candidateCache);
   const downstreamAnchorId = buildEntityGraph(dataset).edges[0]?.id;
   const downstreamAnchors = new Map(downstreamAnchorId ? [[downstreamAnchorId, { fraction: 0.2, tangentOffset: 8, normalOffset: 64 }]] : []);
-  const downstreamOnly = render(spec, basePositions, downstreamAnchors);
+  const downstreamOnly = render(spec, basePositions, downstreamAnchors, candidateCache);
+  const downstreamUncached = render(spec, basePositions, downstreamAnchors);
   const semanticPositions = clonePositions(basePositions);
   const semanticNodeId = buildEntityGraph(dataset).nodes[0]?.id;
   if (semanticNodeId) semanticPositions[semanticNodeId].x += 24;
-  const semanticMutation = render(spec, semanticPositions);
+  const semanticMutation = render(spec, semanticPositions, new Map(), candidateCache);
+  const semanticUncached = render(spec, semanticPositions);
   const baselineToDownstreamCandidates = compareMaps(baseline.candidateSets, downstreamOnly.candidateSets);
   const baselineToSemanticCandidates = compareMaps(baseline.candidateSets, semanticMutation.candidateSets);
   const candidateChangeByPass = (changed) => Object.fromEntries(["label-free", "first", "feedback"].map((pass) => [pass, changed.filter((key) => key.startsWith(`${pass}:`))]));
@@ -100,7 +111,9 @@ function runFixture(name, fixturePath, positionsPath) {
   return {
     fixture: name,
     graph: { nodes: baseline.graph.nodes.length, edges: baseline.graph.edges.length },
-    baseline: { metrics: baseline.metrics, candidateSets: Object.keys(baseline.candidateSets).length, candidateCount: baseline.candidateCount, decisionCounts: baseline.decisionCounts },
+    baseline: { metrics: baseline.metrics, candidateSets: Object.keys(baseline.candidateSets).length, candidateCount: baseline.candidateCount, decisionCounts: baseline.decisionCounts, elapsedMs: baseline.elapsedMs, cacheStats: baseline.cacheStats },
+    exactRepeat: { metrics: exactRepeat.metrics, elapsedMs: exactRepeat.elapsedMs, cacheStats: exactRepeat.cacheStats, exactRouteOutput: compareMaps(baseline.routeSignatures, exactRepeat.routeSignatures).length === 0, exactRelationLabelOutput: compareMaps(baseline.relationLabelSignatures, exactRepeat.relationLabelSignatures).length === 0, exactNodeLabelOutput: compareMaps(baseline.nodeLabelSignatures, exactRepeat.nodeLabelSignatures).length === 0, exactFeedback: baseline.metrics.feedbackApplied === exactRepeat.metrics.feedbackApplied },
+    uncachedRepeat: { elapsedMs: uncachedRepeat.elapsedMs, metrics: uncachedRepeat.metrics, exactRouteOutput: compareMaps(baseline.routeSignatures, uncachedRepeat.routeSignatures).length === 0, exactRelationLabelOutput: compareMaps(baseline.relationLabelSignatures, uncachedRepeat.relationLabelSignatures).length === 0, exactNodeLabelOutput: compareMaps(baseline.nodeLabelSignatures, uncachedRepeat.nodeLabelSignatures).length === 0, exactFeedback: baseline.metrics.feedbackApplied === uncachedRepeat.metrics.feedbackApplied },
     sameRouteInputDifferentDownstreamState: {
       changedDownstreamRelationLabelIds: compareMaps(baseline.relationLabelSignatures, downstreamOnly.relationLabelSignatures),
       changedRoutes: compareMaps(baseline.routeSignatures, downstreamOnly.routeSignatures),
@@ -109,6 +122,12 @@ function runFixture(name, fixturePath, positionsPath) {
       candidateSetsChangedByPass: downstreamCandidateChangesByPass,
       candidateSetsReusableByPass: Object.fromEntries(Object.entries(downstreamCandidateChangesByPass).map(([pass, changed]) => [pass, changed.length === 0])),
       downstreamMetrics: downstreamOnly.metrics,
+      elapsedMs: downstreamOnly.elapsedMs,
+      cacheStats: downstreamOnly.cacheStats,
+      exactUncachedRouteOutput: compareMaps(downstreamOnly.routeSignatures, downstreamUncached.routeSignatures).length === 0,
+      exactUncachedRelationLabelOutput: compareMaps(downstreamOnly.relationLabelSignatures, downstreamUncached.relationLabelSignatures).length === 0,
+      exactUncachedNodeLabelOutput: compareMaps(downstreamOnly.nodeLabelSignatures, downstreamUncached.nodeLabelSignatures).length === 0,
+      exactUncachedFeedback: downstreamOnly.metrics.feedbackApplied === downstreamUncached.metrics.feedbackApplied,
     },
     changedSemanticGeometry: {
       changedNodeId: semanticNodeId,
@@ -117,9 +136,19 @@ function runFixture(name, fixturePath, positionsPath) {
       candidateSetsInvalidatedByPass: semanticCandidateChangesByPass,
       candidateSetsChangedCount: baselineToSemanticCandidates.length,
       semanticMetrics: semanticMutation.metrics,
+      elapsedMs: semanticMutation.elapsedMs,
+      cacheStats: semanticMutation.cacheStats,
+      exactUncachedRouteOutput: compareMaps(semanticMutation.routeSignatures, semanticUncached.routeSignatures).length === 0,
+      exactUncachedRelationLabelOutput: compareMaps(semanticMutation.relationLabelSignatures, semanticUncached.relationLabelSignatures).length === 0,
+      exactUncachedNodeLabelOutput: compareMaps(semanticMutation.nodeLabelSignatures, semanticUncached.nodeLabelSignatures).length === 0,
+      exactUncachedFeedback: semanticMutation.metrics.feedbackApplied === semanticUncached.metrics.feedbackApplied,
     },
     workObservation: {
-      candidateSetsGeneratedPerPresentation: { baseline: baseline.candidateCount, downstreamOnly: downstreamOnly.candidateCount, semanticMutation: semanticMutation.candidateCount },
+      candidateSetsGeneratedPerPresentation: { baseline: baseline.candidateCount, uncachedRepeat: uncachedRepeat.candidateCount, exactRepeat: exactRepeat.candidateCount, downstreamOnly: downstreamOnly.candidateCount, semanticMutation: semanticMutation.candidateCount },
+      uncachedRepeatElapsedMs: uncachedRepeat.elapsedMs,
+      cachedRepeatElapsedMs: exactRepeat.elapsedMs,
+      observedElapsedReductionMs: Number((uncachedRepeat.elapsedMs - exactRepeat.elapsedMs).toFixed(3)),
+      observedElapsedReductionPercent: Number(((uncachedRepeat.elapsedMs - exactRepeat.elapsedMs) / Math.max(0.001, uncachedRepeat.elapsedMs) * 100).toFixed(1)),
       arbitrationDecisionsPerPresentation: { baseline: baseline.decisionCounts, downstreamOnly: downstreamOnly.decisionCounts, semanticMutation: semanticMutation.decisionCounts },
       safeReuseOpportunity: Object.entries(downstreamCandidateChangesByPass).filter(([, changed]) => changed.length === 0).map(([pass]) => pass),
       invalidationRule: baselineToSemanticCandidates.length > 0 ? "relevant geometry mutation invalidates candidate sets" : "not observed in this fixture",

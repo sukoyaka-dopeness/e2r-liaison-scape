@@ -632,6 +632,17 @@ export type RouteCandidateDiagnostic = {
   selected: boolean;
 };
 
+export type RouteCandidateCacheEntry = {
+  geometry: { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point };
+  diagnostic: Omit<RouteCandidateDiagnostic, "selected">;
+};
+
+/** Opt-in diagnostic cache for candidate generation only. */
+export type RouteCandidateCache = {
+  entries: Map<string, readonly RouteCandidateCacheEntry[]>;
+  stats?: { lookups: number; hits: number; misses: number };
+};
+
 export function routeGraphEdge(
   source: Point,
   target: Point,
@@ -647,6 +658,7 @@ export function routeGraphEdge(
   canonicalPhysicalSideSign = 1,
   candidateTraceSink?: (candidates: readonly RouteCandidateDiagnostic[]) => void,
   preferredSideSign = 0,
+  candidateCache?: RouteCandidateCache,
 ): { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point } {
   if (source.x === target.x && source.y === target.y && selfRelation) {
     if (manualSelfLoop === undefined) return selectAutomaticSelfLoopGeometry(source, parallelIndex, obstacles);
@@ -811,8 +823,24 @@ export function routeGraphEdge(
   let bestPreferredSideGeometry: ReturnType<typeof geometryForOffset> | null = null;
   let bestPreferredSideScore = Infinity;
   let bestPreferredSideOffset: number | null = null;
-  const candidateDiagnostics: Array<Omit<RouteCandidateDiagnostic, "selected">> = [];
-  for (const candidateOffset of offsets) {
+  const candidateCacheKey = candidateCache === undefined ? null : JSON.stringify({
+    source,
+    target,
+    parallelIndex,
+    parallelCount,
+    obstacles,
+    occupiedPaths,
+    labelRects,
+    canonicalPhysicalSideSign,
+    offsets,
+  });
+  const cachedCandidates = candidateCacheKey === null ? undefined : candidateCache!.entries.get(candidateCacheKey);
+  if (candidateCache?.stats) {
+    candidateCache.stats.lookups += 1;
+    if (cachedCandidates) candidateCache.stats.hits += 1;
+    else candidateCache.stats.misses += 1;
+  }
+  const candidates: readonly RouteCandidateCacheEntry[] = cachedCandidates ?? offsets.map((candidateOffset) => {
     const geometry = geometryForOffset(candidateOffset);
     const { samples } = geometry;
     const sampleBounds = {
@@ -857,14 +885,23 @@ export function routeGraphEdge(
     }, 0);
     const score = nodeOverlapScore * 100 + (overlapsEdge ? 10000 : 0) + labelPressure + Math.abs(candidateOffset) * .01;
     const preservesBaseSide = Math.sign(candidateOffset) === Math.sign(baseOffset);
-    candidateDiagnostics.push({
+    return {
+      geometry,
+      diagnostic: {
       offset: candidateOffset,
       nodeOverlapScore,
       occupiedPathConflict: overlapsEdge,
       labelPressure,
       score,
       preservesBaseSide,
-    });
+      },
+    };
+  });
+  if (candidateCacheKey !== null && !cachedCandidates) candidateCache!.entries.set(candidateCacheKey, candidates);
+  const candidateDiagnostics: Array<Omit<RouteCandidateDiagnostic, "selected">> = [];
+  for (const { geometry, diagnostic } of candidates) {
+    const { offset: candidateOffset, nodeOverlapScore, occupiedPathConflict: overlapsEdge, labelPressure, score, preservesBaseSide } = diagnostic;
+    candidateDiagnostics.push(diagnostic);
     if (score < bestScore) {
       bestGeometry = geometry;
       bestScore = score;

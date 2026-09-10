@@ -9,7 +9,7 @@ import {
   type AutomaticRelationLabelInput,
   type AutomaticRoutingInput,
 } from "../src/graph-presentation.ts";
-import { routeGraphEdge } from "../src/viewport.ts";
+import { placeNodeLabel, routeGraphEdge } from "../src/viewport.ts";
 
 function input(overrides: Partial<AutomaticRoutingInput> = {}): AutomaticRoutingInput {
   return {
@@ -522,6 +522,40 @@ test("same inputs produce exact deterministic Node-label results", () => {
 
 test("same inputs produce exact deterministic Relation-label results", () => {
   assert.deepEqual(deriveAutomaticRelationLabels(relationLabelInput()), deriveAutomaticRelationLabels(relationLabelInput()));
+});
+
+test("candidate-generation cache preserves presentation authority and invalidates semantic geometry", () => {
+  const base = input();
+  const provisionalNodeLabels = base.graph.nodes.map((node) => placeNodeLabel(
+    base.positions[node.id]!,
+    node.label,
+    node.description,
+    [],
+    base.graph.nodes.filter((other) => other.id !== node.id).map((other) => base.positions[other.id]!),
+    [],
+  ));
+  const cache = { entries: new Map(), stats: { lookups: 0, hits: 0, misses: 0 } };
+  const render = (positions = base.positions) => deriveBoundedAutomaticPresentation({
+    ...base,
+    provisionalNodeLabels,
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+    candidateCache: cache,
+    positions,
+  });
+  const first = render();
+  const firstStats = { ...cache.stats };
+  const repeated = render();
+  assert.deepEqual(repeated, first);
+  assert.equal(cache.stats.lookups - firstStats.lookups, firstStats.lookups);
+  assert.equal(cache.stats.hits - firstStats.hits, firstStats.lookups);
+  const moved = { ...base.positions, a: { x: 24, y: 0 } };
+  const beforeMutation = { ...cache.stats };
+  const mutated = render(moved);
+  assert.ok(cache.stats.misses > beforeMutation.misses);
+  assert.notDeepEqual(mutated.routedEdges, first.routedEdges);
 });
 
 test("current Node positions drive automatic Node-label recomputation", () => {
