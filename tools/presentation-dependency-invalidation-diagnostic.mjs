@@ -37,6 +37,52 @@ function snapshotSignature(snapshots) {
   })));
 }
 
+function scopedStageInput(trace) {
+  const value = JSON.parse(trace.input.serialized);
+  if (trace.stage === "route-selection") {
+    return {
+      graph: {
+        nodes: value.graph.nodes.map((node) => ({ id: node.id })),
+        edges: value.graph.edges.map((edge) => ({
+          id: edge.id,
+          sourceId: edge.sourceId,
+          targetId: edge.targetId,
+          parallelIndex: edge.parallelIndex,
+          parallelCount: edge.parallelCount,
+          label: edge.label,
+        })),
+      },
+      positions: value.positions,
+      edgeCurveOffsets: value.edgeCurveOffsets,
+      selfLoopOverrides: value.selfLoopOverrides,
+      provisionalNodeLabels: value.provisionalNodeLabels,
+      continuityNodeLabels: value.continuityNodeLabels,
+      previousContinuityNodeLabels: value.previousContinuityNodeLabels,
+      previousAutomaticRoutes: value.previousAutomaticRoutes,
+      draggedNodeId: value.draggedNodeId,
+      activeDraggedNodeId: value.activeDraggedNodeId,
+      preserveSafeIncidentPreviousRoute: value.preserveSafeIncidentPreviousRoute,
+      replayPrefix: value.replayPrefix,
+    };
+  }
+  if (trace.stage === "relation-label") {
+    const { pass: _pass, ...responsibility } = value;
+    return responsibility;
+  }
+  if (trace.stage === "node-label") {
+    const { pass: _pass, ...responsibility } = value;
+    return {
+      ...responsibility,
+      nodes: value.nodes.map((node) => ({ id: node.id, label: node.label, description: node.description })),
+    };
+  }
+  return value;
+}
+
+function scopedInputFingerprint(trace) {
+  return dependencyFingerprint(scopedStageInput(trace));
+}
+
 function makeProvisionalLabels(graph, positions) {
   return graph.nodes.map((node) => placeNodeLabel(
     positions[node.id],
@@ -65,6 +111,8 @@ function deriveCase(dataset, basePositions, mutation) {
     if (provisionalNodeLabels[0]) provisionalNodeLabels[0] = { ...provisionalNodeLabels[0], x: provisionalNodeLabels[0].x + 8 };
   } else if (mutation === "feedback-disabled") {
     feedbackEnabled = false;
+  } else if (mutation === "raw-node-coordinate") {
+    if (graph.nodes[0]) graph.nodes[0].x += 777;
   }
   const dependencyTraces = [];
   const snapshots = [];
@@ -101,29 +149,40 @@ function traceKey(trace) { return `${trace.stage}:${trace.pass}`; }
 function compareCase(baseline, current) {
   const baselineByKey = new Map(baseline.traces.map((trace) => [traceKey(trace), trace]));
   const currentByKey = new Map(current.traces.map((trace) => [traceKey(trace), trace]));
+  const baselineScopedByKey = new Map(baseline.traces.map((trace) => [traceKey(trace), scopedInputFingerprint(trace)]));
   const keys = [...new Set([...baselineByKey.keys(), ...currentByKey.keys()])].sort();
   const stages = keys.map((key) => {
     const before = baselineByKey.get(key);
     const after = currentByKey.get(key);
+    const beforeScoped = before ? baselineScopedByKey.get(key) : undefined;
+    const afterScoped = after ? scopedInputFingerprint(after) : undefined;
     return {
       key,
       presentBefore: Boolean(before),
       presentAfter: Boolean(after),
       inputChanged: Boolean(before && after && before.input.serialized !== after.input.serialized),
+      scopedInputChanged: Boolean(beforeScoped && afterScoped && beforeScoped.serialized !== afterScoped.serialized),
       outputChanged: Boolean(before && after && before.output.serialized !== after.output.serialized),
       inputLength: after?.input.characterLength ?? before?.input.characterLength ?? 0,
+      scopedInputLength: afterScoped?.characterLength ?? beforeScoped?.characterLength ?? 0,
       outputLength: after?.output.characterLength ?? before?.output.characterLength ?? 0,
+      fullInputKeyBuildMs: Number((after?.input.buildMs ?? 0).toFixed(4)),
       fingerprintBuildMs: Number(((after?.input.buildMs ?? 0) + (after?.output.buildMs ?? 0)).toFixed(4)),
+      scopedKeyBuildMs: Number((afterScoped?.buildMs ?? 0).toFixed(4)),
     };
   });
   const inputChanged = stages.filter(({ inputChanged: changed }) => changed).map(({ key }) => key);
+  const scopedInputChanged = stages.filter(({ scopedInputChanged: changed }) => changed).map(({ key }) => key);
   const outputChanged = stages.filter(({ outputChanged: changed }) => changed).map(({ key }) => key);
   return {
     stages,
     inputChanged,
+    scopedInputChanged,
     outputChanged,
     snapshotOutputChanged: baseline.snapshotSignature !== current.snapshotSignature,
     finalOutputChanged: baseline.outputSignature !== current.outputSignature,
+    fullInputKeyBuildMs: Number(stages.reduce((sum, stage) => sum + stage.fullInputKeyBuildMs, 0).toFixed(4)),
+    scopedInputKeyBuildMs: Number(stages.reduce((sum, stage) => sum + stage.scopedKeyBuildMs, 0).toFixed(4)),
     traceFingerprintBuildMs: Number(stages.reduce((sum, stage) => sum + stage.fingerprintBuildMs, 0).toFixed(4)),
   };
 }
@@ -131,7 +190,7 @@ function compareCase(baseline, current) {
 function runFixture({ name, fixture, positions: positionsPath }) {
   const dataset = readJson(fixture).dataset ?? readJson(fixture);
   const positions = selectedPositions(positionsPath);
-  const mutations = ["baseline", "no-op", "position", "manual-relation-anchor", "provisional-label", "feedback-disabled"];
+  const mutations = ["baseline", "no-op", "position", "manual-relation-anchor", "provisional-label", "raw-node-coordinate", "feedback-disabled"];
   const cases = mutations.map((mutation) => deriveCase(dataset, positions, mutation));
   const baseline = cases[0];
   return {
@@ -140,6 +199,8 @@ function runFixture({ name, fixture, positions: positionsPath }) {
     baseline: {
       elapsedMs: baseline.elapsedMs,
       traceCount: baseline.traces.length,
+      fullInputKeyBuildMs: Number(baseline.traces.reduce((sum, trace) => sum + trace.input.buildMs, 0).toFixed(4)),
+      scopedInputKeyBuildMs: Number(baseline.traces.reduce((sum, trace) => sum + scopedInputFingerprint(trace).buildMs, 0).toFixed(4)),
       fingerprintBuildMs: Number(baseline.traces.reduce((sum, trace) => sum + trace.input.buildMs + trace.output.buildMs, 0).toFixed(4)),
     },
     cases: cases.slice(1).map((current) => ({ mutation: current.mutation, elapsedMs: current.elapsedMs, comparison: compareCase(baseline, current) })),
