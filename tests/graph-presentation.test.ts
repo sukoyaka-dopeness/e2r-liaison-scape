@@ -577,6 +577,9 @@ test("presentation profiler separates route arbitration from downstream stages",
   assert.ok(profiler.passes.first.route.arbitrationMs >= 0);
   assert.ok(profiler.passes.first.relationLabelMs >= 0);
   assert.ok(profiler.passes.first.nodeLabelMs >= 0);
+  assert.ok(profiler.passes.first.relationLabel.candidateEvaluations > 0);
+  assert.ok(profiler.passes.first.nodeLabel.candidateEvaluations > 0);
+  assert.ok(profiler.passes.first.nodeLabel.edgePathPointChecks > 0);
   assert.ok(profiler.passes.first.elapsedMs >= profiler.passes.first.route.candidateGenerationMs);
 });
 

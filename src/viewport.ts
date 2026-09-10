@@ -404,7 +404,9 @@ export function placeEdgeLabel(
   nodes: Point[],
   otherEdgePaths: Point[][] = [],
   previousPlacement?: LabelRect,
+  profile?: LabelPlacementProfile,
 ): LabelRect {
+  const startedAt = performance.now();
   const fallback = samples[Math.floor(samples.length / 2)] ?? { x: 0, y: 0 };
   const width = Math.max(48, Math.min(220, textDisplayWidth(label, 32) + 12));
   const candidateIndexes = [20, 16, 24, 12, 28, 8, 32, 4, 36]
@@ -438,6 +440,13 @@ export function placeEdgeLabel(
   });
 
   const scoredCandidates = candidates.map(({ candidate, sampleIndex, normalOffset, preference }) => {
+    if (profile) {
+      profile.candidateEvaluations += 1;
+      profile.occupiedLabelChecks += occupiedLabels.length;
+      profile.otherNodeChecks += nodes.length;
+      profile.edgePathPointChecks += otherEdgePaths.reduce((total, path) => total + path.length, 0);
+      if (previousPlacement) profile.previousPlacementEvaluations += 1;
+    }
     const labelOverlap = occupiedLabels.reduce((total, occupied) => total + rectOverlapArea(candidate, occupied), 0);
     const nodeOverlap = nodes.reduce((total, node) => {
       const nearestX = Math.max(candidate.x - width / 2, Math.min(node.x, candidate.x + width / 2));
@@ -482,6 +491,7 @@ export function placeEdgeLabel(
       .slice()
       .sort((left, right) => right.nodeClearance - left.nodeClearance || left.preference - right.preference)[0]
     : (anchorCandidate ?? normalRecoveredCandidate);
+  if (profile) profile.elapsedMs += performance.now() - startedAt;
   return selected.candidate;
 }
 
@@ -501,7 +511,9 @@ export function placeNodeLabel(
   edgePaths: Point[][],
   previousPlacement?: LabelRect,
   yieldingRoutes: readonly RouteYieldPath[] = [],
+  profile?: LabelPlacementProfile,
 ): LabelRect {
+  const startedAt = performance.now();
   const descriptionLines = description.trim()
     ? wrapNodeLabel(truncateNodeText(description, 28), 20)
     : [];
@@ -512,7 +524,15 @@ export function placeNodeLabel(
   const height = descriptionLines.length === 0 ? 20 : descriptionLines.length === 1 ? 34 : 48;
   const angles = Array.from({ length: 32 }, (_, index) => Math.PI / 2 + index * Math.PI / 16);
 
-  return angles.map((angle, index) => {
+  const selected = angles.map((angle, index) => {
+    if (profile) {
+      profile.candidateEvaluations += 1;
+      profile.occupiedLabelChecks += occupiedLabels.length;
+      profile.otherNodeChecks += otherNodes.length;
+      profile.edgePathPointChecks += edgePaths.reduce((total, path) => total + path.length, 0);
+      profile.yieldingRoutePointChecks += yieldingRoutes.reduce((total, route) => total + route.samples.length, 0);
+      if (previousPlacement) profile.previousPlacementEvaluations += 1;
+    }
     const directionX = Math.cos(angle);
     const directionY = Math.sin(angle);
     const distance = 40 + Math.abs(directionX) * width / 2 + Math.abs(directionY) * height / 2;
@@ -565,6 +585,8 @@ export function placeNodeLabel(
     }
     return { candidate, score: score + placementMovementCost(candidate, previousPlacement) };
   }).reduce((best, current) => current.score < best.score ? current : best).candidate;
+  if (profile) profile.elapsedMs += performance.now() - startedAt;
+  return selected;
 }
 
 export function fitGraphView(
@@ -651,6 +673,18 @@ export type RouteArbitrationProfile = {
   candidateComparisons: number;
   safeCandidateChecks: number;
   selectedRouteCommits: number;
+};
+
+/** Opt-in timing/counter sink for Relation-label or Node-label placement. */
+export type LabelPlacementProfile = {
+  elapsedMs: number;
+  candidateEvaluations: number;
+  occupiedLabelChecks: number;
+  otherNodeChecks: number;
+  edgePathPointChecks: number;
+  yieldingRoutePointChecks: number;
+  previousPlacementEvaluations: number;
+  manualAnchorReconstructions: number;
 };
 
 export function routeGraphEdge(

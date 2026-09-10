@@ -48,6 +48,7 @@ function render(spec, positions, manualRelationLabelAnchors = new Map(), candida
   const edges = graph.edges.map((edge) => ({ ...edge, label: spec.dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "" }));
   const provisionalNodeLabels = graph.nodes.map((node) => placeNodeLabel(positions[node.id], node.label, node.description, [], graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), []));
   const decisions = [];
+  const passSnapshots = [];
   const startedAt = performance.now();
   const startingStats = candidateCache?.stats ? { ...candidateCache.stats } : null;
   const presentation = deriveBoundedAutomaticPresentation({
@@ -56,6 +57,12 @@ function render(spec, positions, manualRelationLabelAnchors = new Map(), candida
     routeDecisionSink: (decision) => decisions.push(decision),
     candidateCache,
     profiler,
+    presentationPassSink: (pass, routes, relationLabels, nodeLabels) => passSnapshots.push({
+      pass,
+      routeSignatures: routeSignatures(routes),
+      relationLabelSignatures: mapSignatures(relationLabels),
+      nodeLabelSignatures: mapSignatures(nodeLabels),
+    }),
   });
   const labels = [...presentation.nodeLabels.values()];
   const lengths = presentation.routedEdges.map((route) => routeLength(route.samples)).sort((a, b) => a - b);
@@ -63,6 +70,8 @@ function render(spec, positions, manualRelationLabelAnchors = new Map(), candida
   const candidateSets = Object.fromEntries(decisions.map((decision) => [`${decision.pass}:${decision.edgeId}`, signature(decision.candidateDiagnostics)]));
   const candidateCount = decisions.reduce((sum, decision) => sum + decision.candidateDiagnostics.length, 0);
   const stats = candidateCache?.stats && startingStats ? Object.fromEntries(Object.keys(candidateCache.stats).map((key) => [key, candidateCache.stats[key] - startingStats[key]])) : null;
+  const firstPass = passSnapshots.find(({ pass }) => pass === "first");
+  const feedbackPass = passSnapshots.find(({ pass }) => pass === "feedback");
   return {
     graph,
     presentation,
@@ -74,6 +83,15 @@ function render(spec, positions, manualRelationLabelAnchors = new Map(), candida
     elapsedMs: Number((performance.now() - startedAt).toFixed(3)),
     cacheStats: stats,
     profiler,
+    feedbackBreakdown: {
+      triggered: feedbackPass !== undefined,
+      recomputedRoutes: feedbackPass ? Object.keys(feedbackPass.routeSignatures).length : 0,
+      recomputedRelationLabels: feedbackPass ? Object.keys(feedbackPass.relationLabelSignatures).length : 0,
+      recomputedNodeLabels: feedbackPass ? Object.keys(feedbackPass.nodeLabelSignatures).length : 0,
+      changedRoutes: firstPass && feedbackPass ? compareMaps(firstPass.routeSignatures, feedbackPass.routeSignatures) : [],
+      changedRelationLabels: firstPass && feedbackPass ? compareMaps(firstPass.relationLabelSignatures, feedbackPass.relationLabelSignatures) : [],
+      changedNodeLabels: firstPass && feedbackPass ? compareMaps(firstPass.nodeLabelSignatures, feedbackPass.nodeLabelSignatures) : [],
+    },
     decisionCounts: Object.fromEntries(["label-free", "first", "feedback"].map((pass) => [pass, decisions.filter((decision) => decision.pass === pass).length])),
     metrics: {
       hardHits: presentation.routedEdges.filter((route) => routeSamplesHaveLabelCollision(route.samples, labels)).map((route) => route.id),
@@ -114,8 +132,8 @@ function runFixture(name, fixturePath, positionsPath) {
     fixture: name,
     graph: { nodes: baseline.graph.nodes.length, edges: baseline.graph.edges.length },
     baseline: { metrics: baseline.metrics, candidateSets: Object.keys(baseline.candidateSets).length, candidateCount: baseline.candidateCount, decisionCounts: baseline.decisionCounts, elapsedMs: baseline.elapsedMs, cacheStats: baseline.cacheStats },
-    exactRepeat: { metrics: exactRepeat.metrics, elapsedMs: exactRepeat.elapsedMs, cacheStats: exactRepeat.cacheStats, exactRouteOutput: compareMaps(baseline.routeSignatures, exactRepeat.routeSignatures).length === 0, exactRelationLabelOutput: compareMaps(baseline.relationLabelSignatures, exactRepeat.relationLabelSignatures).length === 0, exactNodeLabelOutput: compareMaps(baseline.nodeLabelSignatures, exactRepeat.nodeLabelSignatures).length === 0, exactFeedback: baseline.metrics.feedbackApplied === exactRepeat.metrics.feedbackApplied },
-    uncachedRepeat: { elapsedMs: uncachedRepeat.elapsedMs, metrics: uncachedRepeat.metrics, exactRouteOutput: compareMaps(baseline.routeSignatures, uncachedRepeat.routeSignatures).length === 0, exactRelationLabelOutput: compareMaps(baseline.relationLabelSignatures, uncachedRepeat.relationLabelSignatures).length === 0, exactNodeLabelOutput: compareMaps(baseline.nodeLabelSignatures, uncachedRepeat.nodeLabelSignatures).length === 0, exactFeedback: baseline.metrics.feedbackApplied === uncachedRepeat.metrics.feedbackApplied },
+    exactRepeat: { metrics: exactRepeat.metrics, elapsedMs: exactRepeat.elapsedMs, cacheStats: exactRepeat.cacheStats, feedbackBreakdown: exactRepeat.feedbackBreakdown, exactRouteOutput: compareMaps(baseline.routeSignatures, exactRepeat.routeSignatures).length === 0, exactRelationLabelOutput: compareMaps(baseline.relationLabelSignatures, exactRepeat.relationLabelSignatures).length === 0, exactNodeLabelOutput: compareMaps(baseline.nodeLabelSignatures, exactRepeat.nodeLabelSignatures).length === 0, exactFeedback: baseline.metrics.feedbackApplied === exactRepeat.metrics.feedbackApplied },
+    uncachedRepeat: { elapsedMs: uncachedRepeat.elapsedMs, metrics: uncachedRepeat.metrics, feedbackBreakdown: uncachedRepeat.feedbackBreakdown, exactRouteOutput: compareMaps(baseline.routeSignatures, uncachedRepeat.routeSignatures).length === 0, exactRelationLabelOutput: compareMaps(baseline.relationLabelSignatures, uncachedRepeat.relationLabelSignatures).length === 0, exactNodeLabelOutput: compareMaps(baseline.nodeLabelSignatures, uncachedRepeat.nodeLabelSignatures).length === 0, exactFeedback: baseline.metrics.feedbackApplied === uncachedRepeat.metrics.feedbackApplied },
     sameRouteInputDifferentDownstreamState: {
       changedDownstreamRelationLabelIds: compareMaps(baseline.relationLabelSignatures, downstreamOnly.relationLabelSignatures),
       changedRoutes: compareMaps(baseline.routeSignatures, downstreamOnly.routeSignatures),

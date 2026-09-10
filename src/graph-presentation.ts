@@ -1,6 +1,6 @@
 import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelRect, type Point, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementProfile, type LabelRect, type Point, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -43,6 +43,8 @@ export type AutomaticRouteDecision = {
 export type AutomaticPresentationPassProfile = {
   elapsedMs: number;
   route: RouteArbitrationProfile;
+  relationLabel: LabelPlacementProfile;
+  nodeLabel: LabelPlacementProfile;
   continuitySafetyMs: number;
   occupiedPathMaintenanceMs: number;
   relationLabelMs: number;
@@ -65,12 +67,25 @@ function emptyRouteArbitrationProfile(): RouteArbitrationProfile {
   };
 }
 
+function emptyLabelPlacementProfile(): LabelPlacementProfile {
+  return {
+    elapsedMs: 0,
+    candidateEvaluations: 0,
+    occupiedLabelChecks: 0,
+    otherNodeChecks: 0,
+    edgePathPointChecks: 0,
+    yieldingRoutePointChecks: 0,
+    previousPlacementEvaluations: 0,
+    manualAnchorReconstructions: 0,
+  };
+}
+
 export function createAutomaticPresentationProfiler(): AutomaticPresentationProfiler {
   return {
     passes: {
-      "label-free": { elapsedMs: 0, route: emptyRouteArbitrationProfile(), continuitySafetyMs: 0, occupiedPathMaintenanceMs: 0, relationLabelMs: 0, nodeLabelMs: 0, routeDecisions: 0 },
-      first: { elapsedMs: 0, route: emptyRouteArbitrationProfile(), continuitySafetyMs: 0, occupiedPathMaintenanceMs: 0, relationLabelMs: 0, nodeLabelMs: 0, routeDecisions: 0 },
-      feedback: { elapsedMs: 0, route: emptyRouteArbitrationProfile(), continuitySafetyMs: 0, occupiedPathMaintenanceMs: 0, relationLabelMs: 0, nodeLabelMs: 0, routeDecisions: 0 },
+      "label-free": { elapsedMs: 0, route: emptyRouteArbitrationProfile(), relationLabel: emptyLabelPlacementProfile(), nodeLabel: emptyLabelPlacementProfile(), continuitySafetyMs: 0, occupiedPathMaintenanceMs: 0, relationLabelMs: 0, nodeLabelMs: 0, routeDecisions: 0 },
+      first: { elapsedMs: 0, route: emptyRouteArbitrationProfile(), relationLabel: emptyLabelPlacementProfile(), nodeLabel: emptyLabelPlacementProfile(), continuitySafetyMs: 0, occupiedPathMaintenanceMs: 0, relationLabelMs: 0, nodeLabelMs: 0, routeDecisions: 0 },
+      feedback: { elapsedMs: 0, route: emptyRouteArbitrationProfile(), relationLabel: emptyLabelPlacementProfile(), nodeLabel: emptyLabelPlacementProfile(), continuitySafetyMs: 0, occupiedPathMaintenanceMs: 0, relationLabelMs: 0, nodeLabelMs: 0, routeDecisions: 0 },
     },
   };
 }
@@ -465,6 +480,7 @@ export type AutomaticRelationLabelInput = {
   previousPlacements: ReadonlyMap<string, LabelRect>;
   manualAnchors: ReadonlyMap<string, ManualRelationLabelAnchor>;
   draggedNodeId?: string;
+  profile?: LabelPlacementProfile;
 };
 
 export type AutomaticNodeLabelInput = {
@@ -476,6 +492,7 @@ export type AutomaticNodeLabelInput = {
   manualOffsets: ReadonlyMap<string, ManualNodeLabelOffset>;
   activelyDraggedNodeId?: string;
   yieldingRoutes?: readonly RouteYieldPath[];
+  profile?: LabelPlacementProfile;
 };
 
 /** Pure Product-owned automatic Relation-label orchestration. App state arrives as snapshots. */
@@ -485,6 +502,7 @@ export function deriveAutomaticRelationLabels({
   previousPlacements,
   manualAnchors,
   draggedNodeId,
+  profile,
 }: AutomaticRelationLabelInput): Map<string, LabelRect> {
   const occupiedLabels: LabelRect[] = [];
   const result = new Map<string, LabelRect>();
@@ -501,8 +519,10 @@ export function deriveAutomaticRelationLabels({
       nodePoints,
       otherEdgePaths,
       relationMovesWithDraggedNode ? undefined : previousPlacements.get(edge.id),
+      profile,
     );
     const manualAnchor = manualAnchors.get(edge.id);
+    if (manualAnchor && profile) profile.manualAnchorReconstructions += 1;
     const placement = manualAnchor
       ? { ...automaticPlacement, ...reconstructManualRelationLabelTarget(edge.samples, manualAnchor) }
       : automaticPlacement;
@@ -522,6 +542,7 @@ export function deriveAutomaticNodeLabels({
   manualOffsets,
   activelyDraggedNodeId,
   yieldingRoutes = [],
+  profile,
 }: AutomaticNodeLabelInput): Map<string, LabelRect> {
   const occupiedLabels: LabelRect[] = Array.from(occupiedRelationLabels.values());
   const result = new Map<string, LabelRect>();
@@ -537,6 +558,7 @@ export function deriveAutomaticNodeLabels({
       edgePaths,
       activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id),
       yieldingRoutes,
+      profile,
     );
     const manualOffset = manualOffsets.get(node.id);
     const placement = manualOffset
@@ -700,6 +722,7 @@ export function deriveBoundedAutomaticPresentation({
       previousPlacements: previousRelationLabelPlacements,
       manualAnchors: manualRelationLabelAnchors,
       draggedNodeId,
+      profile: passProfile?.relationLabel,
     });
     if (passProfile) passProfile.relationLabelMs += performance.now() - relationLabelStartedAt;
     const nodeLabelStartedAt = performance.now();
@@ -712,6 +735,7 @@ export function deriveBoundedAutomaticPresentation({
       manualOffsets: manualNodeLabelOffsets,
       activelyDraggedNodeId,
       yieldingRoutes,
+      profile: passProfile?.nodeLabel,
     });
     if (passProfile) {
       passProfile.nodeLabelMs += performance.now() - nodeLabelStartedAt;
