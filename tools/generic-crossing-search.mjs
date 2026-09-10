@@ -21,6 +21,9 @@ const presentationCache = new Map();
 let activeProfileStage = "setup";
 const presentationFinalistLimit = Number.parseInt(process.env.E2R_PRESENTATION_FINALIST_LIMIT ?? "8", 10);
 const relaxationTargeting = process.env.E2R_RELAXATION_TARGETING ?? "full";
+const parsedRelaxationLatticeStep = Number.parseFloat(process.env.E2R_RELAXATION_LATTICE_STEP ?? "0");
+const relaxationLatticeStep = Number.isFinite(parsedRelaxationLatticeStep) && parsedRelaxationLatticeStep > 0 ? parsedRelaxationLatticeStep : 0;
+const relaxationLatticeProbe = process.env.E2R_RELAXATION_LATTICE_PROBE === "1" || relaxationLatticeStep > 0;
 const edges = graph.edges.map((edge) => ({
   ...edge,
   label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
@@ -34,6 +37,17 @@ const emptyState = {
 
 function compareId(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 function clonePositions(positions) { return Object.fromEntries(Object.entries(positions).map(([id, point]) => [id, { ...point }])); }
+function positionsKey(positions) {
+  return Object.entries(positions).sort(([left], [right]) => compareId(left, right))
+    .map(([id, point]) => `${id}:${point.x},${point.y}`).join("|");
+}
+function quantizePositions(positions, step) {
+  if (!(step > 0)) return clonePositions(positions);
+  return Object.fromEntries(Object.entries(positions).map(([id, point]) => [id, {
+    x: Math.round(point.x / step) * step,
+    y: Math.round(point.y / step) * step,
+  }]));
+}
 function distanceToRect(point, rect) {
   const dx = Math.max(Math.abs(point.x - rect.x) - rect.width / 2, 0);
   const dy = Math.max(Math.abs(point.y - rect.y) - rect.height / 2, 0);
@@ -162,8 +176,7 @@ function derivePresentationMetrics(positions) {
   return { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
 }
 function presentationMetrics(positions) {
-  const positionKey = Object.entries(positions).sort(([left], [right]) => compareId(left, right))
-    .map(([id, point]) => `${id}:${point.x},${point.y}`).join("|");
+  const positionKey = positionsKey(positions);
   const stage = profile.stages[activeProfileStage] ??= { presentationCalls: 0, fullPresentationEvaluations: 0, presentationMs: 0, presentationCacheHits: 0 };
   profile.presentationCalls += 1;
   stage.presentationCalls += 1;
@@ -375,16 +388,29 @@ function constrainedRelaxationScore(metrics, positions, referencePositions) {
     + localityPenalty * 9000 + edgeLengthPenalty;
 }
 function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacement = 48) {
-  const referencePositions = clonePositions(startPositions); let current = clonePositions(startPositions);
+  const inputPositions = clonePositions(startPositions);
+  const referencePositions = quantizePositions(startPositions, relaxationLatticeStep); let current = clonePositions(referencePositions);
   let currentMetrics = presentationMetrics(current); let currentScore = constrainedRelaxationScore(currentMetrics, current, referencePositions);
   let best = current; let bestMetrics = currentMetrics; let bestScore = currentScore; let evaluated = 1; let acceptedMoves = 0;
+  const rawCandidateKeys = relaxationLatticeProbe ? new Set() : null;
+  const configuredCandidateKeys = relaxationLatticeProbe ? new Set() : null;
+  const hypotheticalKeys = relaxationLatticeProbe ? new Map([1, 2, 4].map((step) => [step, new Set()])) : null;
+  let candidateRequests = 0; let fractionalCandidateRequests = 0;
   const directions = Array.from({ length: 8 }, (_, index) => index * Math.PI / 4);
   const steps = [18, 9, 6];
   for (const id of ids) {
     for (const step of steps) for (const angle of directions) {
-      const candidate = clonePositions(current);
-      candidate[id].x += Math.cos(angle) * step;
-      candidate[id].y += Math.sin(angle) * step;
+      const rawCandidate = clonePositions(current);
+      rawCandidate[id].x += Math.cos(angle) * step;
+      rawCandidate[id].y += Math.sin(angle) * step;
+      candidateRequests += 1;
+      if (relaxationLatticeProbe) {
+        rawCandidateKeys.add(positionsKey(rawCandidate));
+        if (Object.values(rawCandidate).some((point) => !Number.isInteger(point.x) || !Number.isInteger(point.y))) fractionalCandidateRequests += 1;
+        for (const [probeStep, keys] of hypotheticalKeys) keys.add(positionsKey(quantizePositions(rawCandidate, probeStep)));
+      }
+      const candidate = quantizePositions(rawCandidate, relaxationLatticeStep);
+      if (relaxationLatticeProbe) configuredCandidateKeys.add(positionsKey(candidate));
       const displacement = Math.hypot(candidate[id].x - referencePositions[id].x, candidate[id].y - referencePositions[id].y);
       if (displacement > maxDisplacement) continue;
       const metrics = presentationMetrics(candidate); evaluated += 1;
@@ -394,7 +420,25 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     }
   }
   const movedNodeIds = ids.filter((id) => Math.hypot(best[id].x - referencePositions[id].x, best[id].y - referencePositions[id].y) > 1e-9);
-  return { mode: "POST_STRUCTURAL_CONSTRAINED_RELAXATION", evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0 };
+  const inputFractionalCoordinates = Object.values(inputPositions).flatMap((point) => [point.x, point.y]).filter((value) => !Number.isInteger(value)).length;
+  const inputQuantizationMaxDelta = Math.max(0, ...Object.keys(inputPositions).map((id) => Math.hypot(referencePositions[id].x - inputPositions[id].x, referencePositions[id].y - inputPositions[id].y)));
+  return {
+    mode: "POST_STRUCTURAL_CONSTRAINED_RELAXATION", evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement,
+    lattice: {
+      configuredStep: relaxationLatticeStep,
+      probeEnabled: relaxationLatticeProbe,
+      inputFractionalCoordinates,
+      inputQuantizationMaxDelta,
+      candidateRequests,
+      fractionalCandidateRequests: relaxationLatticeProbe ? fractionalCandidateRequests : null,
+      uniqueRawCandidateStates: relaxationLatticeProbe ? rawCandidateKeys.size : null,
+      rawDuplicateRequests: relaxationLatticeProbe ? candidateRequests - rawCandidateKeys.size : null,
+      uniqueConfiguredCandidateStates: relaxationLatticeProbe ? configuredCandidateKeys.size : null,
+      configuredDuplicateRequests: relaxationLatticeProbe ? candidateRequests - configuredCandidateKeys.size : null,
+      hypotheticalUniqueStates: relaxationLatticeProbe ? Object.fromEntries([...hypotheticalKeys].map(([step, keys]) => [step, keys.size])) : null,
+    },
+    inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0,
+  };
 }
 function derivePressureNeighborhood(metrics, positions) {
   const pressureNodeIds = metrics.pressureNodeIds ?? [];
@@ -461,7 +505,7 @@ function genericSearch() {
   const minimumStructuralCrossings = structuralCandidates.length > 0 ? Math.min(...structuralCandidates.map((candidate) => candidate.structuralCrossings)) : null;
   const boundedFallback = minimumStructuralCrossings === null ? [] : structuralCandidates.filter((candidate) => candidate.structuralCrossings === minimumStructuralCrossings);
   finishProfileStage("stage2-presentation-and-relaxation");
-  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, pressureTargetingFallback, pressureNeighborhood, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
+  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, relaxationLatticeStep, pressureTargetingFallback, pressureNeighborhood, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
 }
 function complexityProbe() {
   return [9, 10, 12, 16, 25].map((nodeCount) => ({
@@ -500,7 +544,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit },
+  searchBudget: { presentationFinalistLimit, relaxationLatticeStep, relaxationLatticeProbe },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));

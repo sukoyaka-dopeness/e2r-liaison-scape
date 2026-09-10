@@ -201,6 +201,17 @@ const pressureTargetedRelaxationPositions = {
   moon: { x: 670.0243866176395, y: 82.02438661763951 },
   hornet: { x: 196, y: 0 },
 };
+const quantizedRelaxationStep1Positions = {
+  armstrong: { x: 392, y: 328 },
+  aldrin: { x: 248, y: 409 },
+  collins: { x: 392, y: 164 },
+  nasa: { x: 0, y: 337 },
+  columbia: { x: 451, y: -11 },
+  eagle: { x: 588, y: 328 },
+  "saturn-v": { x: 57, y: 107 },
+  moon: { x: 644, y: 82 },
+  hornet: { x: 196, y: 0 },
+};
 const generalizationPositions = {
   linkscape: {
     generic: {
@@ -217,6 +228,13 @@ const generalizationPositions = {
       "entity-cafe": { x: 196, y: 18 },
       "entity-studio": { x: 0, y: 164 },
     },
+    quantized: {
+      "entity-library": { x: 13, y: 31 },
+      "entity-bob": { x: 162, y: 127 },
+      "entity-alice": { x: 356, y: 50 },
+      "entity-cafe": { x: 196, y: 18 },
+      "entity-studio": { x: 0, y: 164 },
+    },
   },
   lighthouse: {
     generic: {
@@ -227,6 +245,9 @@ const generalizationPositions = {
     },
     pressure: {
       archive: { x: 379.27207793864216, y: -24 }, thomas: { x: -6, y: 164 }, clara: { x: 196, y: 328 }, lighthouse: { x: 636, y: 328 }, maya: { x: 196, y: 164 }, authority: { x: 588, y: -64 }, daniel: { x: 424.8492424049175, y: 341.3933982822018 }, elias: { x: 196, y: 0 }, beacon: { x: 392, y: 164 }, sofia: { x: 552.7279220613578, y: 185.72792206135784 },
+    },
+    quantized: {
+      archive: { x: 377, y: -18 }, thomas: { x: -6, y: 164 }, clara: { x: 196, y: 328 }, lighthouse: { x: 623, y: 341 }, maya: { x: 196, y: 164 }, authority: { x: 582, y: -40 }, daniel: { x: 430, y: 361 }, elias: { x: 196, y: 0 }, beacon: { x: 392, y: 164 }, sofia: { x: 540, y: 164 },
     },
   },
 } as const;
@@ -260,6 +281,7 @@ const candidateDescriptions = {
   "generic-crossing-search-v1": "Generic crossing-first structural search (diagnostic)",
   "post-structural-relaxation-v1": "Post-structural constrained relaxation (diagnostic)",
   "pressure-targeted-relaxation-v1": "Pressure-targeted constrained relaxation (diagnostic)",
+  "quantized-relaxation-step1-v1": "Integer-lattice constrained relaxation, step 1 (diagnostic)",
   "source-f0-160": "Source F0 solver, clearance 160",
   "fp1-ngp-420": "FP1-NGP negative control",
 } as const;
@@ -280,6 +302,9 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
     const positions = generalizationPositions[selectedFixtureKind as "linkscape" | "lighthouse"];
     return positions.pressure ?? positions.post;
   }
+  if (selectedFixtureKind !== "apollo" && candidate === "quantized-relaxation-step1-v1") {
+    return generalizationPositions[selectedFixtureKind as "linkscape" | "lighthouse"].quantized;
+  }
   if (candidate === "local-search-v1") return localSearchPositions;
   if (candidate === "local-search-v1-plus") return targetedLocalCorridorPositions;
   if (candidate === "crossing-aware-v1") return crossingAwarePositions;
@@ -297,6 +322,7 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "generic-crossing-search-v1") return genericCrossingSearchPositions;
   if (candidate === "post-structural-relaxation-v1") return postStructuralRelaxationPositions;
   if (candidate === "pressure-targeted-relaxation-v1") return pressureTargetedRelaxationPositions;
+  if (candidate === "quantized-relaxation-step1-v1") return quantizedRelaxationStep1Positions;
   if (candidate === "fp1-ngp-420") return fp1NgpPositions;
   const graph = buildEntityGraph(dataset);
   if (candidate === "source-f0-160") {
@@ -373,6 +399,7 @@ function CandidateMetrics() {
     ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542", "0.893", "0.508", "—"],
     ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420", "1.000", "0.636", "—"],
     ["pressure-targeted-relaxation-v1", "0", "0", "193.2", "356.9", "670 × 466", "1.439", "0.582", "0"],
+    ["quantized-relaxation-step1-v1", "0", "0", "191.6", "358.5", "644 × 420", "1.533", "0.636", "0"],
   ], []);
   return <section className="geometry-inspection-metrics" aria-label="Diagnostic geometry metrics">
     <strong>Diagnostic metrics only — not Product adoption</strong>
