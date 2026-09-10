@@ -283,12 +283,22 @@ const output = {
   state: { governedEvidenceChanged: false, historicalEvidenceChanged: false, publication: false },
 };
 if (process.env.STAGE_BOUNDARY_TRACE_SUMMARY === "1") {
-  output.results = results.map(({ fixture, graph, baseline, exactRepeat, uncachedRepeat, changedSemanticGeometry }) => ({
+  output.results = results.map(({ fixture, graph, baseline, exactRepeat, uncachedRepeat, sameRouteInputDifferentDownstreamState, changedSemanticGeometry }) => ({
     fixture,
     graph,
     baseline: baseline.metrics,
     exactRepeat: { traceAnalysis: exactRepeat.traceAnalysis, exactFeedback: exactRepeat.exactFeedback },
     uncachedRepeat: { traceAnalysis: uncachedRepeat.traceAnalysis, exactFeedback: uncachedRepeat.exactFeedback },
+    downstreamOnly: {
+      candidateSetsChangedByPass: sameRouteInputDifferentDownstreamState.candidateSetsChangedByPass,
+      candidateSetsReusableByPass: sameRouteInputDifferentDownstreamState.candidateSetsReusableByPass,
+      changedRoutes: sameRouteInputDifferentDownstreamState.changedRoutes,
+      changedNodeLabels: sameRouteInputDifferentDownstreamState.changedNodeLabels,
+      exactUncachedRouteOutput: sameRouteInputDifferentDownstreamState.exactUncachedRouteOutput,
+      exactUncachedRelationLabelOutput: sameRouteInputDifferentDownstreamState.exactUncachedRelationLabelOutput,
+      exactUncachedNodeLabelOutput: sameRouteInputDifferentDownstreamState.exactUncachedNodeLabelOutput,
+      exactUncachedFeedback: sameRouteInputDifferentDownstreamState.exactUncachedFeedback,
+    },
     semanticMutation: { traceAnalysis: changedSemanticGeometry.traceAnalysis ?? null },
   }));
   delete output.method;
