@@ -1,6 +1,6 @@
 import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, pointBounds, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type PointBounds, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -104,6 +104,9 @@ function emptyRouteArbitrationProfile(): RouteArbitrationProfile {
 function emptyLabelPlacementProfile(): LabelPlacementProfile {
   return {
     elapsedMs: 0,
+    pathBoundsPrecomputationMs: 0,
+    pathBoundsBuildCount: 0,
+    pathBoundsPointVisits: 0,
     candidateEvaluations: 0,
     occupiedLabelChecks: 0,
     otherNodeChecks: 0,
@@ -562,9 +565,19 @@ export function deriveAutomaticRelationLabels({
   const occupiedLabels: LabelRect[] = [];
   const result = new Map<string, LabelRect>();
   const nodePoints = [...nodes];
+  const boundsStartedAt = performance.now();
+  const routeBounds = routedEdges.map(({ samples }) => pointBounds(samples));
+  if (profile) {
+    profile.pathBoundsPrecomputationMs += performance.now() - boundsStartedAt;
+    profile.pathBoundsBuildCount += routedEdges.length;
+    profile.pathBoundsPointVisits += routedEdges.reduce((total, edge) => total + edge.samples.length, 0);
+  }
   for (const [processingIndex, edge] of routedEdges.entries()) {
     if (!edge.label) continue;
     const otherEdgePaths = routedEdges.filter(({ id }) => id !== edge.id).map(({ samples }) => samples);
+    const otherEdgePathBounds = routedEdges
+      .map((otherEdge, index) => otherEdge.id === edge.id ? undefined : routeBounds[index] ?? null)
+      .filter((bounds): bounds is PointBounds | null => bounds !== undefined);
     const relationMovesWithDraggedNode = draggedNodeId !== undefined
       && (edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId);
     const occupiedRelationLabelPrefixFingerprint = placementTraceSink ? JSON.stringify(occupiedLabels) : "";
@@ -580,6 +593,7 @@ export function deriveAutomaticRelationLabels({
       relationMovesWithDraggedNode ? undefined : previousPlacements.get(edge.id),
       profile,
       placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
+      otherEdgePathBounds,
     );
     const manualAnchor = manualAnchors.get(edge.id);
     if (manualAnchor && profile) profile.manualAnchorReconstructions += 1;
@@ -619,6 +633,15 @@ export function deriveAutomaticNodeLabels({
   const occupiedLabels: LabelRect[] = Array.from(occupiedRelationLabels.values());
   const result = new Map<string, LabelRect>();
   const edgePaths = routedEdges.map(({ samples }) => samples).filter(({ length }) => length > 0);
+  const boundsStartedAt = performance.now();
+  const edgePathBounds = edgePaths.map((path) => pointBounds(path));
+  const yieldingRouteBounds = yieldingRoutes.map((route) => pointBounds(route.samples));
+  if (profile) {
+    profile.pathBoundsPrecomputationMs += performance.now() - boundsStartedAt;
+    profile.pathBoundsBuildCount += edgePaths.length + yieldingRoutes.length;
+    profile.pathBoundsPointVisits += edgePaths.reduce((total, path) => total + path.length, 0)
+      + yieldingRoutes.reduce((total, route) => total + route.samples.length, 0);
+  }
   for (const [processingIndex, node] of nodes.entries()) {
     const position = positions[node.id] ?? node;
     const occupiedLabelPrefixFingerprint = placementTraceSink ? JSON.stringify(occupiedLabels) : "";
@@ -637,6 +660,8 @@ export function deriveAutomaticNodeLabels({
       yieldingRoutes,
       profile,
       placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
+      edgePathBounds,
+      yieldingRouteBounds,
     );
     const manualOffset = manualOffsets.get(node.id);
     const placement = manualOffset

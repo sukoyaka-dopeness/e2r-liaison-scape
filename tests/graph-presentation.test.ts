@@ -588,8 +588,54 @@ test("presentation profiler separates route arbitration from downstream stages",
   assert.ok(profiler.passes.first.nodeLabelMs >= 0);
   assert.ok(profiler.passes.first.relationLabel.candidateEvaluations > 0);
   assert.ok(profiler.passes.first.nodeLabel.candidateEvaluations > 0);
+  assert.ok(profiler.passes.first.relationLabel.pathBoundsBuildCount > 0);
+  assert.ok(profiler.passes.first.relationLabel.pathBoundsPointVisits > 0);
+  assert.ok(profiler.passes.first.nodeLabel.pathBoundsBuildCount > 0);
+  assert.ok(profiler.passes.first.nodeLabel.pathBoundsPointVisits > 0);
   assert.ok(profiler.passes.first.nodeLabel.edgePathPointChecks > 0);
   assert.ok(profiler.passes.first.elapsedMs >= profiler.passes.first.route.candidateGenerationMs);
+});
+
+test("label path bounds are shared across placements without changing the stage output", () => {
+  const routingInput = input({
+    graph: {
+      nodes: [
+        { id: "a", label: "A", description: "", x: 0, y: 0 },
+        { id: "b", label: "B", description: "", x: 200, y: 0 },
+        { id: "c", label: "C", description: "", x: 100, y: 160 },
+      ],
+      edges: [
+        { id: "ab", sourceId: "a", targetId: "b", parallelIndex: 0, parallelCount: 1, label: "AB" },
+        { id: "bc", sourceId: "b", targetId: "c", parallelIndex: 0, parallelCount: 1, label: "BC" },
+      ],
+    },
+    positions: { a: { x: 0, y: 0 }, b: { x: 200, y: 0 }, c: { x: 100, y: 160 } },
+  });
+  const routedEdges = deriveAutomaticRoutes(routingInput);
+  const relationProfile = createAutomaticPresentationProfiler().passes.first.relationLabel;
+  const relationLabels = deriveAutomaticRelationLabels({
+    routedEdges,
+    nodes: routingInput.graph.nodes,
+    previousPlacements: new Map(),
+    manualAnchors: new Map(),
+    profile: relationProfile,
+  });
+  const nodeProfile = createAutomaticPresentationProfiler().passes.first.nodeLabel;
+  const nodeLabels = deriveAutomaticNodeLabels({
+    nodes: routingInput.graph.nodes,
+    positions: routingInput.positions,
+    routedEdges,
+    occupiedRelationLabels: relationLabels,
+    previousPlacements: new Map(),
+    manualOffsets: new Map(),
+    profile: nodeProfile,
+  });
+  assert.equal(relationLabels.size, routedEdges.length);
+  assert.equal(nodeLabels.size, routingInput.graph.nodes.length);
+  assert.equal(relationProfile.pathBoundsBuildCount, routedEdges.length);
+  assert.equal(nodeProfile.pathBoundsBuildCount, routedEdges.length);
+  assert.equal(relationProfile.pathBoundsPointVisits, routedEdges.reduce((total, edge) => total + edge.samples.length, 0));
+  assert.equal(nodeProfile.pathBoundsPointVisits, routedEdges.reduce((total, edge) => total + edge.samples.length, 0));
 });
 
 test("bounded presentation dependency trace records each first-to-feedback item", () => {

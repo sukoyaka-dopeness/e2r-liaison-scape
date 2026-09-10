@@ -383,9 +383,9 @@ function pointToRectDistance(point: Point, rect: LabelRect): number {
   return Math.hypot(dx, dy);
 }
 
-type PointBounds = { minX: number; maxX: number; minY: number; maxY: number };
+export type PointBounds = { minX: number; maxX: number; minY: number; maxY: number };
 
-function pointBounds(points: readonly Point[]): PointBounds | null {
+export function pointBounds(points: readonly Point[]): PointBounds | null {
   const finite = points.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
   if (finite.length === 0) return null;
   return {
@@ -428,6 +428,7 @@ export function placeEdgeLabel(
   previousPlacement?: LabelRect,
   profile?: LabelPlacementProfile,
   traceSink?: (trace: LabelPlacementTrace) => void,
+  providedOtherEdgePathBounds?: readonly (PointBounds | null)[],
 ): LabelRect {
   const startedAt = performance.now();
   const fallback = samples[Math.floor(samples.length / 2)] ?? { x: 0, y: 0 };
@@ -461,7 +462,16 @@ export function placeEdgeLabel(
       preference: alongPathPreference * 5 + awayFromPathPreference,
     }));
   });
-  const otherEdgePathBounds = otherEdgePaths.map((path) => pointBounds(path));
+  let otherEdgePathBounds = providedOtherEdgePathBounds;
+  if (!otherEdgePathBounds) {
+    const boundsStartedAt = performance.now();
+    otherEdgePathBounds = otherEdgePaths.map((path) => pointBounds(path));
+    if (profile) {
+      profile.pathBoundsPrecomputationMs += performance.now() - boundsStartedAt;
+      profile.pathBoundsBuildCount += otherEdgePaths.length;
+      profile.pathBoundsPointVisits += otherEdgePaths.reduce((total, path) => total + path.length, 0);
+    }
+  }
 
   const scoredCandidates = candidates.map(({ candidate, sampleIndex, normalOffset, preference }) => {
     if (profile) {
@@ -548,6 +558,8 @@ export function placeNodeLabel(
   yieldingRoutes: readonly RouteYieldPath[] = [],
   profile?: LabelPlacementProfile,
   traceSink?: (trace: LabelPlacementTrace) => void,
+  providedEdgePathBounds?: readonly (PointBounds | null)[],
+  providedYieldingRouteBounds?: readonly (PointBounds | null)[],
 ): LabelRect {
   const startedAt = performance.now();
   const descriptionLines = description.trim()
@@ -559,8 +571,19 @@ export function placeNodeLabel(
   ) + 12));
   const height = descriptionLines.length === 0 ? 20 : descriptionLines.length === 1 ? 34 : 48;
   const angles = Array.from({ length: 32 }, (_, index) => Math.PI / 2 + index * Math.PI / 16);
-  const edgePathBounds = edgePaths.map((path) => pointBounds(path));
-  const yieldingRouteBounds = yieldingRoutes.map((route) => pointBounds(route.samples));
+  let edgePathBounds = providedEdgePathBounds;
+  let yieldingRouteBounds = providedYieldingRouteBounds;
+  if (!edgePathBounds || !yieldingRouteBounds) {
+    const boundsStartedAt = performance.now();
+    edgePathBounds ??= edgePaths.map((path) => pointBounds(path));
+    yieldingRouteBounds ??= yieldingRoutes.map((route) => pointBounds(route.samples));
+    if (profile) {
+      profile.pathBoundsPrecomputationMs += performance.now() - boundsStartedAt;
+      profile.pathBoundsBuildCount += edgePaths.length + yieldingRoutes.length;
+      profile.pathBoundsPointVisits += edgePaths.reduce((total, path) => total + path.length, 0)
+        + yieldingRoutes.reduce((total, route) => total + route.samples.length, 0);
+    }
+  }
 
   const scoredCandidates = angles.map((angle, index) => {
     if (profile) {
@@ -729,6 +752,9 @@ export type RouteArbitrationProfile = {
 /** Opt-in timing/counter sink for Relation-label or Node-label placement. */
 export type LabelPlacementProfile = {
   elapsedMs: number;
+  pathBoundsPrecomputationMs: number;
+  pathBoundsBuildCount: number;
+  pathBoundsPointVisits: number;
   candidateEvaluations: number;
   occupiedLabelChecks: number;
   otherNodeChecks: number;
