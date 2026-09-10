@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { buildEntityGraph } from "../src/dataset.ts";
-import { deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
+import { deriveAutomaticRoutes, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
 
 const fixturePath = process.argv[2] ?? "experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json";
@@ -51,13 +51,21 @@ function nodeClear(positions) {
   }
   return true;
 }
-function render(positions, replayPrefix) {
+function render(positions, replayPrefix, feedbackEnabled = true) {
   const provisional = graph.nodes.map((node) => placeNodeLabel(positions[node.id], node.label, node.description, [], graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), []));
   const decisions = []; const passes = []; let replayedPrefix = [];
+  // `deriveBoundedAutomaticPresentation` intentionally does not surface the
+  // label-free counterfactual through its pass sink. Derive it separately for
+  // this diagnostic only, so its dependency footprint is observable without
+  // altering Product authority or work accounting.
+  const labelFreeRoutes = deriveAutomaticRoutes({
+    graph: { nodes: graph.nodes, edges }, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels: [],
+  });
   const presentation = deriveBoundedAutomaticPresentation({
     graph: { nodes: graph.nodes, edges }, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels: provisional, ...emptyState,
     routeDecisionSink: (decision) => decisions.push(decision),
     replayPrefix,
+    feedbackEnabled,
     replayPrefixSink: (ids) => { replayedPrefix = ids; },
     presentationPassSink: (pass, routes, relationLabels, nodeLabels) => passes.push({ pass, routes: routeSignatures(routes), relationLabels: mapSignatures(relationLabels), nodeLabels: mapSignatures(nodeLabels) }),
   });
@@ -66,7 +74,7 @@ function render(positions, replayPrefix) {
   const xs = Object.values(positions).map((point) => point.x); const ys = Object.values(positions).map((point) => point.y);
   return {
     presentation,
-    trace: { routes: routeSignatures(presentation.routedEdges), relationLabels: mapSignatures(presentation.relationLabels), nodeLabels: mapSignatures(presentation.nodeLabels), feedbackApplied: presentation.feedbackApplied, decisions, passes, replayedPrefix },
+    trace: { routes: routeSignatures(presentation.routedEdges), relationLabels: mapSignatures(presentation.relationLabels), nodeLabels: mapSignatures(presentation.nodeLabels), feedbackApplied: presentation.feedbackApplied, decisions, passes: [{ pass: "label-free", routes: routeSignatures(labelFreeRoutes), relationLabels: {}, nodeLabels: {} }, ...passes], replayedPrefix },
     metrics: {
       hitRelationIds: presentation.routedEdges.filter((route) => routeSamplesHaveLabelCollision(route.samples, labels)).map((route) => route.id),
       nearRelationIds: presentation.routedEdges.filter((route) => route.samples.some((point) => labels.some((label) => distanceToRect(point, label) < 20))).map((route) => route.id),
@@ -83,6 +91,16 @@ function firstDecisions(rendered, pass = "first") { return rendered.trace.decisi
 function routeOrder(rendered) { return firstDecisions(rendered).map((decision) => decision.edgeId); }
 function routeIndexMap(rendered) { return new Map(firstDecisions(rendered).map((decision) => [decision.edgeId, decision.processingIndex])); }
 function compareMaps(left, right) { const ids = new Set([...Object.keys(left ?? {}), ...Object.keys(right ?? {})]); return [...ids].filter((id) => left?.[id] !== right?.[id]).sort(compareId); }
+function passByName(rendered, pass) { return rendered.trace.passes.find((entry) => entry.pass === pass); }
+function comparePass(before, after, pass) {
+  const left = passByName(before, pass); const right = passByName(after, pass);
+  return {
+    available: left !== undefined && right !== undefined,
+    changedRoutes: compareMaps(left?.routes, right?.routes),
+    changedRelationLabels: compareMaps(left?.relationLabels, right?.relationLabels),
+    changedNodeLabels: compareMaps(left?.nodeLabels, right?.nodeLabels),
+  };
+}
 function endpointIds(routeIds) { const selected = new Set(routeIds); return edges.filter((edge) => selected.has(edge.id)).flatMap((edge) => [edge.sourceId, edge.targetId]); }
 function incidentEdgeIds(nodeIds) { const selected = new Set(nodeIds); return edges.filter((edge) => selected.has(edge.sourceId) || selected.has(edge.targetId)).map((edge) => edge.id); }
 function conflictOwners(rendered, routeIds) {
@@ -127,6 +145,7 @@ function chooseLateDefect() {
 }
 const scenario = chooseLateDefect();
 const defect = scenario.defect.rendered; const fullRepair = scenario.repair.rendered;
+const fullRepairWithoutFeedback = render(scenario.repair.positions, undefined, false);
 const defectRegion = regionFromHits(defect);
 const defectOrder = routeOrder(defect); const defectIndexMap = routeIndexMap(defect);
 const initialEdges = incidentEdgeIds(defectRegion);
@@ -189,6 +208,18 @@ console.log(JSON.stringify({
     changedNodeLabelIds,
     feedbackChanged: defect.trace.feedbackApplied !== fullRepair.trace.feedbackApplied,
     routeOrderChanged: JSON.stringify(defectOrder) !== JSON.stringify(routeOrder(fullRepair)),
+  },
+  passDependencyTrace: {
+    labelFree: comparePass(defect, fullRepair, "label-free"),
+    first: comparePass(defect, fullRepair, "first"),
+    feedback: comparePass(defect, fullRepair, "feedback"),
+    feedbackCounterfactual: {
+      current: fullRepair.metrics,
+      disabled: fullRepairWithoutFeedback.metrics,
+      changedFinalRoutes: compareMaps(fullRepair.trace.routes, fullRepairWithoutFeedback.trace.routes),
+      changedFinalRelationLabels: compareMaps(fullRepair.trace.relationLabels, fullRepairWithoutFeedback.trace.relationLabels),
+      changedFinalNodeLabels: compareMaps(fullRepair.trace.nodeLabels, fullRepairWithoutFeedback.trace.nodeLabels),
+    },
   },
   locality: {
     firstDirtyProcessingIndex: firstRegionIndex,
