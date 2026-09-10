@@ -1,5 +1,5 @@
 import type { GraphNode } from "./dataset.ts";
-import type { AutomaticRouteDecision, DerivedAutomaticRoute, RoutingGraphEdge, SelfLoopOverride } from "./graph-presentation.ts";
+import type { AutomaticPresentationProfiler, AutomaticRouteDecision, DerivedAutomaticRoute, RoutingGraphEdge, SelfLoopOverride } from "./graph-presentation.ts";
 import type { LabelRect, Point } from "./viewport.ts";
 
 /**
@@ -43,6 +43,7 @@ export type PresentationTimingSample = {
   presentationRevision: number;
   activeNodeDrag: boolean;
   feedbackApplied: boolean;
+  profiler?: AutomaticPresentationProfiler;
 };
 
 export type DragPointerProcessingSample = {
@@ -53,11 +54,22 @@ export type DragPointerProcessingSample = {
   clientY: number;
 };
 
+export type DatasetOpenTimingSample = {
+  phase: "open-start" | "raw-available" | "parsed" | "accepted" | "graph-prepared" | "presentation-derived" | "graph-stable";
+  source: "handoff" | "local" | "sample" | "new";
+  at: number;
+  nodeCount?: number;
+  edgeCount?: number;
+  durations?: Readonly<Record<string, number>>;
+};
+
 declare global {
   interface Window {
     __liaisonScapePresentationDiagnosticSink?: (snapshot: PresentationDiagnosticSnapshot) => void;
     __liaisonScapePresentationTimingSink?: (sample: PresentationTimingSample) => void;
     __liaisonScapeDragPointerProcessingSink?: (sample: DragPointerProcessingSample) => void;
+    __liaisonScapeDatasetOpenTimingSink?: (sample: DatasetOpenTimingSample) => void;
+    __liaisonScapeDatasetOpenTimingEvents?: DatasetOpenTimingSample[];
   }
 }
 
@@ -71,4 +83,12 @@ export function publishPresentationTiming(sample: PresentationTimingSample): voi
 
 export function publishDragPointerProcessing(sample: DragPointerProcessingSample): void {
   if (import.meta.env.DEV) window.__liaisonScapeDragPointerProcessingSink?.(sample);
+}
+
+export function publishDatasetOpenTiming(sample: DatasetOpenTimingSample): void {
+  const timingDiagnostic = new URLSearchParams(window.location.search).get("diagnostic") === "timing";
+  if (import.meta.env.DEV || timingDiagnostic) {
+    if (timingDiagnostic) (window.__liaisonScapeDatasetOpenTimingEvents ??= []).push(sample);
+    window.__liaisonScapeDatasetOpenTimingSink?.(sample);
+  }
 }

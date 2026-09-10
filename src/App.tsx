@@ -31,8 +31,8 @@ import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
 import { placeInitialEntities } from "./entity-placement";
 import { settleInitialPlacement, solveAutoLayout } from "./auto-layout";
-import { deriveBoundedAutomaticPresentation, type AutomaticRouteDecision, type DerivedAutomaticRoute } from "./graph-presentation";
-import { publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming } from "./presentation-diagnostics";
+import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation, type AutomaticRouteDecision, type DerivedAutomaticRoute } from "./graph-presentation";
+import { publishDatasetOpenTiming, publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming, type DatasetOpenTimingSample } from "./presentation-diagnostics";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
@@ -54,6 +54,8 @@ export default function App() {
   const [pendingDatasetReplacementSource, setPendingDatasetReplacementSource] = useState<DatasetReplacementSource | null>(null);
   const [pendingTargetLanding, setPendingTargetLanding] = useState<{ dataset: Dataset; relationId: string } | null>(null);
   const [startupHandoffFailure, setStartupHandoffFailure] = useState<StartupHandoffFailure | null>(null);
+  const timingDiagnosticsEnabled = new URLSearchParams(window.location.search).get("diagnostic") === "timing";
+  const [datasetOpenTimingEvents, setDatasetOpenTimingEvents] = useState<DatasetOpenTimingSample[]>([]);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -124,6 +126,14 @@ export default function App() {
   const maintenanceMenuSummaryRef = useRef<HTMLElement>(null);
   const restoreReplacementFocusRef = useRef(false);
   const startupHandoffStartedRef = useRef(false);
+  const datasetOpenTimingRef = useRef<{ source: DatasetReplacementSource; startedAt: number; dataset: Dataset | null; presentationPublished: boolean } | null>(null);
+
+  function beginDatasetOpenTiming(source: DatasetReplacementSource) {
+    if (datasetOpenTimingRef.current) return;
+    const startedAt = performance.now();
+    datasetOpenTimingRef.current = { source, startedAt, dataset: null, presentationPublished: false };
+    publishDatasetOpenTiming({ phase: "open-start", source, at: startedAt });
+  }
 
   const {
     selectedDetail,
@@ -252,6 +262,7 @@ export default function App() {
       return;
     }
     setStartupHandoffFailure(null);
+    beginDatasetOpenTiming("handoff");
     void fetch(handoff.datasetUrl, { credentials: "omit" })
       .then((response) => {
         if (!response.ok) throw new Error("handoff-fetch-failed");
@@ -344,6 +355,7 @@ export default function App() {
       presentationInputIdentityRef.current.map.set(positions, presentationInputId);
     }
     const draggedNodeId = presentationDraggedNodeId;
+    const presentationProfiler = timingDiagnosticsEnabled ? createAutomaticPresentationProfiler() : undefined;
     // Active routing deliberately defers its full label-feedback pass. For
     // continuity safety, compare a prior remote route with the labels that
     // were actually displayed in the prior frame. The dragged Node is not
@@ -392,8 +404,29 @@ export default function App() {
       previousContinuityNodeLabels: activeNodeDrag ? previousNodeLabelPlacements.current : undefined,
       feedbackEnabled: dragRef.current?.kind !== "node",
       routeDecisionSink: routeDecisions === null ? undefined : (decision) => routeDecisions.push(decision),
+      profiler: presentationProfiler,
     });
     const completedAt = performance.now();
+    const openTiming = datasetOpenTimingRef.current;
+    if (dataset && openTiming?.dataset === dataset && !openTiming.presentationPublished) {
+      openTiming.presentationPublished = true;
+      publishDatasetOpenTiming({
+        phase: "presentation-derived",
+        source: openTiming.source,
+        at: completedAt,
+        nodeCount: graph.nodes.length,
+        edgeCount: result.routedEdges.length,
+        durations: {
+          presentationMs: completedAt - startedAt,
+          labelFreePassMs: presentationProfiler?.passes["label-free"].elapsedMs ?? 0,
+          firstPassMs: presentationProfiler?.passes.first.elapsedMs ?? 0,
+          feedbackPassMs: presentationProfiler?.passes.feedback.elapsedMs ?? 0,
+          routeCandidateGenerationMs: Object.values(presentationProfiler?.passes ?? {}).reduce((sum, pass) => sum + pass.route.candidateGenerationMs, 0),
+          relationLabelMs: Object.values(presentationProfiler?.passes ?? {}).reduce((sum, pass) => sum + pass.relationLabelMs, 0),
+          nodeLabelMs: Object.values(presentationProfiler?.passes ?? {}).reduce((sum, pass) => sum + pass.nodeLabelMs, 0),
+        },
+      });
+    }
     publishPresentationTiming({
       startedAt,
       completedAt,
@@ -402,6 +435,7 @@ export default function App() {
       presentationRevision,
       activeNodeDrag,
       feedbackApplied: result.feedbackApplied,
+      profiler: presentationProfiler,
     });
     return { ...result, derivationPhase, routeDecisions: routeDecisions ?? [] };
   }, [edgeCurveOffsets, graph, manualLabelRevision, positions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
@@ -454,6 +488,21 @@ export default function App() {
       nodeLabels: Array.from(nodeLabelPlacements.entries()),
     });
   }, [dataset, edgeCurveOffsets, edgeLabelPlacements, graph.nodes, liveDragPosition, nodeLabelPlacements, positions, presentationDraggedNodeId, presentationPhase, presentationRevision, provisionalNodeLabels, routedEdges, selfLoopOverrides, presentation.derivationPhase, presentation.feedbackApplied]);
+
+  useEffect(() => {
+    const timing = datasetOpenTimingRef.current;
+    if (!dataset || timing?.dataset !== dataset || !timing.presentationPublished) return;
+    const at = performance.now();
+    publishDatasetOpenTiming({
+      phase: "graph-stable",
+      source: timing.source,
+      at,
+      nodeCount: graph.nodes.length,
+      edgeCount: routedEdges.length,
+    });
+    setDatasetOpenTimingEvents([...(window.__liaisonScapeDatasetOpenTimingEvents ?? [])]);
+    datasetOpenTimingRef.current = null;
+  }, [dataset, graph.nodes.length, routedEdges.length, presentation]);
 
   function resetPreviousLabelPlacements() {
     previousNodeLabelPlacements.current.clear();
@@ -752,6 +801,11 @@ export default function App() {
     setContextMenu(null);
     setHoveredPlacement(null);
     resetPreviousLabelPlacements();
+    const timing = datasetOpenTimingRef.current;
+    if (timing) {
+      timing.dataset = nextDataset;
+      publishDatasetOpenTiming({ phase: "accepted", source: timing.source, at: performance.now() });
+    }
     cleanDatasetBaseline.current = structuredClone(nextDataset);
     setDataset(nextDataset);
     setDatasetModified(false);
@@ -764,7 +818,10 @@ export default function App() {
     setSelectedRelationId(null);
     closeDetail();
     const storedPositions = getStoredCoordinates(nextDataset);
+    const preparationStartedAt = performance.now();
+    const graphStartedAt = preparationStartedAt;
     const openedGraph = buildEntityGraph(nextDataset);
+    const graphCompletedAt = performance.now();
     const seededPositions = placeInitialEntities(openedGraph.nodes, openedGraph.edges, storedPositions);
     const initialPositions = Object.keys(storedPositions).length === 0
       ? settleInitialPlacement({
@@ -777,7 +834,24 @@ export default function App() {
     setEdgeLabelOffsets({});
     setEdgeCurveOffsets({});
     setSelfLoopOverrides({});
+    const placementCompletedAt = performance.now();
     const fittedView = fitGraphView(openedGraph.nodes.map((node) => initialPositions[node.id] ?? node), 800, 500);
+    const preparedAt = performance.now();
+    if (timing) {
+      publishDatasetOpenTiming({
+        phase: "graph-prepared",
+        source: timing.source,
+        at: preparedAt,
+        nodeCount: openedGraph.nodes.length,
+        edgeCount: openedGraph.edges.length,
+        durations: {
+          graphBuildMs: graphCompletedAt - graphStartedAt,
+          initialPlacementMs: placementCompletedAt - graphCompletedAt,
+          fitMs: preparedAt - placementCompletedAt,
+          preparationMs: preparedAt - preparationStartedAt,
+        },
+      });
+    }
     setPositions(initialPositions);
     setCoordinatesDirty(false);
     adoptedCoordinateEntityIdsRef.current.clear();
@@ -872,7 +946,10 @@ export default function App() {
   }
 
   function open(raw: string, trigger?: HTMLButtonElement | null, source: DatasetReplacementSource = "local", target?: TargetedHandoff): OpenDatasetResult {
+    beginDatasetOpenTiming(source);
+    publishDatasetOpenTiming({ phase: "raw-available", source, at: performance.now() });
     const result = loadDataset(raw);
+    publishDatasetOpenTiming({ phase: "parsed", source, at: performance.now() });
     setDiagnostics(result.diagnostics);
     if (result.parseError) {
       setMessage(translate(locale, "jsonLoadFailure"));
@@ -909,6 +986,7 @@ export default function App() {
   }
 
   async function openSample(trigger?: HTMLButtonElement | null) {
+    beginDatasetOpenTiming("sample");
     try {
       const response = await fetch(`${import.meta.env.BASE_URL}lighthouse-restoration-demo.${locale}.e2r.json`);
       if (!response.ok) throw new Error(`Sample request failed: ${response.status}`);
@@ -960,7 +1038,7 @@ export default function App() {
             ref={homeOpenFileInputRef}
             className="file-input-hidden"
             type="file" tabIndex={-1} disabled={Boolean(pendingDatasetReplacement)} accept="application/json,.json,.e2r.json"
-            onChange={(event) => { const file = event.target.files?.[0]; const trigger = replacementTriggerRef.current; if (file) void file.text().then((raw) => open(raw, trigger)); }}
+            onChange={(event) => { const file = event.target.files?.[0]; const trigger = replacementTriggerRef.current; if (file) { beginDatasetOpenTiming("local"); void file.text().then((raw) => open(raw, trigger)); } }}
           />
           <div className="sample-action">
             <button type="button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => void openSample(event.currentTarget)}>{translate(locale, "openSampleDataset")}</button>
@@ -1666,6 +1744,14 @@ export default function App() {
     }
   }
 
+  const timingStart = datasetOpenTimingEvents[0]?.at ?? 0;
+  const timingLines = datasetOpenTimingEvents.map((event) => {
+    const relativeMs = timingStart === 0 ? 0 : event.at - timingStart;
+    const counts = event.nodeCount === undefined ? "" : ` (${event.nodeCount} nodes/${event.edgeCount ?? 0} edges)`;
+    const details = event.durations ? ` [${Object.entries(event.durations).map(([key, value]) => `${key}=${value.toFixed(1)}ms`).join(", ")}]` : "";
+    return `${event.phase} +${relativeMs.toFixed(1)}ms${counts}${details}`;
+  });
+
   return (
     <div className="app-frame">
       <header className="app-header">
@@ -1691,7 +1777,7 @@ export default function App() {
             onChange={(event) => {
               const file = event.target.files?.[0];
               const trigger = replacementTriggerRef.current;
-              if (file) void file.text().then((raw) => open(raw, trigger));
+              if (file) { beginDatasetOpenTiming("local"); void file.text().then((raw) => open(raw, trigger)); }
             }}
           />
           {dataset && <p className="graph-summary toolbar-graph-summary">{formatGraphSummary(locale, graph.nodes.length, graph.edges.length)}</p>}
@@ -1719,6 +1805,10 @@ export default function App() {
           </div>
         </div>
         {message && <p className="status-message" role="status">{message}</p>}
+      {timingDiagnosticsEnabled && dataset && <section aria-label="Dataset open timing diagnostic">
+        <h2>Dataset open timing diagnostic</h2>
+        <pre>{timingLines.join("\n")}</pre>
+      </section>}
       {contextMenu && <div ref={contextMenuRef} className="canvas-context-menu context-menu" role="menu" aria-label={translate(locale, "canvasActions")} style={{ position: "fixed", left: contextMenuPosition?.left ?? contextMenu.clientX, top: contextMenuPosition?.top ?? contextMenu.clientY }} onPointerDown={(event) => event.stopPropagation()}>
         {contextMenu.kind === "canvas" ? <button type="button" role="menuitem" onClick={chooseCanvasAddEntity}>{translate(locale, "addEntity")}</button> : <>
           <button type="button" role="menuitem" onClick={openContextMenuDetails}>{translate(locale, "openDetails")}</button>
