@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { buildEntityGraph } from "../src/dataset.ts";
-import { deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
+import { deriveAutomaticNodeLabels, deriveAutomaticRelationLabels, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { curveOffsetFromControlPoint, fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
 
 const fixturePath = process.argv[2];
@@ -133,6 +133,101 @@ function measure(presentation) {
     extent: [Math.max(...x) - Math.min(...x), Math.max(...y) - Math.min(...y)],
     fit: fitGraphView(Object.values(positions), 800, 500).scale,
     feedbackApplied: presentation.feedbackApplied,
+  };
+}
+
+function densify(points, steps = 12) {
+  const samples = [];
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const start = points[index];
+    const end = points[index + 1];
+    for (let step = 0; step < steps; step += 1) {
+      const ratio = step / steps;
+      samples.push({ x: start.x + (end.x - start.x) * ratio, y: start.y + (end.y - start.y) * ratio });
+    }
+  }
+  samples.push(points[points.length - 1]);
+  return samples;
+}
+
+function pathForSamples(samples) {
+  return samples.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
+}
+
+function richerTopologyRoute(route, kind, offset) {
+  const start = route.samples[0];
+  const end = route.samples[route.samples.length - 1];
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const length = Math.max(1, Math.hypot(dx, dy));
+  const tangent = { x: dx / length, y: dy / length };
+  const normal = { x: -tangent.y, y: tangent.x };
+  const midpoint = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+  let controlPoints;
+  if (kind === "orthogonal-like") {
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      const corridorY = midpoint.y + normal.y * offset;
+      controlPoints = [{ x: start.x, y: corridorY }, { x: end.x, y: corridorY }];
+    } else {
+      const corridorX = midpoint.x + normal.x * offset;
+      controlPoints = [{ x: corridorX, y: start.y }, { x: corridorX, y: end.y }];
+    }
+  } else if (kind === "three-bend") {
+    controlPoints = [
+      { x: start.x + tangent.x * length * 0.22 + normal.x * offset, y: start.y + tangent.y * length * 0.22 + normal.y * offset },
+      { x: midpoint.x + normal.x * offset * 1.35, y: midpoint.y + normal.y * offset * 1.35 },
+      { x: end.x - tangent.x * length * 0.22 + normal.x * offset, y: end.y - tangent.y * length * 0.22 + normal.y * offset },
+    ];
+  } else {
+    controlPoints = [
+      { x: start.x + tangent.x * length * 0.30 + normal.x * offset, y: start.y + tangent.y * length * 0.30 + normal.y * offset },
+      { x: end.x - tangent.x * length * 0.30 + normal.x * offset, y: end.y - tangent.y * length * 0.30 + normal.y * offset },
+    ];
+  }
+  const samples = densify([start, ...controlPoints, end]);
+  const midpointSample = samples[Math.floor(samples.length / 2)] ?? midpoint;
+  return {
+    ...route,
+    path: pathForSamples(samples),
+    samples,
+    labelPoint: midpointSample,
+    controlPoint: controlPoints[Math.floor(controlPoints.length / 2)] ?? midpoint,
+  };
+}
+
+function rederiveFromRoutes(routedEdges, manualNodeLabelOffsets = new Map()) {
+  const nodePoints = graph.nodes.map((node) => positions[node.id]);
+  const relationLabels = deriveAutomaticRelationLabels({
+    routedEdges,
+    nodes: nodePoints,
+    previousPlacements: new Map(),
+    manualAnchors: new Map(),
+  });
+  const nodeLabels = deriveAutomaticNodeLabels({
+    nodes: graph.nodes,
+    positions,
+    routedEdges,
+    occupiedRelationLabels: relationLabels,
+    previousPlacements: new Map(),
+    manualOffsets: manualNodeLabelOffsets,
+  });
+  return { routedEdges, relationLabels, nodeLabels, feedbackApplied: false };
+}
+
+function topologyRecord(rendered, relationId, kind, offset) {
+  const metrics = measure(rendered);
+  return {
+    relationId,
+    kind,
+    offset,
+    localHit: metrics.hitRelationIds.includes(relationId),
+    globalHits: metrics.hitRelationIds.length,
+    globalNear: metrics.nearRelationIds.length,
+    globalCrossings: metrics.crossings,
+    routeMedian: metrics.routeMedian,
+    routeMax: metrics.routeMax,
+    extent: metrics.extent,
+    fit: metrics.fit,
   };
 }
 
@@ -304,6 +399,110 @@ const feedbackLabelRetention = ["r03", "r16", "r18"].flatMap((relationId) => {
       decisions: decisionSummary(rendered, relationId),
     };
   });
+});
+
+const topologyKinds = ["dogleg", "orthogonal-like", "three-bend"];
+const topologyOffsets = [-240, -192, -144, -96, 96, 144, 192, 240];
+const richerTopology = ["r03", "r18"].map((relationId) => {
+  const alternatives = [];
+  const targetRoute = baseRendered.presentation.routedEdges.find((route) => route.id === relationId);
+  for (const kind of topologyKinds) for (const offset of topologyOffsets) {
+    if (!targetRoute) continue;
+    const routes = baseRendered.presentation.routedEdges.map((route) => route.id === relationId
+      ? richerTopologyRoute(route, kind, offset)
+      : route);
+    const presentation = rederiveFromRoutes(routes);
+    alternatives.push(topologyRecord(presentation, relationId, kind, offset));
+  }
+  const localHitFree = alternatives.filter((candidate) => !candidate.localHit);
+  return {
+    relationId,
+    evaluated: alternatives.length,
+    localHitFreeCount: localHitFree.length,
+    hitFreeKinds: [...new Set(localHitFree.map(({ kind }) => kind))],
+    best: selectBest(localHitFree),
+    bestAny: selectBest(alternatives),
+    topHitFree: localHitFree.slice().sort((left, right) => {
+      const a = compareCandidate(left); const b = compareCandidate(right);
+      for (let index = 0; index < a.length; index += 1) if (a[index] !== b[index]) return a[index] - b[index];
+      return left.kind.localeCompare(right.kind) || left.offset - right.offset;
+    }).slice(0, 8),
+  };
+});
+
+const topologyPools = richerTopology.map((result) => [null, ...result.topHitFree.slice(0, 6)]);
+const topologyCombinations = [];
+for (const r03Candidate of topologyPools[0]) for (const r18Candidate of topologyPools[1]) {
+  const actions = [r03Candidate, r18Candidate].filter(Boolean);
+  const routes = baseRendered.presentation.routedEdges.map((route) => {
+    const action = actions.find((candidate) => candidate.relationId === route.id);
+    return action ? richerTopologyRoute(route, action.kind, action.offset) : route;
+  });
+  const presentation = rederiveFromRoutes(routes);
+  const metrics = measure(presentation);
+  topologyCombinations.push({
+    actions: actions.map(({ relationId, kind, offset }) => ({ relationId, kind, offset })),
+    ...metrics,
+    globalHits: metrics.hitRelationIds.length,
+    globalNear: metrics.nearRelationIds.length,
+    globalCrossings: metrics.crossings,
+    routeMedian: metrics.routeMedian,
+    routeMax: metrics.routeMax,
+    remoteRouteEffects: "not re-arbitrated; routes other than the edited topology remain fixed",
+  });
+}
+const sortedTopologyCombinations = topologyCombinations.slice().sort((left, right) => {
+  const a = compareCandidate(left); const b = compareCandidate(right);
+  for (let index = 0; index < a.length; index += 1) if (a[index] !== b[index]) return a[index] - b[index];
+  return JSON.stringify(left.actions).localeCompare(JSON.stringify(right.actions));
+});
+const topologyMateriallySafer = sortedTopologyCombinations.filter((candidate) =>
+  candidate.globalHits < base.hitRelationIds.length
+  && candidate.globalNear <= base.nearRelationIds.length
+  && candidate.globalCrossings <= base.crossings
+  && candidate.routeMedian <= base.routeMedian * 1.05
+  && candidate.routeMax <= base.routeMax * 1.05,
+);
+
+function feedbackRollbackPresentation({ routeRollback = false, labelRollback = false }) {
+  let routedEdges = baseRendered.presentation.routedEdges;
+  if (routeRollback && firstPass) {
+    const firstRoute = firstPass.routes.find((route) => route.id === "r16");
+    if (firstRoute) routedEdges = routedEdges.map((route) => route.id === "r16" ? firstRoute : route);
+  }
+  const relationLabels = new Map(baseRendered.presentation.relationLabels);
+  const nodeLabels = new Map(baseRendered.presentation.nodeLabels);
+  if (labelRollback && firstPass) {
+    const firstLabel = firstPass.nodeLabels.get("city-hospital");
+    if (firstLabel) nodeLabels.set("city-hospital", firstLabel);
+  }
+  return { routedEdges, relationLabels, nodeLabels, feedbackApplied: false };
+}
+
+const feedbackRollback = [
+  ["none", false, false],
+  ["r16-route", true, false],
+  ["r16-label", false, true],
+  ["r16-route+label", true, true],
+].map(([policy, routeRollback, labelRollback]) => {
+  const presentation = feedbackRollbackPresentation({ routeRollback, labelRollback });
+  const metrics = measure(presentation);
+  return {
+    policy,
+    r16: summaryForRelation(metrics, "r16"),
+    hits: metrics.hitRelationIds.length,
+    hitRelationIds: metrics.hitRelationIds,
+    near: metrics.nearRelationIds.length,
+    nearRelationIds: metrics.nearRelationIds,
+    crossings: metrics.crossings,
+    routeMedian: metrics.routeMedian,
+    routeMax: metrics.routeMax,
+    extent: metrics.extent,
+    fit: metrics.fit,
+    changedRemoteRoutes: routeRollback ? ["r16"] : [],
+    changedNodeLabels: labelRollback ? ["city-hospital"] : [],
+    model: "bounded state-level rollback; downstream labels are not re-derived",
+  };
 });
 
 function renderJoint(routeOffsets = {}, labelOverrides = {}, feedbackEnabled = true) {
@@ -490,6 +689,15 @@ console.log(JSON.stringify({
   nodeLabelAlternatives,
   feedbackArbitration,
   feedbackLabelRetention,
+  richerTopology,
+  richerTopologyGlobalSearch: {
+    candidatePoolSizes: topologyPools.map((pool) => pool.length),
+    combinationsEvaluated: topologyCombinations.length,
+    bestByGlobalVector: sortedTopologyCombinations.slice(0, 5),
+    materiallySaferCount: topologyMateriallySafer.length,
+    bestMateriallySafer: topologyMateriallySafer[0] ?? null,
+  },
+  feedbackRollback,
   jointPerRelation,
   jointGlobalSearch: {
     candidatePoolSizes: jointPools.map((pool) => pool.length),
