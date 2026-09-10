@@ -16,7 +16,9 @@ function syntheticK33Dataset() {
 }
 const dataset = fixturePath === "synthetic:k3-3" ? syntheticK33Dataset() : JSON.parse(fs.readFileSync(fixturePath, "utf8"));
 const graph = buildEntityGraph(dataset);
-const profile = { presentationCalls: 0, presentationMs: 0 };
+const profile = { presentationCalls: 0, fullPresentationEvaluations: 0, presentationMs: 0, duplicatePositionCalls: 0, presentationCacheHits: 0, stages: {} };
+const presentationCache = new Map();
+let activeProfileStage = "setup";
 const presentationFinalistLimit = Number.parseInt(process.env.E2R_PRESENTATION_FINALIST_LIMIT ?? "8", 10);
 const edges = graph.edges.map((edge) => ({
   ...edge,
@@ -111,11 +113,36 @@ function derivePresentationMetrics(positions) {
   return { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports };
 }
 function presentationMetrics(positions) {
+  const positionKey = Object.entries(positions).sort(([left], [right]) => compareId(left, right))
+    .map(([id, point]) => `${id}:${point.x},${point.y}`).join("|");
+  const stage = profile.stages[activeProfileStage] ??= { presentationCalls: 0, fullPresentationEvaluations: 0, presentationMs: 0, presentationCacheHits: 0 };
+  profile.presentationCalls += 1;
+  stage.presentationCalls += 1;
+  if (presentationCache.has(positionKey)) {
+    profile.duplicatePositionCalls += 1;
+    profile.presentationCacheHits += 1;
+    stage.presentationCacheHits += 1;
+    return presentationCache.get(positionKey);
+  }
   const startedAt = performance.now();
   const result = derivePresentationMetrics(positions);
-  profile.presentationCalls += 1;
-  profile.presentationMs += performance.now() - startedAt;
+  const elapsed = performance.now() - startedAt;
+  profile.fullPresentationEvaluations += 1;
+  stage.fullPresentationEvaluations += 1;
+  presentationCache.set(positionKey, result);
+  profile.presentationMs += elapsed;
+  stage.presentationMs += elapsed;
   return result;
+}
+function startProfileStage(name) {
+  activeProfileStage = name;
+  profile.stages[name] ??= { presentationCalls: 0, fullPresentationEvaluations: 0, presentationMs: 0, presentationCacheHits: 0 };
+  profile.stages[name].startedAt = performance.now();
+}
+function finishProfileStage(name) {
+  const stage = profile.stages[name];
+  stage.wallMs = performance.now() - stage.startedAt;
+  delete stage.startedAt;
 }
 function chordCrossings(order) {
   const index = new Map(order.map((id, position) => [id, position])); let crossings = 0;
@@ -321,6 +348,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
 }
 function genericSearch() {
   const ids = graph.nodes.map((node) => node.id).sort(compareId);
+  startProfileStage("stage1-structural");
   const orderSearch = ids.length <= 9 ? exactCircularOrders(ids) : heuristicCircularOrders(ids);
   const variants = [
     { aspect: 1.18, scale: 1, phase: -Math.PI / 2 },
@@ -340,10 +368,12 @@ function genericSearch() {
     const eligible = metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
     candidates.push({ family: "grid-structural", ...finalist, structuralCrossings: finalist.straightCrossings, positions: clonePositions(finalist.positions), metrics, eligible });
   }
+  finishProfileStage("stage1-structural");
   // Only zero-crossing structural states enter the expensive Product-aware repair.
   // This keeps the diagnostic bounded while making label safety decisive once the
   // structural feasibility condition has already been found.
   const zeroCrossingFinalists = gridSearch.finalists.filter((finalist) => finalist.straightCrossings === 0).slice(0, Math.max(1, presentationFinalistLimit));
+  startProfileStage("stage2-presentation-and-relaxation");
   const presentationRepair = refineForPresentation(zeroCrossingFinalists, ids, 1, 24);
   for (const finalist of presentationRepair.finalists) {
     const metrics = finalist.metrics;
@@ -364,6 +394,7 @@ function genericSearch() {
   const structuralCandidates = candidates.filter((candidate) => Number.isFinite(candidate.structuralCrossings));
   const minimumStructuralCrossings = structuralCandidates.length > 0 ? Math.min(...structuralCandidates.map((candidate) => candidate.structuralCrossings)) : null;
   const boundedFallback = minimumStructuralCrossings === null ? [] : structuralCandidates.filter((candidate) => candidate.structuralCrossings === minimumStructuralCrossings);
+  finishProfileStage("stage2-presentation-and-relaxation");
   return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
 }
 function complexityProbe() {
@@ -387,7 +418,22 @@ console.log(JSON.stringify({
   hardBoundary: { rule: "INITIAL_ENTITY_CLEARANCE", value: INITIAL_ENTITY_CLEARANCE, overlapRejected: true },
   strategy: "exact circular-order search for n<=9; deterministic heuristic circular-order search above that; Product presentation evaluates only finalists",
   elapsedMs: Math.round((performance.now() - startedAt) * 100) / 100,
-  profile: { presentationCalls: profile.presentationCalls, presentationMs: Math.round(profile.presentationMs * 100) / 100, averagePresentationMs: Math.round(profile.presentationMs / Math.max(1, profile.presentationCalls) * 100) / 100 },
+  profile: {
+    presentationCalls: profile.presentationCalls,
+    fullPresentationEvaluations: profile.fullPresentationEvaluations,
+    duplicatePositionCalls: profile.duplicatePositionCalls,
+    presentationCacheHits: profile.presentationCacheHits,
+    presentationMs: Math.round(profile.presentationMs * 100) / 100,
+    averagePresentationMs: Math.round(profile.presentationMs / Math.max(1, profile.fullPresentationEvaluations) * 100) / 100,
+    stages: Object.fromEntries(Object.entries(profile.stages).map(([name, stage]) => [name, {
+      presentationCalls: stage.presentationCalls,
+      fullPresentationEvaluations: stage.fullPresentationEvaluations,
+      presentationCacheHits: stage.presentationCacheHits,
+      presentationMs: Math.round(stage.presentationMs * 100) / 100,
+      averagePresentationMs: Math.round(stage.presentationMs / Math.max(1, stage.fullPresentationEvaluations) * 100) / 100,
+      wallMs: Math.round(stage.wallMs * 100) / 100,
+    }])),
+  },
   searchBudget: { presentationFinalistLimit },
   scaling: complexityProbe(),
   ...search,

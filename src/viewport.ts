@@ -138,7 +138,7 @@ export function compareRouteGeometry(reference: Point[], actual: Point[]): Route
 
 export function routeSamplesHaveNodeInfluence(samples: Point[], obstacles: Point[]): boolean {
   return samples.some((sample) => obstacles.some((obstacle) =>
-    Math.hypot(sample.x - obstacle.x, sample.y - obstacle.y) < RELATION_ROUTE_NODE_INFLUENCE_RADIUS));
+    (sample.x - obstacle.x) ** 2 + (sample.y - obstacle.y) ** 2 < RELATION_ROUTE_NODE_INFLUENCE_RADIUS ** 2));
 }
 
 export function routeSamplesHaveOccupiedPathConflict(samples: Point[], occupiedPaths: Point[][]): boolean {
@@ -149,7 +149,7 @@ export function routeSamplesHaveOccupiedPathConflict(samples: Point[], occupiedP
     let previousPoint: Point | null = null;
     for (const point of innerSamples) {
       const isNear = occupiedInnerSamples.some((occupiedPoint) =>
-        Math.hypot(point.x - occupiedPoint.x, point.y - occupiedPoint.y) < 8);
+        (point.x - occupiedPoint.x) ** 2 + (point.y - occupiedPoint.y) ** 2 < 64);
       consecutiveNearDistance = isNear && previousPoint
         ? consecutiveNearDistance + Math.hypot(point.x - previousPoint.x, point.y - previousPoint.y)
         : 0;
@@ -736,6 +736,15 @@ export function routeGraphEdge(
   // Callers exclude the source and target by identity. Keep unrelated nodes
   // even when they have been dragged onto an endpoint's coordinates.
   const routeObstacles = obstacles;
+  const occupiedPathBounds = occupiedPaths.map((occupiedPath) => {
+    const innerSamples = occupiedPath.slice(5, -5);
+    return {
+      minX: Math.min(...innerSamples.map(({ x }) => x)),
+      maxX: Math.max(...innerSamples.map(({ x }) => x)),
+      minY: Math.min(...innerSamples.map(({ y }) => y)),
+      maxY: Math.max(...innerSamples.map(({ y }) => y)),
+    };
+  });
   const offsets = [baseOffset];
   for (let step = 1; step <= 16; step += 1) {
     const magnitude = Math.abs(baseOffset) + step * 12;
@@ -806,18 +815,32 @@ export function routeGraphEdge(
   for (const candidateOffset of offsets) {
     const geometry = geometryForOffset(candidateOffset);
     const { samples } = geometry;
-    const nodeOverlapScore = routeObstacles.reduce((total, obstacle) => total + samples.reduce((sampleTotal, point) => {
+    const sampleBounds = {
+      minX: Math.min(...samples.map(({ x }) => x)),
+      maxX: Math.max(...samples.map(({ x }) => x)),
+      minY: Math.min(...samples.map(({ y }) => y)),
+      maxY: Math.max(...samples.map(({ y }) => y)),
+    };
+    const nodeOverlapScore = routeObstacles.reduce((total, obstacle) => {
+      const nearestX = Math.max(sampleBounds.minX, Math.min(obstacle.x, sampleBounds.maxX));
+      const nearestY = Math.max(sampleBounds.minY, Math.min(obstacle.y, sampleBounds.maxY));
+      if (Math.hypot(obstacle.x - nearestX, obstacle.y - nearestY) >= RELATION_ROUTE_NODE_INFLUENCE_RADIUS) return total;
+      return total + samples.reduce((sampleTotal, point) => {
       const penetration = Math.max(0, RELATION_ROUTE_NODE_INFLUENCE_RADIUS - Math.hypot(point.x - obstacle.x, point.y - obstacle.y));
       return sampleTotal + penetration * penetration;
-    }, 0), 0);
+      }, 0);
+    }, 0);
     const innerSamples = samples.slice(5, -5);
-    const overlapsEdge = occupiedPaths.some((occupiedPath) => {
+    const overlapsEdge = occupiedPaths.some((occupiedPath, occupiedIndex) => {
+      const bounds = occupiedPathBounds[occupiedIndex]!;
+      if (bounds.maxX < sampleBounds.minX - 8 || bounds.minX > sampleBounds.maxX + 8
+        || bounds.maxY < sampleBounds.minY - 8 || bounds.minY > sampleBounds.maxY + 8) return false;
       const occupiedInnerSamples = occupiedPath.slice(5, -5);
       let consecutiveNearDistance = 0;
       let previousPoint: Point | null = null;
       for (const point of innerSamples) {
         const isNear = occupiedInnerSamples.some((occupiedPoint) =>
-          Math.hypot(point.x - occupiedPoint.x, point.y - occupiedPoint.y) < 8);
+          (point.x - occupiedPoint.x) ** 2 + (point.y - occupiedPoint.y) ** 2 < 64);
         consecutiveNearDistance = isNear && previousPoint
           ? consecutiveNearDistance + Math.hypot(point.x - previousPoint.x, point.y - previousPoint.y)
           : 0;
