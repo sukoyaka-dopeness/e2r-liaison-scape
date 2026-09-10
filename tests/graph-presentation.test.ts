@@ -11,6 +11,7 @@ import {
   type AutomaticRoutingInput,
 } from "../src/graph-presentation.ts";
 import type { PresentationPassSnapshot } from "../src/presentation-stage-contracts.ts";
+import type { PresentationDependencyTrace } from "../src/presentation-dependency.ts";
 import { placeNodeLabel, routeGraphEdge } from "../src/viewport.ts";
 
 function input(overrides: Partial<AutomaticRoutingInput> = {}): AutomaticRoutingInput {
@@ -685,6 +686,34 @@ test("presentation pass snapshots expose read-only stage contracts without chang
   assert.deepEqual(finalSnapshot.route.routes, result.routedEdges);
   assert.deepEqual(finalSnapshot.relationLabel.labels, result.relationLabels);
   assert.deepEqual(finalSnapshot.nodeLabel.labels, result.nodeLabels);
+});
+
+test("presentation dependency fingerprints are stable and cover stage boundaries", () => {
+  const collect = () => {
+    const traces: PresentationDependencyTrace[] = [];
+    deriveBoundedAutomaticPresentation({
+      ...input(),
+      provisionalNodeLabels: [],
+      previousNodeLabelPlacements: new Map(),
+      previousRelationLabelPlacements: new Map(),
+      manualNodeLabelOffsets: new Map(),
+      manualRelationLabelAnchors: new Map(),
+      presentationDependencySink: (trace) => traces.push(trace),
+    });
+    return traces;
+  };
+  const first = collect();
+  const second = collect();
+  const comparable = (traces: PresentationDependencyTrace[]) => traces.map(({ stage, pass, input: stageInput, output }) => ({
+    stage,
+    pass,
+    input: { serialized: stageInput.serialized, digest: stageInput.digest, characterLength: stageInput.characterLength },
+    output: { serialized: output.serialized, digest: output.digest, characterLength: output.characterLength },
+  }));
+  assert.deepEqual(comparable(first), comparable(second));
+  assert.deepEqual([...new Set(first.map(({ stage }) => stage))].sort(), ["feedback", "node-label", "relation-label", "route-selection"]);
+  assert.ok(first.every(({ input: stageInput, output }) => stageInput.characterLength > 0 && output.characterLength > 0));
+  assert.ok(first.every(({ input: stageInput, output }) => stageInput.buildMs >= 0 && output.buildMs >= 0));
 });
 
 test("current Node positions drive automatic Node-label recomputation", () => {
