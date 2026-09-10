@@ -20,6 +20,7 @@ const profile = { presentationCalls: 0, fullPresentationEvaluations: 0, presenta
 const presentationCache = new Map();
 let activeProfileStage = "setup";
 const presentationFinalistLimit = Number.parseInt(process.env.E2R_PRESENTATION_FINALIST_LIMIT ?? "8", 10);
+const relaxationTargeting = process.env.E2R_RELAXATION_TARGETING ?? "full";
 const edges = graph.edges.map((edge) => ({
   ...edge,
   label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
@@ -106,11 +107,59 @@ function derivePresentationMetrics(positions) {
   const extent = [Math.max(...x) - Math.min(...x), Math.max(...y) - Math.min(...y)];
   const crossing = crossingDetails(presentation.routedEdges, presentation.relationLabels);
   const feasibility = nodeFeasibility(positions);
+  const pressureReasons = new Map();
+  const addPressure = (id, reason) => {
+    if (!pressureReasons.has(id)) pressureReasons.set(id, []);
+    pressureReasons.get(id).push(reason);
+  };
+  const edgeById = new Map(edges.map((edge) => [edge.id, edge]));
+  for (const support of routeSupports) {
+    if (support.usableShortfall > 0 || support.length > 480) {
+      const edge = edgeById.get(support.id);
+      if (edge) {
+        addPressure(edge.sourceId, support.usableShortfall > 0 ? `relation-label-span:${support.id}` : `long-route:${support.id}`);
+        addPressure(edge.targetId, support.usableShortfall > 0 ? `relation-label-span:${support.id}` : `long-route:${support.id}`);
+      }
+    }
+  }
+  for (const detail of crossing) {
+    const first = edgeById.get(detail.routes[0]); const second = edgeById.get(detail.routes[1]);
+    for (const edge of [first, second]) if (edge) {
+      addPressure(edge.sourceId, `route-crossing:${edge.id}`);
+      addPressure(edge.targetId, `route-crossing:${edge.id}`);
+    }
+  }
+  for (const route of presentation.routedEdges) {
+    const routeHitsLabel = routeSamplesHaveLabelCollision(route.samples, nodeLabels);
+    const routeNearLabel = route.samples.some((point) => nodeLabels.some((label) => distanceToRect(point, label) < 20));
+    if (routeHitsLabel || routeNearLabel) {
+      addPressure(route.sourceId, routeHitsLabel ? `route-label-hit:${route.id}` : `route-label-near:${route.id}`);
+      addPressure(route.targetId, routeHitsLabel ? `route-label-hit:${route.id}` : `route-label-near:${route.id}`);
+      nodeLabels.forEach((label, index) => {
+        const distance = Math.min(...route.samples.map((point) => distanceToRect(point, label)));
+        if (distance < 20) addPressure(graph.nodes[index]?.id, `node-label-route-near:${route.id}`);
+      });
+    }
+  }
+  for (let left = 0; left < nodeLabels.length; left += 1) for (let right = left + 1; right < nodeLabels.length; right += 1) {
+    if (Math.abs(nodeLabels[left].x - nodeLabels[right].x) < (nodeLabels[left].width + nodeLabels[right].width) / 2
+      && Math.abs(nodeLabels[left].y - nodeLabels[right].y) < (nodeLabels[left].height + nodeLabels[right].height) / 2) {
+      addPressure(graph.nodes[left]?.id, "node-label-overlap");
+      addPressure(graph.nodes[right]?.id, "node-label-overlap");
+    }
+  }
+  for (const edge of edges) {
+    const hop = Math.hypot(positions[edge.sourceId].x - positions[edge.targetId].x, positions[edge.sourceId].y - positions[edge.targetId].y);
+    if (hop < INITIAL_ENTITY_CLEARANCE * 1.45) {
+      addPressure(edge.sourceId, `short-hop:${edge.id}`);
+      addPressure(edge.targetId, `short-hop:${edge.id}`);
+    }
+  }
   const routeMedian = routeLengths[Math.floor(routeLengths.length / 2)]; const routeMax = Math.max(...routeLengths);
   const shortHopCount = hopLengths.filter((length) => length < INITIAL_ENTITY_CLEARANCE * 1.45).length;
   const score = crossing.length * 100000 + crossing.filter((detail) => detail.relationLabelNear).length * 15000 + labelRouteHits * 30000 + labelNear20 * 5000 + labelOverlap * 10000
     + usableSpanPenalty * 4 + shortHopCount * 5000 + routeMedian * 2 + routeMax + (extent[0] + extent[1]) * 0.25;
-  return { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports };
+  return { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
 }
 function presentationMetrics(positions) {
   const positionKey = Object.entries(positions).sort(([left], [right]) => compareId(left, right))
@@ -344,7 +393,21 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       if (score < bestScore) { best = candidate; bestMetrics = metrics; bestScore = score; }
     }
   }
-  return { mode: "POST_STRUCTURAL_CONSTRAINED_RELAXATION", evaluated, acceptedMoves, maxDisplacement, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0 };
+  const movedNodeIds = ids.filter((id) => Math.hypot(best[id].x - referencePositions[id].x, best[id].y - referencePositions[id].y) > 1e-9);
+  return { mode: "POST_STRUCTURAL_CONSTRAINED_RELAXATION", evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0 };
+}
+function derivePressureNeighborhood(metrics, positions) {
+  const pressureNodeIds = metrics.pressureNodeIds ?? [];
+  const expanded = new Set(pressureNodeIds);
+  const radius = INITIAL_ENTITY_CLEARANCE * 2.5;
+  for (const id of pressureNodeIds) {
+    const origin = positions[id];
+    for (const node of graph.nodes) {
+      const point = positions[node.id];
+      if (Math.hypot(point.x - origin.x, point.y - origin.y) <= radius) expanded.add(node.id);
+    }
+  }
+  return { pressureNodeIds, expandedNodeIds: [...expanded].sort(compareId), radius };
 }
 function genericSearch() {
   const ids = graph.nodes.map((node) => node.id).sort(compareId);
@@ -382,7 +445,10 @@ function genericSearch() {
   }
   candidates.sort((left, right) => Number(right.structuralCrossings === 0) - Number(left.structuralCrossings === 0) || Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
   const structuralSelected = candidates.find((candidate) => candidate.structuralCrossings === 0) ?? null;
-  const postStructuralRelaxation = structuralSelected ? constrainedPostStructuralRelaxation(structuralSelected.positions, ids) : null;
+  const pressureNeighborhood = structuralSelected ? derivePressureNeighborhood(structuralSelected.metrics, structuralSelected.positions) : { pressureNodeIds: [], expandedNodeIds: [], radius: INITIAL_ENTITY_CLEARANCE * 2.5 };
+  const pressureTargetingFallback = relaxationTargeting === "pressure" && pressureNeighborhood.expandedNodeIds.length === 0 ? "NO_PRESSURE_SIGNAL_FALLBACK_TO_FULL_NODE" : null;
+  const relaxationNodeIds = relaxationTargeting === "pressure" && !pressureTargetingFallback ? pressureNeighborhood.expandedNodeIds : ids;
+  const postStructuralRelaxation = structuralSelected ? constrainedPostStructuralRelaxation(structuralSelected.positions, relaxationNodeIds) : null;
   if (postStructuralRelaxation) {
     const metrics = postStructuralRelaxation.metrics;
     const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
@@ -395,7 +461,7 @@ function genericSearch() {
   const minimumStructuralCrossings = structuralCandidates.length > 0 ? Math.min(...structuralCandidates.map((candidate) => candidate.structuralCrossings)) : null;
   const boundedFallback = minimumStructuralCrossings === null ? [] : structuralCandidates.filter((candidate) => candidate.structuralCrossings === minimumStructuralCrossings);
   finishProfileStage("stage2-presentation-and-relaxation");
-  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
+  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, pressureTargetingFallback, pressureNeighborhood, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
 }
 function complexityProbe() {
   return [9, 10, 12, 16, 25].map((nodeCount) => ({

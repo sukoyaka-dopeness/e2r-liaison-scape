@@ -190,6 +190,17 @@ const postStructuralRelaxationPositions = {
   moon: { x: 622.3259018078045, y: 86.2670273047588 },
   hornet: { x: 196, y: 0 },
 };
+const pressureTargetedRelaxationPositions = {
+  armstrong: { x: 392, y: 328 },
+  aldrin: { x: 247.94112549695427, y: 408.94112549695427 },
+  collins: { x: 392, y: 164 },
+  nasa: { x: 0, y: 331 },
+  columbia: { x: 448.5685424949238, y: -56.56854249492382 },
+  eagle: { x: 588, y: 328 },
+  "saturn-v": { x: 56.56854249492379, y: 107.43145750507618 },
+  moon: { x: 670.0243866176395, y: 82.02438661763951 },
+  hornet: { x: 196, y: 0 },
+};
 const generalizationPositions = {
   linkscape: {
     generic: {
@@ -213,6 +224,9 @@ const generalizationPositions = {
     },
     post: {
       archive: { x: 379.27207793864216, y: -24 }, thomas: { x: -6, y: 164 }, clara: { x: 196, y: 328 }, lighthouse: { x: 627, y: 328 }, maya: { x: 196, y: 164 }, authority: { x: 581.636038969321, y: -39.63603896932107 }, daniel: { x: 429.09188309203677, y: 361.3639610306789 }, elias: { x: 196, y: 0 }, beacon: { x: 396.24264068711926, y: 168.2426406871193 }, sofia: { x: 540, y: 164 },
+    },
+    pressure: {
+      archive: { x: 379.27207793864216, y: -24 }, thomas: { x: -6, y: 164 }, clara: { x: 196, y: 328 }, lighthouse: { x: 636, y: 328 }, maya: { x: 196, y: 164 }, authority: { x: 588, y: -64 }, daniel: { x: 424.8492424049175, y: 341.3933982822018 }, elias: { x: 196, y: 0 }, beacon: { x: 392, y: 164 }, sofia: { x: 552.7279220613578, y: 185.72792206135784 },
     },
   },
 } as const;
@@ -245,6 +259,7 @@ const candidateDescriptions = {
   "vertical-space-rebalance-v1": "Horizontal topology rebalance (vertical-space only)",
   "generic-crossing-search-v1": "Generic crossing-first structural search (diagnostic)",
   "post-structural-relaxation-v1": "Post-structural constrained relaxation (diagnostic)",
+  "pressure-targeted-relaxation-v1": "Pressure-targeted constrained relaxation (diagnostic)",
   "source-f0-160": "Source F0 solver, clearance 160",
   "fp1-ngp-420": "FP1-NGP negative control",
 } as const;
@@ -260,6 +275,10 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   if (selectedFixtureKind !== "apollo" && (candidate === "generic-crossing-search-v1" || candidate === "post-structural-relaxation-v1")) {
     const family = candidate === "generic-crossing-search-v1" ? "generic" : "post";
     return generalizationPositions[selectedFixtureKind as "linkscape" | "lighthouse"][family];
+  }
+  if (selectedFixtureKind !== "apollo" && candidate === "pressure-targeted-relaxation-v1") {
+    const positions = generalizationPositions[selectedFixtureKind as "linkscape" | "lighthouse"];
+    return positions.pressure ?? positions.post;
   }
   if (candidate === "local-search-v1") return localSearchPositions;
   if (candidate === "local-search-v1-plus") return targetedLocalCorridorPositions;
@@ -277,6 +296,7 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "vertical-space-rebalance-v1") return verticalSpaceRebalancePositions;
   if (candidate === "generic-crossing-search-v1") return genericCrossingSearchPositions;
   if (candidate === "post-structural-relaxation-v1") return postStructuralRelaxationPositions;
+  if (candidate === "pressure-targeted-relaxation-v1") return pressureTargetedRelaxationPositions;
   if (candidate === "fp1-ngp-420") return fp1NgpPositions;
   const graph = buildEntityGraph(dataset);
   if (candidate === "source-f0-160") {
@@ -352,6 +372,7 @@ function CandidateMetrics() {
     ["post-structural-relaxation-v1", "0", "0", "195.7", "352.9", "622 × 419", "1.484", "0.596", "0"],
     ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542", "0.893", "0.508", "—"],
     ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420", "1.000", "0.636", "—"],
+    ["pressure-targeted-relaxation-v1", "0", "0", "193.2", "356.9", "670 × 466", "1.439", "0.582", "0"],
   ], []);
   return <section className="geometry-inspection-metrics" aria-label="Diagnostic geometry metrics">
     <strong>Diagnostic metrics only — not Product adoption</strong>
