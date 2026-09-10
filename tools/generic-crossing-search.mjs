@@ -140,14 +140,24 @@ function compactRouteDecision(decision) {
     },
   };
 }
-function derivePresentationMetrics(positions) {
+function derivePresentationMetrics(positions, { replayPrefix } = {}) {
   const provisional = graph.nodes.map((node) => placeNodeLabel(
     positions[node.id], node.label, node.description, [], graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), [],
   ));
   const routeDecisionTrace = relaxationDependencyTraceEnabled ? [] : null;
+  const replayedPrefixTrace = relaxationDependencyTraceEnabled ? [] : null;
+  const presentationPassTrace = relaxationDependencyTraceEnabled ? [] : null;
   const presentation = deriveBoundedAutomaticPresentation({
     graph: { nodes: graph.nodes, edges }, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels: provisional, ...emptyState,
     routeDecisionSink: routeDecisionTrace ? (decision) => routeDecisionTrace.push(compactRouteDecision(decision)) : undefined,
+    replayPrefix,
+    replayPrefixSink: replayedPrefixTrace ? (edgeIds) => replayedPrefixTrace.push(edgeIds) : undefined,
+    presentationPassSink: presentationPassTrace ? (pass, routes, relationLabels, nodeLabels) => presentationPassTrace.push({
+      pass,
+      routes: routeGeometrySignatures(routes),
+      relationLabels: mapGeometrySignatures(relationLabels),
+      nodeLabels: mapGeometrySignatures(nodeLabels),
+    }) : undefined,
   });
   const routeLengths = presentation.routedEdges.map((route) => route.samples.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - route.samples[index].x, point.y - route.samples[index].y), 0)).sort((a, b) => a - b);
   const nodeLabels = [...presentation.nodeLabels.values()];
@@ -231,9 +241,15 @@ function derivePresentationMetrics(positions) {
     nodeLabels: mapGeometrySignatures(presentation.nodeLabels),
     feedbackApplied: presentation.feedbackApplied,
     routeDecisions: routeDecisionTrace,
+    replayedPrefix: replayedPrefixTrace,
+    passes: presentationPassTrace,
   } : undefined;
   const result = { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
   if (presentationTrace) Object.defineProperty(result, "presentationTrace", { value: presentationTrace, enumerable: false });
+  Object.defineProperty(result, "presentationArtifacts", {
+    value: { routedEdges: presentation.routedEdges, relationLabels: presentation.relationLabels, nodeLabels: presentation.nodeLabels },
+    enumerable: false,
+  });
   return result;
 }
 function compareSignatureMaps(before, after) {
@@ -260,13 +276,15 @@ function dependencyTraceDiff(before, after, movedNodeId) {
   const routeOrderAfter = [...afterDecisions.values()].sort((left, right) => left.processingIndex - right.processingIndex).map((decision) => decision.edgeId);
   const routeOrderChanged = JSON.stringify(routeOrderBefore) !== JSON.stringify(routeOrderAfter);
   const processingIndexById = new Map([...afterDecisions.values()].map((decision) => [decision.edgeId, decision.processingIndex]));
-  const earliestChangedProcessingIndex = Math.min(...changedRouteIds.map((id) => processingIndexById.get(id) ?? Infinity));
+  const dirtyRouteIds = [...new Set([...changedRouteIds, ...changedDecisionIds])].sort(compareId);
+  const earliestChangedProcessingIndex = Math.min(...dirtyRouteIds.map((id) => processingIndexById.get(id) ?? Infinity));
   const changedAfterEarliest = Number.isFinite(earliestChangedProcessingIndex)
     ? changedRouteIds.filter((id) => (processingIndexById.get(id) ?? -Infinity) > earliestChangedProcessingIndex).length
     : 0;
   return {
     movedNodeId,
     changedRouteIds,
+    dirtyRouteIds,
     incidentRouteIds,
     remoteRouteIds,
     changedRelationLabelIds,
@@ -300,6 +318,61 @@ function recordDependencyTrace(stats, diff, scoreBefore, scoreAfter, accepted) {
     stats.acceptedMaxRemoteRoutes = Math.max(stats.acceptedMaxRemoteRoutes, diff.remoteRouteIds.length);
   }
   if (stats.examples.length < 24) stats.examples.push({ ...diff, scoreBefore, scoreAfter, accepted });
+}
+function canonicalPrefixBeforeDirtyRoute(beforeTrace, afterTrace, dirtyRouteIds) {
+  const dirty = new Set(dirtyRouteIds);
+  const beforeOrder = (beforeTrace?.routeDecisions ?? [])
+    .filter((decision) => decision.pass === "first")
+    .sort((left, right) => left.processingIndex - right.processingIndex);
+  const afterOrder = (afterTrace?.routeDecisions ?? [])
+    .filter((decision) => decision.pass === "first")
+    .sort((left, right) => left.processingIndex - right.processingIndex);
+  const prefix = [];
+  for (let index = 0; index < Math.min(beforeOrder.length, afterOrder.length); index += 1) {
+    const beforeId = beforeOrder[index].edgeId;
+    const afterId = afterOrder[index].edgeId;
+    if (beforeId !== afterId || dirty.has(beforeId) || dirty.has(afterId)) break;
+    prefix.push(beforeId);
+  }
+  return prefix;
+}
+function comparePresentationOutputs(full, incremental) {
+  const routeMismatches = compareSignatureMaps(full.presentationTrace?.routes, incremental.presentationTrace?.routes);
+  const relationLabelMismatches = compareSignatureMaps(full.presentationTrace?.relationLabels, incremental.presentationTrace?.relationLabels);
+  const nodeLabelMismatches = compareSignatureMaps(full.presentationTrace?.nodeLabels, incremental.presentationTrace?.nodeLabels);
+  const feedbackMismatch = full.presentationTrace?.feedbackApplied !== incremental.presentationTrace?.feedbackApplied;
+  const metricMismatch = JSON.stringify(full) !== JSON.stringify(incremental);
+  const passSnapshot = (trace, pass) => trace?.passes?.find((snapshot) => snapshot.pass === pass);
+  const firstPass = passSnapshot(full.presentationTrace, "first");
+  const incrementalFirstPass = passSnapshot(incremental.presentationTrace, "first");
+  const feedbackPass = passSnapshot(full.presentationTrace, "feedback");
+  const incrementalFeedbackPass = passSnapshot(incremental.presentationTrace, "feedback");
+  const firstPassRouteMismatches = compareSignatureMaps(firstPass?.routes, incrementalFirstPass?.routes);
+  const feedbackPassRouteMismatches = compareSignatureMaps(feedbackPass?.routes, incrementalFeedbackPass?.routes);
+  const firstMismatchStage = firstPassRouteMismatches.length > 0 ? "first-route-geometry"
+    : feedbackPassRouteMismatches.length > 0 ? "feedback-route-geometry"
+      : routeMismatches.length > 0 ? "route-geometry"
+        : relationLabelMismatches.length > 0 ? "relation-label-geometry"
+          : nodeLabelMismatches.length > 0 ? "node-label-geometry"
+            : feedbackMismatch ? "feedback-state"
+              : metricMismatch ? "derived-metrics" : null;
+  return {
+    exact: firstMismatchStage === null,
+    firstMismatchStage,
+    routeMismatches,
+    relationLabelMismatches,
+    nodeLabelMismatches,
+    firstPassRouteMismatches,
+    feedbackPassRouteMismatches,
+    feedbackMismatch,
+    metricMismatch,
+  };
+}
+function incrementalPresentationMetrics(positions, previousMetrics, prefixEdgeIds) {
+  const previousRoutes = new Map(previousMetrics.presentationArtifacts.routedEdges.map((route) => [route.id, route]));
+  return derivePresentationMetrics(positions, {
+    replayPrefix: { edgeIds: prefixEdgeIds, routes: previousRoutes },
+  });
 }
 function presentationMetrics(positions) {
   const positionKey = positionsKey(positions);
@@ -554,6 +627,22 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     acceptedRemotePropagationCandidates: 0,
     acceptedTotalRemoteRoutes: 0,
     acceptedMaxRemoteRoutes: 0,
+    incrementalAudit: {
+      candidates: 0,
+      exactMatches: 0,
+      mismatches: 0,
+      firstMismatchStages: {},
+      prefixRoutesRequested: 0,
+      suffixRoutesReplayed: 0,
+      relationLabelsReused: 0,
+      relationLabelsReplayed: 0,
+      nodeLabelsReused: 0,
+      nodeLabelsReplayed: 0,
+      fullEvaluationMs: 0,
+      incrementalEvaluationMs: 0,
+      firstMismatchExample: null,
+      examples: [],
+    },
     examples: [],
   } : null;
   const rawCandidateKeys = relaxationLatticeProbe ? new Set() : null;
@@ -593,7 +682,9 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
         }
         continue;
       }
+      const fullStartedAt = performance.now();
       const metrics = presentationMetrics(candidate); evaluated += 1;
+      const fullElapsed = performance.now() - fullStartedAt;
       const score = constrainedRelaxationScore(metrics, candidate, referencePositions);
       if (dependencyTraceStats) recordDependencyTrace(
         dependencyTraceStats,
@@ -602,6 +693,49 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
         score,
         score < currentScore,
       );
+      if (dependencyTraceStats) {
+        const diff = dependencyTraceDiff(currentMetrics.presentationTrace, metrics.presentationTrace, id);
+        const prefixEdgeIds = canonicalPrefixBeforeDirtyRoute(currentMetrics.presentationTrace, metrics.presentationTrace, diff.dirtyRouteIds);
+        const incrementalStartedAt = performance.now();
+        const incrementalMetrics = incrementalPresentationMetrics(candidate, currentMetrics, prefixEdgeIds);
+        const incrementalElapsed = performance.now() - incrementalStartedAt;
+        const equivalence = comparePresentationOutputs(metrics, incrementalMetrics);
+        const audit = dependencyTraceStats.incrementalAudit;
+        audit.candidates += 1;
+        audit.prefixRoutesRequested += prefixEdgeIds.length;
+        audit.suffixRoutesReplayed += Math.max(0, edges.length - prefixEdgeIds.length);
+        audit.relationLabelsReplayed += edges.length;
+        audit.nodeLabelsReplayed += graph.nodes.length;
+        audit.fullEvaluationMs += fullElapsed;
+        audit.incrementalEvaluationMs += incrementalElapsed;
+        if (equivalence.exact) audit.exactMatches += 1;
+        else {
+          audit.mismatches += 1;
+          audit.firstMismatchStages[equivalence.firstMismatchStage] = (audit.firstMismatchStages[equivalence.firstMismatchStage] ?? 0) + 1;
+          if (audit.firstMismatchExample === null) audit.firstMismatchExample = {
+            movedNodeId: id,
+            prefixRoutesRequested: prefixEdgeIds.length,
+            prefixEdgeIds,
+            replayedPrefix: incrementalMetrics.presentationTrace.replayedPrefix,
+            earliestDirtyProcessingIndex: diff.earliestChangedProcessingIndex,
+            currentToFullChangedRouteIds: diff.changedRouteIds,
+            currentToFullDirtyRouteIds: diff.dirtyRouteIds,
+            routeMismatches: equivalence.routeMismatches,
+            relationLabelMismatches: equivalence.relationLabelMismatches,
+            nodeLabelMismatches: equivalence.nodeLabelMismatches,
+          };
+        }
+        if (audit.examples.length < 12) audit.examples.push({
+          movedNodeId: id,
+          prefixRoutesRequested: prefixEdgeIds.length,
+          earliestDirtyProcessingIndex: diff.earliestChangedProcessingIndex,
+          exact: equivalence.exact,
+          firstMismatchStage: equivalence.firstMismatchStage,
+          routeMismatches: equivalence.routeMismatches,
+          relationLabelMismatches: equivalence.relationLabelMismatches,
+          nodeLabelMismatches: equivalence.nodeLabelMismatches,
+        });
+      }
       if (cheapScreenStats && cheapLowerBound !== null && Number.isFinite(score) && cheapLowerBound > score + 1e-9) cheapScreenStats.lowerBoundViolations += 1;
       if (score < currentScore) {
         if (cheapScreenStats) cheapScreenStats.acceptedTrace.push({ nodeId: id, step, angle, scoreBefore: currentScore, scoreAfter: score });

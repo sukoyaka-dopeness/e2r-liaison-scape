@@ -62,6 +62,12 @@ export type AutomaticRoutingInput = {
   preserveSafeIncidentPreviousRoute?: boolean;
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
   routeDecisionPass?: AutomaticRouteDecision["pass"];
+  /** Diagnostic-only canonical prefix replay. Normal Product calls omit it. */
+  replayPrefix?: {
+    edgeIds: readonly string[];
+    routes: ReadonlyMap<string, DerivedAutomaticRoute>;
+  };
+  replayPrefixSink?: (edgeIds: readonly string[]) => void;
 };
 
 export type DerivedAutomaticRoute = RoutingGraphEdge & Pick<
@@ -95,6 +101,8 @@ export function deriveAutomaticRoutes({
   preserveSafeIncidentPreviousRoute = false,
   routeDecisionSink,
   routeDecisionPass = "first",
+  replayPrefix,
+  replayPrefixSink,
 }: AutomaticRoutingInput): DerivedAutomaticRoute[] {
   const occupiedPaths: Array<Array<Point>> = [];
   const occupiedPathIds: string[] = [];
@@ -124,7 +132,30 @@ export function deriveAutomaticRoutes({
   }).sort(compareRoutingPriority);
   const automaticOrdinaryEdges = graph.edges.filter((edge) => !fixedEdges.some(({ id }) => id === edge.id))
     .sort(compareRoutingPriority);
-  for (const [processingIndex, edge] of [...fixedEdges, ...automaticOrdinaryEdges].entries()) {
+  const orderedEdges = [...fixedEdges, ...automaticOrdinaryEdges];
+  const replayedEdgeIds = new Set<string>();
+  for (const [processingIndex, edge] of orderedEdges.entries()) {
+    if (replayPrefix?.edgeIds[processingIndex] !== edge.id) break;
+    const replayedRoute = replayPrefix.routes.get(edge.id);
+    const source = positions[edge.sourceId] ?? nodeMap.get(edge.sourceId)!;
+    const target = positions[edge.targetId] ?? nodeMap.get(edge.targetId)!;
+    const endpointGeometryMatches = replayedRoute?.sourcePosition?.x === source.x
+      && replayedRoute.sourcePosition.y === source.y
+      && replayedRoute.targetPosition?.x === target.x
+      && replayedRoute.targetPosition.y === target.y;
+    if (!replayedRoute || !endpointGeometryMatches) break;
+    const overlapKey = `${source.x}\u0000${source.y}`;
+    if (edge.sourceId !== edge.targetId && source.x === target.x && source.y === target.y) {
+      overlapCounts.set(overlapKey, (overlapCounts.get(overlapKey) ?? 0) + 1);
+    }
+    occupiedPaths.push(replayedRoute.samples);
+    occupiedPathIds.push(edge.id);
+    routedById.set(edge.id, replayedRoute);
+    replayedEdgeIds.add(edge.id);
+  }
+  replayPrefixSink?.([...replayedEdgeIds]);
+  for (const [processingIndex, edge] of orderedEdges.entries()) {
+    if (replayedEdgeIds.has(edge.id)) continue;
     const canonicalPhysicalSideSign = edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1;
     const sourceNode = nodeMap.get(edge.sourceId)!;
     const targetNode = nodeMap.get(edge.targetId)!;
@@ -479,6 +510,15 @@ export type BoundedAutomaticPresentationInput = {
   previousContinuityNodeLabels?: ReadonlyMap<string, LabelRect>;
   feedbackEnabled?: boolean;
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
+  /** Diagnostic-only replay input for the first canonical route pass. */
+  replayPrefix?: AutomaticRoutingInput["replayPrefix"];
+  replayPrefixSink?: (edgeIds: readonly string[]) => void;
+  presentationPassSink?: (
+    pass: AutomaticRoutingInput["routeDecisionPass"],
+    routedEdges: readonly DerivedAutomaticRoute[],
+    relationLabels: ReadonlyMap<string, LabelRect>,
+    nodeLabels: ReadonlyMap<string, LabelRect>,
+  ) => void;
 };
 
 export type BoundedAutomaticPresentation = {
@@ -538,6 +578,9 @@ export function deriveBoundedAutomaticPresentation({
   previousContinuityNodeLabels,
   feedbackEnabled = true,
   routeDecisionSink,
+  replayPrefix,
+  replayPrefixSink,
+  presentationPassSink,
 }: BoundedAutomaticPresentationInput): BoundedAutomaticPresentation {
   const nodes = graph.nodes.map((node) => positions[node.id] ?? node);
   // The label-free counterfactual depends only on graph geometry and manual
@@ -568,6 +611,8 @@ export function deriveBoundedAutomaticPresentation({
       preserveSafeIncidentPreviousRoute,
       routeDecisionSink,
       routeDecisionPass,
+      replayPrefix: routeDecisionPass === "first" ? replayPrefix : undefined,
+      replayPrefixSink: routeDecisionPass === "first" ? replayPrefixSink : undefined,
     });
     const routeById = new Map(routesWithoutNodeLabels.map((route) => [route.id, route]));
     const yieldingRoutes: RouteYieldPath[] = routedEdges.flatMap((route) => {
@@ -593,6 +638,7 @@ export function deriveBoundedAutomaticPresentation({
       activelyDraggedNodeId,
       yieldingRoutes,
     });
+    presentationPassSink?.(routeDecisionPass, routedEdges, relationLabels, nodeLabels);
     return { routedEdges, relationLabels, nodeLabels };
   };
 
