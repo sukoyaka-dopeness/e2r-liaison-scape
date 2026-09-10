@@ -23,10 +23,17 @@ const presentationFinalistLimit = Number.parseInt(process.env.E2R_PRESENTATION_F
 const relaxationTargeting = process.env.E2R_RELAXATION_TARGETING ?? "full";
 const relaxationAdmission = process.env.E2R_RELAXATION_ADMISSION ?? "hard";
 const relaxationMoveMode = process.env.E2R_RELAXATION_MOVE_MODE ?? "single";
+const relaxationObjective = process.env.E2R_RELAXATION_OBJECTIVE ?? "standard";
 const parsedRelaxationPairLimit = Number.parseInt(process.env.E2R_RELAXATION_PAIR_LIMIT ?? "8", 10);
 const relaxationPairLimit = Number.isFinite(parsedRelaxationPairLimit) && parsedRelaxationPairLimit >= 2 ? parsedRelaxationPairLimit : 8;
+const parsedRelaxationClusterLimit = Number.parseInt(process.env.E2R_RELAXATION_CLUSTER_LIMIT ?? "6", 10);
+const relaxationClusterLimit = Number.isFinite(parsedRelaxationClusterLimit) && parsedRelaxationClusterLimit >= 3 ? parsedRelaxationClusterLimit : 6;
 const parsedRelaxationMaxDisplacement = Number.parseFloat(process.env.E2R_RELAXATION_MAX_DISPLACEMENT ?? "48");
 const relaxationMaxDisplacement = Number.isFinite(parsedRelaxationMaxDisplacement) && parsedRelaxationMaxDisplacement > 0 ? parsedRelaxationMaxDisplacement : 48;
+const parsedLabelCorridorMargin = Number.parseFloat(process.env.E2R_LABEL_CORRIDOR_MARGIN ?? "48");
+const labelCorridorMargin = Number.isFinite(parsedLabelCorridorMargin) && parsedLabelCorridorMargin > 0 ? parsedLabelCorridorMargin : 48;
+const parsedLabelCorridorWeight = Number.parseFloat(process.env.E2R_LABEL_CORRIDOR_WEIGHT ?? "1200");
+const labelCorridorWeight = Number.isFinite(parsedLabelCorridorWeight) && parsedLabelCorridorWeight > 0 ? parsedLabelCorridorWeight : 1200;
 const parsedRelaxationLatticeStep = Number.parseFloat(process.env.E2R_RELAXATION_LATTICE_STEP ?? "0");
 const relaxationLatticeStep = Number.isFinite(parsedRelaxationLatticeStep) && parsedRelaxationLatticeStep > 0 ? parsedRelaxationLatticeStep : 0;
 const relaxationLatticeProbe = process.env.E2R_RELAXATION_LATTICE_PROBE === "1" || relaxationLatticeStep > 0;
@@ -169,6 +176,30 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
   const nodeLabels = [...presentation.nodeLabels.values()];
   const labelRouteHits = presentation.routedEdges.filter((route) => routeSamplesHaveLabelCollision(route.samples, nodeLabels)).length;
   const labelNear20 = presentation.routedEdges.filter((route) => route.samples.some((point) => nodeLabels.some((label) => distanceToRect(point, label) < 20))).length;
+  let labelCorridorDeficit = 0;
+  let labelCorridorConflictPairs = 0;
+  let labelCorridorMinimumClearance = Infinity;
+  let labelCorridorMaximumIntrusion = 0;
+  const routeLabelCorridors = presentation.routedEdges.map((route) => {
+    const innerSamples = route.samples.length > 8 ? route.samples.slice(4, -4) : route.samples;
+    let nearestLabelDistance = Infinity;
+    let corridorDeficit = 0;
+    let conflictPairs = 0;
+    for (const label of nodeLabels) {
+      const distance = innerSamples.length === 0 ? Infinity : Math.min(...innerSamples.map((point) => distanceToRect(point, label)));
+      nearestLabelDistance = Math.min(nearestLabelDistance, distance);
+      labelCorridorMinimumClearance = Math.min(labelCorridorMinimumClearance, distance);
+      if (distance < labelCorridorMargin) {
+        conflictPairs += 1;
+        const intrusion = labelCorridorMargin - distance;
+        corridorDeficit += intrusion;
+        labelCorridorDeficit += intrusion;
+        labelCorridorConflictPairs += 1;
+        labelCorridorMaximumIntrusion = Math.max(labelCorridorMaximumIntrusion, intrusion);
+      }
+    }
+    return { id: route.id, nearestLabelDistance, corridorDeficit, conflictPairs };
+  });
   let labelOverlap = 0;
   for (let left = 0; left < nodeLabels.length; left += 1) for (let right = left + 1; right < nodeLabels.length; right += 1) {
     if (Math.abs(nodeLabels[left].x - nodeLabels[right].x) < (nodeLabels[left].width + nodeLabels[right].width) / 2
@@ -250,7 +281,7 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
     replayedPrefix: replayedPrefixTrace,
     passes: presentationPassTrace,
   } : undefined;
-  const result = { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
+  const result = { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, labelCorridorDeficit, labelCorridorConflictPairs, labelCorridorMinimumClearance: Number.isFinite(labelCorridorMinimumClearance) ? labelCorridorMinimumClearance : null, labelCorridorMaximumIntrusion, routeLabelCorridors, usableSpanPenalty, routeSupports, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
   if (presentationTrace) Object.defineProperty(result, "presentationTrace", { value: presentationTrace, enumerable: false });
   Object.defineProperty(result, "presentationArtifacts", {
     value: { routedEdges: presentation.routedEdges, relationLabels: presentation.relationLabels, nodeLabels: presentation.nodeLabels },
@@ -590,7 +621,8 @@ function constrainedRelaxationScore(metrics, positions, referencePositions) {
     localityPenalty += Math.max(0, 0.80 - ratio) ** 2 + Math.max(0, ratio - 1.20) ** 2;
     edgeLengthPenalty += Math.max(0, length - 480) ** 2 / 480;
   }
-  return presentationDefectScore + metrics.usableSpanPenalty * 6 + metrics.routeMedian * 2 + metrics.routeMax + (metrics.extent[0] + metrics.extent[1]) * 0.20
+  const corridorObjectivePenalty = relaxationObjective === "label-corridor" ? metrics.labelCorridorDeficit * labelCorridorWeight : 0;
+  return presentationDefectScore + corridorObjectivePenalty + metrics.usableSpanPenalty * 6 + metrics.routeMedian * 2 + metrics.routeMax + (metrics.extent[0] + metrics.extent[1]) * 0.20
     + localityPenalty * 9000 + edgeLengthPenalty;
 }
 function constrainedRelaxationLowerBound(positions) {
@@ -661,14 +693,25 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   const steps = [18, 9, 6];
   const pressureWeight = (id) => (currentMetrics.pressureReasons?.[id] ?? []).reduce((total, reason) => total
     + (reason.includes("route-label-hit") ? 5 : reason.includes("route-crossing") ? 4 : reason.includes("route-label-near") ? 3 : reason.includes("node-label-route-near") ? 2 : 1), 0);
-  const moveTargetIds = relaxationMoveMode === "pair"
-    ? ids.slice().sort((left, right) => pressureWeight(right) - pressureWeight(left) || compareId(left, right)).slice(0, Math.min(relaxationPairLimit, ids.length))
+  const moveTargetLimit = relaxationMoveMode === "cluster" ? relaxationClusterLimit : relaxationPairLimit;
+  const moveTargetIds = relaxationMoveMode === "pair" || relaxationMoveMode === "cluster"
+    ? ids.slice().sort((left, right) => pressureWeight(right) - pressureWeight(left) || compareId(left, right)).slice(0, Math.min(moveTargetLimit, ids.length))
     : ids.slice();
   const movePlans = [];
   if (relaxationMoveMode === "pair") {
     for (let left = 0; left < moveTargetIds.length; left += 1) for (let right = left + 1; right < moveTargetIds.length; right += 1) {
       for (const step of [18, 9]) for (const angle of directions) for (const sameDirection of [true, false]) {
         movePlans.push({ ids: [moveTargetIds[left], moveTargetIds[right]], step, angles: [angle, sameDirection ? angle : angle + Math.PI] });
+      }
+    }
+  } else if (relaxationMoveMode === "cluster") {
+    for (let first = 0; first < moveTargetIds.length; first += 1) for (let second = first + 1; second < moveTargetIds.length; second += 1) for (let third = second + 1; third < moveTargetIds.length; third += 1) {
+      for (const step of [18, 9]) for (const angle of directions) for (const oppositeIndex of [-1, 0, 1, 2]) {
+        movePlans.push({
+          ids: [moveTargetIds[first], moveTargetIds[second], moveTargetIds[third]],
+          step,
+          angles: [0, 1, 2].map((index) => index === oppositeIndex ? angle + Math.PI : angle),
+        });
       }
     }
   } else {
@@ -774,10 +817,11 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   const inputFractionalCoordinates = Object.values(inputPositions).flatMap((point) => [point.x, point.y]).filter((value) => !Number.isInteger(value)).length;
   const inputQuantizationMaxDelta = Math.max(0, ...Object.keys(inputPositions).map((id) => Math.hypot(referencePositions[id].x - inputPositions[id].x, referencePositions[id].y - inputPositions[id].y)));
   return {
-    mode: relaxationMoveMode === "pair"
-      ? "POST_STRUCTURAL_COUPLED_MOVE_RELAXATION"
+    mode: relaxationMoveMode === "cluster"
+      ? "POST_STRUCTURAL_SMALL_CLUSTER_RELAXATION"
+      : relaxationMoveMode === "pair" ? "POST_STRUCTURAL_COUPLED_MOVE_RELAXATION"
       : relaxationAdmission === "soft-defect" ? "POST_STRUCTURAL_SOFT_DEFECT_RELAXATION" : "POST_STRUCTURAL_CONSTRAINED_RELAXATION",
-    admission: relaxationAdmission, moveMode: relaxationMoveMode, moveTargetIds, pairLimit: relaxationPairLimit, evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement,
+    admission: relaxationAdmission, moveMode: relaxationMoveMode, moveTargetIds, pairLimit: relaxationPairLimit, clusterLimit: relaxationClusterLimit, evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement,
     lattice: {
       configuredStep: relaxationLatticeStep,
       probeEnabled: relaxationLatticeProbe,
@@ -852,8 +896,9 @@ function genericSearch() {
   if (postStructuralRelaxation) {
     const metrics = postStructuralRelaxation.metrics;
     const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
-    candidates.push({ family: relaxationMoveMode === "pair"
-      ? "post-structural-coupled-move-relaxation"
+    candidates.push({ family: relaxationMoveMode === "cluster"
+      ? "post-structural-small-cluster-relaxation"
+      : relaxationMoveMode === "pair" ? "post-structural-coupled-move-relaxation"
       : relaxationAdmission === "soft-defect" ? "post-structural-soft-defect-relaxation" : "post-structural-constrained-relaxation", structuralCrossings: 0, positions: clonePositions(postStructuralRelaxation.positions), metrics, eligible, relaxation: postStructuralRelaxation });
   }
   candidates.sort((left, right) => Number(right.structuralCrossings === 0) - Number(left.structuralCrossings === 0) || Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
@@ -902,7 +947,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, relaxationAdmission, relaxationMoveMode, relaxationPairLimit, relaxationMaxDisplacement, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));
