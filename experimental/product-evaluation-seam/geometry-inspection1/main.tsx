@@ -7,16 +7,28 @@ import "../../../src/styles.css";
 import "./main.css";
 
 const diagnosticDatasetUrl = "https://diagnostic.liaisonscape.invalid/apollo-11-product-inspection.en.e2r.json";
-const fixtureKind = new URL(window.location.href).searchParams.get("fixture") ?? "apollo";
+const inspectionUrl = new URL(window.location.href);
+const fixtureKind = inspectionUrl.searchParams.get("fixture") ?? "apollo";
+const requestedLocale = inspectionUrl.searchParams.get("locale");
+const inspectionLocale = requestedLocale === "ja" ? "ja" : "en";
+if (requestedLocale === "en" || requestedLocale === "ja") window.localStorage.setItem("liaisonscape.locale", requestedLocale);
 const isApolloPublic = fixtureKind === "apollo-public";
-const selectedFixtureKind = new Set(["apollo", "linkscape", "lighthouse"]).has(fixtureKind) ? fixtureKind : "apollo";
+type SupportedFixture = "apollo" | "linkscape" | "lighthouse" | "berlin-wall" | "ashen-crown" | "titanic";
+const supportedFixtures = new Set<SupportedFixture>(["apollo", "linkscape", "lighthouse", "berlin-wall", "ashen-crown", "titanic"]);
+const selectedFixtureKind: SupportedFixture = supportedFixtures.has(fixtureKind as SupportedFixture) ? fixtureKind as SupportedFixture : "apollo";
 const fixtureUrl = isApolloPublic
-  ? "http://127.0.0.1:4180/apollo-11-mission.en.e2r.json"
+  ? `http://127.0.0.1:4180/apollo-11-mission.${inspectionLocale}.e2r.json`
   : selectedFixtureKind === "linkscape"
   ? `${import.meta.env.BASE_URL}examples/linkscape-relation-sample.e2r.json`
   : selectedFixtureKind === "lighthouse"
-    ? `${import.meta.env.BASE_URL}public/lighthouse-restoration-demo.en.e2r.json`
-    : `${import.meta.env.BASE_URL}experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json`;
+    ? `http://127.0.0.1:4180/lighthouse-restoration-demo.${inspectionLocale}.e2r.json`
+    : selectedFixtureKind === "berlin-wall"
+      ? `http://127.0.0.1:4180/berlin-wall-history.${inspectionLocale}.e2r.json`
+      : selectedFixtureKind === "ashen-crown"
+        ? `http://127.0.0.1:4180/ashen-crown.${inspectionLocale}.e2r.json`
+        : selectedFixtureKind === "titanic"
+          ? `http://127.0.0.1:4180/titanic-final-voyage.${inspectionLocale}.e2r.json`
+          : `${import.meta.env.BASE_URL}experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json`;
 const localSearchPositions = {
   armstrong: { x: 31.342, y: 373.958 },
   aldrin: { x: 222.011, y: 508.891 },
@@ -254,6 +266,62 @@ const generalizationPositions = {
     },
   },
 } as const;
+const additionalGeneralizationPositions = {
+  "berlin-wall": {
+    en: {
+      generic: {
+        sed: { x: 392, y: 328 }, "berlin-wall": { x: 392, y: 0 }, jaeger: { x: 0, y: 164 }, "neues-forum": { x: 492, y: 0 }, bornholmer: { x: 196, y: 36 }, gorbachev: { x: 196, y: 164 }, honecker: { x: 196, y: 328 }, gdr: { x: 392, y: 200 }, schabowski: { x: 0, y: 0 },
+      },
+      post: {
+        sed: { x: 392, y: 310 }, "berlin-wall": { x: 379.27207793864216, y: 30.72792206135786 }, jaeger: { x: 12.727922061357857, y: 176.72792206135784 }, "neues-forum": { x: 468.66547622084397, y: 29.334523779156086 }, bornholmer: { x: 196, y: 54 }, gorbachev: { x: 196, y: 164 }, honecker: { x: 208.72792206135784, y: 324.27207793864216 }, gdr: { x: 374.66547622084397, y: 189.3933982822018 }, schabowski: { x: 30.72792206135786, y: 30.727922061357855 },
+      },
+    },
+    ja: {
+      generic: {
+        sed: { x: 392, y: 328 }, "berlin-wall": { x: 366.5441558772843, y: 25.455844122715714 }, jaeger: { x: 0, y: 164 }, "neues-forum": { x: 475.02943725152284, y: 16.970562748477153 }, bornholmer: { x: 160, y: 0 }, gorbachev: { x: 160, y: 164 }, honecker: { x: 220, y: 328 }, gdr: { x: 392, y: 164 }, schabowski: { x: 0, y: 0 },
+      },
+      post: {
+        sed: { x: 385.6360389693211, y: 316.3639610306789 }, "berlin-wall": { x: 366.5441558772843, y: 25.455844122715714 }, jaeger: { x: 0, y: 146 }, "neues-forum": { x: 444.301515190165, y: 29.698484809835012 }, bornholmer: { x: 160, y: 0 }, gorbachev: { x: 178, y: 164 }, honecker: { x: 226.36396103067892, y: 321.6360389693211 }, gdr: { x: 376.6360389693211, y: 170.36396103067892 }, schabowski: { x: 0, y: 0 },
+      },
+    },
+  },
+  "ashen-crown": {
+    en: {
+      generic: {
+        darius: { x: 392, y: 328 }, nyra: { x: 16.970562748477143, y: 180.97056274847714 }, vhalgrim: { x: 150.74516600406093, y: 118.74516600406096 }, rowan: { x: 196, y: 328 }, kael: { x: 588, y: 328 }, mira: { x: 588, y: 0 }, ilyan: { x: 392, y: 0 }, garrick: { x: 588, y: 164 }, elara: { x: 392, y: 164 }, selene: { x: 0, y: 0 },
+      },
+      post: {
+        darius: { x: 392, y: 328 }, nyra: { x: 16.970562748477143, y: 180.97056274847714 }, vhalgrim: { x: 150.74516600406093, y: 118.74516600406096 }, rowan: { x: 196, y: 328 }, kael: { x: 588, y: 328 }, mira: { x: 588, y: 0 }, ilyan: { x: 392, y: 0 }, garrick: { x: 588, y: 164 }, elara: { x: 392, y: 164 }, selene: { x: 0, y: 0 },
+      },
+    },
+    ja: {
+      generic: {
+        darius: { x: 392, y: 280 }, nyra: { x: 0, y: 164 }, vhalgrim: { x: 196, y: 164 }, rowan: { x: 196, y: 328 }, kael: { x: 588, y: 328 }, mira: { x: 588, y: 0 }, ilyan: { x: 392, y: 0 }, garrick: { x: 588, y: 164 }, elara: { x: 392, y: 164 }, selene: { x: 48, y: 0 },
+      },
+      post: {
+        darius: { x: 385.6360389693211, y: 286.3639610306789 }, nyra: { x: 0, y: 164 }, vhalgrim: { x: 196, y: 164 }, rowan: { x: 178.87867965644037, y: 330.12132034355966 }, kael: { x: 600.363961030679, y: 334.3639610306789 }, mira: { x: 588, y: 0 }, ilyan: { x: 392, y: 0 }, garrick: { x: 588, y: 164 }, elara: { x: 392, y: 164 }, selene: { x: 15.665476220843928, y: -23.849242404917497 },
+      },
+    },
+  },
+  titanic: {
+    en: {
+      generic: {
+        fleet: { x: 408.7154106321713, y: 0 }, andrews: { x: 598.6549327243254, y: 36.012221161991704 }, ismay: { x: 745.081599324549, y: 135.79891877406658 }, "white-star-line": { x: 814.4508257473578, y: 276.5001629733679 }, "molly-brown": { x: 790.8709582090905, y: 425.88299434764303 }, phillips: { x: 679.7438601945548, y: 549.7256064873205 }, smith: { x: 506.52741063217127, y: 619.6571494164668 }, rostron: { x: 310.9034106321714, y: 619.6571494164668 }, carpathia: { x: 137.6869610697878, y: 549.7256064873206 }, bride: { x: 26.559863055252094, y: 425.88299434764315 }, "harland-wolff": { x: 2.9799955169847294, y: 276.50016297336776 }, titanic: { x: 72.3492219397935, y: 135.79891877406686 }, californian: { x: 218.77588854001735, y: 36.01222116199165 },
+      },
+      post: {
+        fleet: { x: 389.62352754013455, y: 37.09188309203679 }, andrews: { x: 555.1990886016097, y: 54.012221161991704 }, ismay: { x: 745.081599324549, y: 135.79891877406658 }, "white-star-line": { x: 770.9949816246422, y: 258.5001629733679 }, "molly-brown": { x: 747.4151140863748, y: 407.88299434764303 }, phillips: { x: 636.2880160718391, y: 531.7256064873205 }, smith: { x: 488.52741063217127, y: 576.2013052937511 }, rostron: { x: 310.9034106321714, y: 619.6571494164668 }, carpathia: { x: 119.8377186648703, y: 508.39108270816456 }, bride: { x: 26.559863055252094, y: 425.88299434764315 }, "harland-wolff": { x: 33.70791757834258, y: 263.7722409120099 }, titanic: { x: 109.44110503183028, y: 151.16287980474578 }, californian: { x: 218.77588854001735, y: 36.01222116199165 },
+      },
+    },
+    ja: {
+      generic: {
+        andrews: { x: 0, y: 328 }, rostron: { x: 0, y: 0 }, titanic: { x: 425.94112549695427, y: 154.05887450304573 }, fleet: { x: 668, y: 424 }, californian: { x: 24, y: 164 }, "molly-brown": { x: 588, y: 164 }, "white-star-line": { x: 588, y: 0 }, ismay: { x: 356, y: 0 }, phillips: { x: 784, y: 424 }, "harland-wolff": { x: 196, y: 328 }, carpathia: { x: 196, y: 164 }, bride: { x: 392, y: 328 }, smith: { x: 784, y: 0 },
+      },
+      post: {
+        andrews: { x: 30.72792206135786, y: 340.72792206135784 }, rostron: { x: 24.36396103067893, y: 19.091883092036785 }, titanic: { x: 417.4558441227157, y: 171.02943725152286 }, fleet: { x: 668, y: 424 }, californian: { x: 24, y: 164 }, "molly-brown": { x: 600.7279220613578, y: 151.27207793864216 }, "white-star-line": { x: 575.2720779386422, y: 12.727922061357857 }, ismay: { x: 356, y: 0 }, phillips: { x: 766, y: 424 }, "harland-wolff": { x: 196, y: 328 }, carpathia: { x: 189.63603896932108, y: 157.63603896932108 }, bride: { x: 392, y: 328 }, smith: { x: 753.2720779386422, y: 12.727922061357859 },
+      },
+    },
+  },
+} as const;
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -305,15 +373,20 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
       relations: graph.edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
     }, { nodeClearance: 120, iterations: 3 });
   }
-  if (selectedFixtureKind !== "apollo" && (candidate === "generic-crossing-search-v1" || candidate === "post-structural-relaxation-v1")) {
+  const additionalFixturePositions = additionalGeneralizationPositions[selectedFixtureKind as keyof typeof additionalGeneralizationPositions];
+  if (additionalFixturePositions && (candidate === "generic-crossing-search-v1" || candidate === "post-structural-relaxation-v1")) {
     const family = candidate === "generic-crossing-search-v1" ? "generic" : "post";
-    return generalizationPositions[selectedFixtureKind as "linkscape" | "lighthouse"][family];
+    return additionalFixturePositions[inspectionLocale][family];
   }
-  if (selectedFixtureKind !== "apollo" && candidate === "pressure-targeted-relaxation-v1") {
+  if ((selectedFixtureKind === "linkscape" || selectedFixtureKind === "lighthouse") && (candidate === "generic-crossing-search-v1" || candidate === "post-structural-relaxation-v1")) {
+    const family = candidate === "generic-crossing-search-v1" ? "generic" : "post";
+    return generalizationPositions[selectedFixtureKind][family];
+  }
+  if ((selectedFixtureKind === "linkscape" || selectedFixtureKind === "lighthouse") && candidate === "pressure-targeted-relaxation-v1") {
     const positions = generalizationPositions[selectedFixtureKind as "linkscape" | "lighthouse"];
     return positions.pressure ?? positions.post;
   }
-  if (selectedFixtureKind !== "apollo" && candidate === "quantized-relaxation-step1-v1") {
+  if ((selectedFixtureKind === "linkscape" || selectedFixtureKind === "lighthouse") && candidate === "quantized-relaxation-step1-v1") {
     return generalizationPositions[selectedFixtureKind as "linkscape" | "lighthouse"].quantized;
   }
   if (candidate === "local-search-v1") return localSearchPositions;
