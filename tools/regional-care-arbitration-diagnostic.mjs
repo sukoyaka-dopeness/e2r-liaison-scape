@@ -234,6 +234,7 @@ const nodeLabelAlternatives = residualRelations.map((relationId) => {
       alternatives.push({
         labelId,
         candidateIndex: candidate.index,
+        candidateLabel: candidate.label,
         displacement: Math.hypot(offsets.get(labelId).x, offsets.get(labelId).y),
         localHit: metrics.hitRelationIds.includes(relationId),
         globalHits: metrics.hitRelationIds.length,
@@ -247,12 +248,21 @@ const nodeLabelAlternatives = residualRelations.map((relationId) => {
     }
   }
   const hitFree = alternatives.filter((candidate) => !candidate.localHit);
+  const byLabel = labelIds.map((labelId) => {
+    const labelAlternatives = hitFree.filter((candidate) => candidate.labelId === labelId);
+    return {
+      labelId,
+      hitFreeCount: labelAlternatives.length,
+      bestHitFree: selectBest(labelAlternatives),
+    };
+  });
   return {
     relationId,
     labelIds,
     hitFreeCount: hitFree.length,
     bestHitFree: selectBest(hitFree),
     bestAny: selectBest(alternatives),
+    byLabel,
   };
 });
 
@@ -296,6 +306,156 @@ const feedbackLabelRetention = ["r03", "r16", "r18"].flatMap((relationId) => {
   });
 });
 
+function renderJoint(routeOffsets = {}, labelOverrides = {}, feedbackEnabled = true) {
+  const nextProvisional = provisionalLabels();
+  const manualNodeLabelOffsets = new Map();
+  for (const [labelId, label] of Object.entries(labelOverrides)) {
+    const node = positions[labelId];
+    const nodeIndex = graph.nodes.findIndex(({ id }) => id === labelId);
+    if (!node || nodeIndex < 0) continue;
+    nextProvisional[nodeIndex] = label;
+    manualNodeLabelOffsets.set(labelId, { x: label.x - node.x, y: label.y - node.y });
+  }
+  return render({ edgeCurveOffsets: routeOffsets, manualNodeLabelOffsets, provisionalNodeLabels: nextProvisional, feedbackEnabled });
+}
+
+function routeChanges(rendered, excludedIds = []) {
+  const excluded = new Set(excludedIds);
+  return rendered.presentation.routedEdges
+    .filter((route) => !excluded.has(route.id))
+    .filter((route) => baseRendered.presentation.routedEdges.find((baseRoute) => baseRoute.id === route.id)?.path !== route.path)
+    .map((route) => route.id);
+}
+
+function labelChanges(rendered) {
+  return [...rendered.presentation.nodeLabels.entries()]
+    .filter(([id, label]) => {
+      const baseLabel = baseRendered.presentation.nodeLabels.get(id);
+      return !baseLabel || Math.hypot(label.x - baseLabel.x, label.y - baseLabel.y) > 0.5;
+    })
+    .map(([id]) => id);
+}
+
+function jointCandidateRecord(rendered, relationId, routeOffset, labelPlan, labelOverrides) {
+  const metrics = measure(rendered.presentation);
+  const local = summaryForRelation(metrics, relationId);
+  return {
+    relationId,
+    routeOffset,
+    labelPlan,
+    labelIds: Object.keys(labelOverrides),
+    localHit: local.hit,
+    globalHits: metrics.hitRelationIds.length,
+    globalNear: metrics.nearRelationIds.length,
+    globalCrossings: metrics.crossings,
+    routeMedian: metrics.routeMedian,
+    routeMax: metrics.routeMax,
+    extent: metrics.extent,
+    fit: metrics.fit,
+    changedRemoteRoutes: routeChanges(rendered, [relationId]),
+    changedNodeLabels: labelChanges(rendered),
+    labelOverrides,
+  };
+}
+
+function labelPlansForRelation(relationId) {
+  const alternatives = nodeLabelAlternatives.find((candidate) => candidate.relationId === relationId);
+  const plans = [{ name: "none", overrides: {} }];
+  for (const labelAlternative of alternatives?.byLabel ?? []) {
+    const best = labelAlternative.bestHitFree;
+    if (best?.candidateLabel) plans.push({
+      name: `label:${labelAlternative.labelId}:candidate-${best.candidateIndex}`,
+      overrides: { [labelAlternative.labelId]: best.candidateLabel },
+    });
+  }
+  if (relationId === "r18") {
+    const combined = (alternatives?.byLabel ?? []).filter(({ bestHitFree }) => bestHitFree?.candidateLabel);
+    if (combined.length === 3) plans.push({
+      name: "labels:all-three-best-hit-free",
+      overrides: Object.fromEntries(combined.map(({ labelId, bestHitFree }) => [labelId, bestHitFree.candidateLabel])),
+    });
+  }
+  if (relationId === "r16") {
+    const firstLabel = firstPass?.nodeLabels.get("city-hospital");
+    if (firstLabel) plans.push({ name: "feedback:retain-first-pass-city-hospital", overrides: { "city-hospital": firstLabel } });
+  }
+  return plans;
+}
+
+const jointPerRelation = residualRelations.map((relationId) => {
+  const routeAlternative = routeSideAlternatives.find((candidate) => candidate.relationId === relationId);
+  const routeOptions = [0, ...(routeAlternative?.hitFreeOffsets ?? [])].filter((offset, index, offsets) => offsets.indexOf(offset) === index);
+  const labelPlans = labelPlansForRelation(relationId);
+  const candidates = [];
+  for (const routeOffset of routeOptions) for (const plan of labelPlans) {
+    const rendered = renderJoint({ [relationId]: routeOffset }, plan.overrides, true);
+    candidates.push(jointCandidateRecord(rendered, relationId, routeOffset, plan.name, plan.overrides));
+  }
+  const localHitFree = candidates.filter((candidate) => !candidate.localHit);
+  const best = selectBest(localHitFree);
+  return {
+    relationId,
+    routeOptions,
+    labelPlans: labelPlans.map(({ name }) => name),
+    evaluated: candidates.length,
+    localHitFreeCount: localHitFree.length,
+    best,
+    topHitFree: localHitFree.slice().sort((left, right) => {
+      const a = compareCandidate(left); const b = compareCandidate(right);
+      for (let index = 0; index < a.length; index += 1) if (a[index] !== b[index]) return a[index] - b[index];
+      return left.labelPlan.localeCompare(right.labelPlan) || left.routeOffset - right.routeOffset;
+    }).slice(0, 8),
+  };
+});
+
+function mergeJointActions(actions) {
+  return {
+    routeOffsets: Object.fromEntries(actions.filter((action) => action.routeOffset !== 0).map((action) => [action.relationId, action.routeOffset])),
+    labelOverrides: Object.assign({}, ...actions.map((action) => action.labelOverrides)),
+  };
+}
+
+const jointPools = jointPerRelation.map((result) => [
+  { relationId: result.relationId, routeOffset: 0, labelPlan: "none", labelOverrides: {} },
+  ...result.topHitFree.slice(0, 5).map((candidate) => ({
+    relationId: candidate.relationId,
+    routeOffset: candidate.routeOffset,
+    labelPlan: candidate.labelPlan,
+    labelOverrides: candidate.labelOverrides,
+  })),
+]);
+
+const jointCombinations = [];
+for (const first of jointPools[0]) for (const second of jointPools[1]) for (const third of jointPools[2]) {
+  const actions = [first, second, third];
+  const merged = mergeJointActions(actions);
+  const rendered = renderJoint(merged.routeOffsets, merged.labelOverrides, true);
+  const metrics = measure(rendered.presentation);
+  jointCombinations.push({
+    actions: actions.map(({ relationId, routeOffset, labelPlan }) => ({ relationId, routeOffset, labelPlan })),
+    ...metrics,
+    globalHits: metrics.hitRelationIds.length,
+    globalNear: metrics.nearRelationIds.length,
+    globalCrossings: metrics.crossings,
+    routeMedian: metrics.routeMedian,
+    routeMax: metrics.routeMax,
+    changedRemoteRoutes: routeChanges(rendered),
+    changedNodeLabels: labelChanges(rendered),
+  });
+}
+const sortedJointCombinations = jointCombinations.slice().sort((left, right) => {
+  const a = compareCandidate(left); const b = compareCandidate(right);
+  for (let index = 0; index < a.length; index += 1) if (a[index] !== b[index]) return a[index] - b[index];
+  return left.actions.map(({ labelPlan }) => labelPlan).join("|").localeCompare(right.actions.map(({ labelPlan }) => labelPlan).join("|"));
+});
+const materiallySaferJoint = sortedJointCombinations.filter((candidate) =>
+  candidate.globalHits < base.hitRelationIds.length
+  && candidate.globalNear <= base.nearRelationIds.length
+  && candidate.globalCrossings <= base.crossings
+  && candidate.routeMedian <= base.routeMedian * 1.05
+  && candidate.routeMax <= base.routeMax * 1.05,
+);
+
 const hitClassifications = residualRelations.map((relationId) => {
   const detail = base.hitDetails.find((candidate) => candidate.relationId === relationId);
   const route = routeSideAlternatives.find((candidate) => candidate.relationId === relationId);
@@ -330,6 +490,14 @@ console.log(JSON.stringify({
   nodeLabelAlternatives,
   feedbackArbitration,
   feedbackLabelRetention,
+  jointPerRelation,
+  jointGlobalSearch: {
+    candidatePoolSizes: jointPools.map((pool) => pool.length),
+    combinationsEvaluated: jointCombinations.length,
+    bestByGlobalVector: sortedJointCombinations.slice(0, 5),
+    materiallySaferCount: materiallySaferJoint.length,
+    bestMateriallySafer: materiallySaferJoint[0] ?? null,
+  },
   routeDecisionEvidence: Object.fromEntries(residualRelations.map((relationId) => [relationId, decisionSummary(baseRendered, relationId)])),
   relationLabelCausality: {
     currentHitPredicate: "route samples against final Node-label rectangles",
