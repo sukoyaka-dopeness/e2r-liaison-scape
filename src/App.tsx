@@ -35,6 +35,8 @@ import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation
 import { publishDatasetOpenTiming, publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming, type DatasetOpenTimingSample } from "./presentation-diagnostics";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
+const DATASET_LOADING_SHOW_DELAY_MS = 120;
+const DATASET_LOADING_MIN_VISIBLE_MS = 180;
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
 type OpenDatasetResult = { status: "accepted-or-staged" } | { status: "parse-error" } | { status: "validation-error" } | { status: "target-error" };
 type DatasetReplacementSource = "handoff" | "local" | "sample" | "new";
@@ -54,6 +56,8 @@ export default function App() {
   const [pendingDatasetReplacementSource, setPendingDatasetReplacementSource] = useState<DatasetReplacementSource | null>(null);
   const [pendingTargetLanding, setPendingTargetLanding] = useState<{ dataset: Dataset; relationId: string } | null>(null);
   const [startupHandoffFailure, setStartupHandoffFailure] = useState<StartupHandoffFailure | null>(null);
+  const [datasetLoading, setDatasetLoading] = useState(false);
+  const [datasetLoadingVisible, setDatasetLoadingVisible] = useState(false);
   const timingDiagnosticsEnabled = new URLSearchParams(window.location.search).get("diagnostic") === "timing";
   const [datasetOpenTimingEvents, setDatasetOpenTimingEvents] = useState<DatasetOpenTimingSample[]>([]);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
@@ -127,8 +131,65 @@ export default function App() {
   const restoreReplacementFocusRef = useRef(false);
   const startupHandoffStartedRef = useRef(false);
   const datasetOpenTimingRef = useRef<{ source: DatasetReplacementSource; startedAt: number; dataset: Dataset | null; presentationPublished: boolean } | null>(null);
+  const datasetLoadingRef = useRef(false);
+  const datasetLoadingVisibleRef = useRef(false);
+  const datasetLoadingTimerRef = useRef<number | null>(null);
+  const datasetLoadingShownAtRef = useRef<number | null>(null);
+  const datasetLoadingAwaitingStableRef = useRef(false);
+
+  function showDatasetLoading() {
+    if (!datasetLoadingRef.current || datasetLoadingVisibleRef.current) return;
+    if (datasetLoadingTimerRef.current !== null) window.clearTimeout(datasetLoadingTimerRef.current);
+    datasetLoadingTimerRef.current = null;
+    datasetLoadingVisibleRef.current = true;
+    datasetLoadingShownAtRef.current = performance.now();
+    setDatasetLoadingVisible(true);
+  }
+
+  function beginDatasetLoading() {
+    if (datasetLoadingRef.current) return;
+    datasetLoadingRef.current = true;
+    datasetLoadingVisibleRef.current = false;
+    datasetLoadingShownAtRef.current = null;
+    setDatasetLoading(true);
+    setDatasetLoadingVisible(false);
+    datasetLoadingTimerRef.current = window.setTimeout(showDatasetLoading, DATASET_LOADING_SHOW_DELAY_MS);
+  }
+
+  function hideDatasetLoading() {
+    datasetLoadingTimerRef.current = null;
+    datasetLoadingVisibleRef.current = false;
+    datasetLoadingShownAtRef.current = null;
+    setDatasetLoadingVisible(false);
+  }
+
+  function finishDatasetLoading() {
+    if (!datasetLoadingRef.current) return;
+    if (datasetLoadingTimerRef.current !== null) {
+      window.clearTimeout(datasetLoadingTimerRef.current);
+      datasetLoadingTimerRef.current = null;
+    }
+    datasetLoadingRef.current = false;
+    setDatasetLoading(false);
+    const shownAt = datasetLoadingShownAtRef.current;
+    const remaining = shownAt === null ? 0 : DATASET_LOADING_MIN_VISIBLE_MS - (performance.now() - shownAt);
+    if (remaining > 0) {
+      datasetLoadingTimerRef.current = window.setTimeout(hideDatasetLoading, remaining);
+      return;
+    }
+    hideDatasetLoading();
+  }
+
+  function scheduleDatasetOpen(task: () => void) {
+    window.setTimeout(task, 0);
+  }
+
+  useEffect(() => () => {
+    if (datasetLoadingTimerRef.current !== null) window.clearTimeout(datasetLoadingTimerRef.current);
+  }, []);
 
   function beginDatasetOpenTiming(source: DatasetReplacementSource) {
+    beginDatasetLoading();
     if (datasetOpenTimingRef.current) return;
     const startedAt = performance.now();
     datasetOpenTimingRef.current = { source, startedAt, dataset: null, presentationPublished: false };
@@ -269,11 +330,16 @@ export default function App() {
         return response.text();
       })
       .then((raw) => {
-        const result = open(raw, null, "handoff", handoff.kind === "targeted" ? handoff : undefined);
-        if (result.status === "parse-error") setStartupHandoffFailure("parse-failed");
-        else if (result.status === "validation-error") setStartupHandoffFailure("validation-failed");
+        scheduleDatasetOpen(() => {
+          const result = open(raw, null, "handoff", handoff.kind === "targeted" ? handoff : undefined);
+          if (result.status === "parse-error") setStartupHandoffFailure("parse-failed");
+          else if (result.status === "validation-error") setStartupHandoffFailure("validation-failed");
+        });
       })
-      .catch(() => setStartupHandoffFailure("fetch-failed"));
+      .catch(() => {
+        finishDatasetLoading();
+        setStartupHandoffFailure("fetch-failed");
+      });
   }, []);
 
   useEffect(() => {
@@ -502,6 +568,10 @@ export default function App() {
     });
     setDatasetOpenTimingEvents([...(window.__liaisonScapeDatasetOpenTimingEvents ?? [])]);
     datasetOpenTimingRef.current = null;
+    if (datasetLoadingAwaitingStableRef.current) {
+      datasetLoadingAwaitingStableRef.current = false;
+      finishDatasetLoading();
+    }
   }, [dataset, graph.nodes.length, routedEdges.length, presentation]);
 
   function resetPreviousLabelPlacements() {
@@ -806,6 +876,7 @@ export default function App() {
       timing.dataset = nextDataset;
       publishDatasetOpenTiming({ phase: "accepted", source: timing.source, at: performance.now() });
     }
+    datasetLoadingAwaitingStableRef.current = true;
     cleanDatasetBaseline.current = structuredClone(nextDataset);
     setDataset(nextDataset);
     setDatasetModified(false);
@@ -947,17 +1018,20 @@ export default function App() {
 
   function open(raw: string, trigger?: HTMLButtonElement | null, source: DatasetReplacementSource = "local", target?: TargetedHandoff): OpenDatasetResult {
     beginDatasetOpenTiming(source);
+    showDatasetLoading();
     publishDatasetOpenTiming({ phase: "raw-available", source, at: performance.now() });
     const result = loadDataset(raw);
     publishDatasetOpenTiming({ phase: "parsed", source, at: performance.now() });
     setDiagnostics(result.diagnostics);
     if (result.parseError) {
       setMessage(translate(locale, "jsonLoadFailure"));
+      finishDatasetLoading();
       return { status: "parse-error" };
     }
     const candidate = candidateFromLoadResult(result);
     if (!candidate) {
       setMessage(translate(locale, "datasetValidationFailure"));
+      finishDatasetLoading();
       return { status: "validation-error" };
     }
     setPendingTargetLanding(null);
@@ -982,7 +1056,18 @@ export default function App() {
     }
     requestDatasetReplacement(candidate, trigger, source);
     setMessage("");
+    if (!datasetLoadingAwaitingStableRef.current) finishDatasetLoading();
     return { status: "accepted-or-staged" };
+  }
+
+  function openLocalFile(file: File, trigger?: HTMLButtonElement | null) {
+    beginDatasetOpenTiming("local");
+    void file.text()
+      .then((raw) => scheduleDatasetOpen(() => open(raw, trigger)))
+      .catch(() => {
+        finishDatasetLoading();
+        setMessage(translate(locale, "jsonLoadFailure"));
+      });
   }
 
   async function openSample(trigger?: HTMLButtonElement | null) {
@@ -990,8 +1075,10 @@ export default function App() {
     try {
       const response = await fetch(`${import.meta.env.BASE_URL}lighthouse-restoration-demo.${locale}.e2r.json`);
       if (!response.ok) throw new Error(`Sample request failed: ${response.status}`);
-      open(await response.text(), trigger, "sample");
+      const raw = await response.text();
+      scheduleDatasetOpen(() => open(raw, trigger, "sample"));
     } catch {
+      finishDatasetLoading();
       setMessage(translate(locale, "sampleDatasetLoadFailure"));
     }
   }
@@ -1015,6 +1102,9 @@ export default function App() {
   const replacementDialog = dataset && pendingDatasetReplacement
     ? <DatasetReplacementDialog locale={locale} datasetModified={datasetModified} pendingUserWork={pendingUserWork} onCancel={cancelDatasetReplacement} onDiscard={discardAndContinueDatasetReplacement} onExportAndContinue={exportAndContinueDatasetReplacement} onExportDataset={exportDatasetOnly} />
     : null;
+  const datasetLoadingIndicator = datasetLoadingVisible
+    ? <div className="dataset-loading-indicator" role="status" aria-live="polite" aria-atomic="true"><span className="dataset-loading-indicator__spinner" aria-hidden="true" />{translate(locale, "datasetLoading")}</div>
+    : null;
 
   if (view === "home") return (
     <div className="app-frame home-page">
@@ -1026,22 +1116,23 @@ export default function App() {
             : <button type="button" className="locale-button" onClick={() => setLocale("ja")}>日本語</button>}
         </div>
       </header>
-      <main className="home-content">
+      <main className="home-content" aria-busy={datasetLoading}>
         <h1 tabIndex={-1}>{translate(locale, "getStarted")}</h1>
         <p className="home-description">{translate(locale, "homeDescription")}</p>
+        {datasetLoadingIndicator}
         {startupHandoffFailure && <p className="home-message" role="alert">{translate(locale, startupHandoffFailure === "invalid-fragment" ? "handoffInvalid" : startupHandoffFailure === "targeted-invalid" ? "targetedHandoffInvalid" : startupHandoffFailure === "fetch-failed" ? "handoffFetchFailure" : startupHandoffFailure === "parse-failed" ? "jsonLoadFailure" : "datasetValidationFailure")}</p>}
         <div className="home-actions">
           {dataset && <button type="button" onClick={enterWorkspace}>{translate(locale, "continueEditing")}</button>}
-          <button type="button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => startNewDataset(event.currentTarget)}>{translate(locale, "newDataset")}</button>
-          <button type="button" className="open-dataset-button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; homeOpenFileInputRef.current?.click(); }}>{translate(locale, "openDataset")}</button>
+          <button type="button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={(event) => startNewDataset(event.currentTarget)}>{translate(locale, "newDataset")}</button>
+          <button type="button" className="open-dataset-button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; homeOpenFileInputRef.current?.click(); }}>{translate(locale, "openDataset")}</button>
           <input
             ref={homeOpenFileInputRef}
             className="file-input-hidden"
-            type="file" tabIndex={-1} disabled={Boolean(pendingDatasetReplacement)} accept="application/json,.json,.e2r.json"
-            onChange={(event) => { const file = event.target.files?.[0]; const trigger = replacementTriggerRef.current; if (file) { beginDatasetOpenTiming("local"); void file.text().then((raw) => open(raw, trigger)); } }}
+            type="file" tabIndex={-1} disabled={Boolean(pendingDatasetReplacement) || datasetLoading} accept="application/json,.json,.e2r.json"
+            onChange={(event) => { const file = event.target.files?.[0]; const trigger = replacementTriggerRef.current; if (file) openLocalFile(file, trigger); }}
           />
           <div className="sample-action">
-            <button type="button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => void openSample(event.currentTarget)}>{translate(locale, "openSampleDataset")}</button>
+            <button type="button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={(event) => void openSample(event.currentTarget)}>{translate(locale, "openSampleDataset")}</button>
           </div>
         </div>
         <nav className="home-guides" aria-label={translate(locale, "guides")}>
@@ -1763,21 +1854,22 @@ export default function App() {
             : <button type="button" className="locale-button" onClick={() => setLocale("ja")}>日本語</button>}
         </div>
       </header>
-      <main className="app-content">
-        <div className="page-header">
-          <h1>Entity graph</h1>
-          <p>Entity-first E2R relationship graph.</p>
-        </div>
+    <main className="app-content" aria-busy={datasetLoading}>
+      <div className="page-header">
+        <h1>Entity graph</h1>
+        <p>Entity-first E2R relationship graph.</p>
+      </div>
+      {datasetLoadingIndicator}
         <div className="dataset-actions">
           <input
             ref={workspaceOpenFileInputRef}
             className="file-input-hidden"
-            type="file" tabIndex={-1} disabled={Boolean(pendingDatasetReplacement)}
+            type="file" tabIndex={-1} disabled={Boolean(pendingDatasetReplacement) || datasetLoading}
             accept="application/json,.json,.e2r.json"
             onChange={(event) => {
               const file = event.target.files?.[0];
               const trigger = replacementTriggerRef.current;
-              if (file) { beginDatasetOpenTiming("local"); void file.text().then((raw) => open(raw, trigger)); }
+              if (file) openLocalFile(file, trigger);
             }}
           />
           {dataset && <p className="graph-summary toolbar-graph-summary">{formatGraphSummary(locale, graph.nodes.length, graph.edges.length)}</p>}
@@ -1788,7 +1880,7 @@ export default function App() {
             <details ref={maintenanceMenuRef} className="maintenance-menu" onToggle={(event) => setMaintenanceMenuOpen(event.currentTarget.open)} onKeyDown={handleMaintenanceMenuKeyDown}>
               <summary ref={maintenanceMenuSummaryRef}>{translate(locale, "more")}</summary>
               <div className="maintenance-menu__items">
-                <button type="button" disabled={Boolean(pendingDatasetReplacement)} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; closeMaintenanceMenu(); workspaceOpenFileInputRef.current?.click(); }}>{translate(locale, "openWorkspaceDataset")}</button>
+                <button type="button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; closeMaintenanceMenu(); workspaceOpenFileInputRef.current?.click(); }}>{translate(locale, "openWorkspaceDataset")}</button>
                 <button type="button" disabled={!dataset} onClick={() => { closeMaintenanceMenu(); exportDataset(); }}>{translate(locale, "exportDataset")}</button>
                 <button type="button" className="mobile-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={() => { closeMaintenanceMenu(); saveCoordinates(); }}>{translate(locale, "saveCoordinates")}</button>
                 <button type="button" disabled={!dataset || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>{translate(locale, "migrateCoordinateDraft")}</button>

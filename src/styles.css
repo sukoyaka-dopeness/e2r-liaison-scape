@@ -48,6 +48,10 @@ body { margin: 0; }
 .dataset-actions__buttons, .viewport-controls { display: flex; align-items: center; flex-wrap: nowrap; gap: 8px; }
 .toolbar-graph-summary { margin: 0; white-space: nowrap; }
 .status-message { margin: 6px 0; min-height: 1.45em; font-size: .9rem; }
+.dataset-loading-indicator { display: inline-flex; align-items: center; gap: 8px; margin: 8px 0; color: #4f2390; font-size: .92rem; }
+.dataset-loading-indicator__spinner { width: 1rem; height: 1rem; border: 2px solid #ded2ed; border-top-color: #7c3aed; border-radius: 50%; animation: dataset-loading-spin .8s linear infinite; }
+@keyframes dataset-loading-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .dataset-loading-indicator__spinner { animation: none; } }
 .dataset-metadata { display: flex; gap: 8px; align-items: baseline; margin: 16px 0 4px; padding: 0; border: 0; font-size: .86rem; }
 .dataset-metadata dt { font-weight: 650; color: #08060d; }
 .dataset-metadata dd { margin: 0; overflow-wrap: anywhere; }

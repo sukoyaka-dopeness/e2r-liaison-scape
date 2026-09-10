@@ -114,6 +114,7 @@ export const messages = {
     datasetTitleInput: "Dataset title",
     untitled: "Untitled",
     newDataset: "New Dataset", openSampleDataset: "Open sample Dataset", sampleDatasetLoadFailure: "Could not load the sample Dataset.",
+    datasetLoading: "Loading Dataset…",
     openDataset: "Open E2R Dataset",
     continueEditing: "Continue Editing",
     browserBackDatasetNotice: "Your Dataset is still open. Continue to return to the workspace.",
@@ -156,6 +157,7 @@ export const messages = {
     close: "Close", entityDetail: "Entity Detail", id: "ID", shownRelations: "Shown Relations", datasetRelations: "Dataset Relations", dangerZone: "Danger zone", relatedRelations: "Related Relations:", deleteEntity: "Delete Entity", closeEntityDetail: "Close Entity Detail",
   },
   ja: {
+    datasetLoading: "Dataset\u3092\u8aad\u307f\u8fbc\u307f\u4e2d\u2026",
     edit: "\u7de8\u96c6",
     datasetTitleVisible: "\u30bf\u30a4\u30c8\u30eb",
     editDatasetTitle: "\u30c7\u30fc\u30bf\u30bb\u30c3\u30c8\u306e\u30bf\u30a4\u30c8\u30eb\u3092\u7de8\u96c6",

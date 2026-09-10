@@ -191,6 +191,37 @@ test("renders the production LiaisonScape Home surface", async () => {
   }
 });
 
+test("shows a delayed Dataset loading status during a slow sample open and clears it after the Graph is stable", async () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [{ id: "loading-entity", name: "Loading entity" }],
+    events: [],
+    relations: [],
+  };
+  let resolveFetch: ((response: { ok: boolean; text: () => Promise<string> }) => void) | undefined;
+  const pendingFetch = new Promise<{ ok: boolean; text: () => Promise<string> }>((resolve) => { resolveFetch = resolve; });
+  await withProductionApp({
+    beforeRender: (environment) => environment.installGlobal("fetch", () => pendingFetch),
+    callback: async (environment) => {
+      const sampleButton = [...environment.document.querySelectorAll("button")].find((button) => button.textContent === "Open sample Dataset");
+      assert.ok(sampleButton);
+
+      await act(async () => { (sampleButton as HTMLButtonElement).click(); });
+      await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 150)));
+      const loading = environment.document.querySelector(".dataset-loading-indicator");
+      assert.ok(loading);
+      assert.equal(loading?.getAttribute("role"), "status");
+      assert.match(loading?.textContent ?? "", /Loading Dataset/);
+      assert.equal(environment.document.querySelector(".home-page") !== null, true);
+
+      resolveFetch?.({ ok: true, text: async () => JSON.stringify(dataset) });
+      await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 230)));
+      assert.equal(environment.document.querySelector(".dataset-loading-indicator"), null);
+      assert.ok(environment.document.querySelector(".graph-section"));
+    },
+  });
+});
+
 test("localizes the Home Credits surface while preserving identity and dismissal focus", async () => {
   await withProductionApp({ locale: "en", callback: async (environment) => {
     const opener = environment.document.querySelector(".home-footer .credits-button") as HTMLButtonElement;
