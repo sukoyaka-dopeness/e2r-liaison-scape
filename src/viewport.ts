@@ -383,6 +383,28 @@ function pointToRectDistance(point: Point, rect: LabelRect): number {
   return Math.hypot(dx, dy);
 }
 
+type PointBounds = { minX: number; maxX: number; minY: number; maxY: number };
+
+function pointBounds(points: readonly Point[]): PointBounds | null {
+  const finite = points.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+  if (finite.length === 0) return null;
+  return {
+    minX: Math.min(...finite.map(({ x }) => x)),
+    maxX: Math.max(...finite.map(({ x }) => x)),
+    minY: Math.min(...finite.map(({ y }) => y)),
+    maxY: Math.max(...finite.map(({ y }) => y)),
+  };
+}
+
+function boundsMissRect(bounds: PointBounds | null, rect: LabelRect, extraX: number, extraY: number): boolean {
+  if (!bounds) return false;
+  const left = rect.x - rect.width / 2 - extraX;
+  const right = rect.x + rect.width / 2 + extraX;
+  const top = rect.y - rect.height / 2 - extraY;
+  const bottom = rect.y + rect.height / 2 + extraY;
+  return bounds.maxX < left || bounds.minX > right || bounds.maxY < top || bounds.minY > bottom;
+}
+
 function placementMovementCost(candidate: LabelRect, previous: LabelRect | undefined): number {
   if (!previous) return 0;
   return Math.hypot(candidate.x - previous.x, candidate.y - previous.y) * 4;
@@ -439,13 +461,13 @@ export function placeEdgeLabel(
       preference: alongPathPreference * 5 + awayFromPathPreference,
     }));
   });
+  const otherEdgePathBounds = otherEdgePaths.map((path) => pointBounds(path));
 
   const scoredCandidates = candidates.map(({ candidate, sampleIndex, normalOffset, preference }) => {
     if (profile) {
       profile.candidateEvaluations += 1;
       profile.occupiedLabelChecks += occupiedLabels.length;
       profile.otherNodeChecks += nodes.length;
-      profile.edgePathPointChecks += otherEdgePaths.reduce((total, path) => total + path.length, 0);
       if (previousPlacement) profile.previousPlacementEvaluations += 1;
     }
     const labelOverlap = occupiedLabels.reduce((total, occupied) => total + rectOverlapArea(candidate, occupied), 0);
@@ -454,11 +476,19 @@ export function placeEdgeLabel(
       const nearestY = Math.max(candidate.y - 11, Math.min(node.y, candidate.y + 11));
       return total + (Math.hypot(node.x - nearestX, node.y - nearestY) < 36 ? 1 : 0);
     }, 0);
-    const edgeOverlap = otherEdgePaths.reduce((total, path) => total + path.reduce((pathTotal, pathPoint) =>
-      pathTotal + (pathPoint.x >= candidate.x - width / 2 - 4
-        && pathPoint.x <= candidate.x + width / 2 + 4
-        && pathPoint.y >= candidate.y - 15
-        && pathPoint.y <= candidate.y + 15 ? 1 : 0), 0), 0);
+    const edgeOverlap = otherEdgePaths.reduce((total, path, pathIndex) => {
+      if (boundsMissRect(otherEdgePathBounds[pathIndex] ?? null, candidate, 4, 15)) {
+        if (profile) profile.pathBroadPhaseRejects += 1;
+        return total;
+      }
+      return total + path.reduce((pathTotal, pathPoint) => {
+        if (profile) profile.edgePathPointChecks += 1;
+        return pathTotal + (pathPoint.x >= candidate.x - width / 2 - 4
+          && pathPoint.x <= candidate.x + width / 2 + 4
+          && pathPoint.y >= candidate.y - 15
+          && pathPoint.y <= candidate.y + 15 ? 1 : 0);
+      }, 0);
+    }, 0);
     return {
       candidate,
       sampleIndex,
@@ -529,14 +559,14 @@ export function placeNodeLabel(
   ) + 12));
   const height = descriptionLines.length === 0 ? 20 : descriptionLines.length === 1 ? 34 : 48;
   const angles = Array.from({ length: 32 }, (_, index) => Math.PI / 2 + index * Math.PI / 16);
+  const edgePathBounds = edgePaths.map((path) => pointBounds(path));
+  const yieldingRouteBounds = yieldingRoutes.map((route) => pointBounds(route.samples));
 
   const scoredCandidates = angles.map((angle, index) => {
     if (profile) {
       profile.candidateEvaluations += 1;
       profile.occupiedLabelChecks += occupiedLabels.length;
       profile.otherNodeChecks += otherNodes.length;
-      profile.edgePathPointChecks += edgePaths.reduce((total, path) => total + path.length, 0);
-      profile.yieldingRoutePointChecks += yieldingRoutes.reduce((total, route) => total + route.samples.length, 0);
       if (previousPlacement) profile.previousPlacementEvaluations += 1;
     }
     const directionX = Math.cos(angle);
@@ -568,8 +598,13 @@ export function placeNodeLabel(
       const nearestY = Math.max(top, Math.min(otherNode.y, bottom));
       if (Math.hypot(otherNode.x - nearestX, otherNode.y - nearestY) < 36) score += 8000;
     }
-    for (const path of edgePaths) {
+    for (const [pathIndex, path] of edgePaths.entries()) {
+      if (boundsMissRect(edgePathBounds[pathIndex] ?? null, candidate, NODE_LABEL_ROUTE_HARD_CLEARANCE + NODE_LABEL_ROUTE_HALO_WIDTH, NODE_LABEL_ROUTE_HARD_CLEARANCE + NODE_LABEL_ROUTE_HALO_WIDTH)) {
+        if (profile) profile.pathBroadPhaseRejects += 1;
+        continue;
+      }
       for (const point of path) {
+        if (profile) profile.edgePathPointChecks += 1;
         const routeDistance = pointToRectDistance(point, candidate);
         if (routeDistance <= NODE_LABEL_ROUTE_HARD_CLEARANCE) {
           score += 80;
@@ -580,7 +615,12 @@ export function placeNodeLabel(
         }
       }
     }
-    for (const yieldingRoute of yieldingRoutes) {
+    for (const [routeIndex, yieldingRoute] of yieldingRoutes.entries()) {
+      if (boundsMissRect(yieldingRouteBounds[routeIndex] ?? null, candidate, NODE_LABEL_ROUTE_HALO_WIDTH, NODE_LABEL_ROUTE_HALO_WIDTH)) {
+        if (profile) profile.yieldingRouteBroadPhaseRejects += 1;
+        continue;
+      }
+      if (profile) profile.yieldingRoutePointChecks += yieldingRoute.samples.length;
       const routeDistance = minimumPathToLabelRectDistance(yieldingRoute.samples, candidate);
       if (routeDistance === 0) {
         score += 1600 + Math.min(6400, yieldingRoute.deviation * 8);
@@ -693,7 +733,9 @@ export type LabelPlacementProfile = {
   occupiedLabelChecks: number;
   otherNodeChecks: number;
   edgePathPointChecks: number;
+  pathBroadPhaseRejects: number;
   yieldingRoutePointChecks: number;
+  yieldingRouteBroadPhaseRejects: number;
   previousPlacementEvaluations: number;
   manualAnchorReconstructions: number;
 };

@@ -108,7 +108,9 @@ function emptyLabelPlacementProfile(): LabelPlacementProfile {
     occupiedLabelChecks: 0,
     otherNodeChecks: 0,
     edgePathPointChecks: 0,
+    pathBroadPhaseRejects: 0,
     yieldingRoutePointChecks: 0,
+    yieldingRouteBroadPhaseRejects: 0,
     previousPlacementEvaluations: 0,
     manualAnchorReconstructions: 0,
   };

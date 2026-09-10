@@ -562,7 +562,7 @@ test("candidate-generation cache preserves presentation authority and invalidate
 test("presentation profiler separates route arbitration from downstream stages", () => {
   const base = input();
   const profiler = createAutomaticPresentationProfiler();
-  deriveBoundedAutomaticPresentation({
+  const profiled = deriveBoundedAutomaticPresentation({
     ...base,
     provisionalNodeLabels: [],
     previousNodeLabelPlacements: new Map(),
@@ -571,6 +571,15 @@ test("presentation profiler separates route arbitration from downstream stages",
     manualRelationLabelAnchors: new Map(),
     profiler,
   });
+  const unprofiled = deriveBoundedAutomaticPresentation({
+    ...base,
+    provisionalNodeLabels: [],
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+  });
+  assert.deepEqual(profiled, unprofiled);
   assert.equal(profiler.passes["label-free"].routeDecisions, 1);
   assert.equal(profiler.passes.first.routeDecisions, 1);
   assert.ok(profiler.passes.first.route.candidateComparisons > 0);
