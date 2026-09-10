@@ -10,6 +10,7 @@ import {
   type AutomaticRelationLabelInput,
   type AutomaticRoutingInput,
 } from "../src/graph-presentation.ts";
+import type { PresentationPassSnapshot } from "../src/presentation-stage-contracts.ts";
 import { placeNodeLabel, routeGraphEdge } from "../src/viewport.ts";
 
 function input(overrides: Partial<AutomaticRoutingInput> = {}): AutomaticRoutingInput {
@@ -663,6 +664,27 @@ test("bounded presentation dependency trace records each first-to-feedback item"
   assert.equal(nodeTraces.filter(({ pass }) => pass === "feedback").length, 3);
   assert.ok(relationTraces.every(({ candidateFingerprint, selectedPlacementFingerprint }) => candidateFingerprint.length > 0 && selectedPlacementFingerprint.length > 0));
   assert.ok(nodeTraces.every(({ occupiedLabelPrefixFingerprint }) => occupiedLabelPrefixFingerprint.length > 0));
+});
+
+test("presentation pass snapshots expose read-only stage contracts without changing output", () => {
+  const snapshots: PresentationPassSnapshot[] = [];
+  const result = deriveBoundedAutomaticPresentation({
+    ...input(),
+    provisionalNodeLabels: [],
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+    presentationPassSink: (snapshot) => snapshots.push(snapshot),
+  });
+  assert.deepEqual(snapshots.map(({ route }) => route.pass), result.feedbackApplied ? ["first", "feedback"] : ["first"]);
+  const finalSnapshot = snapshots.at(-1)!;
+  assert.ok(Object.isFrozen(finalSnapshot));
+  assert.ok(Object.isFrozen(finalSnapshot.route.routes));
+  assert.ok(Object.isFrozen(finalSnapshot.nodeLabel.yieldingRoutes));
+  assert.deepEqual(finalSnapshot.route.routes, result.routedEdges);
+  assert.deepEqual(finalSnapshot.relationLabel.labels, result.relationLabels);
+  assert.deepEqual(finalSnapshot.nodeLabel.labels, result.nodeLabels);
 });
 
 test("current Node positions drive automatic Node-label recomputation", () => {

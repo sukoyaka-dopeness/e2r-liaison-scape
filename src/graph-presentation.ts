@@ -1,5 +1,6 @@
 import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
+import { createFeedbackStageInput, createPresentationPassSnapshot, createRouteSelectionSnapshot, type FeedbackStageInput, type PresentationPassSnapshot } from "./presentation-stage-contracts.ts";
 import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, pointBounds, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type PointBounds, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
@@ -719,10 +720,7 @@ export type BoundedAutomaticPresentationInput = {
   replayPrefix?: AutomaticRoutingInput["replayPrefix"];
   replayPrefixSink?: (edgeIds: readonly string[]) => void;
   presentationPassSink?: (
-    pass: AutomaticRoutingInput["routeDecisionPass"],
-    routedEdges: readonly DerivedAutomaticRoute[],
-    relationLabels: ReadonlyMap<string, LabelRect>,
-    nodeLabels: ReadonlyMap<string, LabelRect>,
+    snapshot: PresentationPassSnapshot,
   ) => void;
 };
 
@@ -810,11 +808,12 @@ export function deriveBoundedAutomaticPresentation({
     routeTraceSink,
     routeDecisionPass: "label-free",
   });
+  const labelFreeSnapshot = createRouteSelectionSnapshot("label-free", routesWithoutNodeLabels);
   if (profiler) profiler.passes["label-free"].elapsedMs += performance.now() - labelFreeStartedAt;
   const derivePass = (routeLabels: readonly LabelRect[], routeDecisionPass: AutomaticRouteDecision["pass"]) => {
     const passProfile = profiler?.passes[routeDecisionPass];
     const passStartedAt = performance.now();
-    const routedEdges = deriveAutomaticRoutes({
+    const routeSnapshot = createRouteSelectionSnapshot(routeDecisionPass, deriveAutomaticRoutes({
       graph,
       positions,
       edgeCurveOffsets,
@@ -833,9 +832,9 @@ export function deriveBoundedAutomaticPresentation({
       routeDecisionPass,
       replayPrefix: routeDecisionPass === "first" ? replayPrefix : undefined,
       replayPrefixSink: routeDecisionPass === "first" ? replayPrefixSink : undefined,
-    });
-    const routeById = new Map(routesWithoutNodeLabels.map((route) => [route.id, route]));
-    const yieldingRoutes: RouteYieldPath[] = routedEdges.flatMap((route) => {
+    }));
+    const routeById = new Map(labelFreeSnapshot.routes.map((route) => [route.id, route]));
+    const yieldingRoutes: RouteYieldPath[] = routeSnapshot.routes.flatMap((route) => {
       const labelFreeRoute = routeById.get(route.id);
       if (!labelFreeRoute || compareRouteGeometry(route.samples, labelFreeRoute.samples).equivalent) return [];
       const deviation = routeDeviation(route.samples, labelFreeRoute.samples);
@@ -843,7 +842,7 @@ export function deriveBoundedAutomaticPresentation({
     });
     const relationLabelStartedAt = performance.now();
     const relationLabels = deriveAutomaticRelationLabels({
-      routedEdges,
+      routedEdges: routeSnapshot.routes,
       nodes,
       previousPlacements: previousRelationLabelPlacements,
       manualAnchors: manualRelationLabelAnchors,
@@ -857,7 +856,7 @@ export function deriveBoundedAutomaticPresentation({
     const nodeLabels = deriveAutomaticNodeLabels({
       nodes: graph.nodes,
       positions,
-      routedEdges,
+      routedEdges: routeSnapshot.routes,
       occupiedRelationLabels: relationLabels,
       previousPlacements: previousNodeLabelPlacements,
       manualOffsets: manualNodeLabelOffsets,
@@ -871,16 +870,28 @@ export function deriveBoundedAutomaticPresentation({
       passProfile.nodeLabelMs += performance.now() - nodeLabelStartedAt;
       passProfile.elapsedMs += performance.now() - passStartedAt;
     }
-    presentationPassSink?.(routeDecisionPass, routedEdges, relationLabels, nodeLabels);
-    return { routedEdges, relationLabels, nodeLabels };
+    const snapshot = createPresentationPassSnapshot(routeSnapshot, relationLabels, nodeLabels, yieldingRoutes);
+    presentationPassSink?.(snapshot);
+    return snapshot;
   };
 
   const first = derivePass(provisionalNodeLabels, "first");
   const finalRouteLabels = graph.nodes
-    .map((node, index) => first.nodeLabels.get(node.id) ?? provisionalNodeLabels[index])
+    .map((node, index) => first.nodeLabel.labels.get(node.id) ?? provisionalNodeLabels[index])
     .filter((label): label is LabelRect => label !== undefined);
   const feedbackApplied = finalRouteLabels.length === graph.nodes.length
     && finalRouteLabels.some((label, index) => labelGeometryMoved(provisionalNodeLabels[index], label));
-  const result = feedbackEnabled && feedbackApplied ? derivePass(finalRouteLabels, "feedback") : first;
-  return { ...result, feedbackApplied: feedbackEnabled && feedbackApplied };
+  const feedbackInput: FeedbackStageInput = createFeedbackStageInput(
+    labelFreeSnapshot,
+    first,
+    finalRouteLabels,
+    feedbackEnabled && feedbackApplied,
+  );
+  const result = feedbackInput.shouldRun ? derivePass(feedbackInput.finalRouteLabels, "feedback") : feedbackInput.first;
+  return {
+    routedEdges: [...result.route.routes],
+    relationLabels: new Map(result.relationLabel.labels),
+    nodeLabels: new Map(result.nodeLabel.labels),
+    feedbackApplied: feedbackInput.shouldRun,
+  };
 }
