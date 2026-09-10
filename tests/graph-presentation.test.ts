@@ -583,6 +583,33 @@ test("presentation profiler separates route arbitration from downstream stages",
   assert.ok(profiler.passes.first.elapsedMs >= profiler.passes.first.route.candidateGenerationMs);
 });
 
+test("bounded presentation dependency trace records each first-to-feedback item", () => {
+  const base = input();
+  const routeTraces: Array<{ pass: string; edgeId: string; processingIndex: number }> = [];
+  const relationTraces: Array<{ pass: string; relationId: string; processingIndex: number; candidateFingerprint: string; selectedPlacementFingerprint: string }> = [];
+  const nodeTraces: Array<{ pass: string; nodeId: string; processingIndex: number; occupiedLabelPrefixFingerprint: string }> = [];
+  deriveBoundedAutomaticPresentation({
+    ...base,
+    provisionalNodeLabels: [],
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+    routeTraceSink: (trace) => routeTraces.push(trace),
+    relationLabelTraceSink: (trace) => relationTraces.push(trace),
+    nodeLabelTraceSink: (trace) => nodeTraces.push(trace),
+  });
+  assert.deepEqual([...new Set(routeTraces.map(({ pass }) => pass))], ["label-free", "first", "feedback"]);
+  assert.deepEqual([...new Set(relationTraces.map(({ pass }) => pass))], ["first", "feedback"]);
+  assert.deepEqual([...new Set(nodeTraces.map(({ pass }) => pass))], ["first", "feedback"]);
+  assert.equal(routeTraces.filter(({ pass }) => pass === "first").length, 1);
+  assert.equal(routeTraces.filter(({ pass }) => pass === "feedback").length, 1);
+  assert.equal(relationTraces.filter(({ pass }) => pass === "first").length, 1);
+  assert.equal(nodeTraces.filter(({ pass }) => pass === "feedback").length, 3);
+  assert.ok(relationTraces.every(({ candidateFingerprint, selectedPlacementFingerprint }) => candidateFingerprint.length > 0 && selectedPlacementFingerprint.length > 0));
+  assert.ok(nodeTraces.every(({ occupiedLabelPrefixFingerprint }) => occupiedLabelPrefixFingerprint.length > 0));
+});
+
 test("current Node positions drive automatic Node-label recomputation", () => {
   const first = deriveAutomaticNodeLabels(nodeLabelInput());
   const second = deriveAutomaticNodeLabels(nodeLabelInput({ positions: { a: { x: 0, y: 0 }, b: { x: 200, y: 80 }, c: { x: 100, y: 120 } } }));

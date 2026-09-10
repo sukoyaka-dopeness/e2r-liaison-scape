@@ -405,6 +405,7 @@ export function placeEdgeLabel(
   otherEdgePaths: Point[][] = [],
   previousPlacement?: LabelRect,
   profile?: LabelPlacementProfile,
+  traceSink?: (trace: LabelPlacementTrace) => void,
 ): LabelRect {
   const startedAt = performance.now();
   const fallback = samples[Math.floor(samples.length / 2)] ?? { x: 0, y: 0 };
@@ -490,8 +491,12 @@ export function placeEdgeLabel(
     ? safeSameNormalCandidates
       .slice()
       .sort((left, right) => right.nodeClearance - left.nodeClearance || left.preference - right.preference)[0]
-    : (anchorCandidate ?? normalRecoveredCandidate);
+      : (anchorCandidate ?? normalRecoveredCandidate);
   if (profile) profile.elapsedMs += performance.now() - startedAt;
+  traceSink?.({
+    candidateFingerprint: JSON.stringify(scoredCandidates.map(({ candidate, sampleIndex, normalOffset, labelOverlap, nodeOverlap, edgeOverlap, score }) => ({ candidate, sampleIndex, normalOffset, labelOverlap, nodeOverlap, edgeOverlap, score }))),
+    selectedFingerprint: JSON.stringify(selected.candidate),
+  });
   return selected.candidate;
 }
 
@@ -512,6 +517,7 @@ export function placeNodeLabel(
   previousPlacement?: LabelRect,
   yieldingRoutes: readonly RouteYieldPath[] = [],
   profile?: LabelPlacementProfile,
+  traceSink?: (trace: LabelPlacementTrace) => void,
 ): LabelRect {
   const startedAt = performance.now();
   const descriptionLines = description.trim()
@@ -524,7 +530,7 @@ export function placeNodeLabel(
   const height = descriptionLines.length === 0 ? 20 : descriptionLines.length === 1 ? 34 : 48;
   const angles = Array.from({ length: 32 }, (_, index) => Math.PI / 2 + index * Math.PI / 16);
 
-  const selected = angles.map((angle, index) => {
+  const scoredCandidates = angles.map((angle, index) => {
     if (profile) {
       profile.candidateEvaluations += 1;
       profile.occupiedLabelChecks += occupiedLabels.length;
@@ -584,8 +590,13 @@ export function placeNodeLabel(
       }
     }
     return { candidate, score: score + placementMovementCost(candidate, previousPlacement) };
-  }).reduce((best, current) => current.score < best.score ? current : best).candidate;
+  });
+  const selected = scoredCandidates.reduce((best, current) => current.score < best.score ? current : best).candidate;
   if (profile) profile.elapsedMs += performance.now() - startedAt;
+  traceSink?.({
+    candidateFingerprint: JSON.stringify(scoredCandidates.map(({ candidate, score }) => ({ candidate, score }))),
+    selectedFingerprint: JSON.stringify(selected),
+  });
   return selected;
 }
 
@@ -685,6 +696,12 @@ export type LabelPlacementProfile = {
   yieldingRoutePointChecks: number;
   previousPlacementEvaluations: number;
   manualAnchorReconstructions: number;
+};
+
+/** Opt-in diagnostic trace for one label placement decision. */
+export type LabelPlacementTrace = {
+  candidateFingerprint: string;
+  selectedFingerprint: string;
 };
 
 export function routeGraphEdge(

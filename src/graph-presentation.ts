@@ -1,6 +1,6 @@
 import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementProfile, type LabelRect, type Point, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -38,6 +38,40 @@ export type AutomaticRouteDecision = {
     blockingNodeLabelIds: readonly string[];
   };
   candidateDiagnostics: readonly RouteCandidateDiagnostic[];
+};
+
+export type AutomaticRouteTrace = {
+  pass: AutomaticRouteDecision["pass"];
+  edgeId: string;
+  processingIndex: number;
+  routeLabelInputFingerprint: string;
+  candidateFingerprint: string;
+  selectedRouteFingerprint: string;
+  occupiedPathPrefixFingerprint: string;
+};
+
+export type AutomaticRelationLabelTrace = {
+  pass: AutomaticRouteDecision["pass"];
+  relationId: string;
+  processingIndex: number;
+  routeFingerprint: string;
+  inputFingerprint: string;
+  occupiedRelationLabelPrefixFingerprint: string;
+  candidateFingerprint: string;
+  selectedPlacementFingerprint: string;
+};
+
+export type AutomaticNodeLabelTrace = {
+  pass: AutomaticRouteDecision["pass"];
+  nodeId: string;
+  processingIndex: number;
+  inputFingerprint: string;
+  positionFingerprint: string;
+  occupiedLabelPrefixFingerprint: string;
+  routeSetFingerprint: string;
+  yieldingRouteFingerprint: string;
+  candidateFingerprint: string;
+  selectedPlacementFingerprint: string;
 };
 
 export type AutomaticPresentationPassProfile = {
@@ -111,6 +145,7 @@ export type AutomaticRoutingInput = {
    */
   preserveSafeIncidentPreviousRoute?: boolean;
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
+  routeTraceSink?: (trace: AutomaticRouteTrace) => void;
   /** Opt-in candidate-generation cache; arbitration remains uncached. */
   candidateCache?: RouteCandidateCache;
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
@@ -154,6 +189,7 @@ export function deriveAutomaticRoutes({
   activeDraggedNodeId,
   preserveSafeIncidentPreviousRoute = false,
   routeDecisionSink,
+  routeTraceSink,
   candidateCache,
   profiler,
   routeDecisionPass = "first",
@@ -259,7 +295,7 @@ export function deriveAutomaticRoutes({
       selfLoopOverrides[edge.id],
       routeLabelsForEdge,
       canonicalPhysicalSideSign,
-      routeDecisionSink ? (candidates) => candidateDiagnostics.push(...candidates) : undefined,
+      routeDecisionSink !== undefined || routeTraceSink !== undefined ? (candidates) => candidateDiagnostics.push(...candidates) : undefined,
       previousRouteSideSign,
       candidateCache,
       passProfile?.route,
@@ -344,6 +380,15 @@ export function deriveAutomaticRoutes({
       && freshRouteIsSafe
       && (canRecoverDuringActiveDrag || canRecoverDuringFinalization);
     const selectedRoute = canPreservePreviousRoute && !canRecoverCurrentRoute ? previousRoute : route;
+    routeTraceSink?.({
+      pass: routeDecisionPass,
+      edgeId: edge.id,
+      processingIndex,
+      routeLabelInputFingerprint: JSON.stringify({ routeLabelsForEdge, source, target, obstacles, previousRoute, edgeCurveOffset: edgeCurveOffsets[edge.id] }),
+      candidateFingerprint: JSON.stringify(candidateDiagnostics),
+      selectedRouteFingerprint: JSON.stringify({ path: selectedRoute.path, samples: selectedRoute.samples, labelPoint: selectedRoute.labelPoint, controlPoint: selectedRoute.controlPoint }),
+      occupiedPathPrefixFingerprint: JSON.stringify(occupiedPaths),
+    });
     if (passProfile) passProfile.route.selectedRouteCommits += 1;
     // A direct-obstacle recovery can legitimately pass through a safe but
     // still-curved fresh candidate before the original/equivalent route is
@@ -481,6 +526,9 @@ export type AutomaticRelationLabelInput = {
   manualAnchors: ReadonlyMap<string, ManualRelationLabelAnchor>;
   draggedNodeId?: string;
   profile?: LabelPlacementProfile;
+  pass?: AutomaticRouteDecision["pass"];
+  /** Diagnostic-only item trace; omitted by normal Product callers. */
+  placementTraceSink?: (trace: AutomaticRelationLabelTrace) => void;
 };
 
 export type AutomaticNodeLabelInput = {
@@ -493,6 +541,9 @@ export type AutomaticNodeLabelInput = {
   activelyDraggedNodeId?: string;
   yieldingRoutes?: readonly RouteYieldPath[];
   profile?: LabelPlacementProfile;
+  pass?: AutomaticRouteDecision["pass"];
+  /** Diagnostic-only item trace; omitted by normal Product callers. */
+  placementTraceSink?: (trace: AutomaticNodeLabelTrace) => void;
 };
 
 /** Pure Product-owned automatic Relation-label orchestration. App state arrives as snapshots. */
@@ -503,15 +554,21 @@ export function deriveAutomaticRelationLabels({
   manualAnchors,
   draggedNodeId,
   profile,
+  pass = "first",
+  placementTraceSink,
 }: AutomaticRelationLabelInput): Map<string, LabelRect> {
   const occupiedLabels: LabelRect[] = [];
   const result = new Map<string, LabelRect>();
   const nodePoints = [...nodes];
-  for (const edge of routedEdges) {
+  for (const [processingIndex, edge] of routedEdges.entries()) {
     if (!edge.label) continue;
     const otherEdgePaths = routedEdges.filter(({ id }) => id !== edge.id).map(({ samples }) => samples);
     const relationMovesWithDraggedNode = draggedNodeId !== undefined
       && (edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId);
+    const occupiedRelationLabelPrefixFingerprint = placementTraceSink ? JSON.stringify(occupiedLabels) : "";
+    const routeFingerprint = placementTraceSink ? JSON.stringify({ path: edge.path, samples: edge.samples, labelPoint: edge.labelPoint, controlPoint: edge.controlPoint }) : "";
+    const inputFingerprint = placementTraceSink ? JSON.stringify({ route: routeFingerprint, label: edge.label, occupiedLabels, nodes: nodePoints, otherEdgePaths, previousPlacement: relationMovesWithDraggedNode ? undefined : previousPlacements.get(edge.id), manualAnchor: manualAnchors.get(edge.id) }) : "";
+    let placementTrace: LabelPlacementTrace | undefined;
     const automaticPlacement = placeEdgeLabel(
       edge.samples,
       edge.label,
@@ -520,12 +577,23 @@ export function deriveAutomaticRelationLabels({
       otherEdgePaths,
       relationMovesWithDraggedNode ? undefined : previousPlacements.get(edge.id),
       profile,
+      placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
     );
     const manualAnchor = manualAnchors.get(edge.id);
     if (manualAnchor && profile) profile.manualAnchorReconstructions += 1;
     const placement = manualAnchor
       ? { ...automaticPlacement, ...reconstructManualRelationLabelTarget(edge.samples, manualAnchor) }
       : automaticPlacement;
+    placementTraceSink?.({
+      pass,
+      relationId: edge.id,
+      processingIndex,
+      routeFingerprint,
+      inputFingerprint,
+      occupiedRelationLabelPrefixFingerprint,
+      candidateFingerprint: placementTrace?.candidateFingerprint ?? "",
+      selectedPlacementFingerprint: JSON.stringify(placement),
+    });
     occupiedLabels.push(placement);
     result.set(edge.id, placement);
   }
@@ -543,12 +611,19 @@ export function deriveAutomaticNodeLabels({
   activelyDraggedNodeId,
   yieldingRoutes = [],
   profile,
+  pass = "first",
+  placementTraceSink,
 }: AutomaticNodeLabelInput): Map<string, LabelRect> {
   const occupiedLabels: LabelRect[] = Array.from(occupiedRelationLabels.values());
   const result = new Map<string, LabelRect>();
   const edgePaths = routedEdges.map(({ samples }) => samples).filter(({ length }) => length > 0);
-  for (const node of nodes) {
+  for (const [processingIndex, node] of nodes.entries()) {
     const position = positions[node.id] ?? node;
+    const occupiedLabelPrefixFingerprint = placementTraceSink ? JSON.stringify(occupiedLabels) : "";
+    const routeSetFingerprint = placementTraceSink ? JSON.stringify(edgePaths) : "";
+    const yieldingRouteFingerprint = placementTraceSink ? JSON.stringify(yieldingRoutes) : "";
+    const inputFingerprint = placementTraceSink ? JSON.stringify({ node: { x: position.x, y: position.y }, name: node.label, description: node.description, occupiedLabels, otherNodes: nodes.filter(({ id }) => id !== node.id).map((other) => positions[other.id] ?? other), edgePaths, previousPlacement: activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id), yieldingRoutes, manualOffset: manualOffsets.get(node.id) }) : "";
+    let placementTrace: LabelPlacementTrace | undefined;
     const automaticPlacement = placeNodeLabel(
       position,
       node.label,
@@ -559,11 +634,24 @@ export function deriveAutomaticNodeLabels({
       activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id),
       yieldingRoutes,
       profile,
+      placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
     );
     const manualOffset = manualOffsets.get(node.id);
     const placement = manualOffset
       ? { ...automaticPlacement, x: position.x + manualOffset.x, y: position.y + manualOffset.y }
       : automaticPlacement;
+    placementTraceSink?.({
+      pass,
+      nodeId: node.id,
+      processingIndex,
+      inputFingerprint,
+      positionFingerprint: JSON.stringify(position),
+      occupiedLabelPrefixFingerprint,
+      routeSetFingerprint,
+      yieldingRouteFingerprint,
+      candidateFingerprint: placementTrace?.candidateFingerprint ?? "",
+      selectedPlacementFingerprint: JSON.stringify(placement),
+    });
     occupiedLabels.push(placement);
     result.set(node.id, placement);
   }
@@ -590,6 +678,12 @@ export type BoundedAutomaticPresentationInput = {
   previousContinuityNodeLabels?: ReadonlyMap<string, LabelRect>;
   feedbackEnabled?: boolean;
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
+  /** Diagnostic-only item trace; omitted by normal Product callers. */
+  routeTraceSink?: (trace: AutomaticRouteTrace) => void;
+  /** Diagnostic-only item trace; omitted by normal Product callers. */
+  relationLabelTraceSink?: (trace: AutomaticRelationLabelTrace) => void;
+  /** Diagnostic-only item trace; omitted by normal Product callers. */
+  nodeLabelTraceSink?: (trace: AutomaticNodeLabelTrace) => void;
   /** Opt-in candidate-generation cache; arbitration remains uncached. */
   candidateCache?: RouteCandidateCache;
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
@@ -662,6 +756,9 @@ export function deriveBoundedAutomaticPresentation({
   previousContinuityNodeLabels,
   feedbackEnabled = true,
   routeDecisionSink,
+  routeTraceSink,
+  relationLabelTraceSink,
+  nodeLabelTraceSink,
   candidateCache,
   profiler,
   replayPrefix,
@@ -683,6 +780,7 @@ export function deriveBoundedAutomaticPresentation({
     routeDecisionSink,
     candidateCache,
     profiler,
+    routeTraceSink,
     routeDecisionPass: "label-free",
   });
   if (profiler) profiler.passes["label-free"].elapsedMs += performance.now() - labelFreeStartedAt;
@@ -704,6 +802,7 @@ export function deriveBoundedAutomaticPresentation({
       candidateCache,
       profiler,
       routeDecisionSink,
+      routeTraceSink,
       routeDecisionPass,
       replayPrefix: routeDecisionPass === "first" ? replayPrefix : undefined,
       replayPrefixSink: routeDecisionPass === "first" ? replayPrefixSink : undefined,
@@ -723,6 +822,8 @@ export function deriveBoundedAutomaticPresentation({
       manualAnchors: manualRelationLabelAnchors,
       draggedNodeId,
       profile: passProfile?.relationLabel,
+      pass: routeDecisionPass,
+      placementTraceSink: relationLabelTraceSink,
     });
     if (passProfile) passProfile.relationLabelMs += performance.now() - relationLabelStartedAt;
     const nodeLabelStartedAt = performance.now();
@@ -736,6 +837,8 @@ export function deriveBoundedAutomaticPresentation({
       activelyDraggedNodeId,
       yieldingRoutes,
       profile: passProfile?.nodeLabel,
+      pass: routeDecisionPass,
+      placementTraceSink: nodeLabelTraceSink,
     });
     if (passProfile) {
       passProfile.nodeLabelMs += performance.now() - nodeLabelStartedAt;

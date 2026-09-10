@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import { buildEntityGraph } from "../src/dataset.ts";
 import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
@@ -21,11 +22,73 @@ function selectedPositions(path) {
 }
 function clonePositions(value) { return Object.fromEntries(Object.entries(value).map(([id, point]) => [id, { ...point }])); }
 function signature(value) { return JSON.stringify(value); }
+function digest(value) { return createHash("sha256").update(value ?? "").digest("hex"); }
 function routeSignatures(routes) { return Object.fromEntries(routes.map((route) => [route.id, signature({ path: route.path, samples: route.samples, labelPoint: route.labelPoint, controlPoint: route.controlPoint })])); }
 function mapSignatures(values) { return Object.fromEntries([...values.entries()].map(([id, value]) => [id, signature(value)])); }
 function compareMaps(left, right) {
   const ids = new Set([...Object.keys(left ?? {}), ...Object.keys(right ?? {})]);
   return [...ids].filter((id) => left?.[id] !== right?.[id]).sort();
+}
+function compareTraceSeries(first = [], feedback = [], idField, fields, downstreamChangedIds = new Set()) {
+  const firstById = new Map(first.map((trace) => [trace[idField], trace]));
+  const feedbackById = new Map(feedback.map((trace) => [trace[idField], trace]));
+  const ids = [...new Set([...firstById.keys(), ...feedbackById.keys()])]
+    .sort((left, right) => (feedbackById.get(left)?.processingIndex ?? firstById.get(left)?.processingIndex ?? 0)
+      - (feedbackById.get(right)?.processingIndex ?? firstById.get(right)?.processingIndex ?? 0));
+  const rows = ids.map((id) => {
+    const before = firstById.get(id);
+    const after = feedbackById.get(id);
+    const changes = Object.fromEntries(fields.map((field) => [field, (before?.[field] ?? "") !== (after?.[field] ?? "")]));
+    const inputChanged = changes.inputFingerprint || changes.routeLabelInputFingerprint || changes.positionFingerprint
+      || changes.occupiedRelationLabelPrefixFingerprint || changes.occupiedLabelPrefixFingerprint
+      || changes.routeFingerprint || changes.routeSetFingerprint || changes.yieldingRouteFingerprint;
+    const outputField = fields.find((field) => field.includes("selected")) ?? fields.at(-1);
+    const outputChanged = changes[outputField];
+    return {
+      id,
+      processingIndex: after?.processingIndex ?? before?.processingIndex ?? -1,
+      inputChanged,
+      candidateChanged: changes.candidateFingerprint,
+      selectedOutputChanged: outputChanged,
+      sequentialOccupancyChanged: changes.occupiedPathPrefixFingerprint
+        || changes.occupiedRelationLabelPrefixFingerprint
+        || changes.occupiedLabelPrefixFingerprint,
+      downstreamOutputChanged: downstreamChangedIds.has(id),
+      first: before ? Object.fromEntries(fields.map((field) => [field, digest(before[field])])) : null,
+      feedback: after ? Object.fromEntries(fields.map((field) => [field, digest(after[field])])) : null,
+    };
+  });
+  const count = (predicate) => rows.filter(predicate).length;
+  const indexes = (predicate) => rows.filter(predicate).map(({ processingIndex }) => processingIndex);
+  const earliest = (predicate) => indexes(predicate).at(0) ?? null;
+  const latest = (predicate) => indexes(predicate).at(-1) ?? null;
+  const unchangedPrefixLength = rows.findIndex(({ inputChanged, candidateChanged, selectedOutputChanged, sequentialOccupancyChanged }) => inputChanged || candidateChanged || selectedOutputChanged || sequentialOccupancyChanged);
+  const lastOutputChange = latest((row) => row.selectedOutputChanged);
+  const stableSuffixStart = lastOutputChange === null ? (rows[0]?.processingIndex ?? null) : rows.find(({ processingIndex }) => processingIndex > lastOutputChange)?.processingIndex ?? null;
+  return {
+    itemCount: rows.length,
+    inputChangedCount: count((row) => row.inputChanged),
+    candidateChangedCount: count((row) => row.candidateChanged),
+    selectedOutputChangedCount: count((row) => row.selectedOutputChanged),
+    sequentialOccupancyChangedCount: count((row) => row.sequentialOccupancyChanged),
+    downstreamOutputChangedCount: count((row) => row.downstreamOutputChanged),
+    unchangedButRecomputedCount: count((row) => !row.inputChanged && !row.candidateChanged && !row.selectedOutputChanged),
+    dependencyChangedButOutputSameCount: count((row) => (row.inputChanged || row.candidateChanged || row.sequentialOccupancyChanged) && !row.selectedOutputChanged),
+    earliestInputChangedIndex: earliest((row) => row.inputChanged),
+    latestInputChangedIndex: latest((row) => row.inputChanged),
+    earliestOutputChangedIndex: earliest((row) => row.selectedOutputChanged),
+    latestOutputChangedIndex: latest((row) => row.selectedOutputChanged),
+    unchangedPrefixLength: unchangedPrefixLength < 0 ? rows.length : unchangedPrefixLength,
+    stableOutputSuffixFromIndex: stableSuffixStart,
+    changedItemIds: {
+      input: rows.filter((row) => row.inputChanged).map((row) => row.id),
+      candidate: rows.filter((row) => row.candidateChanged).map((row) => row.id),
+      selectedOutput: rows.filter((row) => row.selectedOutputChanged).map((row) => row.id),
+      sequentialOccupancy: rows.filter((row) => row.sequentialOccupancyChanged).map((row) => row.id),
+      downstreamOutput: rows.filter((row) => row.downstreamOutputChanged).map((row) => row.id),
+    },
+    rows,
+  };
 }
 function routeLength(samples) { return samples.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - samples[index].x, point.y - samples[index].y), 0); }
 function distanceToRect(point, rect) {
@@ -49,12 +112,18 @@ function render(spec, positions, manualRelationLabelAnchors = new Map(), candida
   const provisionalNodeLabels = graph.nodes.map((node) => placeNodeLabel(positions[node.id], node.label, node.description, [], graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), []));
   const decisions = [];
   const passSnapshots = [];
+  const routeTraces = [];
+  const relationLabelTraces = [];
+  const nodeLabelTraces = [];
   const startedAt = performance.now();
   const startingStats = candidateCache?.stats ? { ...candidateCache.stats } : null;
   const presentation = deriveBoundedAutomaticPresentation({
     graph: { nodes: graph.nodes, edges }, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels,
     previousNodeLabelPlacements: new Map(), previousRelationLabelPlacements: new Map(), manualNodeLabelOffsets: new Map(), manualRelationLabelAnchors,
     routeDecisionSink: (decision) => decisions.push(decision),
+    routeTraceSink: (trace) => routeTraces.push(trace),
+    relationLabelTraceSink: (trace) => relationLabelTraces.push(trace),
+    nodeLabelTraceSink: (trace) => nodeLabelTraces.push(trace),
     candidateCache,
     profiler,
     presentationPassSink: (pass, routes, relationLabels, nodeLabels) => passSnapshots.push({
@@ -72,6 +141,18 @@ function render(spec, positions, manualRelationLabelAnchors = new Map(), candida
   const stats = candidateCache?.stats && startingStats ? Object.fromEntries(Object.keys(candidateCache.stats).map((key) => [key, candidateCache.stats[key] - startingStats[key]])) : null;
   const firstPass = passSnapshots.find(({ pass }) => pass === "first");
   const feedbackPass = passSnapshots.find(({ pass }) => pass === "feedback");
+  const passTraces = (traces, pass) => traces.filter((trace) => trace.pass === pass);
+  const firstRelationLabels = firstPass?.relationLabelSignatures ?? {};
+  const feedbackRelationLabels = feedbackPass?.relationLabelSignatures ?? {};
+  const firstNodeLabels = firstPass?.nodeLabelSignatures ?? {};
+  const feedbackNodeLabels = feedbackPass?.nodeLabelSignatures ?? {};
+  const changedRelationIds = new Set(compareMaps(firstRelationLabels, feedbackRelationLabels));
+  const changedNodeIds = new Set(compareMaps(firstNodeLabels, feedbackNodeLabels));
+  const traceAnalysis = feedbackPass ? {
+    route: compareTraceSeries(passTraces(routeTraces, "first"), passTraces(routeTraces, "feedback"), "edgeId", ["routeLabelInputFingerprint", "candidateFingerprint", "selectedRouteFingerprint", "occupiedPathPrefixFingerprint"], changedRelationIds),
+    relationLabel: compareTraceSeries(passTraces(relationLabelTraces, "first"), passTraces(relationLabelTraces, "feedback"), "relationId", ["routeFingerprint", "inputFingerprint", "occupiedRelationLabelPrefixFingerprint", "candidateFingerprint", "selectedPlacementFingerprint"], changedNodeIds),
+    nodeLabel: compareTraceSeries(passTraces(nodeLabelTraces, "first"), passTraces(nodeLabelTraces, "feedback"), "nodeId", ["inputFingerprint", "positionFingerprint", "occupiedLabelPrefixFingerprint", "routeSetFingerprint", "yieldingRouteFingerprint", "candidateFingerprint", "selectedPlacementFingerprint"], changedNodeIds),
+  } : null;
   return {
     graph,
     presentation,
@@ -92,6 +173,7 @@ function render(spec, positions, manualRelationLabelAnchors = new Map(), candida
       changedRelationLabels: firstPass && feedbackPass ? compareMaps(firstPass.relationLabelSignatures, feedbackPass.relationLabelSignatures) : [],
       changedNodeLabels: firstPass && feedbackPass ? compareMaps(firstPass.nodeLabelSignatures, feedbackPass.nodeLabelSignatures) : [],
     },
+    traceAnalysis,
     decisionCounts: Object.fromEntries(["label-free", "first", "feedback"].map((pass) => [pass, decisions.filter((decision) => decision.pass === pass).length])),
     metrics: {
       hardHits: presentation.routedEdges.filter((route) => routeSamplesHaveLabelCollision(route.samples, labels)).map((route) => route.id),
@@ -132,8 +214,8 @@ function runFixture(name, fixturePath, positionsPath) {
     fixture: name,
     graph: { nodes: baseline.graph.nodes.length, edges: baseline.graph.edges.length },
     baseline: { metrics: baseline.metrics, candidateSets: Object.keys(baseline.candidateSets).length, candidateCount: baseline.candidateCount, decisionCounts: baseline.decisionCounts, elapsedMs: baseline.elapsedMs, cacheStats: baseline.cacheStats },
-    exactRepeat: { metrics: exactRepeat.metrics, elapsedMs: exactRepeat.elapsedMs, cacheStats: exactRepeat.cacheStats, feedbackBreakdown: exactRepeat.feedbackBreakdown, exactRouteOutput: compareMaps(baseline.routeSignatures, exactRepeat.routeSignatures).length === 0, exactRelationLabelOutput: compareMaps(baseline.relationLabelSignatures, exactRepeat.relationLabelSignatures).length === 0, exactNodeLabelOutput: compareMaps(baseline.nodeLabelSignatures, exactRepeat.nodeLabelSignatures).length === 0, exactFeedback: baseline.metrics.feedbackApplied === exactRepeat.metrics.feedbackApplied },
-    uncachedRepeat: { elapsedMs: uncachedRepeat.elapsedMs, metrics: uncachedRepeat.metrics, feedbackBreakdown: uncachedRepeat.feedbackBreakdown, exactRouteOutput: compareMaps(baseline.routeSignatures, uncachedRepeat.routeSignatures).length === 0, exactRelationLabelOutput: compareMaps(baseline.relationLabelSignatures, uncachedRepeat.relationLabelSignatures).length === 0, exactNodeLabelOutput: compareMaps(baseline.nodeLabelSignatures, uncachedRepeat.nodeLabelSignatures).length === 0, exactFeedback: baseline.metrics.feedbackApplied === uncachedRepeat.metrics.feedbackApplied },
+    exactRepeat: { metrics: exactRepeat.metrics, elapsedMs: exactRepeat.elapsedMs, cacheStats: exactRepeat.cacheStats, feedbackBreakdown: exactRepeat.feedbackBreakdown, traceAnalysis: exactRepeat.traceAnalysis, exactRouteOutput: compareMaps(baseline.routeSignatures, exactRepeat.routeSignatures).length === 0, exactRelationLabelOutput: compareMaps(baseline.relationLabelSignatures, exactRepeat.relationLabelSignatures).length === 0, exactNodeLabelOutput: compareMaps(baseline.nodeLabelSignatures, exactRepeat.nodeLabelSignatures).length === 0, exactFeedback: baseline.metrics.feedbackApplied === exactRepeat.metrics.feedbackApplied },
+    uncachedRepeat: { elapsedMs: uncachedRepeat.elapsedMs, metrics: uncachedRepeat.metrics, feedbackBreakdown: uncachedRepeat.feedbackBreakdown, traceAnalysis: uncachedRepeat.traceAnalysis, exactRouteOutput: compareMaps(baseline.routeSignatures, uncachedRepeat.routeSignatures).length === 0, exactRelationLabelOutput: compareMaps(baseline.relationLabelSignatures, uncachedRepeat.relationLabelSignatures).length === 0, exactNodeLabelOutput: compareMaps(baseline.nodeLabelSignatures, uncachedRepeat.nodeLabelSignatures).length === 0, exactFeedback: baseline.metrics.feedbackApplied === uncachedRepeat.metrics.feedbackApplied },
     sameRouteInputDifferentDownstreamState: {
       changedDownstreamRelationLabelIds: compareMaps(baseline.relationLabelSignatures, downstreamOnly.relationLabelSignatures),
       changedRoutes: compareMaps(baseline.routeSignatures, downstreamOnly.routeSignatures),
@@ -156,6 +238,7 @@ function runFixture(name, fixturePath, positionsPath) {
       candidateSetsInvalidatedByPass: semanticCandidateChangesByPass,
       candidateSetsChangedCount: baselineToSemanticCandidates.length,
       semanticMetrics: semanticMutation.metrics,
+      traceAnalysis: semanticMutation.traceAnalysis,
       elapsedMs: semanticMutation.elapsedMs,
       cacheStats: semanticMutation.cacheStats,
       exactUncachedRouteOutput: compareMaps(semanticMutation.routeSignatures, semanticUncached.routeSignatures).length === 0,
@@ -189,7 +272,7 @@ const results = [
   runFixture("Apollo 11", apolloFixture, apolloPositions),
   runFixture("Regional Care", regionalFixture, regionalPositions),
 ];
-console.log(JSON.stringify({
+const output = {
   contract: "LIAISONSCAPE-STAGE-BOUNDARY-CANDIDATE-DIAGNOSTIC-v1",
   diagnosticOnly: true,
   productSourceChanged: false,
@@ -198,4 +281,25 @@ console.log(JSON.stringify({
   results,
   classification: "C_CANDIDATE_SEAM_EXISTS_ARBITRATION_REMAINS_AUTHORITATIVE",
   state: { governedEvidenceChanged: false, historicalEvidenceChanged: false, publication: false },
-}, null, 2));
+};
+if (process.env.STAGE_BOUNDARY_TRACE_SUMMARY === "1") {
+  output.results = results.map(({ fixture, graph, baseline, exactRepeat, uncachedRepeat, changedSemanticGeometry }) => ({
+    fixture,
+    graph,
+    baseline: baseline.metrics,
+    exactRepeat: { traceAnalysis: exactRepeat.traceAnalysis, exactFeedback: exactRepeat.exactFeedback },
+    uncachedRepeat: { traceAnalysis: uncachedRepeat.traceAnalysis, exactFeedback: uncachedRepeat.exactFeedback },
+    semanticMutation: { traceAnalysis: changedSemanticGeometry.traceAnalysis ?? null },
+  }));
+  delete output.method;
+}
+if (process.env.STAGE_BOUNDARY_TRACE_COMPACT === "1") {
+  const compact = (analysis) => analysis ? Object.fromEntries(Object.entries(analysis).filter(([key]) => key !== "rows")) : null;
+  output.results = output.results.map((result) => ({
+    ...result,
+    exactRepeat: { ...result.exactRepeat, traceAnalysis: Object.fromEntries(Object.entries(result.exactRepeat.traceAnalysis ?? {}).map(([stage, analysis]) => [stage, compact(analysis)])) },
+    uncachedRepeat: { ...result.uncachedRepeat, traceAnalysis: Object.fromEntries(Object.entries(result.uncachedRepeat.traceAnalysis ?? {}).map(([stage, analysis]) => [stage, compact(analysis)])) },
+    semanticMutation: result.semanticMutation ? { ...result.semanticMutation, traceAnalysis: Object.fromEntries(Object.entries(result.semanticMutation.traceAnalysis ?? {}).map(([stage, analysis]) => [stage, compact(analysis)])) } : null,
+  }));
+}
+console.log(JSON.stringify(output, null, 2));
