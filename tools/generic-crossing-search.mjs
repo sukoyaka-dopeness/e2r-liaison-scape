@@ -22,6 +22,9 @@ let activeProfileStage = "setup";
 const presentationFinalistLimit = Number.parseInt(process.env.E2R_PRESENTATION_FINALIST_LIMIT ?? "8", 10);
 const relaxationTargeting = process.env.E2R_RELAXATION_TARGETING ?? "full";
 const relaxationAdmission = process.env.E2R_RELAXATION_ADMISSION ?? "hard";
+const relaxationMoveMode = process.env.E2R_RELAXATION_MOVE_MODE ?? "single";
+const parsedRelaxationPairLimit = Number.parseInt(process.env.E2R_RELAXATION_PAIR_LIMIT ?? "8", 10);
+const relaxationPairLimit = Number.isFinite(parsedRelaxationPairLimit) && parsedRelaxationPairLimit >= 2 ? parsedRelaxationPairLimit : 8;
 const parsedRelaxationMaxDisplacement = Number.parseFloat(process.env.E2R_RELAXATION_MAX_DISPLACEMENT ?? "48");
 const relaxationMaxDisplacement = Number.isFinite(parsedRelaxationMaxDisplacement) && parsedRelaxationMaxDisplacement > 0 ? parsedRelaxationMaxDisplacement : 48;
 const parsedRelaxationLatticeStep = Number.parseFloat(process.env.E2R_RELAXATION_LATTICE_STEP ?? "0");
@@ -656,11 +659,29 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   const cheapScreenStats = relaxationCheapScreenProbe ? { considered: 0, rejected: 0, overlapRejected: 0, lowerBoundRejected: 0, lowerBoundViolations: 0, lowerBoundSamples: [], acceptedTrace: [] } : null;
   const directions = Array.from({ length: 8 }, (_, index) => index * Math.PI / 4);
   const steps = [18, 9, 6];
-  for (const id of ids) {
-    for (const step of steps) for (const angle of directions) {
+  const pressureWeight = (id) => (currentMetrics.pressureReasons?.[id] ?? []).reduce((total, reason) => total
+    + (reason.includes("route-label-hit") ? 5 : reason.includes("route-crossing") ? 4 : reason.includes("route-label-near") ? 3 : reason.includes("node-label-route-near") ? 2 : 1), 0);
+  const moveTargetIds = relaxationMoveMode === "pair"
+    ? ids.slice().sort((left, right) => pressureWeight(right) - pressureWeight(left) || compareId(left, right)).slice(0, Math.min(relaxationPairLimit, ids.length))
+    : ids.slice();
+  const movePlans = [];
+  if (relaxationMoveMode === "pair") {
+    for (let left = 0; left < moveTargetIds.length; left += 1) for (let right = left + 1; right < moveTargetIds.length; right += 1) {
+      for (const step of [18, 9]) for (const angle of directions) for (const sameDirection of [true, false]) {
+        movePlans.push({ ids: [moveTargetIds[left], moveTargetIds[right]], step, angles: [angle, sameDirection ? angle : angle + Math.PI] });
+      }
+    }
+  } else {
+    for (const id of moveTargetIds) for (const step of steps) for (const angle of directions) movePlans.push({ ids: [id], step, angles: [angle] });
+  }
+  for (const plan of movePlans) {
+      const id = plan.ids[0];
       const rawCandidate = clonePositions(current);
-      rawCandidate[id].x += Math.cos(angle) * step;
-      rawCandidate[id].y += Math.sin(angle) * step;
+      plan.ids.forEach((planId, index) => {
+        const angle = plan.angles[index];
+        rawCandidate[planId].x += Math.cos(angle) * plan.step;
+        rawCandidate[planId].y += Math.sin(angle) * plan.step;
+      });
       candidateRequests += 1;
       if (relaxationLatticeProbe) {
         rawCandidateKeys.add(positionsKey(rawCandidate));
@@ -669,9 +690,11 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       }
       const candidate = quantizePositions(rawCandidate, relaxationLatticeStep);
       if (relaxationLatticeProbe) configuredCandidateKeys.add(positionsKey(candidate));
-      const displacement = Math.hypot(candidate[id].x - referencePositions[id].x, candidate[id].y - referencePositions[id].y);
-      if (displacement > maxDisplacement) continue;
-      const cheapOverlap = relaxationCheapScreenProbe ? nodeFeasibility(candidate).overlapPairs > 0 : false;
+      if (plan.ids.some((planId) => Math.hypot(candidate[planId].x - referencePositions[planId].x, candidate[planId].y - referencePositions[planId].y) > maxDisplacement)) continue;
+      // Soft-defect admission may cross presentation defects, but node-body
+      // overlap remains a hard safety boundary for every move mode.
+      if (nodeFeasibility(candidate).overlapPairs > 0) continue;
+      const cheapOverlap = false;
       const cheapLowerBound = relaxationCheapScreenProbe ? constrainedRelaxationLowerBound(candidate) : null;
       const lowerBoundReject = cheapLowerBound !== null && Number.isFinite(currentScore) && cheapLowerBound >= currentScore;
       if (cheapScreenStats) {
@@ -742,17 +765,19 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       }
       if (cheapScreenStats && cheapLowerBound !== null && Number.isFinite(score) && cheapLowerBound > score + 1e-9) cheapScreenStats.lowerBoundViolations += 1;
       if (score < currentScore) {
-        if (cheapScreenStats) cheapScreenStats.acceptedTrace.push({ nodeId: id, step, angle, scoreBefore: currentScore, scoreAfter: score });
+        if (cheapScreenStats) cheapScreenStats.acceptedTrace.push({ nodeIds: plan.ids, step: plan.step, angles: plan.angles, scoreBefore: currentScore, scoreAfter: score });
         current = candidate; currentMetrics = metrics; currentScore = score; acceptedMoves += 1;
       }
       if (score < bestScore) { best = candidate; bestMetrics = metrics; bestScore = score; }
-    }
   }
   const movedNodeIds = ids.filter((id) => Math.hypot(best[id].x - referencePositions[id].x, best[id].y - referencePositions[id].y) > 1e-9);
   const inputFractionalCoordinates = Object.values(inputPositions).flatMap((point) => [point.x, point.y]).filter((value) => !Number.isInteger(value)).length;
   const inputQuantizationMaxDelta = Math.max(0, ...Object.keys(inputPositions).map((id) => Math.hypot(referencePositions[id].x - inputPositions[id].x, referencePositions[id].y - inputPositions[id].y)));
   return {
-    mode: relaxationAdmission === "soft-defect" ? "POST_STRUCTURAL_SOFT_DEFECT_RELAXATION" : "POST_STRUCTURAL_CONSTRAINED_RELAXATION", admission: relaxationAdmission, evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement,
+    mode: relaxationMoveMode === "pair"
+      ? "POST_STRUCTURAL_COUPLED_MOVE_RELAXATION"
+      : relaxationAdmission === "soft-defect" ? "POST_STRUCTURAL_SOFT_DEFECT_RELAXATION" : "POST_STRUCTURAL_CONSTRAINED_RELAXATION",
+    admission: relaxationAdmission, moveMode: relaxationMoveMode, moveTargetIds, pairLimit: relaxationPairLimit, evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement,
     lattice: {
       configuredStep: relaxationLatticeStep,
       probeEnabled: relaxationLatticeProbe,
@@ -827,7 +852,9 @@ function genericSearch() {
   if (postStructuralRelaxation) {
     const metrics = postStructuralRelaxation.metrics;
     const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
-    candidates.push({ family: relaxationAdmission === "soft-defect" ? "post-structural-soft-defect-relaxation" : "post-structural-constrained-relaxation", structuralCrossings: 0, positions: clonePositions(postStructuralRelaxation.positions), metrics, eligible, relaxation: postStructuralRelaxation });
+    candidates.push({ family: relaxationMoveMode === "pair"
+      ? "post-structural-coupled-move-relaxation"
+      : relaxationAdmission === "soft-defect" ? "post-structural-soft-defect-relaxation" : "post-structural-constrained-relaxation", structuralCrossings: 0, positions: clonePositions(postStructuralRelaxation.positions), metrics, eligible, relaxation: postStructuralRelaxation });
   }
   candidates.sort((left, right) => Number(right.structuralCrossings === 0) - Number(left.structuralCrossings === 0) || Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
   const zeroCrossingStructural = gridSearch.finalists.filter((finalist) => finalist.straightCrossings === 0).length;
@@ -875,7 +902,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, relaxationAdmission, relaxationMaxDisplacement, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, relaxationAdmission, relaxationMoveMode, relaxationPairLimit, relaxationMaxDisplacement, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));
