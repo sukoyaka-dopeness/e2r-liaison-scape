@@ -162,6 +162,17 @@ const verticalSpaceRebalancePositions = {
   moon: { x: 407.534, y: -12.775833333333338 },
   hornet: { x: 156.701, y: -9.497583333333324 },
 };
+const genericCrossingSearchPositions = {
+  armstrong: { x: 392, y: 328 },
+  aldrin: { x: 229.94112549695427, y: 441.94112549695427 },
+  collins: { x: 392, y: 164 },
+  nasa: { x: 0, y: 304 },
+  columbia: { x: 448.5685424949238, y: -56.56854249492382 },
+  eagle: { x: 588, y: 328 },
+  "saturn-v": { x: 56.56854249492379, y: 107.43145750507618 },
+  moon: { x: 670.0243866176395, y: 82.02438661763951 },
+  hornet: { x: 196, y: 0 },
+};
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -189,6 +200,7 @@ const candidateDescriptions = {
   "global-horizontal-topology-v1": "Global horizontal recomposition (topology-first)",
   "topology-aware-horizontal-recomposition-v1": "Topology-aware horizontal recomposition (label-aware)",
   "vertical-space-rebalance-v1": "Horizontal topology rebalance (vertical-space only)",
+  "generic-crossing-search-v1": "Generic crossing-first structural search (diagnostic)",
   "source-f0-160": "Source F0 solver, clearance 160",
   "fp1-ngp-420": "FP1-NGP negative control",
 } as const;
@@ -215,6 +227,7 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "global-horizontal-topology-v1") return globalHorizontalTopologyPositions;
   if (candidate === "topology-aware-horizontal-recomposition-v1") return topologyAwareHorizontalRecompositionPositions;
   if (candidate === "vertical-space-rebalance-v1") return verticalSpaceRebalancePositions;
+  if (candidate === "generic-crossing-search-v1") return genericCrossingSearchPositions;
   if (candidate === "fp1-ngp-420") return fp1NgpPositions;
   const graph = buildEntityGraph(dataset);
   if (candidate === "source-f0-160") {
@@ -282,6 +295,7 @@ function CandidateMetrics() {
     ["global-horizontal-topology-v1", "3", "0", "171.5", "381.6", "585 × 496", "1.180", "0.550", "10322"],
     ["topology-aware-horizontal-recomposition-v1", "3", "0", "141.5", "327.4", "507 × 441", "1.151", "0.610", "5502"],
     ["vertical-space-rebalance-v1", "3", "0", "187.2", "397.6", "524 × 405", "1.293", "0.656", "20"],
+    ["generic-crossing-search-v1", "0", "0", "194.0", "356.9", "670 × 499", "1.344", "0.548", "149"],
     ["source-f0-160", "6", "0", "205.0", "413.7", "484 × 542", "0.893", "0.508", "—"],
     ["fp1-ngp-420", "11", "0", "214.7", "466.8", "420 × 420", "1.000", "0.636", "—"],
   ], []);
@@ -303,7 +317,7 @@ function GeometryInspection() {
       <label>Candidate <select value={selectedCandidate} onChange={changeCandidate} aria-label="Geometry candidate">
         {Object.entries(candidateDescriptions).map(([id, description]) => <option key={id} value={id}>{description}</option>)}
       </select></label>
-      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Targeted local corridor refinement, Balanced Edge length with safe vertical compaction, and Horizontal topology rebalance (vertical-space only). The latter keeps every x coordinate fixed and rebalances only vertical space; it is not a crossing-reduction claim. Recheck Neil Armstrong / NASA / Lunar Module Eagle, Michael Collins / NASA, NASA / Saturn V, Saturn V / Command Module Columbia, and the crowded NASA corridor. These are diagnostic comparisons, not adoption decisions; pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
+      <span className="geometry-inspection-note">Only stored coordinate values are replaced in an in-memory diagnostic clone. Routing, labels, drag behavior, and Product source remain unchanged. Node body overlap is a hard diagnostic rejection at the existing 76-unit initial-placement clearance. Compare Generic crossing-first structural search with Balanced Edge length with safe vertical compaction and Horizontal topology rebalance (vertical-space only). The generic candidate is the result of a topology-only grid search followed by a bounded Product-presentation local repair; it is a diagnostic result, not Product adoption. Recheck Neil Armstrong / NASA / Lunar Module Eagle, Michael Collins / NASA, NASA / Saturn V, Saturn V / Command Module Columbia, and the crowded NASA corridor. These are diagnostic comparisons, not adoption decisions; pointer-up side-flip behavior remains a separate open interactive-routing track.</span>
     </div>
     <CandidateMetrics />
     <App />
