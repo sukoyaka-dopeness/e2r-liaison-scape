@@ -264,6 +264,43 @@ function refineForPresentation(finalists, ids, seedsPerFinalist = 3, rounds = 90
   }
   return { mode: "PRODUCT_PRESENTATION_LOCAL_REPAIR", evaluated, seedsPerFinalist, rounds, finalists: [...unique.values()].sort((left, right) => left.presentationScore - right.presentationScore).slice(0, 12) };
 }
+function hopDistanceMap(positions) {
+  return new Map(edges.map((edge) => [edge.id, Math.hypot(positions[edge.sourceId].x - positions[edge.targetId].x, positions[edge.sourceId].y - positions[edge.targetId].y)]));
+}
+function constrainedRelaxationScore(metrics, positions, referencePositions) {
+  if (metrics.crossings !== 0 || metrics.overlapPairs !== 0 || metrics.labelRouteHits !== 0 || metrics.labelOverlap !== 0 || metrics.labelNear20 !== 0) return Infinity;
+  const referenceHops = hopDistanceMap(referencePositions);
+  let localityPenalty = 0; let edgeLengthPenalty = 0;
+  for (const edge of edges) {
+    const length = Math.hypot(positions[edge.sourceId].x - positions[edge.targetId].x, positions[edge.sourceId].y - positions[edge.targetId].y);
+    const ratio = length / Math.max(1, referenceHops.get(edge.id));
+    localityPenalty += Math.max(0, 0.80 - ratio) ** 2 + Math.max(0, ratio - 1.20) ** 2;
+    edgeLengthPenalty += Math.max(0, length - 480) ** 2 / 480;
+  }
+  return metrics.usableSpanPenalty * 6 + metrics.routeMedian * 2 + metrics.routeMax + (metrics.extent[0] + metrics.extent[1]) * 0.20
+    + localityPenalty * 9000 + edgeLengthPenalty;
+}
+function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacement = 48) {
+  const referencePositions = clonePositions(startPositions); let current = clonePositions(startPositions);
+  let currentMetrics = presentationMetrics(current); let currentScore = constrainedRelaxationScore(currentMetrics, current, referencePositions);
+  let best = current; let bestMetrics = currentMetrics; let bestScore = currentScore; let evaluated = 1; let acceptedMoves = 0;
+  const directions = Array.from({ length: 8 }, (_, index) => index * Math.PI / 4);
+  const steps = [18, 9, 6];
+  for (const id of ids) {
+    for (const step of steps) for (const angle of directions) {
+      const candidate = clonePositions(current);
+      candidate[id].x += Math.cos(angle) * step;
+      candidate[id].y += Math.sin(angle) * step;
+      const displacement = Math.hypot(candidate[id].x - referencePositions[id].x, candidate[id].y - referencePositions[id].y);
+      if (displacement > maxDisplacement) continue;
+      const metrics = presentationMetrics(candidate); evaluated += 1;
+      const score = constrainedRelaxationScore(metrics, candidate, referencePositions);
+      if (score < currentScore) { current = candidate; currentMetrics = metrics; currentScore = score; acceptedMoves += 1; }
+      if (score < bestScore) { best = candidate; bestMetrics = metrics; bestScore = score; }
+    }
+  }
+  return { mode: "POST_STRUCTURAL_CONSTRAINED_RELAXATION", evaluated, acceptedMoves, maxDisplacement, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0 };
+}
 function genericSearch() {
   const ids = graph.nodes.map((node) => node.id).sort(compareId);
   const orderSearch = ids.length <= 9 ? exactCircularOrders(ids) : heuristicCircularOrders(ids);
@@ -296,7 +333,15 @@ function genericSearch() {
     candidates.push({ family: "grid-structural-presentation-repair", ...finalist, positions: clonePositions(finalist.positions), metrics, eligible });
   }
   candidates.sort((left, right) => Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
-  return { orderSearch, gridSearch, presentationRepair, presentationEvaluations: candidates.length, candidates, selected: candidates[0] ?? null };
+  const structuralSelected = candidates[0] ?? null;
+  const postStructuralRelaxation = structuralSelected ? constrainedPostStructuralRelaxation(structuralSelected.positions, ids) : null;
+  if (postStructuralRelaxation) {
+    const metrics = postStructuralRelaxation.metrics;
+    const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
+    candidates.push({ family: "post-structural-constrained-relaxation", positions: clonePositions(postStructuralRelaxation.positions), metrics, eligible, relaxation: postStructuralRelaxation });
+  }
+  candidates.sort((left, right) => Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
+  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, presentationEvaluations: candidates.length, candidates, selected: candidates[0] ?? null };
 }
 function complexityProbe() {
   return [9, 10, 12, 16, 25].map((nodeCount) => ({
@@ -305,7 +350,6 @@ function complexityProbe() {
     exactCircularPermutations: nodeCount <= 9 ? `${Math.floor(factorial(nodeCount - 1) / 2)}` : "not attempted",
     gridBudget: "16 seeded starts × 1200 swap/move evaluations = ≤19216 cheap geometry evaluations",
     presentationRepairBudget: "up to 12 zero-crossing grid finalists × 1 start × 24 rounds = ≤300 Product presentation evaluations",
-    heuristicBudget: nodeCount > 9 ? "8 seeded starts × 80 swaps = ≤640 chord evaluations" : "not needed for Apollo",
   }));
 }
 function factorial(value) { let result = 1; for (let factor = 2; factor <= value; factor += 1) result *= factor; return result; }
