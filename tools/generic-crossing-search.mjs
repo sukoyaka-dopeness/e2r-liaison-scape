@@ -27,6 +27,7 @@ const relaxationLatticeProbe = process.env.E2R_RELAXATION_LATTICE_PROBE === "1" 
 const relaxationCheapScreenMode = process.env.E2R_RELAXATION_CHEAP_SCREEN ?? "off";
 const relaxationCheapScreenEnabled = relaxationCheapScreenMode === "on";
 const relaxationCheapScreenProbe = relaxationCheapScreenEnabled || relaxationCheapScreenMode === "probe";
+const relaxationDependencyTraceEnabled = process.env.E2R_RELAXATION_DEPENDENCY_TRACE === "1";
 const edges = graph.edges.map((edge) => ({
   ...edge,
   label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
@@ -93,12 +94,60 @@ function crossingDetails(routes, relationLabels) {
   }
   return details;
 }
+function mapGeometrySignatures(values) {
+  return Object.fromEntries([...values.entries()].map(([id, value]) => [id, JSON.stringify(value)]));
+}
+function routeGeometrySignatures(routes) {
+  return Object.fromEntries(routes.map((route) => [route.id, JSON.stringify({
+    path: route.path,
+    samples: route.samples,
+    labelPoint: route.labelPoint,
+    controlPoint: route.controlPoint,
+    sourcePosition: route.sourcePosition,
+    targetPosition: route.targetPosition,
+    directRecoveryObstacleId: route.directRecoveryObstacleId,
+  })]));
+}
+function compactRouteDecision(decision) {
+  const selected = decision.candidateDiagnostics.find((candidate) => candidate.selected);
+  return {
+    pass: decision.pass,
+    processingIndex: decision.processingIndex,
+    edgeId: decision.edgeId,
+    usedPreviousRoute: decision.usedPreviousRoute,
+    recoveredCurrentRoute: decision.recoveredCurrentRoute,
+    selectedOffset: selected?.offset ?? null,
+    activeRecovery: {
+      previousRouteDirectRecoveryObstacleId: decision.activeRecovery.previousRouteDirectRecoveryObstacleId,
+      provenanceMatchesActiveDrag: decision.activeRecovery.provenanceMatchesActiveDrag,
+      provenanceMatchesFinalizingDrag: decision.activeRecovery.provenanceMatchesFinalizingDrag,
+      freshRouteIsSafe: decision.activeRecovery.freshRouteIsSafe,
+      freshRouteHasNodeInfluence: decision.activeRecovery.freshRouteHasNodeInfluence,
+      freshRouteHasOccupiedPathConflict: decision.activeRecovery.freshRouteHasOccupiedPathConflict,
+      freshRouteHasLabelCollision: decision.activeRecovery.freshRouteHasLabelCollision,
+    },
+    continuity: {
+      previousRoutePresent: decision.continuity.previousRoutePresent,
+      draggedNodePresent: decision.continuity.draggedNodePresent,
+      isIncident: decision.continuity.isIncident,
+      isEligibleShape: decision.continuity.isEligibleShape,
+      priorRouteHasNodeInfluence: decision.continuity.priorRouteHasNodeInfluence,
+      priorRouteHasOccupiedPathConflict: decision.continuity.priorRouteHasOccupiedPathConflict,
+      priorRouteHasLabelCollision: decision.continuity.priorRouteHasLabelCollision,
+      blockingNodeIds: decision.continuity.blockingNodeIds,
+      blockingOccupiedRouteIds: decision.continuity.blockingOccupiedRouteIds,
+      blockingNodeLabelIds: decision.continuity.blockingNodeLabelIds,
+    },
+  };
+}
 function derivePresentationMetrics(positions) {
   const provisional = graph.nodes.map((node) => placeNodeLabel(
     positions[node.id], node.label, node.description, [], graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), [],
   ));
+  const routeDecisionTrace = relaxationDependencyTraceEnabled ? [] : null;
   const presentation = deriveBoundedAutomaticPresentation({
     graph: { nodes: graph.nodes, edges }, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels: provisional, ...emptyState,
+    routeDecisionSink: routeDecisionTrace ? (decision) => routeDecisionTrace.push(compactRouteDecision(decision)) : undefined,
   });
   const routeLengths = presentation.routedEdges.map((route) => route.samples.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - route.samples[index].x, point.y - route.samples[index].y), 0)).sort((a, b) => a - b);
   const nodeLabels = [...presentation.nodeLabels.values()];
@@ -176,7 +225,81 @@ function derivePresentationMetrics(positions) {
   const shortHopCount = hopLengths.filter((length) => length < INITIAL_ENTITY_CLEARANCE * 1.45).length;
   const score = crossing.length * 100000 + crossing.filter((detail) => detail.relationLabelNear).length * 15000 + labelRouteHits * 30000 + labelNear20 * 5000 + labelOverlap * 10000
     + usableSpanPenalty * 4 + shortHopCount * 5000 + routeMedian * 2 + routeMax + (extent[0] + extent[1]) * 0.25;
-  return { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
+  const presentationTrace = routeDecisionTrace ? {
+    routes: routeGeometrySignatures(presentation.routedEdges),
+    relationLabels: mapGeometrySignatures(presentation.relationLabels),
+    nodeLabels: mapGeometrySignatures(presentation.nodeLabels),
+    feedbackApplied: presentation.feedbackApplied,
+    routeDecisions: routeDecisionTrace,
+  } : undefined;
+  const result = { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
+  if (presentationTrace) Object.defineProperty(result, "presentationTrace", { value: presentationTrace, enumerable: false });
+  return result;
+}
+function compareSignatureMaps(before, after) {
+  const ids = new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]);
+  return [...ids].filter((id) => before?.[id] !== after?.[id]).sort(compareId);
+}
+function routeDecisionMap(trace, pass) {
+  return new Map((trace?.routeDecisions ?? [])
+    .filter((decision) => decision.pass === pass)
+    .map((decision) => [decision.edgeId, decision]));
+}
+function dependencyTraceDiff(before, after, movedNodeId) {
+  const changedRouteIds = compareSignatureMaps(before.routes, after.routes);
+  const changedRelationLabelIds = compareSignatureMaps(before.relationLabels, after.relationLabels);
+  const changedNodeLabelIds = compareSignatureMaps(before.nodeLabels, after.nodeLabels);
+  const incidentRouteIds = edges.filter((edge) => edge.sourceId === movedNodeId || edge.targetId === movedNodeId).map((edge) => edge.id);
+  const incidentRouteSet = new Set(incidentRouteIds);
+  const remoteRouteIds = changedRouteIds.filter((id) => !incidentRouteSet.has(id));
+  const beforeDecisions = routeDecisionMap(before, "first");
+  const afterDecisions = routeDecisionMap(after, "first");
+  const decisionIds = new Set([...beforeDecisions.keys(), ...afterDecisions.keys()]);
+  const changedDecisionIds = [...decisionIds].filter((id) => JSON.stringify(beforeDecisions.get(id)) !== JSON.stringify(afterDecisions.get(id))).sort(compareId);
+  const routeOrderBefore = [...beforeDecisions.values()].sort((left, right) => left.processingIndex - right.processingIndex).map((decision) => decision.edgeId);
+  const routeOrderAfter = [...afterDecisions.values()].sort((left, right) => left.processingIndex - right.processingIndex).map((decision) => decision.edgeId);
+  const routeOrderChanged = JSON.stringify(routeOrderBefore) !== JSON.stringify(routeOrderAfter);
+  const processingIndexById = new Map([...afterDecisions.values()].map((decision) => [decision.edgeId, decision.processingIndex]));
+  const earliestChangedProcessingIndex = Math.min(...changedRouteIds.map((id) => processingIndexById.get(id) ?? Infinity));
+  const changedAfterEarliest = Number.isFinite(earliestChangedProcessingIndex)
+    ? changedRouteIds.filter((id) => (processingIndexById.get(id) ?? -Infinity) > earliestChangedProcessingIndex).length
+    : 0;
+  return {
+    movedNodeId,
+    changedRouteIds,
+    incidentRouteIds,
+    remoteRouteIds,
+    changedRelationLabelIds,
+    changedNodeLabelIds,
+    feedbackChanged: before.feedbackApplied !== after.feedbackApplied,
+    changedDecisionIds,
+    routeOrderChanged,
+    earliestChangedProcessingIndex: Number.isFinite(earliestChangedProcessingIndex) ? earliestChangedProcessingIndex : null,
+    changedAfterEarliest,
+  };
+}
+function recordDependencyTrace(stats, diff, scoreBefore, scoreAfter, accepted) {
+  stats.candidates += 1;
+  stats.routeChangedCandidates += diff.changedRouteIds.length > 0 ? 1 : 0;
+  stats.remoteRoutePropagationCandidates += diff.remoteRouteIds.length > 0 ? 1 : 0;
+  stats.maxChangedRoutes = Math.max(stats.maxChangedRoutes, diff.changedRouteIds.length);
+  stats.maxRemoteRoutes = Math.max(stats.maxRemoteRoutes, diff.remoteRouteIds.length);
+  stats.maxChangedRelationLabels = Math.max(stats.maxChangedRelationLabels, diff.changedRelationLabelIds.length);
+  stats.maxChangedNodeLabels = Math.max(stats.maxChangedNodeLabels, diff.changedNodeLabelIds.length);
+  stats.feedbackChangedCount += diff.feedbackChanged ? 1 : 0;
+  stats.routeOrderChangedCount += diff.routeOrderChanged ? 1 : 0;
+  stats.routeDecisionChangedCandidates += diff.changedDecisionIds.length > 0 ? 1 : 0;
+  stats.totalChangedRoutes += diff.changedRouteIds.length;
+  stats.totalRemoteRoutes += diff.remoteRouteIds.length;
+  stats.totalChangedRelationLabels += diff.changedRelationLabelIds.length;
+  stats.totalChangedNodeLabels += diff.changedNodeLabelIds.length;
+  if (accepted) {
+    stats.acceptedCandidates += 1;
+    stats.acceptedRemotePropagationCandidates += diff.remoteRouteIds.length > 0 ? 1 : 0;
+    stats.acceptedTotalRemoteRoutes += diff.remoteRouteIds.length;
+    stats.acceptedMaxRemoteRoutes = Math.max(stats.acceptedMaxRemoteRoutes, diff.remoteRouteIds.length);
+  }
+  if (stats.examples.length < 24) stats.examples.push({ ...diff, scoreBefore, scoreAfter, accepted });
 }
 function presentationMetrics(positions) {
   const positionKey = positionsKey(positions);
@@ -412,6 +535,27 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   const referencePositions = quantizePositions(startPositions, relaxationLatticeStep); let current = clonePositions(referencePositions);
   let currentMetrics = presentationMetrics(current); let currentScore = constrainedRelaxationScore(currentMetrics, current, referencePositions);
   let best = current; let bestMetrics = currentMetrics; let bestScore = currentScore; let evaluated = 1; let acceptedMoves = 0;
+  const dependencyTraceStats = relaxationDependencyTraceEnabled ? {
+    candidates: 0,
+    routeChangedCandidates: 0,
+    remoteRoutePropagationCandidates: 0,
+    maxChangedRoutes: 0,
+    maxRemoteRoutes: 0,
+    maxChangedRelationLabels: 0,
+    maxChangedNodeLabels: 0,
+    feedbackChangedCount: 0,
+    routeOrderChangedCount: 0,
+    routeDecisionChangedCandidates: 0,
+    totalChangedRoutes: 0,
+    totalRemoteRoutes: 0,
+    totalChangedRelationLabels: 0,
+    totalChangedNodeLabels: 0,
+    acceptedCandidates: 0,
+    acceptedRemotePropagationCandidates: 0,
+    acceptedTotalRemoteRoutes: 0,
+    acceptedMaxRemoteRoutes: 0,
+    examples: [],
+  } : null;
   const rawCandidateKeys = relaxationLatticeProbe ? new Set() : null;
   const configuredCandidateKeys = relaxationLatticeProbe ? new Set() : null;
   const hypotheticalKeys = relaxationLatticeProbe ? new Map([1, 2, 4].map((step) => [step, new Set()])) : null;
@@ -451,6 +595,13 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       }
       const metrics = presentationMetrics(candidate); evaluated += 1;
       const score = constrainedRelaxationScore(metrics, candidate, referencePositions);
+      if (dependencyTraceStats) recordDependencyTrace(
+        dependencyTraceStats,
+        dependencyTraceDiff(currentMetrics.presentationTrace, metrics.presentationTrace, id),
+        currentScore,
+        score,
+        score < currentScore,
+      );
       if (cheapScreenStats && cheapLowerBound !== null && Number.isFinite(score) && cheapLowerBound > score + 1e-9) cheapScreenStats.lowerBoundViolations += 1;
       if (score < currentScore) {
         if (cheapScreenStats) cheapScreenStats.acceptedTrace.push({ nodeId: id, step, angle, scoreBefore: currentScore, scoreAfter: score });
@@ -479,6 +630,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     },
     inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0,
     cheapScreen: cheapScreenStats ? { mode: relaxationCheapScreenMode, ...cheapScreenStats } : null,
+    ...(dependencyTraceStats ? { dependencyTrace: dependencyTraceStats } : {}),
   };
 }
 function derivePressureNeighborhood(metrics, positions) {
