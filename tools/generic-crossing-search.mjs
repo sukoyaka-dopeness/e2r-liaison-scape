@@ -16,6 +16,8 @@ function syntheticK33Dataset() {
 }
 const dataset = fixturePath === "synthetic:k3-3" ? syntheticK33Dataset() : JSON.parse(fs.readFileSync(fixturePath, "utf8"));
 const graph = buildEntityGraph(dataset);
+const profile = { presentationCalls: 0, presentationMs: 0 };
+const presentationFinalistLimit = Number.parseInt(process.env.E2R_PRESENTATION_FINALIST_LIMIT ?? "8", 10);
 const edges = graph.edges.map((edge) => ({
   ...edge,
   label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
@@ -71,7 +73,7 @@ function crossingDetails(routes, relationLabels) {
   }
   return details;
 }
-function presentationMetrics(positions) {
+function derivePresentationMetrics(positions) {
   const provisional = graph.nodes.map((node) => placeNodeLabel(
     positions[node.id], node.label, node.description, [], graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), [],
   ));
@@ -107,6 +109,13 @@ function presentationMetrics(positions) {
   const score = crossing.length * 100000 + crossing.filter((detail) => detail.relationLabelNear).length * 15000 + labelRouteHits * 30000 + labelNear20 * 5000 + labelOverlap * 10000
     + usableSpanPenalty * 4 + shortHopCount * 5000 + routeMedian * 2 + routeMax + (extent[0] + extent[1]) * 0.25;
   return { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, usableSpanPenalty, routeSupports };
+}
+function presentationMetrics(positions) {
+  const startedAt = performance.now();
+  const result = derivePresentationMetrics(positions);
+  profile.presentationCalls += 1;
+  profile.presentationMs += performance.now() - startedAt;
+  return result;
 }
 function chordCrossings(order) {
   const index = new Map(order.map((id, position) => [id, position])); let crossings = 0;
@@ -334,7 +343,7 @@ function genericSearch() {
   // Only zero-crossing structural states enter the expensive Product-aware repair.
   // This keeps the diagnostic bounded while making label safety decisive once the
   // structural feasibility condition has already been found.
-  const zeroCrossingFinalists = gridSearch.finalists.filter((finalist) => finalist.straightCrossings === 0);
+  const zeroCrossingFinalists = gridSearch.finalists.filter((finalist) => finalist.straightCrossings === 0).slice(0, Math.max(1, presentationFinalistLimit));
   const presentationRepair = refineForPresentation(zeroCrossingFinalists, ids, 1, 24);
   for (const finalist of presentationRepair.finalists) {
     const metrics = finalist.metrics;
@@ -363,7 +372,7 @@ function complexityProbe() {
     mode: nodeCount <= 9 ? "exact circular order + grid structural search" : "heuristic circular order + grid structural search",
     exactCircularPermutations: nodeCount <= 9 ? `${Math.floor(factorial(nodeCount - 1) / 2)}` : "not attempted",
     gridBudget: "16 seeded starts × 1200 swap/move evaluations = ≤19216 cheap geometry evaluations",
-    presentationRepairBudget: "up to 12 zero-crossing grid finalists × 1 start × 24 rounds = ≤300 Product presentation evaluations",
+    presentationRepairBudget: "up to 8 zero-crossing grid finalists × 1 start × 24 rounds = ≤200 Product presentation evaluations",
   }));
 }
 function factorial(value) { let result = 1; for (let factor = 2; factor <= value; factor += 1) result *= factor; return result; }
@@ -378,6 +387,8 @@ console.log(JSON.stringify({
   hardBoundary: { rule: "INITIAL_ENTITY_CLEARANCE", value: INITIAL_ENTITY_CLEARANCE, overlapRejected: true },
   strategy: "exact circular-order search for n<=9; deterministic heuristic circular-order search above that; Product presentation evaluates only finalists",
   elapsedMs: Math.round((performance.now() - startedAt) * 100) / 100,
+  profile: { presentationCalls: profile.presentationCalls, presentationMs: Math.round(profile.presentationMs * 100) / 100, averagePresentationMs: Math.round(profile.presentationMs / Math.max(1, profile.presentationCalls) * 100) / 100 },
+  searchBudget: { presentationFinalistLimit },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));
