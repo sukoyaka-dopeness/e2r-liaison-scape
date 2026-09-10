@@ -7,7 +7,13 @@ import "../../../src/styles.css";
 import "./main.css";
 
 const diagnosticDatasetUrl = "https://diagnostic.liaisonscape.invalid/apollo-11-product-inspection.en.e2r.json";
-const fixtureUrl = `${import.meta.env.BASE_URL}experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json`;
+const fixtureKind = new URL(window.location.href).searchParams.get("fixture") ?? "apollo";
+const selectedFixtureKind = new Set(["apollo", "linkscape", "lighthouse"]).has(fixtureKind) ? fixtureKind : "apollo";
+const fixtureUrl = selectedFixtureKind === "linkscape"
+  ? `${import.meta.env.BASE_URL}examples/linkscape-relation-sample.e2r.json`
+  : selectedFixtureKind === "lighthouse"
+    ? `${import.meta.env.BASE_URL}public/lighthouse-restoration-demo.en.e2r.json`
+    : `${import.meta.env.BASE_URL}experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json`;
 const localSearchPositions = {
   armstrong: { x: 31.342, y: 373.958 },
   aldrin: { x: 222.011, y: 508.891 },
@@ -184,6 +190,32 @@ const postStructuralRelaxationPositions = {
   moon: { x: 622.3259018078045, y: 86.2670273047588 },
   hornet: { x: 196, y: 0 },
 };
+const generalizationPositions = {
+  linkscape: {
+    generic: {
+      "entity-library": { x: 0, y: 0 },
+      "entity-bob": { x: 162.05887450304573, y: 130.05887450304573 },
+      "entity-alice": { x: 375.02943725152284, y: 7.029437251522861 },
+      "entity-cafe": { x: 196, y: 0 },
+      "entity-studio": { x: 0, y: 164 },
+    },
+    post: {
+      "entity-library": { x: 12.727922061357859, y: 30.727922061357855 },
+      "entity-bob": { x: 162.05887450304573, y: 127.05887450304573 },
+      "entity-alice": { x: 355.93755415948607, y: 50.121320343559645 },
+      "entity-cafe": { x: 196, y: 18 },
+      "entity-studio": { x: 0, y: 164 },
+    },
+  },
+  lighthouse: {
+    generic: {
+      archive: { x: 392, y: -24 }, thomas: { x: 0, y: 164 }, clara: { x: 196, y: 328 }, lighthouse: { x: 636, y: 328 }, maya: { x: 196, y: 164 }, authority: { x: 588, y: -64 }, daniel: { x: 392, y: 376 }, elias: { x: 196, y: 0 }, beacon: { x: 392, y: 164 }, sofia: { x: 540, y: 164 },
+    },
+    post: {
+      archive: { x: 379.27207793864216, y: -24 }, thomas: { x: -6, y: 164 }, clara: { x: 196, y: 328 }, lighthouse: { x: 627, y: 328 }, maya: { x: 196, y: 164 }, authority: { x: 581.636038969321, y: -39.63603896932107 }, daniel: { x: 429.09188309203677, y: 361.3639610306789 }, elias: { x: 196, y: 0 }, beacon: { x: 396.24264068711926, y: 168.2426406871193 }, sofia: { x: 540, y: 164 },
+    },
+  },
+} as const;
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -225,6 +257,10 @@ function cloneValue<T>(value: T): T {
 }
 
 function coordinateMap(dataset: any, candidate: CandidateId) {
+  if (selectedFixtureKind !== "apollo" && (candidate === "generic-crossing-search-v1" || candidate === "post-structural-relaxation-v1")) {
+    const family = candidate === "generic-crossing-search-v1" ? "generic" : "post";
+    return generalizationPositions[selectedFixtureKind as "linkscape" | "lighthouse"][family];
+  }
   if (candidate === "local-search-v1") return localSearchPositions;
   if (candidate === "local-search-v1-plus") return targetedLocalCorridorPositions;
   if (candidate === "crossing-aware-v1") return crossingAwarePositions;
@@ -261,7 +297,10 @@ function materializeCandidate(dataset: any, candidate: CandidateId) {
   for (const entity of next.entities) {
     const position = positions[entity.id];
     const values = entity.extensions?.["draft.github.sukoyaka-dopeness.coordinate"]?.coordinates?.[0]?.values;
-    if (position && values) {
+    if (position) {
+      const extensions = entity.extensions ?? (entity.extensions = {});
+      const coordinate = extensions["draft.github.sukoyaka-dopeness.coordinate"] ?? (extensions["draft.github.sukoyaka-dopeness.coordinate"] = { coordinates: [{ spaceId: "liaisonscape-graph", values: position }] });
+      const values = coordinate.coordinates?.[0]?.values ?? (coordinate.coordinates = [{ spaceId: "liaisonscape-graph", values: position }])[0].values;
       values.x = position.x;
       values.y = position.y;
     }
@@ -292,6 +331,7 @@ function candidateUrl(candidate: CandidateId) {
 }
 
 function CandidateMetrics() {
+  if (selectedFixtureKind !== "apollo") return <p className="geometry-inspection-metrics">Generalization fixture: compare the actual Product canvas directly; the Apollo metric table is intentionally not reused.</p>;
   const rows = useMemo(() => [
     ["current", "3", "2", "187.9", "364.6", "510 × 677", "0.753", "0.416", "—"],
     ["local-search-v1", "3", "0", "177.9", "319.9", "423 × 677", "0.625", "0.416", "—"],
@@ -327,7 +367,7 @@ function GeometryInspection() {
   };
   return <>
     <div className="geometry-inspection-seam" aria-label="Geometry candidate controls">
-      <span>Actual Product geometry candidate inspection</span>
+      <span>Actual Product geometry candidate inspection / {selectedFixtureKind}</span>
       <label>Candidate <select value={selectedCandidate} onChange={changeCandidate} aria-label="Geometry candidate">
         {Object.entries(candidateDescriptions).map(([id, description]) => <option key={id} value={id}>{description}</option>)}
       </select></label>

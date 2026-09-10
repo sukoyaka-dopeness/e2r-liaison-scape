@@ -5,7 +5,16 @@ import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "..
 import { INITIAL_ENTITY_CLEARANCE } from "../src/initial-entity-placement.ts";
 
 const fixturePath = process.argv[2] ?? "experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json";
-const dataset = JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+function syntheticK33Dataset() {
+  const left = ["left-a", "left-b", "left-c"]; const right = ["right-a", "right-b", "right-c"];
+  return {
+    version: "1.0",
+    entities: [...left, ...right].map((id) => ({ id, name: id.replace("-", " ") })),
+    events: [],
+    relations: left.flatMap((sourceId) => right.map((targetId) => ({ id: `${sourceId}-${targetId}`, sourceId, targetId, name: "connected" }))),
+  };
+}
+const dataset = fixturePath === "synthetic:k3-3" ? syntheticK33Dataset() : JSON.parse(fs.readFileSync(fixturePath, "utf8"));
 const graph = buildEntityGraph(dataset);
 const edges = graph.edges.map((edge) => ({
   ...edge,
@@ -254,7 +263,7 @@ function refineForPresentation(finalists, ids, seedsPerFinalist = 3, rounds = 90
         if (score <= currentScore || random() < temperature) { current = candidate; currentMetrics = metrics; currentScore = score; }
         if (score < bestScore) { best = candidate; bestMetrics = metrics; bestScore = score; }
       }
-      refined.push({ positions: best, presentationScore: bestScore, metrics: bestMetrics });
+      refined.push({ positions: best, structuralCrossings: finalists[finalistIndex].straightCrossings, presentationScore: bestScore, metrics: bestMetrics });
     }
   }
   const unique = new Map();
@@ -314,13 +323,13 @@ function genericSearch() {
   for (const orderResult of orderSearch.orders) for (const variant of variants) {
     const positions = ellipsePositions(orderResult.order, variant); const metrics = presentationMetrics(positions);
     const eligible = metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
-    candidates.push({ family: "circular-order", order: orderResult.order, chordCrossings: orderResult.chordCrossings, variant, positions, metrics, eligible });
+    candidates.push({ family: "circular-order", order: orderResult.order, chordCrossings: orderResult.chordCrossings, structuralCrossings: orderResult.chordCrossings, variant, positions, metrics, eligible });
   }
   const gridSearch = genericGridSearch(ids);
   for (const finalist of gridSearch.finalists) {
     const metrics = presentationMetrics(finalist.positions);
     const eligible = metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
-    candidates.push({ family: "grid-structural", ...finalist, positions: clonePositions(finalist.positions), metrics, eligible });
+    candidates.push({ family: "grid-structural", ...finalist, structuralCrossings: finalist.straightCrossings, positions: clonePositions(finalist.positions), metrics, eligible });
   }
   // Only zero-crossing structural states enter the expensive Product-aware repair.
   // This keeps the diagnostic bounded while making label safety decisive once the
@@ -332,16 +341,21 @@ function genericSearch() {
     const eligible = metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
     candidates.push({ family: "grid-structural-presentation-repair", ...finalist, positions: clonePositions(finalist.positions), metrics, eligible });
   }
-  candidates.sort((left, right) => Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
-  const structuralSelected = candidates[0] ?? null;
+  candidates.sort((left, right) => Number(right.structuralCrossings === 0) - Number(left.structuralCrossings === 0) || Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
+  const structuralSelected = candidates.find((candidate) => candidate.structuralCrossings === 0) ?? null;
   const postStructuralRelaxation = structuralSelected ? constrainedPostStructuralRelaxation(structuralSelected.positions, ids) : null;
   if (postStructuralRelaxation) {
     const metrics = postStructuralRelaxation.metrics;
     const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
-    candidates.push({ family: "post-structural-constrained-relaxation", positions: clonePositions(postStructuralRelaxation.positions), metrics, eligible, relaxation: postStructuralRelaxation });
+    candidates.push({ family: "post-structural-constrained-relaxation", structuralCrossings: 0, positions: clonePositions(postStructuralRelaxation.positions), metrics, eligible, relaxation: postStructuralRelaxation });
   }
-  candidates.sort((left, right) => Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
-  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, presentationEvaluations: candidates.length, candidates, selected: candidates[0] ?? null };
+  candidates.sort((left, right) => Number(right.structuralCrossings === 0) - Number(left.structuralCrossings === 0) || Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
+  const zeroCrossingStructural = gridSearch.finalists.filter((finalist) => finalist.straightCrossings === 0).length;
+  const zeroCrossingPresentation = candidates.filter((candidate) => candidate.structuralCrossings === 0 && candidate.metrics.crossings === 0).length;
+  const structuralCandidates = candidates.filter((candidate) => Number.isFinite(candidate.structuralCrossings));
+  const minimumStructuralCrossings = structuralCandidates.length > 0 ? Math.min(...structuralCandidates.map((candidate) => candidate.structuralCrossings)) : null;
+  const boundedFallback = minimumStructuralCrossings === null ? [] : structuralCandidates.filter((candidate) => candidate.structuralCrossings === minimumStructuralCrossings);
+  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
 }
 function complexityProbe() {
   return [9, 10, 12, 16, 25].map((nodeCount) => ({
