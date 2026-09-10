@@ -126,11 +126,11 @@ function render(spec, positions, manualRelationLabelAnchors = new Map(), candida
     nodeLabelTraceSink: (trace) => nodeLabelTraces.push(trace),
     candidateCache,
     profiler,
-    presentationPassSink: (pass, routes, relationLabels, nodeLabels) => passSnapshots.push({
-      pass,
-      routeSignatures: routeSignatures(routes),
-      relationLabelSignatures: mapSignatures(relationLabels),
-      nodeLabelSignatures: mapSignatures(nodeLabels),
+    presentationPassSink: ({ route, relationLabel, nodeLabel }) => passSnapshots.push({
+      pass: route.pass,
+      routeSignatures: routeSignatures(route.routes),
+      relationLabelSignatures: mapSignatures(relationLabel.labels),
+      nodeLabelSignatures: mapSignatures(nodeLabel.labels),
     }),
   });
   const labels = [...presentation.nodeLabels.values()];

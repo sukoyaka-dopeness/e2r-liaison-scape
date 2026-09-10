@@ -90,7 +90,7 @@ function render({ edgeCurveOffsets = {}, feedbackEnabled = true, manualNodeLabel
     manualNodeLabelOffsets,
     feedbackEnabled,
     routeDecisionSink: (decision) => decisions.push(decision),
-    presentationPassSink: (pass, routes, relationLabels, nodeLabels) => passes.push({ pass, routes, relationLabels, nodeLabels }),
+    presentationPassSink: ({ route, relationLabel, nodeLabel }) => passes.push({ pass: route.pass, routes: route.routes, relationLabels: relationLabel.labels, nodeLabels: nodeLabel.labels }),
   });
   return { presentation, passes, decisions };
 }

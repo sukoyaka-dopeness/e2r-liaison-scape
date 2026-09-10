@@ -67,7 +67,7 @@ function render(positions, replayPrefix, feedbackEnabled = true) {
     replayPrefix,
     feedbackEnabled,
     replayPrefixSink: (ids) => { replayedPrefix = ids; },
-    presentationPassSink: (pass, routes, relationLabels, nodeLabels) => passes.push({ pass, routes: routeSignatures(routes), relationLabels: mapSignatures(relationLabels), nodeLabels: mapSignatures(nodeLabels) }),
+    presentationPassSink: ({ route, relationLabel, nodeLabel }) => passes.push({ pass: route.pass, routes: routeSignatures(route.routes), relationLabels: mapSignatures(relationLabel.labels), nodeLabels: mapSignatures(nodeLabel.labels) }),
   });
   const labels = [...presentation.nodeLabels.values()];
   const lengths = presentation.routedEdges.map((route) => routeLength(route.samples)).sort((left, right) => left - right);

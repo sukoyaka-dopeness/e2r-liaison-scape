@@ -81,11 +81,11 @@ function render(edgeCurveOffsets = {}, feedbackEnabled = true) {
     provisionalNodeLabels,
     ...emptyState,
     feedbackEnabled,
-    presentationPassSink: (pass, routes, relationLabels, nodeLabels) => passes.push({
-      pass,
-      routes,
-      relationLabels,
-      nodeLabels,
+    presentationPassSink: ({ route, relationLabel, nodeLabel }) => passes.push({
+      pass: route.pass,
+      routes: route.routes,
+      relationLabels: relationLabel.labels,
+      nodeLabels: nodeLabel.labels,
     }),
   });
   return { presentation, passes };

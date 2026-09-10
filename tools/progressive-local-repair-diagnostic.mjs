@@ -113,11 +113,11 @@ function render(positions, { replayPrefix } = {}) {
     routeDecisionSink: (decision) => decisions.push(decision),
     replayPrefix,
     replayPrefixSink: (edgeIds) => { replayedPrefix = edgeIds; },
-    presentationPassSink: (pass, routes, relationLabels, nodeLabels) => passes.push({
-      pass,
-      routes: routeSignatures(routes),
-      relationLabels: mapSignatures(relationLabels),
-      nodeLabels: mapSignatures(nodeLabels),
+    presentationPassSink: ({ route, relationLabel, nodeLabel }) => passes.push({
+      pass: route.pass,
+      routes: routeSignatures(route.routes),
+      relationLabels: mapSignatures(relationLabel.labels),
+      nodeLabels: mapSignatures(nodeLabel.labels),
     }),
   });
   const nodeLabels = [...presentation.nodeLabels.entries()];

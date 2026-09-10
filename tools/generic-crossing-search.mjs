@@ -165,11 +165,11 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
     routeDecisionSink: routeDecisionTrace ? (decision) => routeDecisionTrace.push(compactRouteDecision(decision)) : undefined,
     replayPrefix,
     replayPrefixSink: replayedPrefixTrace ? (edgeIds) => replayedPrefixTrace.push(edgeIds) : undefined,
-    presentationPassSink: presentationPassTrace ? (pass, routes, relationLabels, nodeLabels) => presentationPassTrace.push({
-      pass,
-      routes: routeGeometrySignatures(routes),
-      relationLabels: mapGeometrySignatures(relationLabels),
-      nodeLabels: mapGeometrySignatures(nodeLabels),
+    presentationPassSink: presentationPassTrace ? ({ route, relationLabel, nodeLabel }) => presentationPassTrace.push({
+      pass: route.pass,
+      routes: routeGeometrySignatures(route.routes),
+      relationLabels: mapGeometrySignatures(relationLabel.labels),
+      nodeLabels: mapGeometrySignatures(nodeLabel.labels),
     }) : undefined,
   });
   const routeLengths = presentation.routedEdges.map((route) => route.samples.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - route.samples[index].x, point.y - route.samples[index].y), 0)).sort((a, b) => a - b);
