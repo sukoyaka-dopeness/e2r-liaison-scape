@@ -8,6 +8,7 @@ import { createDomTestEnvironment } from "./helpers/dom-test-environment.ts";
 import type { Dataset } from "../src/models.ts";
 import type { RelationLineStyle } from "../src/presentation-extension.ts";
 import type { PresentationDiagnosticSnapshot } from "../src/presentation-diagnostics.ts";
+import { translate } from "../src/i18n.ts";
 
 const presentationExtensionId = "draft.github.sukoyaka-dopeness.liaisonscape-presentation";
 
@@ -213,6 +214,37 @@ test("shows a delayed Dataset loading status during a slow sample open and clear
       assert.equal(loading?.getAttribute("role"), "status");
       assert.match(loading?.textContent ?? "", /Loading Dataset/);
       assert.equal(environment.document.querySelector(".home-page") !== null, true);
+
+      resolveFetch?.({ ok: true, text: async () => JSON.stringify(dataset) });
+      await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 230)));
+      assert.equal(environment.document.querySelector(".dataset-loading-indicator"), null);
+      assert.ok(environment.document.querySelector(".graph-section"));
+    },
+  });
+});
+
+test("localizes the delayed Dataset loading status for Japanese sample open", async () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [{ id: "loading-entity-ja", name: "Loading entity" }],
+    events: [],
+    relations: [],
+  };
+  let resolveFetch: ((response: { ok: boolean; text: () => Promise<string> }) => void) | undefined;
+  const pendingFetch = new Promise<{ ok: boolean; text: () => Promise<string> }>((resolve) => { resolveFetch = resolve; });
+  await withProductionApp({
+    locale: "ja",
+    beforeRender: (environment) => environment.installGlobal("fetch", () => pendingFetch),
+    callback: async (environment) => {
+      const sampleButton = environment.document.querySelector(".sample-action button");
+      assert.ok(sampleButton);
+
+      await act(async () => { (sampleButton as HTMLButtonElement).click(); });
+      await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 150)));
+      const loading = environment.document.querySelector(".dataset-loading-indicator");
+      assert.ok(loading);
+      assert.equal(loading?.getAttribute("role"), "status");
+      assert.equal(loading?.textContent, translate("ja", "datasetLoading"));
 
       resolveFetch?.({ ok: true, text: async () => JSON.stringify(dataset) });
       await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 230)));
