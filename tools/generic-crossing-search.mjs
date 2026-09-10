@@ -21,6 +21,9 @@ const presentationCache = new Map();
 let activeProfileStage = "setup";
 const presentationFinalistLimit = Number.parseInt(process.env.E2R_PRESENTATION_FINALIST_LIMIT ?? "8", 10);
 const relaxationTargeting = process.env.E2R_RELAXATION_TARGETING ?? "full";
+const relaxationAdmission = process.env.E2R_RELAXATION_ADMISSION ?? "hard";
+const parsedRelaxationMaxDisplacement = Number.parseFloat(process.env.E2R_RELAXATION_MAX_DISPLACEMENT ?? "48");
+const relaxationMaxDisplacement = Number.isFinite(parsedRelaxationMaxDisplacement) && parsedRelaxationMaxDisplacement > 0 ? parsedRelaxationMaxDisplacement : 48;
 const parsedRelaxationLatticeStep = Number.parseFloat(process.env.E2R_RELAXATION_LATTICE_STEP ?? "0");
 const relaxationLatticeStep = Number.isFinite(parsedRelaxationLatticeStep) && parsedRelaxationLatticeStep > 0 ? parsedRelaxationLatticeStep : 0;
 const relaxationLatticeProbe = process.env.E2R_RELAXATION_LATTICE_PROBE === "1" || relaxationLatticeStep > 0;
@@ -574,7 +577,8 @@ function hopDistanceMap(positions) {
   return new Map(edges.map((edge) => [edge.id, Math.hypot(positions[edge.sourceId].x - positions[edge.targetId].x, positions[edge.sourceId].y - positions[edge.targetId].y)]));
 }
 function constrainedRelaxationScore(metrics, positions, referencePositions) {
-  if (metrics.crossings !== 0 || metrics.overlapPairs !== 0 || metrics.labelRouteHits !== 0 || metrics.labelOverlap !== 0 || metrics.labelNear20 !== 0) return Infinity;
+  const presentationDefectScore = metrics.crossings * 100000 + metrics.labelRouteHits * 30000 + metrics.labelNear20 * 5000 + metrics.labelOverlap * 10000 + metrics.overlapPairs * 5000000;
+  if (relaxationAdmission !== "soft-defect" && presentationDefectScore > 0) return Infinity;
   const referenceHops = hopDistanceMap(referencePositions);
   let localityPenalty = 0; let edgeLengthPenalty = 0;
   for (const edge of edges) {
@@ -583,7 +587,7 @@ function constrainedRelaxationScore(metrics, positions, referencePositions) {
     localityPenalty += Math.max(0, 0.80 - ratio) ** 2 + Math.max(0, ratio - 1.20) ** 2;
     edgeLengthPenalty += Math.max(0, length - 480) ** 2 / 480;
   }
-  return metrics.usableSpanPenalty * 6 + metrics.routeMedian * 2 + metrics.routeMax + (metrics.extent[0] + metrics.extent[1]) * 0.20
+  return presentationDefectScore + metrics.usableSpanPenalty * 6 + metrics.routeMedian * 2 + metrics.routeMax + (metrics.extent[0] + metrics.extent[1]) * 0.20
     + localityPenalty * 9000 + edgeLengthPenalty;
 }
 function constrainedRelaxationLowerBound(positions) {
@@ -748,7 +752,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   const inputFractionalCoordinates = Object.values(inputPositions).flatMap((point) => [point.x, point.y]).filter((value) => !Number.isInteger(value)).length;
   const inputQuantizationMaxDelta = Math.max(0, ...Object.keys(inputPositions).map((id) => Math.hypot(referencePositions[id].x - inputPositions[id].x, referencePositions[id].y - inputPositions[id].y)));
   return {
-    mode: "POST_STRUCTURAL_CONSTRAINED_RELAXATION", evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement,
+    mode: relaxationAdmission === "soft-defect" ? "POST_STRUCTURAL_SOFT_DEFECT_RELAXATION" : "POST_STRUCTURAL_CONSTRAINED_RELAXATION", admission: relaxationAdmission, evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement,
     lattice: {
       configuredStep: relaxationLatticeStep,
       probeEnabled: relaxationLatticeProbe,
@@ -819,11 +823,11 @@ function genericSearch() {
   const pressureNeighborhood = structuralSelected ? derivePressureNeighborhood(structuralSelected.metrics, structuralSelected.positions) : { pressureNodeIds: [], expandedNodeIds: [], radius: INITIAL_ENTITY_CLEARANCE * 2.5 };
   const pressureTargetingFallback = relaxationTargeting === "pressure" && pressureNeighborhood.expandedNodeIds.length === 0 ? "NO_PRESSURE_SIGNAL_FALLBACK_TO_FULL_NODE" : null;
   const relaxationNodeIds = relaxationTargeting === "pressure" && !pressureTargetingFallback ? pressureNeighborhood.expandedNodeIds : ids;
-  const postStructuralRelaxation = structuralSelected ? constrainedPostStructuralRelaxation(structuralSelected.positions, relaxationNodeIds) : null;
+  const postStructuralRelaxation = structuralSelected ? constrainedPostStructuralRelaxation(structuralSelected.positions, relaxationNodeIds, relaxationMaxDisplacement) : null;
   if (postStructuralRelaxation) {
     const metrics = postStructuralRelaxation.metrics;
     const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
-    candidates.push({ family: "post-structural-constrained-relaxation", structuralCrossings: 0, positions: clonePositions(postStructuralRelaxation.positions), metrics, eligible, relaxation: postStructuralRelaxation });
+    candidates.push({ family: relaxationAdmission === "soft-defect" ? "post-structural-soft-defect-relaxation" : "post-structural-constrained-relaxation", structuralCrossings: 0, positions: clonePositions(postStructuralRelaxation.positions), metrics, eligible, relaxation: postStructuralRelaxation });
   }
   candidates.sort((left, right) => Number(right.structuralCrossings === 0) - Number(left.structuralCrossings === 0) || Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
   const zeroCrossingStructural = gridSearch.finalists.filter((finalist) => finalist.straightCrossings === 0).length;
@@ -871,7 +875,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, relaxationAdmission, relaxationMaxDisplacement, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));
