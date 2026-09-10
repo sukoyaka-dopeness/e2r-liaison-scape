@@ -1,6 +1,6 @@
 import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelRect, type Point, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelRect, type Point, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -40,6 +40,41 @@ export type AutomaticRouteDecision = {
   candidateDiagnostics: readonly RouteCandidateDiagnostic[];
 };
 
+export type AutomaticPresentationPassProfile = {
+  elapsedMs: number;
+  route: RouteArbitrationProfile;
+  continuitySafetyMs: number;
+  occupiedPathMaintenanceMs: number;
+  relationLabelMs: number;
+  nodeLabelMs: number;
+  routeDecisions: number;
+};
+
+export type AutomaticPresentationProfiler = {
+  passes: Record<AutomaticRouteDecision["pass"], AutomaticPresentationPassProfile>;
+};
+
+function emptyRouteArbitrationProfile(): RouteArbitrationProfile {
+  return {
+    candidateGenerationMs: 0,
+    arbitrationMs: 0,
+    occupiedPathCheckMs: 0,
+    candidateComparisons: 0,
+    safeCandidateChecks: 0,
+    selectedRouteCommits: 0,
+  };
+}
+
+export function createAutomaticPresentationProfiler(): AutomaticPresentationProfiler {
+  return {
+    passes: {
+      "label-free": { elapsedMs: 0, route: emptyRouteArbitrationProfile(), continuitySafetyMs: 0, occupiedPathMaintenanceMs: 0, relationLabelMs: 0, nodeLabelMs: 0, routeDecisions: 0 },
+      first: { elapsedMs: 0, route: emptyRouteArbitrationProfile(), continuitySafetyMs: 0, occupiedPathMaintenanceMs: 0, relationLabelMs: 0, nodeLabelMs: 0, routeDecisions: 0 },
+      feedback: { elapsedMs: 0, route: emptyRouteArbitrationProfile(), continuitySafetyMs: 0, occupiedPathMaintenanceMs: 0, relationLabelMs: 0, nodeLabelMs: 0, routeDecisions: 0 },
+    },
+  };
+}
+
 export type AutomaticRoutingInput = {
   graph: { nodes: readonly GraphNode[]; edges: readonly RoutingGraphEdge[] };
   positions: Readonly<Record<string, Point>>;
@@ -63,6 +98,8 @@ export type AutomaticRoutingInput = {
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
   /** Opt-in candidate-generation cache; arbitration remains uncached. */
   candidateCache?: RouteCandidateCache;
+  /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
+  profiler?: AutomaticPresentationProfiler;
   routeDecisionPass?: AutomaticRouteDecision["pass"];
   /** Diagnostic-only canonical prefix replay. Normal Product calls omit it. */
   replayPrefix?: {
@@ -103,6 +140,7 @@ export function deriveAutomaticRoutes({
   preserveSafeIncidentPreviousRoute = false,
   routeDecisionSink,
   candidateCache,
+  profiler,
   routeDecisionPass = "first",
   replayPrefix,
   replayPrefixSink,
@@ -192,6 +230,7 @@ export function deriveAutomaticRoutes({
       )
       : 0;
     const candidateDiagnostics: RouteCandidateDiagnostic[] = [];
+    const passProfile = profiler?.passes[routeDecisionPass];
     const route = routeGraphEdge(
       source,
       target,
@@ -208,6 +247,7 @@ export function deriveAutomaticRoutes({
       routeDecisionSink ? (candidates) => candidateDiagnostics.push(...candidates) : undefined,
       previousRouteSideSign,
       candidateCache,
+      passProfile?.route,
     );
     const isEligibleShape = edge.sourceId !== edge.targetId
       && edge.parallelCount === 1
@@ -232,6 +272,7 @@ export function deriveAutomaticRoutes({
       && isEligibleShape;
     // Keep the existing lazy safety work: ordinary presentation without a
     // continuity candidate does not pay these diagnostic-observable checks.
+    const continuityStartedAt = performance.now();
     const priorRouteHasNodeInfluence = continuityCandidate && routeSamplesHaveNodeInfluence(previousRoute.samples, obstacles);
     // Preserve an origin only when this very dragged Node directly blocked the
     // preceding route. Routes that merely changed because an earlier route
@@ -276,6 +317,7 @@ export function deriveAutomaticRoutes({
     const freshRouteIsSafe = !freshRouteHasNodeInfluence
       && !freshRouteHasOccupiedPathConflict
       && !freshRouteHasLabelCollision;
+    if (passProfile) passProfile.continuitySafetyMs += performance.now() - continuityStartedAt;
     const previousDirectRecoveryMatchesDrag = draggedNodeId !== undefined
       && previousRoute?.directRecoveryObstacleId === draggedNodeId;
     const canRecoverDuringActiveDrag = activeDraggedNodeId !== undefined
@@ -287,6 +329,7 @@ export function deriveAutomaticRoutes({
       && freshRouteIsSafe
       && (canRecoverDuringActiveDrag || canRecoverDuringFinalization);
     const selectedRoute = canPreservePreviousRoute && !canRecoverCurrentRoute ? previousRoute : route;
+    if (passProfile) passProfile.route.selectedRouteCommits += 1;
     // A direct-obstacle recovery can legitimately pass through a safe but
     // still-curved fresh candidate before the original/equivalent route is
     // available again. Keep its bounded cause through an unchanged committed
@@ -360,6 +403,10 @@ export function deriveAutomaticRoutes({
         selfLoopOverrides[edge.id],
         [],
         canonicalPhysicalSideSign,
+        undefined,
+        0,
+        undefined,
+        passProfile?.route,
       )
       : null;
     const routeWithoutObstaclesOrOccupiedPaths = routeWithoutObstacles !== null
@@ -376,6 +423,10 @@ export function deriveAutomaticRoutes({
         selfLoopOverrides[edge.id],
         [],
         canonicalPhysicalSideSign,
+        undefined,
+        0,
+        undefined,
+        passProfile?.route,
       )
       : null;
     const obstacleComparison = routeWithoutObstacles === null
@@ -389,8 +440,11 @@ export function deriveAutomaticRoutes({
       && !isOverlappingPair
       && obstacleComparison?.equivalent === true
       && occupiedPathComparison?.equivalent === true;
+    const occupiedPathMaintenanceStartedAt = performance.now();
     occupiedPaths.push(selectedRoute.samples);
     occupiedPathIds.push(edge.id);
+    if (passProfile) passProfile.occupiedPathMaintenanceMs += performance.now() - occupiedPathMaintenanceStartedAt;
+    if (passProfile) passProfile.routeDecisions += 1;
     routedById.set(edge.id, {
       sourcePosition: { x: source.x, y: source.y },
       targetPosition: { x: target.x, y: target.y },
@@ -516,6 +570,8 @@ export type BoundedAutomaticPresentationInput = {
   routeDecisionSink?: (decision: AutomaticRouteDecision) => void;
   /** Opt-in candidate-generation cache; arbitration remains uncached. */
   candidateCache?: RouteCandidateCache;
+  /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
+  profiler?: AutomaticPresentationProfiler;
   /** Diagnostic-only replay input for the first canonical route pass. */
   replayPrefix?: AutomaticRoutingInput["replayPrefix"];
   replayPrefixSink?: (edgeIds: readonly string[]) => void;
@@ -585,6 +641,7 @@ export function deriveBoundedAutomaticPresentation({
   feedbackEnabled = true,
   routeDecisionSink,
   candidateCache,
+  profiler,
   replayPrefix,
   replayPrefixSink,
   presentationPassSink,
@@ -594,6 +651,7 @@ export function deriveBoundedAutomaticPresentation({
   // route authority. Reuse it when the bounded feedback pass is repeated;
   // recomputing it for each route-label snapshot adds cost without changing
   // the dependency result.
+  const labelFreeStartedAt = performance.now();
   const routesWithoutNodeLabels = deriveAutomaticRoutes({
     graph,
     positions,
@@ -602,9 +660,13 @@ export function deriveBoundedAutomaticPresentation({
     provisionalNodeLabels: [],
     routeDecisionSink,
     candidateCache,
+    profiler,
     routeDecisionPass: "label-free",
   });
+  if (profiler) profiler.passes["label-free"].elapsedMs += performance.now() - labelFreeStartedAt;
   const derivePass = (routeLabels: readonly LabelRect[], routeDecisionPass: AutomaticRouteDecision["pass"]) => {
+    const passProfile = profiler?.passes[routeDecisionPass];
+    const passStartedAt = performance.now();
     const routedEdges = deriveAutomaticRoutes({
       graph,
       positions,
@@ -618,6 +680,7 @@ export function deriveBoundedAutomaticPresentation({
       activeDraggedNodeId,
       preserveSafeIncidentPreviousRoute,
       candidateCache,
+      profiler,
       routeDecisionSink,
       routeDecisionPass,
       replayPrefix: routeDecisionPass === "first" ? replayPrefix : undefined,
@@ -630,6 +693,7 @@ export function deriveBoundedAutomaticPresentation({
       const deviation = routeDeviation(route.samples, labelFreeRoute.samples);
       return deviation >= 12 ? [{ samples: labelFreeRoute.samples, deviation }] : [];
     });
+    const relationLabelStartedAt = performance.now();
     const relationLabels = deriveAutomaticRelationLabels({
       routedEdges,
       nodes,
@@ -637,6 +701,8 @@ export function deriveBoundedAutomaticPresentation({
       manualAnchors: manualRelationLabelAnchors,
       draggedNodeId,
     });
+    if (passProfile) passProfile.relationLabelMs += performance.now() - relationLabelStartedAt;
+    const nodeLabelStartedAt = performance.now();
     const nodeLabels = deriveAutomaticNodeLabels({
       nodes: graph.nodes,
       positions,
@@ -647,6 +713,10 @@ export function deriveBoundedAutomaticPresentation({
       activelyDraggedNodeId,
       yieldingRoutes,
     });
+    if (passProfile) {
+      passProfile.nodeLabelMs += performance.now() - nodeLabelStartedAt;
+      passProfile.elapsedMs += performance.now() - passStartedAt;
+    }
     presentationPassSink?.(routeDecisionPass, routedEdges, relationLabels, nodeLabels);
     return { routedEdges, relationLabels, nodeLabels };
   };

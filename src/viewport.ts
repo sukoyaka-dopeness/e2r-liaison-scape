@@ -643,6 +643,16 @@ export type RouteCandidateCache = {
   stats?: { lookups: number; hits: number; misses: number };
 };
 
+/** Opt-in timing/counter sink for route arbitration diagnostics. */
+export type RouteArbitrationProfile = {
+  candidateGenerationMs: number;
+  arbitrationMs: number;
+  occupiedPathCheckMs: number;
+  candidateComparisons: number;
+  safeCandidateChecks: number;
+  selectedRouteCommits: number;
+};
+
 export function routeGraphEdge(
   source: Point,
   target: Point,
@@ -659,6 +669,7 @@ export function routeGraphEdge(
   candidateTraceSink?: (candidates: readonly RouteCandidateDiagnostic[]) => void,
   preferredSideSign = 0,
   candidateCache?: RouteCandidateCache,
+  routeProfile?: RouteArbitrationProfile,
 ): { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point } {
   if (source.x === target.x && source.y === target.y && selfRelation) {
     if (manualSelfLoop === undefined) return selectAutomaticSelfLoopGeometry(source, parallelIndex, obstacles);
@@ -823,6 +834,7 @@ export function routeGraphEdge(
   let bestPreferredSideGeometry: ReturnType<typeof geometryForOffset> | null = null;
   let bestPreferredSideScore = Infinity;
   let bestPreferredSideOffset: number | null = null;
+  const candidateGenerationStartedAt = performance.now();
   const candidateCacheKey = candidateCache === undefined ? null : JSON.stringify({
     source,
     target,
@@ -859,6 +871,7 @@ export function routeGraphEdge(
       }, 0);
     }, 0);
     const innerSamples = samples.slice(5, -5);
+    const occupiedPathCheckStartedAt = performance.now();
     const overlapsEdge = occupiedPaths.some((occupiedPath, occupiedIndex) => {
       const bounds = occupiedPathBounds[occupiedIndex]!;
       if (bounds.maxX < sampleBounds.minX - 8 || bounds.minX > sampleBounds.maxX + 8
@@ -877,6 +890,7 @@ export function routeGraphEdge(
       }
       return false;
     });
+    if (routeProfile) routeProfile.occupiedPathCheckMs += performance.now() - occupiedPathCheckStartedAt;
     const labelPressure = labelRects.reduce((total, rect) => {
       const distance = minimumPathToLabelRectDistance(samples, rect);
       if (distance === 0) return total + 100000;
@@ -898,7 +912,12 @@ export function routeGraphEdge(
     };
   });
   if (candidateCacheKey !== null && !cachedCandidates) candidateCache!.entries.set(candidateCacheKey, candidates);
+  if (routeProfile) {
+    routeProfile.candidateGenerationMs += performance.now() - candidateGenerationStartedAt;
+    routeProfile.candidateComparisons += candidates.length;
+  }
   const candidateDiagnostics: Array<Omit<RouteCandidateDiagnostic, "selected">> = [];
+  const arbitrationStartedAt = performance.now();
   for (const { geometry, diagnostic } of candidates) {
     const { offset: candidateOffset, nodeOverlapScore, occupiedPathConflict: overlapsEdge, labelPressure, score, preservesBaseSide } = diagnostic;
     candidateDiagnostics.push(diagnostic);
@@ -910,6 +929,7 @@ export function routeGraphEdge(
     // pressure remains a quality signal and may be compared, but it must not
     // prevent a bounded side-continuity preference from stabilizing two
     // otherwise usable route families.
+    if (routeProfile) routeProfile.safeCandidateChecks += 1;
     const isSafeCandidate = nodeOverlapScore === 0 && !overlapsEdge && labelPressure < 100000;
     if (isSafeCandidate && score < bestSafeScore) {
       bestSafeGeometry = geometry;
@@ -948,6 +968,7 @@ export function routeGraphEdge(
     ...candidate,
     selected: candidate.offset === selectedOffset,
   })));
+  if (routeProfile) routeProfile.arbitrationMs += performance.now() - arbitrationStartedAt;
   return selectedGeometry;
 }
 

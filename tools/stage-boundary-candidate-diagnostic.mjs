@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { buildEntityGraph } from "../src/dataset.ts";
-import { deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
+import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
 
 const root = new URL("..", import.meta.url).pathname.replace(/^\/(?:([A-Za-z]):)/, "$1:").replaceAll("/", "\\");
@@ -43,7 +43,7 @@ function crossingCount(routes) {
   return count;
 }
 
-function render(spec, positions, manualRelationLabelAnchors = new Map(), candidateCache) {
+function render(spec, positions, manualRelationLabelAnchors = new Map(), candidateCache, profiler = createAutomaticPresentationProfiler()) {
   const graph = buildEntityGraph(spec.dataset);
   const edges = graph.edges.map((edge) => ({ ...edge, label: spec.dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "" }));
   const provisionalNodeLabels = graph.nodes.map((node) => placeNodeLabel(positions[node.id], node.label, node.description, [], graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), []));
@@ -55,6 +55,7 @@ function render(spec, positions, manualRelationLabelAnchors = new Map(), candida
     previousNodeLabelPlacements: new Map(), previousRelationLabelPlacements: new Map(), manualNodeLabelOffsets: new Map(), manualRelationLabelAnchors,
     routeDecisionSink: (decision) => decisions.push(decision),
     candidateCache,
+    profiler,
   });
   const labels = [...presentation.nodeLabels.values()];
   const lengths = presentation.routedEdges.map((route) => routeLength(route.samples)).sort((a, b) => a - b);
@@ -72,6 +73,7 @@ function render(spec, positions, manualRelationLabelAnchors = new Map(), candida
     candidateCount,
     elapsedMs: Number((performance.now() - startedAt).toFixed(3)),
     cacheStats: stats,
+    profiler,
     decisionCounts: Object.fromEntries(["label-free", "first", "feedback"].map((pass) => [pass, decisions.filter((decision) => decision.pass === pass).length])),
     metrics: {
       hardHits: presentation.routedEdges.filter((route) => routeSamplesHaveLabelCollision(route.samples, labels)).map((route) => route.id),
@@ -92,17 +94,17 @@ function runFixture(name, fixturePath, positionsPath) {
   const basePositions = selectedPositions(positionsPath);
   const candidateCache = { entries: new Map(), stats: { lookups: 0, hits: 0, misses: 0 } };
   const baseline = render(spec, basePositions, new Map(), candidateCache);
-  const uncachedRepeat = render(spec, basePositions);
+  const uncachedRepeat = render(spec, basePositions, new Map(), undefined);
   const exactRepeat = render(spec, basePositions, new Map(), candidateCache);
   const downstreamAnchorId = buildEntityGraph(dataset).edges[0]?.id;
   const downstreamAnchors = new Map(downstreamAnchorId ? [[downstreamAnchorId, { fraction: 0.2, tangentOffset: 8, normalOffset: 64 }]] : []);
   const downstreamOnly = render(spec, basePositions, downstreamAnchors, candidateCache);
-  const downstreamUncached = render(spec, basePositions, downstreamAnchors);
+  const downstreamUncached = render(spec, basePositions, downstreamAnchors, undefined);
   const semanticPositions = clonePositions(basePositions);
   const semanticNodeId = buildEntityGraph(dataset).nodes[0]?.id;
   if (semanticNodeId) semanticPositions[semanticNodeId].x += 24;
   const semanticMutation = render(spec, semanticPositions, new Map(), candidateCache);
-  const semanticUncached = render(spec, semanticPositions);
+  const semanticUncached = render(spec, semanticPositions, new Map(), undefined);
   const baselineToDownstreamCandidates = compareMaps(baseline.candidateSets, downstreamOnly.candidateSets);
   const baselineToSemanticCandidates = compareMaps(baseline.candidateSets, semanticMutation.candidateSets);
   const candidateChangeByPass = (changed) => Object.fromEntries(["label-free", "first", "feedback"].map((pass) => [pass, changed.filter((key) => key.startsWith(`${pass}:`))]));
@@ -153,6 +155,15 @@ function runFixture(name, fixturePath, positionsPath) {
       safeReuseOpportunity: Object.entries(downstreamCandidateChangesByPass).filter(([, changed]) => changed.length === 0).map(([pass]) => pass),
       invalidationRule: baselineToSemanticCandidates.length > 0 ? "relevant geometry mutation invalidates candidate sets" : "not observed in this fixture",
     },
+    profiling: {
+      cachedBaseline: baseline.profiler,
+      uncachedRepeat: uncachedRepeat.profiler,
+      cachedRepeat: exactRepeat.profiler,
+      downstreamCached: downstreamOnly.profiler,
+      downstreamUncached: downstreamUncached.profiler,
+      semanticCached: semanticMutation.profiler,
+      semanticUncached: semanticUncached.profiler,
+    },
   };
 }
 
@@ -165,7 +176,7 @@ console.log(JSON.stringify({
   diagnosticOnly: true,
   productSourceChanged: false,
   productAdoption: false,
-  method: "Current route authority is invoked unchanged. Candidate diagnostics are fingerprinted as an observation; downstream-only manual Relation-label state is varied separately from semantic route inputs.",
+  method: "Current route authority is invoked unchanged. The opt-in cache stores only candidate geometry/diagnostics; arbitration and downstream label/feedback stages remain authoritative. Downstream-only manual Relation-label state is varied separately from semantic route inputs.",
   results,
   classification: "C_CANDIDATE_SEAM_EXISTS_ARBITRATION_REMAINS_AUTHORITATIVE",
   state: { governedEvidenceChanged: false, historicalEvidenceChanged: false, publication: false },

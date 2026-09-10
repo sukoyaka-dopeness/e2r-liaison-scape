@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  createAutomaticPresentationProfiler,
   deriveBoundedAutomaticPresentation,
   deriveAutomaticNodeLabels,
   deriveAutomaticRelationLabels,
@@ -556,6 +557,27 @@ test("candidate-generation cache preserves presentation authority and invalidate
   const mutated = render(moved);
   assert.ok(cache.stats.misses > beforeMutation.misses);
   assert.notDeepEqual(mutated.routedEdges, first.routedEdges);
+});
+
+test("presentation profiler separates route arbitration from downstream stages", () => {
+  const base = input();
+  const profiler = createAutomaticPresentationProfiler();
+  deriveBoundedAutomaticPresentation({
+    ...base,
+    provisionalNodeLabels: [],
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+    profiler,
+  });
+  assert.equal(profiler.passes["label-free"].routeDecisions, 1);
+  assert.equal(profiler.passes.first.routeDecisions, 1);
+  assert.ok(profiler.passes.first.route.candidateComparisons > 0);
+  assert.ok(profiler.passes.first.route.arbitrationMs >= 0);
+  assert.ok(profiler.passes.first.relationLabelMs >= 0);
+  assert.ok(profiler.passes.first.nodeLabelMs >= 0);
+  assert.ok(profiler.passes.first.elapsedMs >= profiler.passes.first.route.candidateGenerationMs);
 });
 
 test("current Node positions drive automatic Node-label recomputation", () => {
