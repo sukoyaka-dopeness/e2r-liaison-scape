@@ -19,3 +19,14 @@ test("same geometry and reordered input produce the same score", () => {
   const second = scoreCoarseInitialLayout({ ...base, entities: [...base.entities].reverse(), relations: [...base.relations].reverse() });
   assert.deepEqual(first, second);
 });
+
+test("Relation-label corridor pressure changes when a foreign Node enters the corridor", () => {
+  const base = {
+    entities: [{ id: "a", label: "A" }, { id: "b", label: "B" }, { id: "c", label: "C" }],
+    relations: [{ id: "ab", sourceId: "a", targetId: "b", label: "a long relation label" }],
+  };
+  const clear = scoreCoarseInitialLayout({ ...base, positions: { a: { x: 0, y: 0 }, b: { x: 200, y: 0 }, c: { x: 100, y: 200 } } });
+  const occupied = scoreCoarseInitialLayout({ ...base, positions: { a: { x: 0, y: 0 }, b: { x: 200, y: 0 }, c: { x: 100, y: 10 } } });
+  assert.equal(clear.relationLabelCorridorPressure, 0);
+  assert.ok(occupied.relationLabelCorridorPressure > clear.relationLabelCorridorPressure);
+});
