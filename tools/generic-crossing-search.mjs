@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { buildEntityGraph } from "../src/dataset.ts";
-import { deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
+import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
 import { INITIAL_ENTITY_CLEARANCE } from "../src/initial-entity-placement.ts";
 
@@ -18,6 +18,15 @@ const dataset = fixturePath === "synthetic:k3-3" ? syntheticK33Dataset() : JSON.
 const graph = buildEntityGraph(dataset);
 const profile = { presentationCalls: 0, fullPresentationEvaluations: 0, presentationMs: 0, duplicatePositionCalls: 0, presentationCacheHits: 0, stages: {} };
 const presentationCache = new Map();
+const presentationCostProfileEnabled = process.env.E2R_PRESENTATION_COST_PROFILE === "1";
+const presentationProfiler = presentationCostProfileEnabled ? createAutomaticPresentationProfiler() : null;
+const presentationGeometryCacheEnabled = process.env.E2R_PRESENTATION_GEOMETRY_CACHE === "1";
+const presentationGeometryCache = presentationGeometryCacheEnabled
+  ? { entries: new Map(), stats: { lookups: 0, hits: 0, misses: 0 } }
+  : null;
+const presentationCostBreakdown = presentationCostProfileEnabled
+  ? { provisionalNodeLabelMs: 0, authoritativePresentationMs: 0, metricAggregationMs: 0 }
+  : null;
 let activeProfileStage = "setup";
 const presentationFinalistLimit = Number.parseInt(process.env.E2R_PRESENTATION_FINALIST_LIMIT ?? "8", 10);
 const parsedPresentationRepairRounds = Number.parseInt(process.env.E2R_PRESENTATION_REPAIR_ROUNDS ?? "24", 10);
@@ -166,12 +175,15 @@ function compactRouteDecision(decision) {
   };
 }
 function derivePresentationMetrics(positions, { replayPrefix } = {}) {
+  const provisionalStartedAt = presentationCostProfileEnabled ? performance.now() : 0;
   const provisional = graph.nodes.map((node) => placeNodeLabel(
     positions[node.id], node.label, node.description, [], graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), [],
   ));
+  if (presentationCostBreakdown) presentationCostBreakdown.provisionalNodeLabelMs += performance.now() - provisionalStartedAt;
   const routeDecisionTrace = relaxationDependencyTraceEnabled ? [] : null;
   const replayedPrefixTrace = relaxationDependencyTraceEnabled ? [] : null;
   const presentationPassTrace = relaxationDependencyTraceEnabled ? [] : null;
+  const authoritativePresentationStartedAt = presentationCostProfileEnabled ? performance.now() : 0;
   const presentation = deriveBoundedAutomaticPresentation({
     graph: { nodes: graph.nodes, edges }, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels: provisional, ...emptyState,
     routeDecisionSink: routeDecisionTrace ? (decision) => routeDecisionTrace.push(compactRouteDecision(decision)) : undefined,
@@ -183,7 +195,11 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
       relationLabels: mapGeometrySignatures(relationLabel.labels),
       nodeLabels: mapGeometrySignatures(nodeLabel.labels),
     }) : undefined,
+    profiler: presentationProfiler ?? undefined,
+    geometryCache: presentationGeometryCache ?? undefined,
   });
+  if (presentationCostBreakdown) presentationCostBreakdown.authoritativePresentationMs += performance.now() - authoritativePresentationStartedAt;
+  const metricAggregationStartedAt = presentationCostProfileEnabled ? performance.now() : 0;
   const routeLengths = presentation.routedEdges.map((route) => route.samples.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - route.samples[index].x, point.y - route.samples[index].y), 0)).sort((a, b) => a - b);
   const nodeLabels = [...presentation.nodeLabels.values()];
   const labelRouteHits = presentation.routedEdges.filter((route) => routeSamplesHaveLabelCollision(route.samples, nodeLabels)).length;
@@ -299,6 +315,7 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
     value: { routedEdges: presentation.routedEdges, relationLabels: presentation.relationLabels, nodeLabels: presentation.nodeLabels },
     enumerable: false,
   });
+  if (presentationCostBreakdown) presentationCostBreakdown.metricAggregationMs += performance.now() - metricAggregationStartedAt;
   return result;
 }
 function localNodeFeasibility(nodes, positions) {
@@ -1280,6 +1297,40 @@ function complexityProbe() {
   }));
 }
 function factorial(value) { let result = 1; for (let factor = 2; factor <= value; factor += 1) result *= factor; return result; }
+function summarizePresentationProfiler() {
+  if (!presentationProfiler) return null;
+  const summarizeProfile = (pass) => ({
+    elapsedMs: pass.elapsedMs,
+    relationLabelMs: pass.relationLabelMs,
+    nodeLabelMs: pass.nodeLabelMs,
+    routeDecisions: pass.routeDecisions,
+    route: {
+      candidateGenerationMs: pass.route.candidateGenerationMs,
+      occupiedPathCheckMs: pass.route.occupiedPathCheckMs,
+      arbitrationMs: pass.route.arbitrationMs,
+      candidateComparisons: pass.route.candidateComparisons,
+      safeCandidateChecks: pass.route.safeCandidateChecks,
+    },
+    relationLabel: {
+      pathBoundsPrecomputationMs: pass.relationLabel.pathBoundsPrecomputationMs,
+      pathBoundsBuildCount: pass.relationLabel.pathBoundsBuildCount,
+      pathBoundsPointVisits: pass.relationLabel.pathBoundsPointVisits,
+      candidateEvaluations: pass.relationLabel.candidateEvaluations,
+      occupiedLabelChecks: pass.relationLabel.occupiedLabelChecks,
+      edgePathPointChecks: pass.relationLabel.edgePathPointChecks,
+    },
+    nodeLabel: {
+      pathBoundsPrecomputationMs: pass.nodeLabel.pathBoundsPrecomputationMs,
+      pathBoundsBuildCount: pass.nodeLabel.pathBoundsBuildCount,
+      pathBoundsPointVisits: pass.nodeLabel.pathBoundsPointVisits,
+      candidateEvaluations: pass.nodeLabel.candidateEvaluations,
+      occupiedLabelChecks: pass.nodeLabel.occupiedLabelChecks,
+      otherNodeChecks: pass.nodeLabel.otherNodeChecks,
+      edgePathPointChecks: pass.nodeLabel.edgePathPointChecks,
+    },
+  });
+  return Object.fromEntries(Object.entries(presentationProfiler.passes).map(([name, pass]) => [name, summarizeProfile(pass)]));
+}
 
 const startedAt = performance.now();
 const search = genericSearch();
@@ -1298,6 +1349,16 @@ console.log(JSON.stringify({
     presentationCacheHits: profile.presentationCacheHits,
     presentationMs: Math.round(profile.presentationMs * 100) / 100,
     averagePresentationMs: Math.round(profile.presentationMs / Math.max(1, profile.fullPresentationEvaluations) * 100) / 100,
+    costBreakdown: presentationCostBreakdown ? {
+      provisionalNodeLabelMs: Math.round(presentationCostBreakdown.provisionalNodeLabelMs * 100) / 100,
+      authoritativePresentationMs: Math.round(presentationCostBreakdown.authoritativePresentationMs * 100) / 100,
+      metricAggregationMs: Math.round(presentationCostBreakdown.metricAggregationMs * 100) / 100,
+      profiler: summarizePresentationProfiler(),
+      geometryCache: presentationGeometryCache ? {
+        entries: presentationGeometryCache.entries.size,
+        stats: { ...presentationGeometryCache.stats },
+      } : null,
+    } : null,
     stages: Object.fromEntries(Object.entries(profile.stages).map(([name, stage]) => [name, {
       presentationCalls: stage.presentationCalls,
       fullPresentationEvaluations: stage.fullPresentationEvaluations,
@@ -1307,7 +1368,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, presentationRepairRounds, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationFinalCanonicalizationMode, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationFinalCanonicalizationMode, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));

@@ -739,6 +739,14 @@ export type RouteCandidateCache = {
   stats?: { lookups: number; hits: number; misses: number };
 };
 
+export type RouteGeometry = { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point };
+
+/** Opt-in exact cache for endpoint/offset geometry before route arbitration. */
+export type RouteGeometryCache = {
+  entries: Map<string, RouteGeometry>;
+  stats?: { lookups: number; hits: number; misses: number };
+};
+
 /** Opt-in timing/counter sink for route arbitration diagnostics. */
 export type RouteArbitrationProfile = {
   candidateGenerationMs: number;
@@ -789,7 +797,8 @@ export function routeGraphEdge(
   preferredSideSign = 0,
   candidateCache?: RouteCandidateCache,
   routeProfile?: RouteArbitrationProfile,
-): { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point } {
+  geometryCache?: RouteGeometryCache,
+): RouteGeometry {
   if (source.x === target.x && source.y === target.y && selfRelation) {
     if (manualSelfLoop === undefined) return selectAutomaticSelfLoopGeometry(source, parallelIndex, obstacles);
     const orientation = manualSelfLoop?.orientation ?? -Math.PI / 2 + parallelIndex % 3 * Math.PI * 2 / 3;
@@ -971,8 +980,33 @@ export function routeGraphEdge(
     if (cachedCandidates) candidateCache.stats.hits += 1;
     else candidateCache.stats.misses += 1;
   }
+
+  const geometryCachePrefix = geometryCache === undefined ? null : JSON.stringify({
+    source,
+    target,
+    parallelIndex,
+    parallelCount,
+    selfRelation,
+    overlapIndex,
+    canonicalPhysicalSideSign,
+  });
+  const activeGeometryCache = geometryCache;
+  const cachedGeometryForOffset = (offset: number): RouteGeometry => {
+    if (geometryCachePrefix === null) return geometryForOffset(offset);
+    const key = `${geometryCachePrefix}|offset:${offset}`;
+    const cached = activeGeometryCache!.entries.get(key);
+    if (activeGeometryCache!.stats) {
+      activeGeometryCache!.stats.lookups += 1;
+      if (cached) activeGeometryCache!.stats.hits += 1;
+      else activeGeometryCache!.stats.misses += 1;
+    }
+    if (cached) return cached;
+    const geometry = geometryForOffset(offset);
+    activeGeometryCache!.entries.set(key, geometry);
+    return geometry;
+  };
   const candidates: readonly RouteCandidateCacheEntry[] = cachedCandidates ?? offsets.map((candidateOffset) => {
-    const geometry = geometryForOffset(candidateOffset);
+    const geometry = cachedGeometryForOffset(candidateOffset);
     const { samples } = geometry;
     const sampleBounds = {
       minX: Math.min(...samples.map(({ x }) => x)),

@@ -2,7 +2,7 @@ import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
 import { createFeedbackStageInput, createPresentationPassSnapshot, createRouteSelectionSnapshot, type FeedbackStageInput, type PresentationPassSnapshot } from "./presentation-stage-contracts.ts";
 import { dependencyFingerprint, type PresentationDependencyTrace } from "./presentation-dependency.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, pointBounds, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type PointBounds, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, pointBounds, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type PointBounds, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteGeometryCache, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -155,6 +155,8 @@ export type AutomaticRoutingInput = {
   routeTraceSink?: (trace: AutomaticRouteTrace) => void;
   /** Opt-in candidate-generation cache; arbitration remains uncached. */
   candidateCache?: RouteCandidateCache;
+  /** Opt-in exact endpoint/offset geometry cache; route arbitration remains uncached. */
+  geometryCache?: RouteGeometryCache;
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
   profiler?: AutomaticPresentationProfiler;
   routeDecisionPass?: AutomaticRouteDecision["pass"];
@@ -198,6 +200,7 @@ export function deriveAutomaticRoutes({
   routeDecisionSink,
   routeTraceSink,
   candidateCache,
+  geometryCache,
   profiler,
   routeDecisionPass = "first",
   replayPrefix,
@@ -306,6 +309,7 @@ export function deriveAutomaticRoutes({
       previousRouteSideSign,
       candidateCache,
       passProfile?.route,
+      geometryCache,
     );
     const isEligibleShape = edge.sourceId !== edge.targetId
       && edge.parallelCount === 1
@@ -474,6 +478,7 @@ export function deriveAutomaticRoutes({
         0,
         undefined,
         passProfile?.route,
+        geometryCache,
       )
       : null;
     const routeWithoutObstaclesOrOccupiedPaths = routeWithoutObstacles !== null
@@ -494,6 +499,7 @@ export function deriveAutomaticRoutes({
         0,
         undefined,
         passProfile?.route,
+        geometryCache,
       )
       : null;
     const obstacleComparison = routeWithoutObstacles === null
@@ -717,6 +723,8 @@ export type BoundedAutomaticPresentationInput = {
   presentationDependencySink?: (trace: PresentationDependencyTrace) => void;
   /** Opt-in candidate-generation cache; arbitration remains uncached. */
   candidateCache?: RouteCandidateCache;
+  /** Opt-in exact endpoint/offset geometry cache; route arbitration remains uncached. */
+  geometryCache?: RouteGeometryCache;
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
   profiler?: AutomaticPresentationProfiler;
   /** Diagnostic-only replay input for the first canonical route pass. */
@@ -789,6 +797,7 @@ export function deriveBoundedAutomaticPresentation({
   nodeLabelTraceSink,
   presentationDependencySink,
   candidateCache,
+  geometryCache,
   profiler,
   replayPrefix,
   replayPrefixSink,
@@ -825,6 +834,7 @@ export function deriveBoundedAutomaticPresentation({
     provisionalNodeLabels: [],
     routeDecisionSink,
     candidateCache,
+    geometryCache,
     profiler,
     routeTraceSink,
     routeDecisionPass: "label-free",
@@ -863,6 +873,7 @@ export function deriveBoundedAutomaticPresentation({
       activeDraggedNodeId,
       preserveSafeIncidentPreviousRoute,
       candidateCache,
+      geometryCache,
       profiler,
       routeDecisionSink,
       routeTraceSink,

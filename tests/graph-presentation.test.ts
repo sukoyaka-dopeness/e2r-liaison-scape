@@ -60,6 +60,20 @@ test("same input produces exact deterministic route output", () => {
   assert.deepEqual(deriveAutomaticRoutes(input()), deriveAutomaticRoutes(input()));
 });
 
+test("exact route geometry cache reuses endpoint geometry without changing route output", () => {
+  const geometryCache = { entries: new Map(), stats: { lookups: 0, hits: 0, misses: 0 } };
+  const first = deriveAutomaticRoutes(input({ geometryCache }));
+  const repeated = deriveAutomaticRoutes(input({ geometryCache }));
+  const moved = deriveAutomaticRoutes(input({
+    positions: { a: { x: 0, y: 0 }, b: { x: 220, y: 0 }, c: { x: 100, y: 120 } },
+    geometryCache,
+  }));
+  assert.deepEqual(repeated, first);
+  assert.notDeepEqual(moved[0]?.samples, first[0]?.samples);
+  assert.ok(geometryCache.stats.hits > 0);
+  assert.ok(geometryCache.stats.misses > 0);
+});
+
 test("current Node positions drive route recomputation", () => {
   const first = deriveAutomaticRoutes(input())[0]!;
   const second = deriveAutomaticRoutes(input({ positions: { a: { x: 0, y: 0 }, b: { x: 200, y: 80 }, c: { x: 100, y: 120 } } }))[0]!;
@@ -559,6 +573,32 @@ test("candidate-generation cache preserves presentation authority and invalidate
   const mutated = render(moved);
   assert.ok(cache.stats.misses > beforeMutation.misses);
   assert.notDeepEqual(mutated.routedEdges, first.routedEdges);
+});
+
+test("exact geometry cache preserves the complete bounded presentation output", () => {
+  const base = input();
+  const provisionalNodeLabels = base.graph.nodes.map((node) => placeNodeLabel(
+    base.positions[node.id]!,
+    node.label,
+    node.description,
+    [],
+    base.graph.nodes.filter((other) => other.id !== node.id).map((other) => base.positions[other.id]!),
+    [],
+  ));
+  const geometryCache = { entries: new Map(), stats: { lookups: 0, hits: 0, misses: 0 } };
+  const common = {
+    ...base,
+    provisionalNodeLabels,
+    previousNodeLabelPlacements: new Map(),
+    previousRelationLabelPlacements: new Map(),
+    manualNodeLabelOffsets: new Map(),
+    manualRelationLabelAnchors: new Map(),
+  };
+  const uncached = deriveBoundedAutomaticPresentation(common);
+  const cached = deriveBoundedAutomaticPresentation({ ...common, geometryCache });
+  assert.deepEqual(cached, uncached);
+  assert.ok(geometryCache.stats.hits > 0);
+  assert.ok(geometryCache.stats.misses > 0);
 });
 
 test("presentation profiler separates route arbitration from downstream stages", () => {
