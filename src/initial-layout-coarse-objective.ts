@@ -92,14 +92,19 @@ export function generateBoundedCoarseCandidate(input: Omit<CoarseObjectiveInput,
   let metrics = scoreCoarseInitialLayout({ ...baseInput, positions });
   if (!bodySafe(positions, entities)) return { positions, metrics, status: "fallback", reason: "unsafe-seed", elapsedMs: performance.now() - startedAt, iterations: 0 };
   const budgetMs = Math.max(1, input.budgetMs ?? 100); const maxIterations = Math.max(0, Math.floor(input.maxIterations ?? 2));
+  // The normal quality decision is structurally bounded by the fixed
+  // iteration/entity/direction loops below. Wall-clock is only an emergency
+  // abort at iteration boundaries; it must not make individual candidate
+  // acceptance timing-dependent.
+  if (performance.now() - startedAt > budgetMs) return { positions, metrics, status: "fallback", reason: "budget-exceeded", elapsedMs: performance.now() - startedAt, iterations: 0 };
   for (let iteration = 0; iteration < maxIterations; iteration += 1) {
     for (const entity of entities) for (const direction of DIRECTIONS) {
-      if (performance.now() - startedAt > budgetMs) return { positions, metrics, status: "fallback", reason: "budget-exceeded", elapsedMs: performance.now() - startedAt, iterations: iteration };
       const candidate = { ...positions, [entity.id]: { x: positions[entity.id]!.x + direction.x * 6, y: positions[entity.id]!.y + direction.y * 6 } };
       if (!bodySafe(candidate, entities)) continue;
       const candidateMetrics = scoreCoarseInitialLayout({ ...baseInput, positions: candidate });
       if (candidateMetrics.score < metrics.score) { positions = candidate; metrics = candidateMetrics; }
     }
+    if (performance.now() - startedAt > budgetMs) return { positions, metrics, status: "fallback", reason: "budget-exceeded", elapsedMs: performance.now() - startedAt, iterations: iteration + 1 };
   }
   return { positions, metrics, status: "completed", reason: "completed", elapsedMs: performance.now() - startedAt, iterations: maxIterations };
 }
