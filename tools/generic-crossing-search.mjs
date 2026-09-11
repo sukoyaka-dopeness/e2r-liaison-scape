@@ -20,6 +20,8 @@ const profile = { presentationCalls: 0, fullPresentationEvaluations: 0, presenta
 const presentationCache = new Map();
 let activeProfileStage = "setup";
 const presentationFinalistLimit = Number.parseInt(process.env.E2R_PRESENTATION_FINALIST_LIMIT ?? "8", 10);
+const parsedPresentationRepairRounds = Number.parseInt(process.env.E2R_PRESENTATION_REPAIR_ROUNDS ?? "24", 10);
+const presentationRepairRounds = Number.isFinite(parsedPresentationRepairRounds) && parsedPresentationRepairRounds >= 1 ? parsedPresentationRepairRounds : 24;
 const relaxationTargeting = process.env.E2R_RELAXATION_TARGETING ?? "full";
 const relaxationAdmission = process.env.E2R_RELAXATION_ADMISSION ?? "hard";
 const relaxationMoveMode = process.env.E2R_RELAXATION_MOVE_MODE ?? "single";
@@ -30,6 +32,9 @@ const parsedRelaxationClusterLimit = Number.parseInt(process.env.E2R_RELAXATION_
 const relaxationClusterLimit = Number.isFinite(parsedRelaxationClusterLimit) && parsedRelaxationClusterLimit >= 3 ? parsedRelaxationClusterLimit : 6;
 const parsedRelaxationMaxDisplacement = Number.parseFloat(process.env.E2R_RELAXATION_MAX_DISPLACEMENT ?? "48");
 const relaxationMaxDisplacement = Number.isFinite(parsedRelaxationMaxDisplacement) && parsedRelaxationMaxDisplacement > 0 ? parsedRelaxationMaxDisplacement : 48;
+const parsedRelaxationTargetLimit = Number.parseInt(process.env.E2R_RELAXATION_TARGET_LIMIT ?? "0", 10);
+const relaxationTargetLimit = Number.isFinite(parsedRelaxationTargetLimit) && parsedRelaxationTargetLimit >= 1 ? parsedRelaxationTargetLimit : null;
+const relaxationStepMode = process.env.E2R_RELAXATION_STEP_MODE ?? "full";
 const parsedLabelCorridorMargin = Number.parseFloat(process.env.E2R_LABEL_CORRIDOR_MARGIN ?? "48");
 const labelCorridorMargin = Number.isFinite(parsedLabelCorridorMargin) && parsedLabelCorridorMargin > 0 ? parsedLabelCorridorMargin : 48;
 const parsedLabelCorridorWeight = Number.parseFloat(process.env.E2R_LABEL_CORRIDOR_WEIGHT ?? "1200");
@@ -690,13 +695,14 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   let candidateRequests = 0; let fractionalCandidateRequests = 0;
   const cheapScreenStats = relaxationCheapScreenProbe ? { considered: 0, rejected: 0, overlapRejected: 0, lowerBoundRejected: 0, lowerBoundViolations: 0, lowerBoundSamples: [], acceptedTrace: [] } : null;
   const directions = Array.from({ length: 8 }, (_, index) => index * Math.PI / 4);
-  const steps = [18, 9, 6];
+  const steps = relaxationStepMode === "omit-fine" ? [18, 9] : [18, 9, 6];
   const pressureWeight = (id) => (currentMetrics.pressureReasons?.[id] ?? []).reduce((total, reason) => total
     + (reason.includes("route-label-hit") ? 5 : reason.includes("route-crossing") ? 4 : reason.includes("route-label-near") ? 3 : reason.includes("node-label-route-near") ? 2 : 1), 0);
   const moveTargetLimit = relaxationMoveMode === "cluster" ? relaxationClusterLimit : relaxationPairLimit;
-  const moveTargetIds = relaxationMoveMode === "pair" || relaxationMoveMode === "cluster"
+  let moveTargetIds = relaxationMoveMode === "pair" || relaxationMoveMode === "cluster"
     ? ids.slice().sort((left, right) => pressureWeight(right) - pressureWeight(left) || compareId(left, right)).slice(0, Math.min(moveTargetLimit, ids.length))
     : ids.slice();
+  if (relaxationTargetLimit) moveTargetIds = moveTargetIds.slice().sort((left, right) => pressureWeight(right) - pressureWeight(left) || compareId(left, right)).slice(0, Math.min(relaxationTargetLimit, moveTargetIds.length));
   const movePlans = [];
   if (relaxationMoveMode === "pair") {
     for (let left = 0; left < moveTargetIds.length; left += 1) for (let right = left + 1; right < moveTargetIds.length; right += 1) {
@@ -821,7 +827,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       ? "POST_STRUCTURAL_SMALL_CLUSTER_RELAXATION"
       : relaxationMoveMode === "pair" ? "POST_STRUCTURAL_COUPLED_MOVE_RELAXATION"
       : relaxationAdmission === "soft-defect" ? "POST_STRUCTURAL_SOFT_DEFECT_RELAXATION" : "POST_STRUCTURAL_CONSTRAINED_RELAXATION",
-    admission: relaxationAdmission, moveMode: relaxationMoveMode, moveTargetIds, pairLimit: relaxationPairLimit, clusterLimit: relaxationClusterLimit, evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement,
+    admission: relaxationAdmission, moveMode: relaxationMoveMode, moveTargetIds, targetLimit: relaxationTargetLimit, pairLimit: relaxationPairLimit, clusterLimit: relaxationClusterLimit, evaluated, acceptedMoves, targetNodeIds: ids.slice(), movedNodeIds, maxDisplacement,
     lattice: {
       configuredStep: relaxationLatticeStep,
       probeEnabled: relaxationLatticeProbe,
@@ -881,7 +887,7 @@ function genericSearch() {
   // structural feasibility condition has already been found.
   const zeroCrossingFinalists = gridSearch.finalists.filter((finalist) => finalist.straightCrossings === 0).slice(0, Math.max(1, presentationFinalistLimit));
   startProfileStage("stage2-presentation-and-relaxation");
-  const presentationRepair = refineForPresentation(zeroCrossingFinalists, ids, 1, 24);
+  const presentationRepair = refineForPresentation(zeroCrossingFinalists, ids, 1, presentationRepairRounds);
   for (const finalist of presentationRepair.finalists) {
     const metrics = finalist.metrics;
     const eligible = metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
@@ -908,7 +914,7 @@ function genericSearch() {
   const minimumStructuralCrossings = structuralCandidates.length > 0 ? Math.min(...structuralCandidates.map((candidate) => candidate.structuralCrossings)) : null;
   const boundedFallback = minimumStructuralCrossings === null ? [] : structuralCandidates.filter((candidate) => candidate.structuralCrossings === minimumStructuralCrossings);
   finishProfileStage("stage2-presentation-and-relaxation");
-  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, relaxationLatticeStep, relaxationCheapScreenMode, pressureTargetingFallback, pressureNeighborhood, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
+  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, relaxationTargetLimit, presentationRepairRounds, relaxationStepMode, relaxationLatticeStep, relaxationCheapScreenMode, pressureTargetingFallback, pressureNeighborhood, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
 }
 function complexityProbe() {
   return [9, 10, 12, 16, 25].map((nodeCount) => ({
@@ -947,7 +953,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));
