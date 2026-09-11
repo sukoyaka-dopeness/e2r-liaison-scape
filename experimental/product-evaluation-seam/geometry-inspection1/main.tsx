@@ -392,6 +392,7 @@ const candidateDescriptions = {
   "post-structural-relaxation-v1": "Post-structural constrained relaxation (diagnostic)",
   "post-structural-relaxation-finalist-limit-2-v1": "Post finalist-limit=2 accelerated candidate (diagnostic)",
   "post-structural-relaxation-omit-fine-v1": "Post finalist-limit=2 omit-fine candidate (diagnostic)",
+  "post-structural-relaxation-omit-fine-rounded-final-v1": "Post omit-fine true-final-selection rounded winner (diagnostic)",
   "coarse-objective-prototype-v1": "Coarse-objective bounded candidate (diagnostic)",
   "pressure-targeted-relaxation-v1": "Pressure-targeted constrained relaxation (diagnostic)",
   "quantized-relaxation-step1-v1": "Integer-lattice constrained relaxation, step 1 (diagnostic)",
@@ -404,6 +405,13 @@ const selectedCandidate: CandidateId = queryCandidate && queryCandidate in candi
 
 function cloneValue<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function nearestIntegerPositions(positions: Record<string, { x: number; y: number }>) {
+  return Object.fromEntries(Object.entries(positions).map(([id, point]) => [id, {
+    x: Math.round(point.x),
+    y: Math.round(point.y),
+  }]));
 }
 
 function coordinateMap(dataset: any, candidate: CandidateId) {
@@ -427,6 +435,10 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   if (candidate === "post-structural-relaxation-omit-fine-v1") {
     const positions = omitFinePostPositions[selectedFixtureKind as keyof typeof omitFinePostPositions];
     if (positions) return positions[inspectionLocale];
+  }
+  if (candidate === "post-structural-relaxation-omit-fine-rounded-final-v1") {
+    const positions = omitFinePostPositions[selectedFixtureKind as keyof typeof omitFinePostPositions];
+    if (positions) return nearestIntegerPositions(positions[inspectionLocale]);
   }
   const additionalFixturePositions = additionalGeneralizationPositions[selectedFixtureKind as keyof typeof additionalGeneralizationPositions];
   if (additionalFixturePositions && (candidate === "generic-crossing-search-v1" || candidate === "post-structural-relaxation-v1")) {
