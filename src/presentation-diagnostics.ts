@@ -61,6 +61,13 @@ export type DatasetOpenTimingSample = {
   nodeCount?: number;
   edgeCount?: number;
   durations?: Readonly<Record<string, number>>;
+  initialLayout?: {
+    authority: "stored" | "mixed-completion" | "current" | "bounded-provider";
+    provider: string;
+    strategy?: string;
+    status?: string;
+    reason?: string;
+  };
 };
 
 declare global {

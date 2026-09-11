@@ -29,10 +29,10 @@ import { clearDatasetHandoffFragment, parseTargetedDatasetHandoffFragment, type 
 import { resolveRelationTarget, supportsRelationHandoffCapability } from "./capability-handoff";
 import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
-import { placeInitialEntities } from "./entity-placement";
-import { settleInitialPlacement, solveAutoLayout } from "./auto-layout";
+import { solveAutoLayout } from "./auto-layout";
 import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation, type AutomaticRouteDecision, type DerivedAutomaticRoute } from "./graph-presentation";
 import { publishDatasetOpenTiming, publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming, type DatasetOpenTimingSample } from "./presentation-diagnostics";
+import { deriveActualProductInitialLayout, type ActualProductInitialLayoutOptIn } from "./actual-product-initial-layout";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
@@ -59,6 +59,9 @@ export default function App() {
   const [datasetLoading, setDatasetLoading] = useState(false);
   const [datasetLoadingVisible, setDatasetLoadingVisible] = useState(false);
   const timingDiagnosticsEnabled = new URLSearchParams(window.location.search).get("diagnostic") === "timing";
+  const initialLayoutOptIn = new URLSearchParams(window.location.search).get("initial-layout") === "coarse-objective-prototype-v1"
+    ? "coarse-objective-prototype-v1" as ActualProductInitialLayoutOptIn
+    : undefined;
   const [datasetOpenTimingEvents, setDatasetOpenTimingEvents] = useState<DatasetOpenTimingSample[]>([]);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
@@ -893,13 +896,8 @@ export default function App() {
     const graphStartedAt = preparationStartedAt;
     const openedGraph = buildEntityGraph(nextDataset);
     const graphCompletedAt = performance.now();
-    const seededPositions = placeInitialEntities(openedGraph.nodes, openedGraph.edges, storedPositions);
-    const initialPositions = Object.keys(storedPositions).length === 0
-      ? settleInitialPlacement({
-        entities: openedGraph.nodes.map(({ id }) => ({ id })),
-        relations: openedGraph.edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
-      })
-      : seededPositions;
+    const initialLayout = deriveActualProductInitialLayout({ nodes: openedGraph.nodes, edges: openedGraph.edges, storedPositions, optIn: initialLayoutOptIn });
+    const initialPositions = initialLayout.positions;
     setNodeLayerOrder(openedGraph.nodes.map(({ id }) => id));
     setEdgeLayerOrder(openedGraph.edges.map(({ id }) => id));
     setEdgeLabelOffsets({});
@@ -920,6 +918,13 @@ export default function App() {
           initialPlacementMs: placementCompletedAt - graphCompletedAt,
           fitMs: preparedAt - placementCompletedAt,
           preparationMs: preparedAt - preparationStartedAt,
+        },
+        initialLayout: {
+          authority: initialLayout.authority,
+          provider: initialLayout.provider,
+          strategy: initialLayout.strategy,
+          status: initialLayout.status,
+          reason: initialLayout.reason,
         },
       });
     }
@@ -1840,7 +1845,8 @@ export default function App() {
     const relativeMs = timingStart === 0 ? 0 : event.at - timingStart;
     const counts = event.nodeCount === undefined ? "" : ` (${event.nodeCount} nodes/${event.edgeCount ?? 0} edges)`;
     const details = event.durations ? ` [${Object.entries(event.durations).map(([key, value]) => `${key}=${value.toFixed(1)}ms`).join(", ")}]` : "";
-    return `${event.phase} +${relativeMs.toFixed(1)}ms${counts}${details}`;
+    const initialLayout = event.initialLayout ? ` {initialLayout=${event.initialLayout.authority}/${event.initialLayout.provider}${event.initialLayout.status ? `/${event.initialLayout.status}` : ""}${event.initialLayout.reason ? `/${event.initialLayout.reason}` : ""}}` : "";
+    return `${event.phase} +${relativeMs.toFixed(1)}ms${counts}${details}${initialLayout}`;
   });
 
   return (
