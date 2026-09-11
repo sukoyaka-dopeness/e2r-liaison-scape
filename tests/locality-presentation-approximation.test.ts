@@ -84,34 +84,45 @@ test("cheap candidate prioritization is diagnostic opt-in and keeps full present
 
 test("final coordinate canonicalization is a post-selection diagnostic boundary", () => {
   const audit = runSearch({ E2R_RELAXATION_FINAL_CANONICALIZATION: "audit" }) as ReturnType<typeof runSearch> & {
-    postStructuralRelaxation?: {
-      finalCanonicalization?: {
-        applied: boolean;
-        boundary: string;
-        rule: string;
-        maxDisplacement: number;
-        presentation: {
-          routeGeometryChanged: number;
-          relationLabelGeometryChanged: number;
-          nodeLabelGeometryChanged: number;
-          roundedOnlyDefects: Record<string, boolean>;
-        };
-      } | null;
+    floatSelected?: { family: string; positions: Record<string, { x: number; y: number }>; metrics: { score: number } } | null;
+    roundedSelected?: { positions: Record<string, { x: number; y: number }> } | null;
+    selected?: { family: string; positions: Record<string, { x: number; y: number }>; metrics: { score: number } } | null;
+    finalCanonicalization?: {
+      applied: boolean;
+      boundary: string;
+      rule: string;
+      selectedCandidateIndex: number;
+      maxDisplacement: number;
+      selectedFamily: string;
+      presentation: {
+        routeGeometryChanged: number;
+        relationLabelGeometryChanged: number;
+        nodeLabelGeometryChanged: number;
+        roundedOnlyDefects: Record<string, boolean>;
+      };
     } | null;
   };
   assert.equal(audit.searchBudget.relaxationFinalCanonicalizationMode, "audit");
-  assert.equal(audit.postStructuralRelaxation?.finalCanonicalization?.applied, false);
-  assert.equal(audit.postStructuralRelaxation?.finalCanonicalization?.boundary, "AFTER_SELECTION_BEFORE_ACCEPTANCE");
-  assert.equal(audit.postStructuralRelaxation?.finalCanonicalization?.rule, "nearest-integer");
-  assert.ok((audit.postStructuralRelaxation?.finalCanonicalization?.maxDisplacement ?? Infinity) <= Math.SQRT1_2);
+  assert.equal(audit.finalCanonicalization?.applied, false);
+  assert.equal(audit.finalCanonicalization?.boundary, "AFTER_TRUE_FINAL_SELECTION_BEFORE_ACCEPTANCE");
+  assert.equal(audit.finalCanonicalization?.rule, "nearest-integer");
+  assert.equal(audit.finalCanonicalization?.selectedFamily, audit.floatSelected?.family);
+  assert.equal(audit.finalCanonicalization?.selectedCandidateIndex, 0);
+  assert.equal(audit.selected?.family, audit.floatSelected?.family);
+  assert.deepEqual(audit.selected?.positions, audit.floatSelected?.positions);
+  assert.equal(audit.selected?.metrics.score, audit.floatSelected?.metrics.score);
+  assert.ok((audit.finalCanonicalization?.maxDisplacement ?? Infinity) <= Math.SQRT1_2);
+  assert.ok(audit.roundedSelected);
 
   const rounded = runSearch({ E2R_RELAXATION_FINAL_CANONICALIZATION: "round-once" }) as ReturnType<typeof runSearch> & {
-    postStructuralRelaxation?: {
-      positions: Record<string, { x: number; y: number }>;
-      finalCanonicalization?: { applied: boolean } | null;
-    } | null;
+    floatSelected?: { family: string; positions: Record<string, { x: number; y: number }> } | null;
+    selected?: { family: string; positions: Record<string, { x: number; y: number }> } | null;
+    roundedSelected?: { positions: Record<string, { x: number; y: number }> } | null;
+    finalCanonicalization?: { applied: boolean } | null;
   };
   assert.equal(rounded.searchBudget.relaxationFinalCanonicalizationMode, "round-once");
-  assert.equal(rounded.postStructuralRelaxation?.finalCanonicalization?.applied, true);
-  assert.ok(Object.values(rounded.postStructuralRelaxation?.positions ?? {}).every(({ x, y }) => Number.isInteger(x) && Number.isInteger(y)));
+  assert.equal(rounded.finalCanonicalization?.applied, true);
+  assert.equal(rounded.selected?.family, rounded.floatSelected?.family);
+  assert.deepEqual(rounded.selected?.positions, rounded.roundedSelected?.positions);
+  assert.ok(Object.values(rounded.selected?.positions ?? {}).every(({ x, y }) => Number.isInteger(x) && Number.isInteger(y)));
 });

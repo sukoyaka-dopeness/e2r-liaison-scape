@@ -626,7 +626,7 @@ function cheapRelaxationPrioritySignal(current, candidate, plan, currentMetrics,
     + shortHopDelta * 20000 + longEdgeDelta / 480 + incidentLengthDelta * 2 + clearanceDelta * 600 + pressure * 0.05;
   return { score, riskScore, pressure, nearbyRemoteRoutes, straightCrossingDelta: candidateStraightCrossings - currentStraightCrossings, incidentLengthDelta, shortHopDelta, longEdgeDelta, clearanceDelta };
 }
-function deriveFinalCoordinateCanonicalization(positions, metrics, referencePositions) {
+function deriveFinalCoordinateCanonicalization(positions, metrics, referencePositions = null) {
   const canonicalPositions = quantizePositions(positions, 1);
   const deltas = Object.keys(positions).sort(compareId).map((id) => ({
     id,
@@ -644,7 +644,7 @@ function deriveFinalCoordinateCanonicalization(positions, metrics, referencePosi
   const defectMetrics = ["crossings", "labelRouteHits", "labelNear20", "labelOverlap", "overlapPairs"];
   const roundedOnlyDefects = Object.fromEntries(defectMetrics.map((name) => [name, metrics[name] === 0 && canonicalMetrics[name] > 0]));
   return {
-    boundary: "AFTER_SELECTION_BEFORE_ACCEPTANCE",
+    boundary: "AFTER_TRUE_FINAL_SELECTION_BEFORE_ACCEPTANCE",
     rule: "nearest-integer",
     applied: relaxationFinalCanonicalizationMode === "round-once",
     originalPositions: positions,
@@ -665,9 +665,9 @@ function deriveFinalCoordinateCanonicalization(positions, metrics, referencePosi
       canonicalFitScale: canonicalMetrics.fitScale,
       originalScore: metrics.score,
       canonicalScore: canonicalMetrics.score,
-      originalConstrainedScore: constrainedRelaxationScore(metrics, positions, referencePositions),
-      canonicalConstrainedScore: constrainedRelaxationScore(canonicalMetrics, canonicalPositions, referencePositions),
-      constrainedScoreDelta: constrainedRelaxationScore(canonicalMetrics, canonicalPositions, referencePositions) - constrainedRelaxationScore(metrics, positions, referencePositions),
+      originalConstrainedScore: referencePositions ? constrainedRelaxationScore(metrics, positions, referencePositions) : null,
+      canonicalConstrainedScore: referencePositions ? constrainedRelaxationScore(canonicalMetrics, canonicalPositions, referencePositions) : null,
+      constrainedScoreDelta: referencePositions ? constrainedRelaxationScore(canonicalMetrics, canonicalPositions, referencePositions) - constrainedRelaxationScore(metrics, positions, referencePositions) : null,
       roundedOnlyDefects,
     },
     canonicalMetrics,
@@ -1135,12 +1135,6 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   const movedNodeIds = ids.filter((id) => Math.hypot(best[id].x - referencePositions[id].x, best[id].y - referencePositions[id].y) > 1e-9);
   const inputFractionalCoordinates = Object.values(inputPositions).flatMap((point) => [point.x, point.y]).filter((value) => !Number.isInteger(value)).length;
   const inputQuantizationMaxDelta = Math.max(0, ...Object.keys(inputPositions).map((id) => Math.hypot(referencePositions[id].x - inputPositions[id].x, referencePositions[id].y - inputPositions[id].y)));
-  const finalCanonicalization = relaxationFinalCanonicalizationMode === "audit" || relaxationFinalCanonicalizationMode === "round-once"
-    ? deriveFinalCoordinateCanonicalization(best, bestMetrics, referencePositions)
-    : null;
-  const outputPositions = finalCanonicalization?.applied ? finalCanonicalization.canonicalPositions : best;
-  const outputMetrics = finalCanonicalization?.applied ? finalCanonicalization.canonicalMetrics : bestMetrics;
-  const outputScore = finalCanonicalization?.applied ? constrainedRelaxationScore(outputMetrics, outputPositions, referencePositions) : bestScore;
   return {
     mode: relaxationMoveMode === "cluster"
       ? "POST_STRUCTURAL_SMALL_CLUSTER_RELAXATION"
@@ -1160,8 +1154,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       configuredDuplicateRequests: relaxationLatticeProbe ? candidateRequests - configuredCandidateKeys.size : null,
       hypotheticalUniqueStates: relaxationLatticeProbe ? Object.fromEntries([...hypotheticalKeys].map(([step, keys]) => [step, keys.size])) : null,
     },
-    inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: outputPositions, metrics: outputMetrics, score: outputScore, changed: acceptedMoves > 0,
-    finalCanonicalization: finalCanonicalization ? { ...finalCanonicalization, canonicalMetrics: undefined } : null,
+    inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0,
     cheapScreen: cheapScreenStats ? { mode: relaxationCheapScreenMode, ...cheapScreenStats } : null,
     prioritization: prioritizationStats ? {
       ...prioritizationStats,
@@ -1254,8 +1247,28 @@ function genericSearch() {
   const structuralCandidates = candidates.filter((candidate) => Number.isFinite(candidate.structuralCrossings));
   const minimumStructuralCrossings = structuralCandidates.length > 0 ? Math.min(...structuralCandidates.map((candidate) => candidate.structuralCrossings)) : null;
   const boundedFallback = minimumStructuralCrossings === null ? [] : structuralCandidates.filter((candidate) => candidate.structuralCrossings === minimumStructuralCrossings);
+  const floatSelected = candidates[0] ?? null;
+  const finalCanonicalization = floatSelected && (relaxationFinalCanonicalizationMode === "audit" || relaxationFinalCanonicalizationMode === "round-once")
+    ? {
+      selectedCandidateIndex: 0,
+      selectedFamily: floatSelected.family,
+      selectedStructuralCrossings: floatSelected.structuralCrossings,
+      selectedEligibleBeforeCanonicalization: floatSelected.eligible,
+      ...deriveFinalCoordinateCanonicalization(floatSelected.positions, floatSelected.metrics, floatSelected.relaxation?.startPositions ?? null),
+    }
+    : null;
+  const canonicalMetrics = finalCanonicalization?.canonicalMetrics;
+  const roundedSelected = canonicalMetrics
+    ? {
+      ...floatSelected,
+      positions: clonePositions(finalCanonicalization.canonicalPositions),
+      metrics: canonicalMetrics,
+      eligible: canonicalMetrics.overlapPairs === 0 && canonicalMetrics.labelRouteHits === 0 && canonicalMetrics.labelOverlap === 0 && canonicalMetrics.labelNear20 === 0,
+      score: canonicalMetrics.score,
+    }
+    : null;
   finishProfileStage("stage2-presentation-and-relaxation");
-  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, relaxationTargetLimit, presentationRepairRounds, relaxationStepMode, relaxationLatticeStep, relaxationCheapScreenMode, pressureTargetingFallback, pressureNeighborhood, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, selected: candidates[0] ?? null };
+  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, relaxationTargetLimit, presentationRepairRounds, relaxationStepMode, relaxationLatticeStep, relaxationCheapScreenMode, pressureTargetingFallback, pressureNeighborhood, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, floatSelected, roundedSelected, finalCanonicalization: finalCanonicalization ? { ...finalCanonicalization, canonicalMetrics: undefined } : null, selected: finalCanonicalization?.applied ? roundedSelected : floatSelected };
 }
 function complexityProbe() {
   return [9, 10, 12, 16, 25].map((nodeCount) => ({
