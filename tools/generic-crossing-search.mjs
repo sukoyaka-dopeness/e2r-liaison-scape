@@ -63,6 +63,8 @@ const relaxationPrioritizationMode = process.env.E2R_RELAXATION_PRIORITIZATION ?
 const relaxationPrioritizationAudit = process.env.E2R_RELAXATION_PRIORITIZATION_AUDIT === "1";
 const parsedRelaxationPriorityTopK = Number.parseInt(process.env.E2R_RELAXATION_PRIORITY_TOP_K ?? "2", 10);
 const relaxationPriorityTopK = Number.isFinite(parsedRelaxationPriorityTopK) && parsedRelaxationPriorityTopK >= 1 ? parsedRelaxationPriorityTopK : 2;
+const parsedAdaptiveMarginThreshold = Number.parseFloat(process.env.E2R_RELAXATION_ADAPTIVE_MARGIN ?? "0.10");
+const adaptiveMarginThreshold = Number.isFinite(parsedAdaptiveMarginThreshold) && parsedAdaptiveMarginThreshold >= 0 ? parsedAdaptiveMarginThreshold : 0.10;
 const relaxationFinalCanonicalizationMode = process.env.E2R_RELAXATION_FINAL_CANONICALIZATION ?? "off";
 const edges = graph.edges.map((edge) => ({
   ...edge,
@@ -890,15 +892,20 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     localEvaluationMs: 0,
     scopeSamples: [],
   } : null;
-  const prioritizationEnabled = (relaxationPrioritizationMode === "cheap-ranking" || relaxationPrioritizationMode === "dynamic-cheap-ranking") && relaxationMoveMode === "single";
+  const prioritizationEnabled = ["cheap-ranking", "dynamic-cheap-ranking", "adaptive-cheap-ranking"].includes(relaxationPrioritizationMode) && relaxationMoveMode === "single";
   const dynamicPrioritizationEnabled = relaxationPrioritizationMode === "dynamic-cheap-ranking" && relaxationMoveMode === "single";
+  const adaptivePrioritizationEnabled = relaxationPrioritizationMode === "adaptive-cheap-ranking" && relaxationMoveMode === "single";
   const prioritizationStats = prioritizationEnabled ? {
     mode: relaxationPrioritizationMode,
     dynamic: dynamicPrioritizationEnabled,
+    adaptive: adaptivePrioritizationEnabled,
     ordering: dynamicPrioritizationEnabled ? "dynamic-group-reranked" : "original-sequential",
-    retention: relaxationPrioritizationAudit ? "full-audit" : "top-k-plus-risk-guard",
+    retention: relaxationPrioritizationAudit ? "full-audit" : adaptivePrioritizationEnabled ? "adaptive-state-local" : "top-k-plus-risk-guard",
     audit: relaxationPrioritizationAudit,
     topK: relaxationPriorityTopK,
+    adaptiveMarginThreshold: adaptivePrioritizationEnabled ? adaptiveMarginThreshold : null,
+    adaptiveWidenedGroups: 0,
+    adaptiveStateUpdateReranks: 0,
     guard: "remote-propagation-risk",
     guardRiskThreshold: 3,
     candidatePlans: 0,
@@ -973,7 +980,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   if (prioritizationStats) prioritizationStats.candidatePlans = movePlans.length;
   const priorityDescriptors = new Map();
   const prioritySelectedPlanIndexes = new Set();
-  if (prioritizationStats && !dynamicPrioritizationEnabled) {
+  if (prioritizationStats && !dynamicPrioritizationEnabled && !adaptivePrioritizationEnabled) {
     const planningStartedAt = performance.now();
     const groups = new Map();
     for (let planIndex = 0; planIndex < movePlans.length; planIndex += 1) {
@@ -1099,9 +1106,91 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     }
     return null;
   };
+  const adaptiveGroups = adaptivePrioritizationEnabled ? [...movePlans.reduce((groups, plan, planIndex) => {
+    const groupKey = `${plan.ids.slice().sort(compareId).join("\u0000")}|${plan.step}`;
+    if (!groups.has(groupKey)) groups.set(groupKey, []);
+    groups.get(groupKey).push(planIndex);
+    return groups;
+  }, new Map()).values()] : null;
+  const adaptivePlanGroupIndexes = adaptiveGroups ? new Map(adaptiveGroups.flatMap((planIndexes, groupIndex) => planIndexes.map((planIndex) => [planIndex, groupIndex]))) : null;
+  let adaptiveActiveGroup = null;
+  let adaptiveRemainingPlans = new Set();
+  let adaptiveStateUpdate = false;
+  const adaptiveDescriptors = new Map();
+  const describeAdaptivePlan = (planIndex) => {
+    const plan = movePlans[planIndex];
+    const rawCandidate = clonePositions(current);
+    plan.ids.forEach((planId, index) => {
+      const angle = plan.angles[index];
+      rawCandidate[planId].x += Math.cos(angle) * plan.step;
+      rawCandidate[planId].y += Math.sin(angle) * plan.step;
+    });
+    const candidate = quantizePositions(rawCandidate, relaxationLatticeStep);
+    if (plan.ids.some((planId) => Math.hypot(candidate[planId].x - referencePositions[planId].x, candidate[planId].y - referencePositions[planId].y) > maxDisplacement)) return null;
+    if (nodeFeasibility(candidate).overlapPairs > 0) return null;
+    return { planIndex, candidate, signal: cheapRelaxationPrioritySignal(current, candidate, plan, currentMetrics, pressureWeight) };
+  };
+  const refreshAdaptiveGroup = (groupIndex, reason) => {
+    const startedAt = performance.now();
+    const descriptors = [...adaptiveRemainingPlans].map(describeAdaptivePlan).filter((descriptor) => descriptor !== null);
+    descriptors.forEach((descriptor) => {
+      adaptiveDescriptors.set(descriptor.planIndex, descriptor);
+      prioritySelectedPlanIndexes.add(descriptor.planIndex);
+    });
+    for (const planIndex of adaptiveRemainingPlans) if (!descriptors.some((descriptor) => descriptor.planIndex === planIndex)) adaptiveRemainingPlans.delete(planIndex);
+    if (descriptors.length === 0) {
+      adaptiveStateUpdate = false;
+      prioritizationStats.planningMs += performance.now() - startedAt;
+      return;
+    }
+    descriptors.sort((left, right) => left.signal.score - right.signal.score || right.signal.riskScore - left.signal.riskScore || left.planIndex - right.planIndex);
+    descriptors.forEach((descriptor, index) => { descriptor.rank = index + 1; });
+    const boundaryLeft = descriptors[relaxationPriorityTopK - 1];
+    const boundaryRight = descriptors[relaxationPriorityTopK];
+    const boundaryMargin = boundaryLeft && boundaryRight
+      ? Math.abs(boundaryRight.signal.score - boundaryLeft.signal.score) / Math.max(1, Math.abs(boundaryLeft.signal.score), Math.abs(boundaryRight.signal.score))
+      : Infinity;
+    const uncertainByMargin = boundaryMargin <= adaptiveMarginThreshold;
+    const widened = uncertainByMargin || adaptiveStateUpdate;
+    const retentionRankLimit = widened ? relaxationPriorityTopK + 2 : relaxationPriorityTopK;
+    const policyRetained = descriptors.filter((descriptor) => descriptor.rank <= retentionRankLimit || descriptor.signal.riskScore >= prioritizationStats.guardRiskThreshold);
+    const retained = relaxationPrioritizationAudit ? descriptors : policyRetained;
+    const retainedIndexes = new Set(policyRetained.map((descriptor) => descriptor.planIndex));
+    descriptors.forEach((descriptor) => {
+      descriptor.retained = retainedIndexes.has(descriptor.planIndex);
+      descriptor.uncertainByMargin = uncertainByMargin;
+      descriptor.widened = widened;
+      descriptor.boundaryMargin = boundaryMargin;
+    });
+    if (!relaxationPrioritizationAudit) prioritizationStats.skippedFullValidation += descriptors.length - retained.length;
+    if (widened) prioritizationStats.adaptiveWidenedGroups += 1;
+    if (adaptiveStateUpdate) prioritizationStats.adaptiveStateUpdateReranks += 1;
+    prioritizationStats.rerankCount += 1;
+    prioritizationStats.candidateGroups = Math.max(prioritizationStats.candidateGroups, groupIndex + 1);
+    prioritizationStats.considered += descriptors.length;
+    prioritizationStats.uniqueConsidered = new Set([...adaptiveDescriptors.keys()]).size;
+    prioritizationStats.selectedForFullValidation += policyRetained.length;
+    descriptors.forEach((descriptor) => {
+      if (descriptor.rank <= 1) prioritizationStats.rankCounts.top1 += 1;
+      if (descriptor.rank <= 2) prioritizationStats.rankCounts.top2 += 1;
+      if (descriptor.rank <= 4) prioritizationStats.rankCounts.top4 += 1;
+      if (prioritizationStats.signalSamples.length < 16) prioritizationStats.signalSamples.push({ planIndex: descriptor.planIndex, ids: movePlans[descriptor.planIndex].ids, step: movePlans[descriptor.planIndex].step, rank: descriptor.rank, retained: descriptor.retained, uncertainByMargin, widened, boundaryMargin, signal: descriptor.signal });
+    });
+    adaptiveStateUpdate = false;
+    prioritizationStats.planningMs += performance.now() - startedAt;
+  };
   const totalPlanIterations = movePlans.length;
   const acceptedPlanIndexes = [];
   for (let planIteration = 0; planIteration < totalPlanIterations; planIteration += 1) {
+    if (adaptivePrioritizationEnabled) {
+      const groupIndex = adaptivePlanGroupIndexes.get(planIteration);
+      if (groupIndex !== adaptiveActiveGroup) {
+        adaptiveActiveGroup = groupIndex;
+        adaptiveRemainingPlans = new Set(adaptiveGroups[groupIndex]);
+        refreshAdaptiveGroup(groupIndex, "group-start");
+      }
+      adaptiveRemainingPlans.delete(planIteration);
+    }
     const planIndex = dynamicPrioritizationEnabled ? nextDynamicPlan() : planIteration;
     if (planIndex === null) break;
     const plan = movePlans[planIndex];
@@ -1139,7 +1228,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
         }
         continue;
       }
-      const priorityDescriptor = dynamicPrioritizationEnabled ? dynamicDescriptors.get(planIndex) : priorityDescriptors.get(planIndex);
+      const priorityDescriptor = dynamicPrioritizationEnabled ? dynamicDescriptors.get(planIndex) : adaptivePrioritizationEnabled ? adaptiveDescriptors.get(planIndex) : priorityDescriptors.get(planIndex);
       if (prioritizationStats && priorityDescriptor && !priorityDescriptor.retained && !relaxationPrioritizationAudit) {
         prioritizationStats.skippedFullValidation += 1;
         continue;
@@ -1252,6 +1341,10 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
           dynamicQueue = [];
           dynamicNeedsRerank = true;
           prioritizationStats.acceptedMoveReranks += 1;
+        } else if (adaptivePrioritizationEnabled) {
+          adaptiveStateUpdate = true;
+          prioritizationStats.acceptedMoveReranks += 1;
+          refreshAdaptiveGroup(adaptiveActiveGroup, "accepted-move");
         }
       }
       if (score < bestScore) { best = candidate; bestMetrics = metrics; bestScore = score; }
@@ -1292,6 +1385,8 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
         top2: prioritizationStats.acceptedMoves > 0 ? prioritizationStats.acceptedRankCounts.top2 / prioritizationStats.acceptedMoves : null,
         top4: prioritizationStats.acceptedMoves > 0 ? prioritizationStats.acceptedRankCounts.top4 / prioritizationStats.acceptedMoves : null,
       },
+      retentionRecall: prioritizationStats.fullImprovingCandidates > 0 ? prioritizationStats.fullImprovingRetained / prioritizationStats.fullImprovingCandidates : null,
+      acceptedRetentionRecall: prioritizationStats.acceptedMoves > 0 ? prioritizationStats.acceptedMovesRetained / prioritizationStats.acceptedMoves : null,
       signalAverageMs: prioritizationStats.considered > 0 ? prioritizationStats.planningMs / prioritizationStats.considered : null,
     } : null,
     approximation: approximationStats ? {
@@ -1504,7 +1599,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationFinalCanonicalizationMode, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationAdaptiveMargin: adaptiveMarginThreshold, relaxationFinalCanonicalizationMode, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
   selectedPresentation: selectedPresentationDigest(search.selected),

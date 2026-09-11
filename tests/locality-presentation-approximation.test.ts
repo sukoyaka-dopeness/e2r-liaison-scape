@@ -20,7 +20,7 @@ function runSearch(extraEnvironment: Record<string, string> = {}) {
   });
   return JSON.parse(output) as {
     graph: { nodes: number; edges: number };
-    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationFinalCanonicalizationMode: string };
+    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationAdaptiveMargin: number; relaxationFinalCanonicalizationMode: string };
     postStructuralRelaxation?: {
       approximation?: {
         mode: string;
@@ -127,6 +127,64 @@ test("dynamic cheap candidate prioritization reranks after accepted moves", () =
   assert.ok((dynamic.postStructuralRelaxation?.prioritization?.fullValidated ?? 0) > 0);
   assert.ok((dynamic.postStructuralRelaxation?.prioritization?.skippedFullValidation ?? 0) > 0);
   assert.ok((dynamic.postStructuralRelaxation?.evaluated ?? Infinity) > 0);
+});
+
+test("adaptive cheap retention preserves original order and widens after state changes", () => {
+  const adaptive = runSearch({
+    E2R_PRESENTATION_GEOMETRY_CACHE: "1",
+    E2R_PRESENTATION_EXACT_CANDIDATE_REUSE: "1",
+    E2R_RELAXATION_PRIORITIZATION: "adaptive-cheap-ranking",
+  }) as ReturnType<typeof runSearch> & {
+    postStructuralRelaxation?: {
+      prioritization?: {
+        adaptive: boolean;
+        ordering: string;
+        retention: string;
+        adaptiveWidenedGroups: number;
+        adaptiveStateUpdateReranks: number;
+        acceptedMoveReranks: number;
+        skippedFullValidation: number;
+        fullValidated: number;
+      } | null;
+    } | null;
+  };
+  const stats = adaptive.postStructuralRelaxation?.prioritization;
+  assert.equal(adaptive.searchBudget.relaxationPrioritizationMode, "adaptive-cheap-ranking");
+  assert.equal(adaptive.searchBudget.relaxationAdaptiveMargin, 0.1);
+  assert.equal(stats?.adaptive, true);
+  assert.equal(stats?.ordering, "original-sequential");
+  assert.equal(stats?.retention, "adaptive-state-local");
+  assert.ok((stats?.adaptiveWidenedGroups ?? 0) > 0);
+  assert.ok((stats?.adaptiveStateUpdateReranks ?? 0) > 0);
+  assert.ok((stats?.acceptedMoveReranks ?? 0) > 0);
+  assert.ok((stats?.skippedFullValidation ?? 0) > 0);
+  assert.ok((stats?.fullValidated ?? 0) > 0);
+});
+
+test("adaptive retention audit separates policy recall from unknown skipped candidates", () => {
+  const audit = runSearch({
+    E2R_PRESENTATION_GEOMETRY_CACHE: "1",
+    E2R_PRESENTATION_EXACT_CANDIDATE_REUSE: "1",
+    E2R_RELAXATION_PRIORITIZATION: "adaptive-cheap-ranking",
+    E2R_RELAXATION_PRIORITIZATION_AUDIT: "1",
+  }) as ReturnType<typeof runSearch> & {
+    postStructuralRelaxation?: {
+      prioritization?: {
+        retentionRecall: number | null;
+        acceptedRetentionRecall: number | null;
+        skippedFullValidation: number;
+        fullValidated: number;
+        fullImprovingRetained: number;
+        fullImprovingCandidates: number;
+      } | null;
+    } | null;
+  };
+  const stats = audit.postStructuralRelaxation?.prioritization;
+  assert.equal(stats?.skippedFullValidation, 0);
+  assert.ok((stats?.fullValidated ?? 0) > 0);
+  assert.ok((stats?.fullImprovingRetained ?? 0) <= (stats?.fullImprovingCandidates ?? 0));
+  assert.ok((stats?.retentionRecall ?? -1) >= 0);
+  assert.ok((stats?.acceptedRetentionRecall ?? -1) >= 0);
 });
 
 test("final coordinate canonicalization is a post-selection diagnostic boundary", () => {
