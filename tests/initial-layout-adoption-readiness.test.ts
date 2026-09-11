@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { solveAutoLayout } from "../src/auto-layout.ts";
 import { deriveBoundedInitialLayout } from "../src/initial-layout-provider.ts";
 
 type Entity = { id: string; label: string; description?: string };
@@ -62,6 +63,10 @@ test("coarse provider uses safe whole-result fallback under a tight budget on a 
   assertComplete(result, input.entities.map(({ id }) => id).sort());
   assert.equal(result.status, "fallback");
   assert.ok(result.reason === "budget-exceeded" || result.reason === "unsafe-candidate");
+  assert.deepEqual(result.positions, solveAutoLayout({
+    entities: input.entities.map(({ id }) => ({ id })),
+    relations: input.relations.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
+  }, { iterations: 3 }));
 });
 
 test("self-loops do not influence the coarse provider's ordinary placement", () => {
