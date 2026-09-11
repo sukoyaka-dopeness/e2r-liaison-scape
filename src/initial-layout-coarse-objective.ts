@@ -1,4 +1,4 @@
-import type { LayoutPoint } from "./auto-layout.ts";
+import { solveAutoLayout, type LayoutPoint } from "./auto-layout.ts";
 
 export type CoarseObjectiveEntity = { id: string; label: string; description?: string };
 export type CoarseObjectiveRelation = { id: string; sourceId: string; targetId: string; label?: string };
@@ -17,9 +17,11 @@ export type CoarseObjectiveMetrics = {
   relationLabelCorridorPressure: number;
   score: number;
 };
+export type CoarseCandidateResult = { positions: Record<string, LayoutPoint>; metrics: CoarseObjectiveMetrics; status: "completed" | "fallback"; reason: "completed" | "budget-exceeded" | "unsafe-seed"; elapsedMs: number; iterations: number };
 
 const BODY_CLEARANCE = 76;
 const BODY_HALF = 32;
+const DIRECTIONS = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }, { x: 1, y: 1 }, { x: -1, y: 1 }, { x: 1, y: -1 }, { x: -1, y: -1 }];
 
 function width(text: string): number { return Math.max(48, Math.min(180, Array.from(text).length * 6.5 + 12)); }
 function height(entity: CoarseObjectiveEntity): number { return entity.description?.trim() ? 48 : 20; }
@@ -29,6 +31,13 @@ function orientation(a: LayoutPoint, b: LayoutPoint, c: LayoutPoint): number { r
 function crosses(a: LayoutPoint, b: LayoutPoint, c: LayoutPoint, d: LayoutPoint): boolean { const ab = orientation(a, b, c); const ab2 = orientation(a, b, d); const cd = orientation(c, d, a); const cd2 = orientation(c, d, b); return ((ab > 0 && ab2 < 0) || (ab < 0 && ab2 > 0)) && ((cd > 0 && cd2 < 0) || (cd < 0 && cd2 > 0)); }
 function midpointDistance(point: LayoutPoint, a: LayoutPoint, b: LayoutPoint): number { const dx = b.x - a.x; const dy = b.y - a.y; const length2 = dx * dx + dy * dy || 1; const t = Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / length2)); return Math.hypot(point.x - (a.x + t * dx), point.y - (a.y + t * dy)); }
 function segmentDistance(point: LayoutPoint, a: LayoutPoint, b: LayoutPoint): number { return midpointDistance(point, a, b); }
+function bodySafe(positions: Record<string, LayoutPoint>, entities: readonly CoarseObjectiveEntity[]): boolean {
+  for (let left = 0; left < entities.length; left += 1) for (let right = left + 1; right < entities.length; right += 1) {
+    const first = positions[entities[left]!.id]; const second = positions[entities[right]!.id]; if (!first || !second) return false;
+    if (Math.abs(first.x - second.x) < BODY_CLEARANCE && Math.abs(first.y - second.y) < BODY_CLEARANCE) return false;
+  }
+  return true;
+}
 
 /**
  * Cheap, presentation-informed geometry proxy. It deliberately uses straight
@@ -71,4 +80,26 @@ export function scoreCoarseInitialLayout(input: CoarseObjectiveInput): CoarseObj
   for (const group of parallelGroups.values()) if (group.length > 1) { const first = group[0]!; const source = input.positions[first.sourceId]!; const target = input.positions[first.targetId]!; const chord = Math.max(1, Math.hypot(target.x - source.x, target.y - source.y)); parallelBundlePressure += (group.length - 1) * Math.max(0, 180 - chord) / 180; }
   const score = nodeBodyOverlaps * 1000000 + nodeLabelOverlaps * 10000 + straightEdgeCrossings * 100000 + longEdges * 2500 + parallelBundlePressure * 800 + relationLabelCorridorPressure * 500;
   return { nodeBodyOverlaps, nodeLabelOverlaps, straightEdgeCrossings, longEdges, parallelBundlePressure, relationLabelCorridorPressure, score };
+}
+
+/** Diagnostic-only greedy search using the coarse proxy; never wired to App. */
+export function generateBoundedCoarseCandidate(input: Omit<CoarseObjectiveInput, "positions"> & { budgetMs?: number; maxIterations?: number }): CoarseCandidateResult {
+  const startedAt = performance.now();
+  const entities = [...input.entities].sort((left, right) => left.id.localeCompare(right.id));
+  const relations = input.relations;
+  const baseInput = { entities, relations };
+  let positions = solveAutoLayout({ entities: entities.map(({ id }) => ({ id })), relations: relations.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })) }, { iterations: 3 });
+  let metrics = scoreCoarseInitialLayout({ ...baseInput, positions });
+  if (!bodySafe(positions, entities)) return { positions, metrics, status: "fallback", reason: "unsafe-seed", elapsedMs: performance.now() - startedAt, iterations: 0 };
+  const budgetMs = Math.max(1, input.budgetMs ?? 100); const maxIterations = Math.max(0, Math.floor(input.maxIterations ?? 2));
+  for (let iteration = 0; iteration < maxIterations; iteration += 1) {
+    for (const entity of entities) for (const direction of DIRECTIONS) {
+      if (performance.now() - startedAt > budgetMs) return { positions, metrics, status: "fallback", reason: "budget-exceeded", elapsedMs: performance.now() - startedAt, iterations: iteration };
+      const candidate = { ...positions, [entity.id]: { x: positions[entity.id]!.x + direction.x * 6, y: positions[entity.id]!.y + direction.y * 6 } };
+      if (!bodySafe(candidate, entities)) continue;
+      const candidateMetrics = scoreCoarseInitialLayout({ ...baseInput, positions: candidate });
+      if (candidateMetrics.score < metrics.score) { positions = candidate; metrics = candidateMetrics; }
+    }
+  }
+  return { positions, metrics, status: "completed", reason: "completed", elapsedMs: performance.now() - startedAt, iterations: maxIterations };
 }

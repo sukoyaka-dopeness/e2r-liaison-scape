@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { scoreCoarseInitialLayout } from "../src/initial-layout-coarse-objective.ts";
+import { generateBoundedCoarseCandidate, scoreCoarseInitialLayout } from "../src/initial-layout-coarse-objective.ts";
 
 test("coarse objective detects geometry proxies without invoking Product routing", () => {
   const result = scoreCoarseInitialLayout({
@@ -39,4 +39,13 @@ test("Self-loops do not create ordinary zero-chord or parallel pressure", () => 
   };
   const withLoop = scoreCoarseInitialLayout({ ...base, relations: [...base.relations, { id: "aa", sourceId: "a", targetId: "a", label: "self" }] });
   assert.deepEqual(withLoop, scoreCoarseInitialLayout(base));
+});
+
+test("coarse candidate generation is bounded and deterministic", () => {
+  const input = { entities: [{ id: "a", label: "A" }, { id: "b", label: "B" }, { id: "c", label: "C" }], relations: [{ id: "ab", sourceId: "a", targetId: "b", label: "works" }, { id: "bc", sourceId: "b", targetId: "c", label: "works" }] };
+  const first = generateBoundedCoarseCandidate(input);
+  const second = generateBoundedCoarseCandidate({ ...input, entities: [...input.entities].reverse() });
+  assert.equal(first.status, "completed");
+  assert.deepEqual(first.positions, second.positions);
+  assert.ok(first.elapsedMs < 1000);
 });

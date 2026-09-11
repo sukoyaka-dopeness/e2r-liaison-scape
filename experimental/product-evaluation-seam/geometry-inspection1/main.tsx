@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "../../../src/App";
 import { buildEntityGraph } from "../../../src/dataset";
 import { solveAutoLayout } from "../../../src/auto-layout";
+import { generateBoundedCoarseCandidate } from "../../../src/initial-layout-coarse-objective";
 import "../../../src/styles.css";
 import "./main.css";
 
@@ -352,6 +353,7 @@ const candidateDescriptions = {
   "vertical-space-rebalance-v1": "Horizontal topology rebalance (vertical-space only)",
   "generic-crossing-search-v1": "Generic crossing-first structural search (diagnostic)",
   "post-structural-relaxation-v1": "Post-structural constrained relaxation (diagnostic)",
+  "coarse-objective-prototype-v1": "Coarse-objective bounded candidate (diagnostic)",
   "pressure-targeted-relaxation-v1": "Pressure-targeted constrained relaxation (diagnostic)",
   "quantized-relaxation-step1-v1": "Integer-lattice constrained relaxation, step 1 (diagnostic)",
   "source-f0-160": "Source F0 solver, clearance 160",
@@ -372,6 +374,12 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
       entities: graph.nodes.map(({ id }) => ({ id })),
       relations: graph.edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
     }, { nodeClearance: 120, iterations: 3 });
+  }
+  if (candidate === "coarse-objective-prototype-v1") {
+    const graph = buildEntityGraph(dataset);
+    const entities = graph.nodes.map((node) => ({ id: node.id, label: node.label, description: node.description }));
+    const relations = graph.edges.map((edge) => ({ id: edge.id, sourceId: edge.sourceId, targetId: edge.targetId, label: dataset.relations.find((relation: any) => relation.id === edge.id)?.name ?? edge.id }));
+    return generateBoundedCoarseCandidate({ entities, relations, budgetMs: 100 }).positions;
   }
   const additionalFixturePositions = additionalGeneralizationPositions[selectedFixtureKind as keyof typeof additionalGeneralizationPositions];
   if (additionalFixturePositions && (candidate === "generic-crossing-search-v1" || candidate === "post-structural-relaxation-v1")) {
