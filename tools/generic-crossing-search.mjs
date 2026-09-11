@@ -46,6 +46,8 @@ const relaxationCheapScreenMode = process.env.E2R_RELAXATION_CHEAP_SCREEN ?? "of
 const relaxationCheapScreenEnabled = relaxationCheapScreenMode === "on";
 const relaxationCheapScreenProbe = relaxationCheapScreenEnabled || relaxationCheapScreenMode === "probe";
 const relaxationDependencyTraceEnabled = process.env.E2R_RELAXATION_DEPENDENCY_TRACE === "1";
+const relaxationApproximationMode = process.env.E2R_RELAXATION_APPROXIMATION ?? "off";
+const relaxationApproximationAudit = process.env.E2R_RELAXATION_APPROXIMATION_AUDIT === "1";
 const edges = graph.edges.map((edge) => ({
   ...edge,
   label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
@@ -293,6 +295,65 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
     enumerable: false,
   });
   return result;
+}
+function localNodeFeasibility(nodes, positions) {
+  let overlapPairs = 0;
+  for (let left = 0; left < nodes.length; left += 1) for (let right = left + 1; right < nodes.length; right += 1) {
+    const first = positions[nodes[left].id]; const second = positions[nodes[right].id];
+    if (Math.abs(first.x - second.x) < INITIAL_ENTITY_CLEARANCE && Math.abs(first.y - second.y) < INITIAL_ENTITY_CLEARANCE) overlapPairs += 1;
+  }
+  return { overlapPairs };
+}
+function localPresentationScope(positions, focusIds) {
+  const scope = new Set(focusIds);
+  const radius = INITIAL_ENTITY_CLEARANCE * 2.5;
+  for (const edge of edges) {
+    if (scope.has(edge.sourceId) || scope.has(edge.targetId)) {
+      scope.add(edge.sourceId); scope.add(edge.targetId);
+    }
+  }
+  for (const focusId of focusIds) {
+    const origin = positions[focusId];
+    for (const node of graph.nodes) {
+      if (Math.hypot(positions[node.id].x - origin.x, positions[node.id].y - origin.y) <= radius) scope.add(node.id);
+    }
+  }
+  const nodes = graph.nodes.filter((node) => scope.has(node.id));
+  const nodeIds = new Set(nodes.map((node) => node.id));
+  const scopedEdges = edges.filter((edge) => nodeIds.has(edge.sourceId) && nodeIds.has(edge.targetId));
+  return { nodes, edges: scopedEdges, radius, focusIds: focusIds.slice().sort(compareId) };
+}
+function deriveLocalPresentationApproximation(positions, focusIds) {
+  const scope = localPresentationScope(positions, focusIds);
+  const provisionalNodeLabels = scope.nodes.map((node) => placeNodeLabel(
+    positions[node.id], node.label, node.description, [], scope.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), [],
+  ));
+  const presentation = deriveBoundedAutomaticPresentation({
+    graph: { nodes: scope.nodes, edges: scope.edges }, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels,
+    previousNodeLabelPlacements: new Map(), previousRelationLabelPlacements: new Map(), manualNodeLabelOffsets: new Map(), manualRelationLabelAnchors: new Map(),
+  });
+  const labels = [...presentation.nodeLabels.values()];
+  const routeLengths = presentation.routedEdges.map((route) => route.samples.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - route.samples[index].x, point.y - route.samples[index].y), 0)).sort((a, b) => a - b);
+  const crossings = crossingDetails(presentation.routedEdges, presentation.relationLabels);
+  const labelRouteHits = presentation.routedEdges.filter((route) => routeSamplesHaveLabelCollision(route.samples, labels)).length;
+  const labelNear20 = presentation.routedEdges.filter((route) => route.samples.some((point) => labels.some((label) => distanceToRect(point, label) < 20))).length;
+  let labelOverlap = 0;
+  for (let left = 0; left < labels.length; left += 1) for (let right = left + 1; right < labels.length; right += 1) {
+    if (Math.abs(labels[left].x - labels[right].x) < (labels[left].width + labels[right].width) / 2
+      && Math.abs(labels[left].y - labels[right].y) < (labels[left].height + labels[right].height) / 2) labelOverlap += 1;
+  }
+  const hopLengths = scope.edges.map((edge) => Math.hypot(positions[edge.sourceId].x - positions[edge.targetId].x, positions[edge.sourceId].y - positions[edge.targetId].y)).sort((a, b) => a - b);
+  const x = scope.nodes.map((node) => positions[node.id].x); const y = scope.nodes.map((node) => positions[node.id].y);
+  const extent = [Math.max(...x) - Math.min(...x), Math.max(...y) - Math.min(...y)];
+  const feasibility = localNodeFeasibility(scope.nodes, positions);
+  const score = crossings.length * 100000 + labelRouteHits * 30000 + labelNear20 * 5000 + labelOverlap * 10000 + feasibility.overlapPairs * 5000000
+    + (hopLengths.filter((length) => length < INITIAL_ENTITY_CLEARANCE * 1.45).length * 5000)
+    + (routeLengths[Math.floor(routeLengths.length / 2)] ?? 0) * 2 + Math.max(...routeLengths, 0) + (extent[0] + extent[1]) * 0.20;
+  return {
+    score,
+    scope: { nodeIds: scope.nodes.map((node) => node.id), edgeIds: scope.edges.map((edge) => edge.id), radius: scope.radius, focusIds: scope.focusIds },
+    metrics: { crossings: crossings.length, labelRouteHits, labelNear20, labelOverlap, overlapPairs: feasibility.overlapPairs, routeMedian: routeLengths[Math.floor(routeLengths.length / 2)] ?? 0, routeMax: Math.max(...routeLengths, 0), extent },
+  };
 }
 function compareSignatureMaps(before, after) {
   const ids = new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]);
@@ -693,6 +754,38 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   const configuredCandidateKeys = relaxationLatticeProbe ? new Set() : null;
   const hypotheticalKeys = relaxationLatticeProbe ? new Map([1, 2, 4].map((step) => [step, new Set()])) : null;
   let candidateRequests = 0; let fractionalCandidateRequests = 0;
+  const localApproximationCache = new Map();
+  const approximationStats = relaxationApproximationMode === "local-screen" ? {
+    mode: relaxationApproximationMode,
+    audit: relaxationApproximationAudit,
+    considered: 0,
+    predictedImprovement: 0,
+    fullValidated: 0,
+    skippedFullValidation: 0,
+    truePositive: 0,
+    falsePositive: 0,
+    falseNegative: 0,
+    trueNegative: 0,
+    scopeNodeCount: 0,
+    scopeEdgeCount: 0,
+    localEvaluations: 0,
+    localCacheHits: 0,
+    localEvaluationMs: 0,
+    scopeSamples: [],
+  } : null;
+  const localApproximationFor = (positions, focusIds) => {
+    if (!approximationStats) return null;
+    const key = `${positionsKey(positions)}|${focusIds.slice().sort(compareId).join("\u0000")}`;
+    if (localApproximationCache.has(key)) {
+      approximationStats.localCacheHits += 1;
+      return localApproximationCache.get(key);
+    }
+    const startedAt = performance.now();
+    localApproximationCache.set(key, deriveLocalPresentationApproximation(positions, focusIds));
+    approximationStats.localEvaluations += 1;
+    approximationStats.localEvaluationMs += performance.now() - startedAt;
+    return localApproximationCache.get(key);
+  };
   const cheapScreenStats = relaxationCheapScreenProbe ? { considered: 0, rejected: 0, overlapRejected: 0, lowerBoundRejected: 0, lowerBoundViolations: 0, lowerBoundSamples: [], acceptedTrace: [] } : null;
   const directions = Array.from({ length: 8 }, (_, index) => index * Math.PI / 4);
   const steps = relaxationStepMode === "omit-fine" ? [18, 9] : [18, 9, 6];
@@ -758,10 +851,32 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
         }
         continue;
       }
+      const approximateCurrent = localApproximationFor(current, plan.ids);
+      const approximateCandidate = localApproximationFor(candidate, plan.ids);
+      const approximationPredictsImprovement = !approximationStats || approximateCandidate.score < approximateCurrent.score;
+      if (approximationStats) {
+        approximationStats.considered += 1;
+        approximationStats.scopeNodeCount += approximateCandidate.scope.nodeIds.length;
+        approximationStats.scopeEdgeCount += approximateCandidate.scope.edgeIds.length;
+        if (approximationStats.scopeSamples.length < 12) approximationStats.scopeSamples.push({ focusIds: plan.ids, nodeIds: approximateCandidate.scope.nodeIds, edgeIds: approximateCandidate.scope.edgeIds, radius: approximateCandidate.scope.radius });
+        if (approximateCandidate.score < approximateCurrent.score) approximationStats.predictedImprovement += 1;
+      }
+      if (approximationStats && !approximationPredictsImprovement && !relaxationApproximationAudit) {
+        approximationStats.skippedFullValidation += 1;
+        continue;
+      }
       const fullStartedAt = performance.now();
       const metrics = presentationMetrics(candidate); evaluated += 1;
       const fullElapsed = performance.now() - fullStartedAt;
       const score = constrainedRelaxationScore(metrics, candidate, referencePositions);
+      if (approximationStats) {
+        approximationStats.fullValidated += 1;
+        const exactImprovement = score < currentScore;
+        if (approximationPredictsImprovement && exactImprovement) approximationStats.truePositive += 1;
+        else if (approximationPredictsImprovement && !exactImprovement) approximationStats.falsePositive += 1;
+        else if (!approximationPredictsImprovement && exactImprovement) approximationStats.falseNegative += 1;
+        else approximationStats.trueNegative += 1;
+      }
       if (dependencyTraceStats) recordDependencyTrace(
         dependencyTraceStats,
         dependencyTraceDiff(currentMetrics.presentationTrace, metrics.presentationTrace, id),
@@ -843,6 +958,13 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     },
     inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0,
     cheapScreen: cheapScreenStats ? { mode: relaxationCheapScreenMode, ...cheapScreenStats } : null,
+    approximation: approximationStats ? {
+      ...approximationStats,
+      averageScopeNodeCount: approximationStats.scopeNodeCount / Math.max(1, approximationStats.considered),
+      averageScopeEdgeCount: approximationStats.scopeEdgeCount / Math.max(1, approximationStats.considered),
+      averageLocalEvaluationMs: approximationStats.localEvaluationMs / Math.max(1, approximationStats.localEvaluations),
+      localCacheEntries: localApproximationCache.size,
+    } : null,
     ...(dependencyTraceStats ? { dependencyTrace: dependencyTraceStats } : {}),
   };
 }
@@ -953,7 +1075,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, presentationRepairRounds, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));
