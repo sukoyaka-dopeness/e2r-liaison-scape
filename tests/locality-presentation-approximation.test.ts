@@ -20,7 +20,10 @@ function runSearch(extraEnvironment: Record<string, string> = {}) {
   });
   return JSON.parse(output) as {
     graph: { nodes: number; edges: number };
-    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationAdaptiveMargin: number; relaxationFinalCanonicalizationMode: string };
+    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationAdaptiveMargin: number; relaxationFinalCanonicalizationMode: string; globalSpacingScale: number; globalSpacingStage2Mode: string };
+    globalSpacingScale: number;
+    globalSpacingStage2Mode: string;
+    selected?: { family: string } | null;
     postStructuralRelaxation?: {
       approximation?: {
         mode: string;
@@ -32,6 +35,15 @@ function runSearch(extraEnvironment: Record<string, string> = {}) {
     } | null;
   };
 }
+
+test("global spacing is a diagnostic-only centered transform with an explicit Stage-2 bypass", () => {
+  const spaced = runSearch({ E2R_GLOBAL_SPACING_SCALE: "1.5", E2R_GLOBAL_SPACING_STAGE2: "off" });
+  assert.equal(spaced.searchBudget.globalSpacingScale, 1.5);
+  assert.equal(spaced.searchBudget.globalSpacingStage2Mode, "off");
+  assert.equal(spaced.globalSpacingScale, 1.5);
+  assert.equal(spaced.globalSpacingStage2Mode, "off");
+  assert.equal(spaced.selected?.family, "global-spacing-only");
+});
 
 test("local presentation approximation is diagnostic opt-in and preserves full validation boundary", () => {
   const baseline = runSearch();
