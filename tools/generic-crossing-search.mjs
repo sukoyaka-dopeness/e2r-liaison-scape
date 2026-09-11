@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import { buildEntityGraph } from "../src/dataset.ts";
 import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
@@ -21,8 +22,9 @@ const presentationCache = new Map();
 const presentationCostProfileEnabled = process.env.E2R_PRESENTATION_COST_PROFILE === "1";
 const presentationProfiler = presentationCostProfileEnabled ? createAutomaticPresentationProfiler() : null;
 const presentationGeometryCacheEnabled = process.env.E2R_PRESENTATION_GEOMETRY_CACHE === "1";
+const presentationExactCandidateReuseEnabled = process.env.E2R_PRESENTATION_EXACT_CANDIDATE_REUSE === "1";
 const presentationGeometryCache = presentationGeometryCacheEnabled
-  ? { entries: new Map(), stats: { lookups: 0, hits: 0, misses: 0 } }
+  ? { entries: new Map(), metadata: presentationExactCandidateReuseEnabled ? new Map() : undefined, exactCandidateReuse: presentationExactCandidateReuseEnabled, stats: { lookups: 0, hits: 0, misses: 0 } }
   : null;
 const presentationCostBreakdown = presentationCostProfileEnabled
   ? { provisionalNodeLabelMs: 0, authoritativePresentationMs: 0, metricAggregationMs: 0 }
@@ -309,7 +311,7 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
     replayedPrefix: replayedPrefixTrace,
     passes: presentationPassTrace,
   } : undefined;
-  const result = { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, labelCorridorDeficit, labelCorridorConflictPairs, labelCorridorMinimumClearance: Number.isFinite(labelCorridorMinimumClearance) ? labelCorridorMinimumClearance : null, labelCorridorMaximumIntrusion, routeLabelCorridors, usableSpanPenalty, routeSupports, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
+  const result = { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, labelCorridorDeficit, labelCorridorConflictPairs, labelCorridorMinimumClearance: Number.isFinite(labelCorridorMinimumClearance) ? labelCorridorMinimumClearance : null, labelCorridorMaximumIntrusion, routeLabelCorridors, usableSpanPenalty, routeSupports, feedbackApplied: presentation.feedbackApplied, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
   if (presentationTrace) Object.defineProperty(result, "presentationTrace", { value: presentationTrace, enumerable: false });
   Object.defineProperty(result, "presentationArtifacts", {
     value: { routedEdges: presentation.routedEdges, relationLabels: presentation.relationLabels, nodeLabels: presentation.nodeLabels },
@@ -1306,7 +1308,16 @@ function summarizePresentationProfiler() {
     routeDecisions: pass.routeDecisions,
     route: {
       candidateGenerationMs: pass.route.candidateGenerationMs,
+      candidateCacheKeyMs: pass.route.candidateCacheKeyMs,
+      geometryCacheKeyMs: pass.route.geometryCacheKeyMs,
+      geometryCacheLookupMs: pass.route.geometryCacheLookupMs,
+      geometryConstructionMs: pass.route.geometryConstructionMs,
+      sampleBoundsMs: pass.route.sampleBoundsMs,
+      nodeObstacleMs: pass.route.nodeObstacleMs,
+      occupiedPathBoundsMs: pass.route.occupiedPathBoundsMs,
       occupiedPathCheckMs: pass.route.occupiedPathCheckMs,
+      labelPressureMs: pass.route.labelPressureMs,
+      candidateScoreAssemblyMs: pass.route.candidateScoreAssemblyMs,
       arbitrationMs: pass.route.arbitrationMs,
       candidateComparisons: pass.route.candidateComparisons,
       safeCandidateChecks: pass.route.safeCandidateChecks,
@@ -1330,6 +1341,23 @@ function summarizePresentationProfiler() {
     },
   });
   return Object.fromEntries(Object.entries(presentationProfiler.passes).map(([name, pass]) => [name, summarizeProfile(pass)]));
+}
+function selectedPresentationDigest(selected) {
+  const artifacts = selected?.metrics?.presentationArtifacts;
+  if (!artifacts) return null;
+  const signature = {
+    routes: routeGeometrySignatures(artifacts.routedEdges),
+    relationLabels: mapGeometrySignatures(artifacts.relationLabels),
+    nodeLabels: mapGeometrySignatures(artifacts.nodeLabels),
+    feedbackApplied: selected.metrics.feedbackApplied,
+  };
+  return {
+    digest: createHash("sha256").update(JSON.stringify(signature)).digest("hex"),
+    feedbackApplied: selected.metrics.feedbackApplied,
+    routeCount: artifacts.routedEdges.length,
+    relationLabelCount: artifacts.relationLabels.size,
+    nodeLabelCount: artifacts.nodeLabels.size,
+  };
 }
 
 const startedAt = performance.now();
@@ -1356,6 +1384,8 @@ console.log(JSON.stringify({
       profiler: summarizePresentationProfiler(),
       geometryCache: presentationGeometryCache ? {
         entries: presentationGeometryCache.entries.size,
+        metadataEntries: presentationGeometryCache.metadata?.size ?? 0,
+        exactCandidateReuse: presentationGeometryCache.exactCandidateReuse === true,
         stats: { ...presentationGeometryCache.stats },
       } : null,
     } : null,
@@ -1368,7 +1398,8 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationFinalCanonicalizationMode, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationFinalCanonicalizationMode, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
+  selectedPresentation: selectedPresentationDigest(search.selected),
 }, null, 2));

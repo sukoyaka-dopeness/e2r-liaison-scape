@@ -95,8 +95,17 @@ export type AutomaticPresentationProfiler = {
 function emptyRouteArbitrationProfile(): RouteArbitrationProfile {
   return {
     candidateGenerationMs: 0,
+    candidateCacheKeyMs: 0,
+    geometryCacheKeyMs: 0,
+    geometryCacheLookupMs: 0,
+    geometryConstructionMs: 0,
+    sampleBoundsMs: 0,
+    nodeObstacleMs: 0,
+    occupiedPathBoundsMs: 0,
     arbitrationMs: 0,
     occupiedPathCheckMs: 0,
+    labelPressureMs: 0,
+    candidateScoreAssemblyMs: 0,
     candidateComparisons: 0,
     safeCandidateChecks: 0,
     selectedRouteCommits: 0,

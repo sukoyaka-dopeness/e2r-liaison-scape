@@ -61,7 +61,7 @@ test("same input produces exact deterministic route output", () => {
 });
 
 test("exact route geometry cache reuses endpoint geometry without changing route output", () => {
-  const geometryCache = { entries: new Map(), stats: { lookups: 0, hits: 0, misses: 0 } };
+  const geometryCache = { entries: new Map(), metadata: new Map(), exactCandidateReuse: true, stats: { lookups: 0, hits: 0, misses: 0 } };
   const first = deriveAutomaticRoutes(input({ geometryCache }));
   const repeated = deriveAutomaticRoutes(input({ geometryCache }));
   const moved = deriveAutomaticRoutes(input({
@@ -585,7 +585,7 @@ test("exact geometry cache preserves the complete bounded presentation output", 
     base.graph.nodes.filter((other) => other.id !== node.id).map((other) => base.positions[other.id]!),
     [],
   ));
-  const geometryCache = { entries: new Map(), stats: { lookups: 0, hits: 0, misses: 0 } };
+  const geometryCache = { entries: new Map(), metadata: new Map(), exactCandidateReuse: true, stats: { lookups: 0, hits: 0, misses: 0 } };
   const common = {
     ...base,
     provisionalNodeLabels,
@@ -599,6 +599,7 @@ test("exact geometry cache preserves the complete bounded presentation output", 
   assert.deepEqual(cached, uncached);
   assert.ok(geometryCache.stats.hits > 0);
   assert.ok(geometryCache.stats.misses > 0);
+  assert.equal(geometryCache.metadata.size, geometryCache.entries.size);
 });
 
 test("presentation profiler separates route arbitration from downstream stages", () => {

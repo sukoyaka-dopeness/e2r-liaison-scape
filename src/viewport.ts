@@ -741,17 +741,31 @@ export type RouteCandidateCache = {
 
 export type RouteGeometry = { path: string; samples: Point[]; labelPoint: Point; controlPoint: Point };
 
+export type RouteGeometryMetadata = { sampleBounds: PointBounds; innerSamples: Point[] };
+
 /** Opt-in exact cache for endpoint/offset geometry before route arbitration. */
 export type RouteGeometryCache = {
   entries: Map<string, RouteGeometry>;
+  metadata?: Map<string, RouteGeometryMetadata>;
+  /** Opt-in exact reuse of candidate-derived metadata and label broad-phase checks. */
+  exactCandidateReuse?: boolean;
   stats?: { lookups: number; hits: number; misses: number };
 };
 
 /** Opt-in timing/counter sink for route arbitration diagnostics. */
 export type RouteArbitrationProfile = {
   candidateGenerationMs: number;
+  candidateCacheKeyMs: number;
+  geometryCacheKeyMs: number;
+  geometryCacheLookupMs: number;
+  geometryConstructionMs: number;
+  sampleBoundsMs: number;
+  nodeObstacleMs: number;
+  occupiedPathBoundsMs: number;
   arbitrationMs: number;
   occupiedPathCheckMs: number;
+  labelPressureMs: number;
+  candidateScoreAssemblyMs: number;
   candidateComparisons: number;
   safeCandidateChecks: number;
   selectedRouteCommits: number;
@@ -887,15 +901,20 @@ export function routeGraphEdge(
   // Callers exclude the source and target by identity. Keep unrelated nodes
   // even when they have been dragged onto an endpoint's coordinates.
   const routeObstacles = obstacles;
+  const exactCandidateReuse = geometryCache?.exactCandidateReuse === true;
+  const occupiedPathBoundsStartedAt = routeProfile ? performance.now() : 0;
   const occupiedPathBounds = occupiedPaths.map((occupiedPath) => {
-    const innerSamples = occupiedPath.slice(5, -5);
+    const innerSamples = exactCandidateReuse ? occupiedPath.slice(5, -5) : undefined;
+    const boundsSamples = innerSamples ?? occupiedPath.slice(5, -5);
     return {
-      minX: Math.min(...innerSamples.map(({ x }) => x)),
-      maxX: Math.max(...innerSamples.map(({ x }) => x)),
-      minY: Math.min(...innerSamples.map(({ y }) => y)),
-      maxY: Math.max(...innerSamples.map(({ y }) => y)),
+      innerSamples,
+      minX: Math.min(...boundsSamples.map(({ x }) => x)),
+      maxX: Math.max(...boundsSamples.map(({ x }) => x)),
+      minY: Math.min(...boundsSamples.map(({ y }) => y)),
+      maxY: Math.max(...boundsSamples.map(({ y }) => y)),
     };
   });
+  if (routeProfile) routeProfile.occupiedPathBoundsMs += performance.now() - occupiedPathBoundsStartedAt;
   const offsets = [baseOffset];
   for (let step = 1; step <= 16; step += 1) {
     const magnitude = Math.abs(baseOffset) + step * 12;
@@ -963,6 +982,7 @@ export function routeGraphEdge(
   let bestPreferredSideScore = Infinity;
   let bestPreferredSideOffset: number | null = null;
   const candidateGenerationStartedAt = performance.now();
+  const candidateCacheKeyStartedAt = routeProfile ? performance.now() : 0;
   const candidateCacheKey = candidateCache === undefined ? null : JSON.stringify({
     source,
     target,
@@ -974,6 +994,7 @@ export function routeGraphEdge(
     canonicalPhysicalSideSign,
     offsets,
   });
+  if (routeProfile) routeProfile.candidateCacheKeyMs += performance.now() - candidateCacheKeyStartedAt;
   const cachedCandidates = candidateCacheKey === null ? undefined : candidateCache!.entries.get(candidateCacheKey);
   if (candidateCache?.stats) {
     candidateCache.stats.lookups += 1;
@@ -981,6 +1002,7 @@ export function routeGraphEdge(
     else candidateCache.stats.misses += 1;
   }
 
+  const geometryCacheKeyStartedAt = routeProfile ? performance.now() : 0;
   const geometryCachePrefix = geometryCache === undefined ? null : JSON.stringify({
     source,
     target,
@@ -990,9 +1012,11 @@ export function routeGraphEdge(
     overlapIndex,
     canonicalPhysicalSideSign,
   });
+  if (routeProfile) routeProfile.geometryCacheKeyMs += performance.now() - geometryCacheKeyStartedAt;
   const activeGeometryCache = geometryCache;
   const cachedGeometryForOffset = (offset: number): RouteGeometry => {
     if (geometryCachePrefix === null) return geometryForOffset(offset);
+    const lookupStartedAt = routeProfile ? performance.now() : 0;
     const key = `${geometryCachePrefix}|offset:${offset}`;
     const cached = activeGeometryCache!.entries.get(key);
     if (activeGeometryCache!.stats) {
@@ -1000,20 +1024,31 @@ export function routeGraphEdge(
       if (cached) activeGeometryCache!.stats.hits += 1;
       else activeGeometryCache!.stats.misses += 1;
     }
-    if (cached) return cached;
+    if (cached) {
+      if (routeProfile) routeProfile.geometryCacheLookupMs += performance.now() - lookupStartedAt;
+      return cached;
+    }
+    const geometryConstructionStartedAt = routeProfile ? performance.now() : 0;
     const geometry = geometryForOffset(offset);
+    if (routeProfile) routeProfile.geometryConstructionMs += performance.now() - geometryConstructionStartedAt;
     activeGeometryCache!.entries.set(key, geometry);
+    if (routeProfile) routeProfile.geometryCacheLookupMs += performance.now() - lookupStartedAt;
     return geometry;
   };
   const candidates: readonly RouteCandidateCacheEntry[] = cachedCandidates ?? offsets.map((candidateOffset) => {
     const geometry = cachedGeometryForOffset(candidateOffset);
     const { samples } = geometry;
-    const sampleBounds = {
+    const sampleBoundsStartedAt = routeProfile ? performance.now() : 0;
+    const geometryKey = geometryCachePrefix === null ? null : `${geometryCachePrefix}|offset:${candidateOffset}`;
+    const cachedMetadata = !exactCandidateReuse || geometryKey === null ? undefined : activeGeometryCache!.metadata?.get(geometryKey);
+    const sampleBounds = cachedMetadata?.sampleBounds ?? {
       minX: Math.min(...samples.map(({ x }) => x)),
       maxX: Math.max(...samples.map(({ x }) => x)),
       minY: Math.min(...samples.map(({ y }) => y)),
       maxY: Math.max(...samples.map(({ y }) => y)),
     };
+    if (routeProfile) routeProfile.sampleBoundsMs += performance.now() - sampleBoundsStartedAt;
+    const nodeObstacleStartedAt = routeProfile ? performance.now() : 0;
     const nodeOverlapScore = routeObstacles.reduce((total, obstacle) => {
       const nearestX = Math.max(sampleBounds.minX, Math.min(obstacle.x, sampleBounds.maxX));
       const nearestY = Math.max(sampleBounds.minY, Math.min(obstacle.y, sampleBounds.maxY));
@@ -1023,13 +1058,17 @@ export function routeGraphEdge(
       return sampleTotal + penetration * penetration;
       }, 0);
     }, 0);
-    const innerSamples = samples.slice(5, -5);
-    const occupiedPathCheckStartedAt = performance.now();
+    if (routeProfile) routeProfile.nodeObstacleMs += performance.now() - nodeObstacleStartedAt;
+    const innerSamples = cachedMetadata?.innerSamples ?? samples.slice(5, -5);
+    if (exactCandidateReuse && geometryKey !== null && activeGeometryCache!.metadata?.has(geometryKey) !== true) {
+      activeGeometryCache!.metadata?.set(geometryKey, { sampleBounds, innerSamples });
+    }
+    const occupiedPathCheckStartedAt = routeProfile ? performance.now() : 0;
     const overlapsEdge = occupiedPaths.some((occupiedPath, occupiedIndex) => {
       const bounds = occupiedPathBounds[occupiedIndex]!;
       if (bounds.maxX < sampleBounds.minX - 8 || bounds.minX > sampleBounds.maxX + 8
         || bounds.maxY < sampleBounds.minY - 8 || bounds.minY > sampleBounds.maxY + 8) return false;
-      const occupiedInnerSamples = occupiedPath.slice(5, -5);
+      const occupiedInnerSamples = exactCandidateReuse ? bounds.innerSamples! : occupiedPath.slice(5, -5);
       let consecutiveNearDistance = 0;
       let previousPoint: Point | null = null;
       for (const point of innerSamples) {
@@ -1044,14 +1083,19 @@ export function routeGraphEdge(
       return false;
     });
     if (routeProfile) routeProfile.occupiedPathCheckMs += performance.now() - occupiedPathCheckStartedAt;
+    const labelPressureStartedAt = routeProfile ? performance.now() : 0;
     const labelPressure = labelRects.reduce((total, rect) => {
+      if (exactCandidateReuse && boundsMissRect(sampleBounds, rect, 20, 20)) return total;
       const distance = minimumPathToLabelRectDistance(samples, rect);
       if (distance === 0) return total + 100000;
       const halo = 20;
       return total + (distance < halo ? (halo - distance) ** 2 * 20 : 0);
     }, 0);
+    if (routeProfile) routeProfile.labelPressureMs += performance.now() - labelPressureStartedAt;
+    const candidateScoreAssemblyStartedAt = routeProfile ? performance.now() : 0;
     const score = nodeOverlapScore * 100 + (overlapsEdge ? 10000 : 0) + labelPressure + Math.abs(candidateOffset) * .01;
     const preservesBaseSide = Math.sign(candidateOffset) === Math.sign(baseOffset);
+    if (routeProfile) routeProfile.candidateScoreAssemblyMs += performance.now() - candidateScoreAssemblyStartedAt;
     return {
       geometry,
       diagnostic: {
