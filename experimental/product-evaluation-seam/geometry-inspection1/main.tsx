@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "../../../src/App";
 import { buildEntityGraph } from "../../../src/dataset";
 import { solveAutoLayout } from "../../../src/auto-layout";
+import { acceptanceFixturePath } from "../../../src/acceptance-fixture-access";
 import { generateBoundedCoarseCandidate } from "../../../src/initial-layout-coarse-objective";
 import "../../../src/styles.css";
 import "./main.css";
@@ -22,13 +23,13 @@ const fixtureUrl = isApolloPublic
   : selectedFixtureKind === "linkscape"
   ? `${import.meta.env.BASE_URL}examples/linkscape-relation-sample.e2r.json`
   : selectedFixtureKind === "lighthouse"
-    ? `http://127.0.0.1:4180/lighthouse-restoration-demo.${inspectionLocale}.e2r.json`
+    ? `${import.meta.env.BASE_URL}${acceptanceFixturePath({ name: "lighthouse", locale: inspectionLocale }).replace(/^\//, "")}`
     : selectedFixtureKind === "berlin-wall"
       ? `http://127.0.0.1:4180/berlin-wall-history.${inspectionLocale}.e2r.json`
       : selectedFixtureKind === "ashen-crown"
         ? `http://127.0.0.1:4180/ashen-crown.${inspectionLocale}.e2r.json`
         : selectedFixtureKind === "titanic"
-          ? `http://127.0.0.1:4180/titanic-final-voyage.${inspectionLocale}.e2r.json`
+          ? `${import.meta.env.BASE_URL}${acceptanceFixturePath({ name: "titanic", locale: inspectionLocale }).replace(/^\//, "")}`
           : `${import.meta.env.BASE_URL}experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json`;
 const localSearchPositions = {
   armstrong: { x: 31.342, y: 373.958 },
@@ -323,6 +324,24 @@ const additionalGeneralizationPositions = {
     },
   },
 } as const;
+const acceleratedPostPositions = {
+  lighthouse: {
+    en: {
+      sofia: { x: 320.7689217023288, y: 47.698484809834994 }, archive: { x: 520.5757609589327, y: 46.500877313542105 }, clara: { x: 574.1048190306798, y: 183.24175462708422 }, lighthouse: { x: 650.045944527634, y: 353.69231737556134 }, authority: { x: 459.11991683621704, y: 460.7347098792685 }, beacon: { x: 316.5262810152095, y: 486.96350925416846 }, maya: { x: 172.32604347640384, y: 444.85603022282817 }, thomas: { x: -26.570546963490358, y: 317.11515290928605 }, daniel: { x: 58.947742999739226, y: 183.24175462708422 }, elias: { x: 117.74887901012845, y: 59.228799374899964 },
+    },
+    ja: {
+      sofia: { x: 320.7689217023288, y: 47.698484809834994 }, archive: { x: 502.57576095893273, y: 46.500877313542105 }, clara: { x: 574.1048190306798, y: 186.24175462708422 }, lighthouse: { x: 617.5606631533955, y: 327.72175462708424 }, authority: { x: 454.8772761490978, y: 439.2199912535071 }, beacon: { x: 318.6476013587692, y: 443.3569075363703 }, maya: { x: 136.8407621021653, y: 464.8265929713053 }, thomas: { x: -21.599984215013208, y: 337.813637719121 }, daniel: { x: 58.947742999739226, y: 183.24175462708422 }, elias: { x: 117.74887901012845, y: 59.228799374899964 },
+    },
+  },
+  titanic: {
+    en: {
+      fleet: { x: 389.62352754013455, y: 37.09188309203679 }, andrews: { x: 555.1990886016097, y: 54.012221161991704 }, ismay: { x: 745.081599324549, y: 135.79891877406658 }, "white-star-line": { x: 770.9949816246422, y: 258.5001629733679 }, "molly-brown": { x: 747.4151140863748, y: 407.88299434764303 }, phillips: { x: 636.2880160718391, y: 531.7256064873205 }, smith: { x: 488.52741063217127, y: 576.2013052937511 }, rostron: { x: 310.9034106321714, y: 619.6571494164668 }, carpathia: { x: 119.8377186648703, y: 508.39108270816456 }, bride: { x: 26.559863055252094, y: 425.88299434764315 }, "harland-wolff": { x: 33.70791757834258, y: 263.7722409120099 }, titanic: { x: 109.44110503183028, y: 151.16287980474578 }, californian: { x: 218.77588854001735, y: 36.01222116199165 },
+    },
+    ja: {
+      bride: { x: 655.8822509939085, y: 96.11774900609143 }, carpathia: { x: 183.27207793864216, y: 12.727922061357857 }, rostron: { x: 448.5685424949238, y: 56.5685424949238 }, phillips: { x: 611.3345237791561, y: -54.66547622084393 }, "white-star-line": { x: 771.272077938642, y: 322 }, fleet: { x: 102.66042558696057, y: 119.06749647439725 }, "molly-brown": { x: 47.698484809834994, y: 28.242640687119284 }, titanic: { x: 392, y: 179 }, californian: { x: 183.27207793864216, y: 194.72792206135784 }, "harland-wolff": { x: 588, y: 328 }, ismay: { x: 784, y: 0 }, andrews: { x: 784, y: 244 }, smith: { x: 392, y: 328 },
+    },
+  },
+} as const;
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -353,6 +372,7 @@ const candidateDescriptions = {
   "vertical-space-rebalance-v1": "Horizontal topology rebalance (vertical-space only)",
   "generic-crossing-search-v1": "Generic crossing-first structural search (diagnostic)",
   "post-structural-relaxation-v1": "Post-structural constrained relaxation (diagnostic)",
+  "post-structural-relaxation-finalist-limit-2-v1": "Post finalist-limit=2 accelerated candidate (diagnostic)",
   "coarse-objective-prototype-v1": "Coarse-objective bounded candidate (diagnostic)",
   "pressure-targeted-relaxation-v1": "Pressure-targeted constrained relaxation (diagnostic)",
   "quantized-relaxation-step1-v1": "Integer-lattice constrained relaxation, step 1 (diagnostic)",
@@ -380,6 +400,10 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
     const entities = graph.nodes.map((node) => ({ id: node.id, label: node.label, description: node.description }));
     const relations = graph.edges.map((edge) => ({ id: edge.id, sourceId: edge.sourceId, targetId: edge.targetId, label: dataset.relations.find((relation: any) => relation.id === edge.id)?.name ?? edge.id }));
     return generateBoundedCoarseCandidate({ entities, relations, budgetMs: 100 }).positions;
+  }
+  if (candidate === "post-structural-relaxation-finalist-limit-2-v1") {
+    const positions = acceleratedPostPositions[selectedFixtureKind as keyof typeof acceleratedPostPositions];
+    if (positions) return positions[inspectionLocale];
   }
   const additionalFixturePositions = additionalGeneralizationPositions[selectedFixtureKind as keyof typeof additionalGeneralizationPositions];
   if (additionalFixturePositions && (candidate === "generic-crossing-search-v1" || candidate === "post-structural-relaxation-v1")) {
