@@ -342,6 +342,24 @@ const acceleratedPostPositions = {
     },
   },
 } as const;
+const omitFinePostPositions = {
+  lighthouse: {
+    en: {
+      sofia: { x: 316.5262810152095, y: 43.45584412271571 }, archive: { x: 520.5757609589327, y: 46.500877313542105 }, clara: { x: 574.1048190306798, y: 177.24175462708422 }, lighthouse: { x: 654.6525462454323, y: 343.08571565776316 }, authority: { x: 459.11991683621704, y: 454.7347098792685 }, beacon: { x: 329.25420307656736, y: 474.2355871928106 }, maya: { x: 130.47680107148636, y: 467.46263194062635 }, thomas: { x: 58.94774299973928, y: 300.72175462708424 }, daniel: { x: 58.947742999739226, y: 177.24175462708422 }, elias: { x: 117.74887901012845, y: 59.228799374899964 },
+    },
+    ja: {
+      sofia: { x: 316.5262810152095, y: 43.45584412271571 }, archive: { x: 502.57576095893273, y: 46.500877313542105 }, clara: { x: 574.1048190306798, y: 186.24175462708422 }, lighthouse: { x: 623.9246241840744, y: 334.08571565776316 }, authority: { x: 459.11991683621704, y: 449.46263194062635 }, beacon: { x: 322.89024204588844, y: 453.59954822348953 }, maya: { x: 139.47680107148636, y: 467.46263194062635 }, thomas: { x: -15.236023184334282, y: 331.4496766884421 }, daniel: { x: 58.947742999739226, y: 177.24175462708422 }, elias: { x: 117.74887901012845, y: 59.228799374899964 },
+    },
+  },
+  titanic: {
+    en: {
+      fleet: { x: 389.62352754013455, y: 37.09188309203679 }, andrews: { x: 555.1990886016097, y: 54.012221161991704 }, ismay: { x: 745.081599324549, y: 135.79891877406658 }, "white-star-line": { x: 770.9949816246422, y: 258.5001629733679 }, "molly-brown": { x: 747.4151140863748, y: 407.88299434764303 }, phillips: { x: 636.2880160718391, y: 531.7256064873205 }, smith: { x: 488.52741063217127, y: 576.2013052937511 }, rostron: { x: 298.17548857081357, y: 606.929227355109 }, carpathia: { x: 109.595077977751, y: 512.6337233952838 }, bride: { x: 26.559863055252094, y: 425.88299434764303 }, "harland-wolff": { x: 27.343956547663655, y: 270.13620194268884 }, titanic: { x: 103.07714400115135, y: 157.5268408354247 }, californian: { x: 218.77588854001735, y: 36.01222116199165 },
+    },
+    ja: {
+      bride: { x: 655.8822509939085, y: 96.11774900609143 }, carpathia: { x: 183.27207793864216, y: 12.727922061357857 }, rostron: { x: 448.5685424949238, y: 56.5685424949238 }, phillips: { x: 607.0918830920368, y: -58.90811690796321 }, "white-star-line": { x: 771.2720779386422, y: 322.72792206135784 }, fleet: { x: 102.66042558696057, y: 119.06749647439725 }, "molly-brown": { x: 43.45584412271571, y: 24 }, titanic: { x: 392, y: 173 }, californian: { x: 183.27207793864216, y: 194.72792206135784 }, "harland-wolff": { x: 588, y: 328 }, ismay: { x: 784, y: 0 }, andrews: { x: 784, y: 244 }, smith: { x: 392, y: 328 },
+    },
+  },
+} as const;
 const fp1NgpPositions = {
   aldrin: { x: 0, y: 0 },
   armstrong: { x: 52.5, y: 6.5625 },
@@ -373,6 +391,7 @@ const candidateDescriptions = {
   "generic-crossing-search-v1": "Generic crossing-first structural search (diagnostic)",
   "post-structural-relaxation-v1": "Post-structural constrained relaxation (diagnostic)",
   "post-structural-relaxation-finalist-limit-2-v1": "Post finalist-limit=2 accelerated candidate (diagnostic)",
+  "post-structural-relaxation-omit-fine-v1": "Post finalist-limit=2 omit-fine candidate (diagnostic)",
   "coarse-objective-prototype-v1": "Coarse-objective bounded candidate (diagnostic)",
   "pressure-targeted-relaxation-v1": "Pressure-targeted constrained relaxation (diagnostic)",
   "quantized-relaxation-step1-v1": "Integer-lattice constrained relaxation, step 1 (diagnostic)",
@@ -403,6 +422,10 @@ function coordinateMap(dataset: any, candidate: CandidateId) {
   }
   if (candidate === "post-structural-relaxation-finalist-limit-2-v1") {
     const positions = acceleratedPostPositions[selectedFixtureKind as keyof typeof acceleratedPostPositions];
+    if (positions) return positions[inspectionLocale];
+  }
+  if (candidate === "post-structural-relaxation-omit-fine-v1") {
+    const positions = omitFinePostPositions[selectedFixtureKind as keyof typeof omitFinePostPositions];
     if (positions) return positions[inspectionLocale];
   }
   const additionalFixturePositions = additionalGeneralizationPositions[selectedFixtureKind as keyof typeof additionalGeneralizationPositions];
