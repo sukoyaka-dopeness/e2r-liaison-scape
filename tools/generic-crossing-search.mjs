@@ -66,6 +66,7 @@ const relaxationPriorityTopK = Number.isFinite(parsedRelaxationPriorityTopK) && 
 const parsedAdaptiveMarginThreshold = Number.parseFloat(process.env.E2R_RELAXATION_ADAPTIVE_MARGIN ?? "0.10");
 const adaptiveMarginThreshold = Number.isFinite(parsedAdaptiveMarginThreshold) && parsedAdaptiveMarginThreshold >= 0 ? parsedAdaptiveMarginThreshold : 0.10;
 const relaxationFinalCanonicalizationMode = process.env.E2R_RELAXATION_FINAL_CANONICALIZATION ?? "off";
+const screenSpaceAuditEnabled = process.env.E2R_GLOBAL_SPACING_SCREEN_AUDIT === "1";
 const parsedGlobalSpacingScale = Number.parseFloat(process.env.E2R_GLOBAL_SPACING_SCALE ?? "1");
 const globalSpacingScale = Number.isFinite(parsedGlobalSpacingScale) && parsedGlobalSpacingScale > 0 ? parsedGlobalSpacingScale : 1;
 const globalSpacingStage2Mode = process.env.E2R_GLOBAL_SPACING_STAGE2 === "off" ? "off" : "full";
@@ -108,6 +109,11 @@ function quantizePositions(positions, step) {
 function distanceToRect(point, rect) {
   const dx = Math.max(Math.abs(point.x - rect.x) - rect.width / 2, 0);
   const dy = Math.max(Math.abs(point.y - rect.y) - rect.height / 2, 0);
+  return Math.hypot(dx, dy);
+}
+function rectClearance(first, second) {
+  const dx = Math.max(Math.abs(first.x - second.x) - (first.width + second.width) / 2, 0);
+  const dy = Math.max(Math.abs(first.y - second.y) - (first.height + second.height) / 2, 0);
   return Math.hypot(dx, dy);
 }
 function nodeFeasibility(positions) {
@@ -317,6 +323,28 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
   }
   const routeMedian = routeLengths[Math.floor(routeLengths.length / 2)]; const routeMax = Math.max(...routeLengths);
   const shortHopCount = hopLengths.filter((length) => length < INITIAL_ENTITY_CLEARANCE * 1.45).length;
+  const fitScale = fitGraphView(Object.values(positions), 800, 500).scale;
+  const screenSpace = screenSpaceAuditEnabled ? (() => {
+    let nodeLabelPairMinimumClearance = Infinity;
+    for (let left = 0; left < nodeLabels.length; left += 1) for (let right = left + 1; right < nodeLabels.length; right += 1) {
+      nodeLabelPairMinimumClearance = Math.min(nodeLabelPairMinimumClearance, rectClearance(nodeLabels[left], nodeLabels[right]) * fitScale);
+    }
+    let relationLabelNodeMinimumClearance = Infinity;
+    for (const relationLabel of presentation.relationLabels.values()) for (const nodeLabel of nodeLabels) {
+      relationLabelNodeMinimumClearance = Math.min(relationLabelNodeMinimumClearance, rectClearance(relationLabel, nodeLabel) * fitScale);
+    }
+    const screenLabelNear20 = presentation.routedEdges.filter((route) => route.samples.some((point) => nodeLabels.some((label) => distanceToRect(point, label) * fitScale < 20))).length;
+    return {
+      extent: extent.map((value) => value * fitScale),
+      nodeMinimumSeparation: feasibility.minimumSeparation * fitScale,
+      nodeLabelPairMinimumClearance: Number.isFinite(nodeLabelPairMinimumClearance) ? nodeLabelPairMinimumClearance : null,
+      relationLabelNodeMinimumClearance: Number.isFinite(relationLabelNodeMinimumClearance) ? relationLabelNodeMinimumClearance : null,
+      labelNear20: screenLabelNear20,
+      labelCorridorMinimumClearance: Number.isFinite(labelCorridorMinimumClearance) ? labelCorridorMinimumClearance * fitScale : null,
+      routeMedian: routeMedian * fitScale,
+      routeMax: routeMax * fitScale,
+    };
+  })() : null;
   const score = crossing.length * 100000 + crossing.filter((detail) => detail.relationLabelNear).length * 15000 + labelRouteHits * 30000 + labelNear20 * 5000 + labelOverlap * 10000
     + usableSpanPenalty * 4 + shortHopCount * 5000 + routeMedian * 2 + routeMax + (extent[0] + extent[1]) * 0.25;
   const presentationTrace = routeDecisionTrace ? {
@@ -328,7 +356,7 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
     replayedPrefix: replayedPrefixTrace,
     passes: presentationPassTrace,
   } : undefined;
-  const result = { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale: fitGraphView(Object.values(positions), 800, 500).scale, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, labelCorridorDeficit, labelCorridorConflictPairs, labelCorridorMinimumClearance: Number.isFinite(labelCorridorMinimumClearance) ? labelCorridorMinimumClearance : null, labelCorridorMaximumIntrusion, routeLabelCorridors, usableSpanPenalty, routeSupports, feedbackApplied: presentation.feedbackApplied, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
+  const result = { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale, screenSpace, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, labelCorridorDeficit, labelCorridorConflictPairs, labelCorridorMinimumClearance: Number.isFinite(labelCorridorMinimumClearance) ? labelCorridorMinimumClearance : null, labelCorridorMaximumIntrusion, routeLabelCorridors, usableSpanPenalty, routeSupports, feedbackApplied: presentation.feedbackApplied, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
   if (presentationTrace) Object.defineProperty(result, "presentationTrace", { value: presentationTrace, enumerable: false });
   Object.defineProperty(result, "presentationArtifacts", {
     value: { routedEdges: presentation.routedEdges, relationLabels: presentation.relationLabels, nodeLabels: presentation.nodeLabels },
@@ -1440,13 +1468,13 @@ function genericSearch() {
   const candidates = [];
   for (const orderResult of orderSearch.orders) for (const variant of variants) {
     const positions = ellipsePositions(orderResult.order, variant); const metrics = presentationMetrics(positions);
-    const eligible = metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
+    const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
     candidates.push({ family: "circular-order", order: orderResult.order, chordCrossings: orderResult.chordCrossings, structuralCrossings: orderResult.chordCrossings, variant, positions, metrics, eligible });
   }
   const gridSearch = genericGridSearch(ids);
   for (const finalist of gridSearch.finalists) {
     const metrics = presentationMetrics(finalist.positions);
-    const eligible = metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
+    const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
     candidates.push({ family: "grid-structural", ...finalist, structuralCrossings: finalist.straightCrossings, positions: clonePositions(finalist.positions), metrics, eligible });
   }
   finishProfileStage("stage1-structural");
@@ -1467,7 +1495,7 @@ function genericSearch() {
   if (globalSpacingScale !== 1 && globalSpacingStage2Mode !== "off") candidates.length = 0;
   for (const finalist of presentationRepair.finalists) {
     const metrics = finalist.metrics;
-    const eligible = metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
+    const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
     candidates.push({ family: "grid-structural-presentation-repair", ...finalist, positions: clonePositions(finalist.positions), metrics, eligible });
   }
   candidates.sort((left, right) => Number(right.structuralCrossings === 0) - Number(left.structuralCrossings === 0) || Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score);
@@ -1483,7 +1511,7 @@ function genericSearch() {
     : constrainedPostStructuralRelaxation(globallySpacedStart, relaxationNodeIds, relaxationMaxDisplacement);
   if (globalSpacingStage2Mode === "off" && globallySpacedStart) {
     const metrics = presentationMetrics(globallySpacedStart);
-    const eligible = metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
+    const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
     candidates.length = 0;
     candidates.push({ family: "global-spacing-only", structuralCrossings: structuralSelected?.structuralCrossings ?? null, positions: globallySpacedStart, metrics, eligible });
   }
@@ -1517,7 +1545,7 @@ function genericSearch() {
       ...floatSelected,
       positions: clonePositions(finalCanonicalization.canonicalPositions),
       metrics: canonicalMetrics,
-      eligible: canonicalMetrics.overlapPairs === 0 && canonicalMetrics.labelRouteHits === 0 && canonicalMetrics.labelOverlap === 0 && canonicalMetrics.labelNear20 === 0,
+      eligible: canonicalMetrics.crossings === 0 && canonicalMetrics.overlapPairs === 0 && canonicalMetrics.labelRouteHits === 0 && canonicalMetrics.labelOverlap === 0 && canonicalMetrics.labelNear20 === 0,
       score: canonicalMetrics.score,
     }
     : null;
@@ -1634,7 +1662,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationAdaptiveMargin: adaptiveMarginThreshold, relaxationFinalCanonicalizationMode, globalSpacingScale, globalSpacingStage2Mode, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationAdaptiveMargin: adaptiveMarginThreshold, relaxationFinalCanonicalizationMode, globalSpacingScale, globalSpacingStage2Mode, screenSpaceAuditEnabled, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
   selectedPresentation: selectedPresentationDigest(search.selected),

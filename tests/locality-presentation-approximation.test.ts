@@ -20,10 +20,10 @@ function runSearch(extraEnvironment: Record<string, string> = {}) {
   });
   return JSON.parse(output) as {
     graph: { nodes: number; edges: number };
-    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationAdaptiveMargin: number; relaxationFinalCanonicalizationMode: string; globalSpacingScale: number; globalSpacingStage2Mode: string };
+    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationAdaptiveMargin: number; relaxationFinalCanonicalizationMode: string; globalSpacingScale: number; globalSpacingStage2Mode: string; screenSpaceAuditEnabled: boolean };
     globalSpacingScale: number;
     globalSpacingStage2Mode: string;
-    selected?: { family: string } | null;
+    selected?: { family: string; metrics?: { fitScale: number; minimumSeparation: number; screenSpace?: { nodeMinimumSeparation: number; labelNear20: number; routeMax: number } | null } } | null;
     postStructuralRelaxation?: {
       approximation?: {
         mode: string;
@@ -43,6 +43,16 @@ test("global spacing is a diagnostic-only centered transform with an explicit St
   assert.equal(spaced.globalSpacingScale, 1.5);
   assert.equal(spaced.globalSpacingStage2Mode, "off");
   assert.equal(spaced.selected?.family, "global-spacing-only");
+});
+
+test("screen-space audit applies the actual viewport fit scale without changing authority", () => {
+  const audit = runSearch({ E2R_GLOBAL_SPACING_SCREEN_AUDIT: "1" });
+  const metrics = audit.selected?.metrics;
+  assert.equal(audit.searchBudget.screenSpaceAuditEnabled, true);
+  assert.ok(metrics?.screenSpace);
+  assert.ok(Math.abs((metrics?.screenSpace?.nodeMinimumSeparation ?? 0) - (metrics?.minimumSeparation ?? 0) * (metrics?.fitScale ?? 0)) < 1e-6);
+  assert.ok((metrics?.screenSpace?.labelNear20 ?? -1) >= 0);
+  assert.ok((metrics?.screenSpace?.routeMax ?? -1) >= 0);
 });
 
 test("local presentation approximation is diagnostic opt-in and preserves full validation boundary", () => {
