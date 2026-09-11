@@ -30,3 +30,13 @@ test("Relation-label corridor pressure changes when a foreign Node enters the co
   assert.equal(clear.relationLabelCorridorPressure, 0);
   assert.ok(occupied.relationLabelCorridorPressure > clear.relationLabelCorridorPressure);
 });
+
+test("Self-loops do not create ordinary zero-chord or parallel pressure", () => {
+  const base = {
+    entities: [{ id: "a", label: "A" }, { id: "b", label: "B" }],
+    relations: [{ id: "ab", sourceId: "a", targetId: "b", label: "works with" }],
+    positions: { a: { x: 0, y: 0 }, b: { x: 120, y: 0 } },
+  };
+  const withLoop = scoreCoarseInitialLayout({ ...base, relations: [...base.relations, { id: "aa", sourceId: "a", targetId: "a", label: "self" }] });
+  assert.deepEqual(withLoop, scoreCoarseInitialLayout(base));
+});

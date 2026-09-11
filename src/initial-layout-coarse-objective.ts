@@ -36,7 +36,10 @@ function segmentDistance(point: LayoutPoint, a: LayoutPoint, b: LayoutPoint): nu
  * placement authority and is diagnostic-only until separately adopted.
  */
 export function scoreCoarseInitialLayout(input: CoarseObjectiveInput): CoarseObjectiveMetrics {
-  const edgeRelations = input.relations.filter((relation) => input.positions[relation.sourceId] && input.positions[relation.targetId]);
+  // Self-loops have no meaningful straight chord. Their angle/radius and
+  // label behavior belong to routing/presentation authority, so they must not
+  // enter ordinary edge length, corridor, crossing, or parallel proxies.
+  const edgeRelations = input.relations.filter((relation) => relation.sourceId !== relation.targetId && input.positions[relation.sourceId] && input.positions[relation.targetId]);
   let nodeBodyOverlaps = 0; let nodeLabelOverlaps = 0; let straightEdgeCrossings = 0; let longEdges = 0; let relationLabelCorridorPressure = 0;
   for (let left = 0; left < input.entities.length; left += 1) for (let right = left + 1; right < input.entities.length; right += 1) {
     const first = input.positions[input.entities[left]!.id]; const second = input.positions[input.entities[right]!.id]; if (!first || !second) continue;
