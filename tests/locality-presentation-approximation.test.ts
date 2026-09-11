@@ -55,6 +55,8 @@ test("cheap candidate prioritization is diagnostic opt-in and keeps full present
     postStructuralRelaxation?: {
       prioritization?: {
         audit: boolean;
+        ordering: string;
+        retention: string;
         considered: number;
         fullValidated: number;
         planningMs: number;
@@ -65,6 +67,8 @@ test("cheap candidate prioritization is diagnostic opt-in and keeps full present
   assert.equal(audit.searchBudget.relaxationPrioritizationMode, "cheap-ranking");
   assert.equal(audit.searchBudget.relaxationPriorityTopK, 2);
   assert.equal(audit.postStructuralRelaxation?.prioritization?.audit, true);
+  assert.equal(audit.postStructuralRelaxation?.prioritization?.ordering, "original-sequential");
+  assert.equal(audit.postStructuralRelaxation?.prioritization?.retention, "full-audit");
   assert.ok((audit.postStructuralRelaxation?.prioritization?.considered ?? 0) > 0);
   assert.ok((audit.postStructuralRelaxation?.prioritization?.fullValidated ?? 0) > 0);
   assert.ok(
@@ -93,10 +97,14 @@ test("dynamic cheap candidate prioritization reranks after accepted moves", () =
       acceptedMoves: number;
       prioritization?: {
         dynamic: boolean;
+        ordering: string;
+        retention: string;
         candidatePlans: number;
         uniqueConsidered: number;
         rerankCount: number;
         acceptedMoveReranks: number;
+        acceptedMoves: number;
+        acceptedPlanIndexes: number[];
         planningMs: number;
         fullValidated: number;
         skippedFullValidation: number;
@@ -105,10 +113,16 @@ test("dynamic cheap candidate prioritization reranks after accepted moves", () =
   };
   assert.equal(dynamic.searchBudget.relaxationPrioritizationMode, "dynamic-cheap-ranking");
   assert.equal(dynamic.postStructuralRelaxation?.prioritization?.dynamic, true);
+  assert.equal(dynamic.postStructuralRelaxation?.prioritization?.ordering, "dynamic-group-reranked");
+  assert.equal(dynamic.postStructuralRelaxation?.prioritization?.retention, "top-k-plus-risk-guard");
   assert.ok((dynamic.postStructuralRelaxation?.prioritization?.candidatePlans ?? 0) > 0);
   assert.ok((dynamic.postStructuralRelaxation?.prioritization?.uniqueConsidered ?? 0) > 0);
   assert.ok((dynamic.postStructuralRelaxation?.prioritization?.rerankCount ?? 0) > 0);
   assert.ok((dynamic.postStructuralRelaxation?.prioritization?.acceptedMoveReranks ?? 0) > 0);
+  assert.equal(
+    dynamic.postStructuralRelaxation?.prioritization?.acceptedPlanIndexes.length,
+    dynamic.postStructuralRelaxation?.prioritization?.acceptedMoves,
+  );
   assert.ok(Number.isFinite(dynamic.postStructuralRelaxation?.prioritization?.planningMs));
   assert.ok((dynamic.postStructuralRelaxation?.prioritization?.fullValidated ?? 0) > 0);
   assert.ok((dynamic.postStructuralRelaxation?.prioritization?.skippedFullValidation ?? 0) > 0);

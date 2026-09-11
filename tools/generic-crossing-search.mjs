@@ -895,6 +895,8 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   const prioritizationStats = prioritizationEnabled ? {
     mode: relaxationPrioritizationMode,
     dynamic: dynamicPrioritizationEnabled,
+    ordering: dynamicPrioritizationEnabled ? "dynamic-group-reranked" : "original-sequential",
+    retention: relaxationPrioritizationAudit ? "full-audit" : "top-k-plus-risk-guard",
     audit: relaxationPrioritizationAudit,
     topK: relaxationPriorityTopK,
     guard: "remote-propagation-risk",
@@ -913,6 +915,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     acceptedMoves: 0,
     acceptedMovesTopK: 0,
     acceptedMovesRetained: 0,
+    acceptedPlanIndexes: [],
     rerankCount: 0,
     acceptedMoveReranks: 0,
     remotePropagationFullValidated: 0,
@@ -1097,6 +1100,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     return null;
   };
   const totalPlanIterations = movePlans.length;
+  const acceptedPlanIndexes = [];
   for (let planIteration = 0; planIteration < totalPlanIterations; planIteration += 1) {
     const planIndex = dynamicPrioritizationEnabled ? nextDynamicPlan() : planIteration;
     if (planIndex === null) break;
@@ -1183,6 +1187,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
         }
         if (improved) {
           prioritizationStats.acceptedMoves += 1;
+          prioritizationStats.acceptedPlanIndexes.push(planIndex);
           if (top1) prioritizationStats.acceptedRankCounts.top1 += 1;
           if (top2) prioritizationStats.acceptedRankCounts.top2 += 1;
           if (top4) prioritizationStats.acceptedRankCounts.top4 += 1;
@@ -1241,6 +1246,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       if (score < currentScore) {
         if (cheapScreenStats) cheapScreenStats.acceptedTrace.push({ nodeIds: plan.ids, step: plan.step, angles: plan.angles, scoreBefore: currentScore, scoreAfter: score });
         current = candidate; currentMetrics = metrics; currentScore = score; acceptedMoves += 1;
+        acceptedPlanIndexes.push(planIndex);
         if (dynamicPrioritizationEnabled) {
           for (const queuedPlanIndex of dynamicQueue) dynamicRemainingPlans[dynamicActiveGroup].add(queuedPlanIndex);
           dynamicQueue = [];
@@ -1272,7 +1278,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       configuredDuplicateRequests: relaxationLatticeProbe ? candidateRequests - configuredCandidateKeys.size : null,
       hypotheticalUniqueStates: relaxationLatticeProbe ? Object.fromEntries([...hypotheticalKeys].map(([step, keys]) => [step, keys.size])) : null,
     },
-    inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0,
+    inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0, acceptedPlanIndexes,
     cheapScreen: cheapScreenStats ? { mode: relaxationCheapScreenMode, ...cheapScreenStats } : null,
     prioritization: prioritizationStats ? {
       ...prioritizationStats,
