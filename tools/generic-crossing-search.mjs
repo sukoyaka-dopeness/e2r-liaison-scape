@@ -48,6 +48,10 @@ const relaxationCheapScreenProbe = relaxationCheapScreenEnabled || relaxationChe
 const relaxationDependencyTraceEnabled = process.env.E2R_RELAXATION_DEPENDENCY_TRACE === "1";
 const relaxationApproximationMode = process.env.E2R_RELAXATION_APPROXIMATION ?? "off";
 const relaxationApproximationAudit = process.env.E2R_RELAXATION_APPROXIMATION_AUDIT === "1";
+const relaxationPrioritizationMode = process.env.E2R_RELAXATION_PRIORITIZATION ?? "off";
+const relaxationPrioritizationAudit = process.env.E2R_RELAXATION_PRIORITIZATION_AUDIT === "1";
+const parsedRelaxationPriorityTopK = Number.parseInt(process.env.E2R_RELAXATION_PRIORITY_TOP_K ?? "2", 10);
+const relaxationPriorityTopK = Number.isFinite(parsedRelaxationPriorityTopK) && parsedRelaxationPriorityTopK >= 1 ? parsedRelaxationPriorityTopK : 2;
 const edges = graph.edges.map((edge) => ({
   ...edge,
   label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
@@ -575,6 +579,52 @@ function straightCrossingsForPositions(positions) {
   }
   return crossings;
 }
+function distancePointToSegment(point, start, end) {
+  const dx = end.x - start.x; const dy = end.y - start.y;
+  const lengthSquared = dx * dx + dy * dy;
+  if (lengthSquared <= 1e-9) return Math.hypot(point.x - start.x, point.y - start.y);
+  const t = Math.max(0, Math.min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared));
+  return Math.hypot(point.x - (start.x + t * dx), point.y - (start.y + t * dy));
+}
+function cheapRelaxationPrioritySignal(current, candidate, plan, currentMetrics, pressureWeight) {
+  const focusIds = plan.ids;
+  const focusSet = new Set(focusIds);
+  const currentStraightCrossings = straightCrossingsForPositions(current);
+  const candidateStraightCrossings = straightCrossingsForPositions(candidate);
+  let incidentLengthDelta = 0;
+  let shortHopDelta = 0;
+  let longEdgeDelta = 0;
+  for (const edge of edges) {
+    if (!focusSet.has(edge.sourceId) && !focusSet.has(edge.targetId)) continue;
+    const currentLength = Math.hypot(current[edge.sourceId].x - current[edge.targetId].x, current[edge.sourceId].y - current[edge.targetId].y);
+    const candidateLength = Math.hypot(candidate[edge.sourceId].x - candidate[edge.targetId].x, candidate[edge.sourceId].y - candidate[edge.targetId].y);
+    incidentLengthDelta += candidateLength - currentLength;
+    shortHopDelta += Number(candidateLength < INITIAL_ENTITY_CLEARANCE * 1.45) - Number(currentLength < INITIAL_ENTITY_CLEARANCE * 1.45);
+    longEdgeDelta += Math.max(0, candidateLength - 480) ** 2 - Math.max(0, currentLength - 480) ** 2;
+  }
+  let clearanceDelta = 0;
+  for (const focusId of focusIds) for (const node of graph.nodes) {
+    if (node.id === focusId) continue;
+    const currentDistance = Math.hypot(current[focusId].x - current[node.id].x, current[focusId].y - current[node.id].y);
+    const candidateDistance = Math.hypot(candidate[focusId].x - candidate[node.id].x, candidate[focusId].y - candidate[node.id].y);
+    clearanceDelta += Math.max(0, INITIAL_ENTITY_CLEARANCE * 2 - candidateDistance) - Math.max(0, INITIAL_ENTITY_CLEARANCE * 2 - currentDistance);
+  }
+  const pressure = focusIds.reduce((sum, id) => sum + pressureWeight(id), 0);
+  let nearbyRemoteRoutes = 0;
+  const routeById = new Map(currentMetrics.presentationArtifacts?.routedEdges?.map((route) => [route.id, route]) ?? []);
+  for (const focusId of focusIds) {
+    const start = current[focusId]; const end = candidate[focusId];
+    for (const edge of edges) {
+      if (edge.sourceId === focusId || edge.targetId === focusId) continue;
+      const route = routeById.get(edge.id);
+      if (route?.samples?.some((point) => distancePointToSegment(point, start, end) < INITIAL_ENTITY_CLEARANCE)) nearbyRemoteRoutes += 1;
+    }
+  }
+  const riskScore = pressure + nearbyRemoteRoutes * 2 + Math.max(0, candidateStraightCrossings - currentStraightCrossings) * 3;
+  const score = (candidateStraightCrossings - currentStraightCrossings) * 1000000
+    + shortHopDelta * 20000 + longEdgeDelta / 480 + incidentLengthDelta * 2 + clearanceDelta * 600 + pressure * 0.05;
+  return { score, riskScore, pressure, nearbyRemoteRoutes, straightCrossingDelta: candidateStraightCrossings - currentStraightCrossings, incidentLengthDelta, shortHopDelta, longEdgeDelta, clearanceDelta };
+}
 function gridSlots(nodeCount) {
   const columns = Math.max(3, Math.ceil(Math.sqrt(nodeCount * 1.35)));
   const rows = Math.max(2, Math.ceil(nodeCount / columns));
@@ -773,6 +823,34 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     localEvaluationMs: 0,
     scopeSamples: [],
   } : null;
+  const prioritizationEnabled = relaxationPrioritizationMode === "cheap-ranking" && relaxationMoveMode === "single";
+  const prioritizationStats = prioritizationEnabled ? {
+    mode: relaxationPrioritizationMode,
+    audit: relaxationPrioritizationAudit,
+    topK: relaxationPriorityTopK,
+    guard: "remote-propagation-risk",
+    guardRiskThreshold: 3,
+    considered: 0,
+    candidateGroups: 0,
+    selectedForFullValidation: 0,
+    skippedFullValidation: 0,
+    guardRetained: 0,
+    fullValidated: 0,
+    fullImprovingCandidates: 0,
+    fullImprovingTopK: 0,
+    fullImprovingRetained: 0,
+    acceptedMoves: 0,
+    acceptedMovesTopK: 0,
+    acceptedMovesRetained: 0,
+    remotePropagationFullValidated: 0,
+    remotePropagationRetained: 0,
+    remotePropagationSkipped: 0,
+    rankCounts: { top1: 0, top2: 0, top4: 0 },
+    improvementRankCounts: { top1: 0, top2: 0, top4: 0 },
+    acceptedRankCounts: { top1: 0, top2: 0, top4: 0 },
+    planningMs: 0,
+    signalSamples: [],
+  } : null;
   const localApproximationFor = (positions, focusIds) => {
     if (!approximationStats) return null;
     const key = `${positionsKey(positions)}|${focusIds.slice().sort(compareId).join("\u0000")}`;
@@ -816,7 +894,53 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   } else {
     for (const id of moveTargetIds) for (const step of steps) for (const angle of directions) movePlans.push({ ids: [id], step, angles: [angle] });
   }
-  for (const plan of movePlans) {
+  const priorityDescriptors = new Map();
+  const prioritySelectedPlanIndexes = new Set();
+  if (prioritizationStats) {
+    const planningStartedAt = performance.now();
+    const groups = new Map();
+    for (let planIndex = 0; planIndex < movePlans.length; planIndex += 1) {
+      const plan = movePlans[planIndex];
+      const rawCandidate = clonePositions(current);
+      plan.ids.forEach((planId, index) => {
+        const angle = plan.angles[index];
+        rawCandidate[planId].x += Math.cos(angle) * plan.step;
+        rawCandidate[planId].y += Math.sin(angle) * plan.step;
+      });
+      const candidate = quantizePositions(rawCandidate, relaxationLatticeStep);
+      if (plan.ids.some((planId) => Math.hypot(candidate[planId].x - referencePositions[planId].x, candidate[planId].y - referencePositions[planId].y) > maxDisplacement)) continue;
+      if (nodeFeasibility(candidate).overlapPairs > 0) continue;
+      const signal = cheapRelaxationPrioritySignal(current, candidate, plan, currentMetrics, pressureWeight);
+      const groupKey = `${plan.ids.slice().sort(compareId).join("\u0000")}|${plan.step}`;
+      const descriptor = { planIndex, groupKey, signal, candidate };
+      priorityDescriptors.set(planIndex, descriptor);
+      if (!groups.has(groupKey)) groups.set(groupKey, []);
+      groups.get(groupKey).push(descriptor);
+    }
+    for (const descriptors of groups.values()) {
+      descriptors.sort((left, right) => left.signal.score - right.signal.score || right.signal.riskScore - left.signal.riskScore || left.planIndex - right.planIndex);
+      prioritizationStats.candidateGroups += 1;
+      descriptors.forEach((descriptor, index) => {
+        descriptor.rank = index + 1;
+        const retainedByRank = descriptor.rank <= relaxationPriorityTopK;
+        const retainedByGuard = descriptor.signal.riskScore >= prioritizationStats.guardRiskThreshold;
+        descriptor.retained = retainedByRank || retainedByGuard;
+        if (retainedByRank) {
+          if (descriptor.rank <= 1) prioritizationStats.rankCounts.top1 += 1;
+          if (descriptor.rank <= 2) prioritizationStats.rankCounts.top2 += 1;
+          if (descriptor.rank <= 4) prioritizationStats.rankCounts.top4 += 1;
+        }
+        if (retainedByGuard && !retainedByRank) prioritizationStats.guardRetained += 1;
+        if (descriptor.retained) prioritySelectedPlanIndexes.add(descriptor.planIndex);
+        if (prioritizationStats.signalSamples.length < 16) prioritizationStats.signalSamples.push({ planIndex: descriptor.planIndex, ids: movePlans[descriptor.planIndex].ids, step: movePlans[descriptor.planIndex].step, rank: descriptor.rank, retained: descriptor.retained, signal: descriptor.signal });
+      });
+    }
+    prioritizationStats.considered = priorityDescriptors.size;
+    prioritizationStats.selectedForFullValidation = prioritySelectedPlanIndexes.size;
+    prioritizationStats.planningMs = performance.now() - planningStartedAt;
+  }
+  for (let planIndex = 0; planIndex < movePlans.length; planIndex += 1) {
+    const plan = movePlans[planIndex];
       const id = plan.ids[0];
       const rawCandidate = clonePositions(current);
       plan.ids.forEach((planId, index) => {
@@ -851,6 +975,11 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
         }
         continue;
       }
+      const priorityDescriptor = priorityDescriptors.get(planIndex);
+      if (prioritizationStats && priorityDescriptor && !priorityDescriptor.retained && !relaxationPrioritizationAudit) {
+        prioritizationStats.skippedFullValidation += 1;
+        continue;
+      }
       const approximateCurrent = localApproximationFor(current, plan.ids);
       const approximateCandidate = localApproximationFor(candidate, plan.ids);
       const approximationPredictsImprovement = !approximationStats || approximateCandidate.score < approximateCurrent.score;
@@ -877,15 +1006,36 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
         else if (!approximationPredictsImprovement && exactImprovement) approximationStats.falseNegative += 1;
         else approximationStats.trueNegative += 1;
       }
-      if (dependencyTraceStats) recordDependencyTrace(
-        dependencyTraceStats,
-        dependencyTraceDiff(currentMetrics.presentationTrace, metrics.presentationTrace, id),
-        currentScore,
-        score,
-        score < currentScore,
-      );
+      const dependencyDiff = dependencyTraceStats ? dependencyTraceDiff(currentMetrics.presentationTrace, metrics.presentationTrace, id) : null;
+      if (dependencyDiff) recordDependencyTrace(dependencyTraceStats, dependencyDiff, currentScore, score, score < currentScore);
+      if (prioritizationStats) {
+        prioritizationStats.fullValidated += 1;
+        const improved = score < currentScore;
+        const retained = priorityDescriptor?.retained ?? false;
+        const rank = priorityDescriptor?.rank ?? Infinity;
+        const top1 = rank <= 1; const top2 = rank <= 2; const top4 = rank <= 4;
+        if (improved) {
+          prioritizationStats.fullImprovingCandidates += 1;
+          if (top1) prioritizationStats.improvementRankCounts.top1 += 1;
+          if (top2) prioritizationStats.improvementRankCounts.top2 += 1;
+          if (top4) prioritizationStats.improvementRankCounts.top4 += 1;
+          if (retained) prioritizationStats.fullImprovingRetained += 1;
+        }
+        if (improved) {
+          prioritizationStats.acceptedMoves += 1;
+          if (top1) prioritizationStats.acceptedRankCounts.top1 += 1;
+          if (top2) prioritizationStats.acceptedRankCounts.top2 += 1;
+          if (top4) prioritizationStats.acceptedRankCounts.top4 += 1;
+          if (retained) prioritizationStats.acceptedMovesRetained += 1;
+        }
+        if (dependencyDiff?.remoteRouteIds.length > 0) {
+          prioritizationStats.remotePropagationFullValidated += 1;
+          if (retained) prioritizationStats.remotePropagationRetained += 1;
+          else prioritizationStats.remotePropagationSkipped += 1;
+        }
+      }
       if (dependencyTraceStats) {
-        const diff = dependencyTraceDiff(currentMetrics.presentationTrace, metrics.presentationTrace, id);
+        const diff = dependencyDiff;
         const prefixEdgeIds = canonicalPrefixBeforeDirtyRoute(currentMetrics.presentationTrace, metrics.presentationTrace, diff.dirtyRouteIds);
         const incrementalStartedAt = performance.now();
         const incrementalMetrics = incrementalPresentationMetrics(candidate, currentMetrics, prefixEdgeIds);
@@ -958,6 +1108,20 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     },
     inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0,
     cheapScreen: cheapScreenStats ? { mode: relaxationCheapScreenMode, ...cheapScreenStats } : null,
+    prioritization: prioritizationStats ? {
+      ...prioritizationStats,
+      improvementRecall: {
+        top1: prioritizationStats.fullImprovingCandidates > 0 ? prioritizationStats.improvementRankCounts.top1 / prioritizationStats.fullImprovingCandidates : null,
+        top2: prioritizationStats.fullImprovingCandidates > 0 ? prioritizationStats.improvementRankCounts.top2 / prioritizationStats.fullImprovingCandidates : null,
+        top4: prioritizationStats.fullImprovingCandidates > 0 ? prioritizationStats.improvementRankCounts.top4 / prioritizationStats.fullImprovingCandidates : null,
+      },
+      acceptedMoveRecall: {
+        top1: prioritizationStats.acceptedMoves > 0 ? prioritizationStats.acceptedRankCounts.top1 / prioritizationStats.acceptedMoves : null,
+        top2: prioritizationStats.acceptedMoves > 0 ? prioritizationStats.acceptedRankCounts.top2 / prioritizationStats.acceptedMoves : null,
+        top4: prioritizationStats.acceptedMoves > 0 ? prioritizationStats.acceptedRankCounts.top4 / prioritizationStats.acceptedMoves : null,
+      },
+      signalAverageMs: prioritizationStats.considered > 0 ? prioritizationStats.planningMs / prioritizationStats.considered : null,
+    } : null,
     approximation: approximationStats ? {
       ...approximationStats,
       averageScopeNodeCount: approximationStats.scopeNodeCount / Math.max(1, approximationStats.considered),
@@ -1075,7 +1239,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, presentationRepairRounds, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));

@@ -20,7 +20,7 @@ function runSearch(extraEnvironment: Record<string, string> = {}) {
   });
   return JSON.parse(output) as {
     graph: { nodes: number; edges: number };
-    searchBudget: { relaxationApproximationMode: string };
+    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number };
     postStructuralRelaxation?: {
       approximation?: {
         mode: string;
@@ -44,4 +44,40 @@ test("local presentation approximation is diagnostic opt-in and preserves full v
   assert.ok((local.postStructuralRelaxation?.approximation?.fullValidated ?? 0) > 0);
   assert.ok((local.postStructuralRelaxation?.approximation?.averageScopeNodeCount ?? Infinity) < local.graph.nodes);
   assert.ok((local.postStructuralRelaxation?.approximation?.averageScopeEdgeCount ?? Infinity) < local.graph.edges);
+});
+
+test("cheap candidate prioritization is diagnostic opt-in and keeps full presentation authoritative", () => {
+  const audit = runSearch({
+    E2R_RELAXATION_PRIORITIZATION: "cheap-ranking",
+    E2R_RELAXATION_PRIORITIZATION_AUDIT: "1",
+    E2R_RELAXATION_DEPENDENCY_TRACE: "1",
+  }) as ReturnType<typeof runSearch> & {
+    postStructuralRelaxation?: {
+      prioritization?: {
+        audit: boolean;
+        considered: number;
+        fullValidated: number;
+        planningMs: number;
+        improvementRecall: { top2: number | null };
+      } | null;
+    } | null;
+  };
+  assert.equal(audit.searchBudget.relaxationPrioritizationMode, "cheap-ranking");
+  assert.equal(audit.searchBudget.relaxationPriorityTopK, 2);
+  assert.equal(audit.postStructuralRelaxation?.prioritization?.audit, true);
+  assert.ok((audit.postStructuralRelaxation?.prioritization?.considered ?? 0) > 0);
+  assert.ok((audit.postStructuralRelaxation?.prioritization?.fullValidated ?? 0) > 0);
+  assert.ok(
+    (audit.postStructuralRelaxation?.prioritization?.fullValidated ?? 0)
+      <= (audit.postStructuralRelaxation?.prioritization?.considered ?? 0),
+  );
+  assert.ok((audit.postStructuralRelaxation?.prioritization?.planningMs ?? Infinity) < 1000);
+  assert.ok((audit.postStructuralRelaxation?.prioritization?.improvementRecall.top2 ?? 0) >= 0);
+
+  const prototype = runSearch({ E2R_RELAXATION_PRIORITIZATION: "cheap-ranking" }) as ReturnType<typeof runSearch> & {
+    postStructuralRelaxation?: { prioritization?: { skippedFullValidation: number; fullValidated: number } | null } | null;
+  };
+  assert.equal(prototype.searchBudget.relaxationPrioritizationMode, "cheap-ranking");
+  assert.ok((prototype.postStructuralRelaxation?.prioritization?.skippedFullValidation ?? 0) > 0);
+  assert.ok((prototype.postStructuralRelaxation?.prioritization?.fullValidated ?? 0) > 0);
 });
