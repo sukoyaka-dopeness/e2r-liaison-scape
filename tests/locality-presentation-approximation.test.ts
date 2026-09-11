@@ -20,7 +20,7 @@ function runSearch(extraEnvironment: Record<string, string> = {}) {
   });
   return JSON.parse(output) as {
     graph: { nodes: number; edges: number };
-    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number };
+    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationFinalCanonicalizationMode: string };
     postStructuralRelaxation?: {
       approximation?: {
         mode: string;
@@ -80,4 +80,38 @@ test("cheap candidate prioritization is diagnostic opt-in and keeps full present
   assert.equal(prototype.searchBudget.relaxationPrioritizationMode, "cheap-ranking");
   assert.ok((prototype.postStructuralRelaxation?.prioritization?.skippedFullValidation ?? 0) > 0);
   assert.ok((prototype.postStructuralRelaxation?.prioritization?.fullValidated ?? 0) > 0);
+});
+
+test("final coordinate canonicalization is a post-selection diagnostic boundary", () => {
+  const audit = runSearch({ E2R_RELAXATION_FINAL_CANONICALIZATION: "audit" }) as ReturnType<typeof runSearch> & {
+    postStructuralRelaxation?: {
+      finalCanonicalization?: {
+        applied: boolean;
+        boundary: string;
+        rule: string;
+        maxDisplacement: number;
+        presentation: {
+          routeGeometryChanged: number;
+          relationLabelGeometryChanged: number;
+          nodeLabelGeometryChanged: number;
+          roundedOnlyDefects: Record<string, boolean>;
+        };
+      } | null;
+    } | null;
+  };
+  assert.equal(audit.searchBudget.relaxationFinalCanonicalizationMode, "audit");
+  assert.equal(audit.postStructuralRelaxation?.finalCanonicalization?.applied, false);
+  assert.equal(audit.postStructuralRelaxation?.finalCanonicalization?.boundary, "AFTER_SELECTION_BEFORE_ACCEPTANCE");
+  assert.equal(audit.postStructuralRelaxation?.finalCanonicalization?.rule, "nearest-integer");
+  assert.ok((audit.postStructuralRelaxation?.finalCanonicalization?.maxDisplacement ?? Infinity) <= Math.SQRT1_2);
+
+  const rounded = runSearch({ E2R_RELAXATION_FINAL_CANONICALIZATION: "round-once" }) as ReturnType<typeof runSearch> & {
+    postStructuralRelaxation?: {
+      positions: Record<string, { x: number; y: number }>;
+      finalCanonicalization?: { applied: boolean } | null;
+    } | null;
+  };
+  assert.equal(rounded.searchBudget.relaxationFinalCanonicalizationMode, "round-once");
+  assert.equal(rounded.postStructuralRelaxation?.finalCanonicalization?.applied, true);
+  assert.ok(Object.values(rounded.postStructuralRelaxation?.positions ?? {}).every(({ x, y }) => Number.isInteger(x) && Number.isInteger(y)));
 });

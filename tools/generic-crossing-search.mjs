@@ -52,6 +52,7 @@ const relaxationPrioritizationMode = process.env.E2R_RELAXATION_PRIORITIZATION ?
 const relaxationPrioritizationAudit = process.env.E2R_RELAXATION_PRIORITIZATION_AUDIT === "1";
 const parsedRelaxationPriorityTopK = Number.parseInt(process.env.E2R_RELAXATION_PRIORITY_TOP_K ?? "2", 10);
 const relaxationPriorityTopK = Number.isFinite(parsedRelaxationPriorityTopK) && parsedRelaxationPriorityTopK >= 1 ? parsedRelaxationPriorityTopK : 2;
+const relaxationFinalCanonicalizationMode = process.env.E2R_RELAXATION_FINAL_CANONICALIZATION ?? "off";
 const edges = graph.edges.map((edge) => ({
   ...edge,
   label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
@@ -625,6 +626,53 @@ function cheapRelaxationPrioritySignal(current, candidate, plan, currentMetrics,
     + shortHopDelta * 20000 + longEdgeDelta / 480 + incidentLengthDelta * 2 + clearanceDelta * 600 + pressure * 0.05;
   return { score, riskScore, pressure, nearbyRemoteRoutes, straightCrossingDelta: candidateStraightCrossings - currentStraightCrossings, incidentLengthDelta, shortHopDelta, longEdgeDelta, clearanceDelta };
 }
+function deriveFinalCoordinateCanonicalization(positions, metrics, referencePositions) {
+  const canonicalPositions = quantizePositions(positions, 1);
+  const deltas = Object.keys(positions).sort(compareId).map((id) => ({
+    id,
+    dx: canonicalPositions[id].x - positions[id].x,
+    dy: canonicalPositions[id].y - positions[id].y,
+    distance: Math.hypot(canonicalPositions[id].x - positions[id].x, canonicalPositions[id].y - positions[id].y),
+  }));
+  const canonicalMetrics = presentationMetrics(canonicalPositions);
+  const beforeRoutes = routeGeometrySignatures(metrics.presentationArtifacts.routedEdges);
+  const afterRoutes = routeGeometrySignatures(canonicalMetrics.presentationArtifacts.routedEdges);
+  const beforeRelationLabels = mapGeometrySignatures(metrics.presentationArtifacts.relationLabels);
+  const afterRelationLabels = mapGeometrySignatures(canonicalMetrics.presentationArtifacts.relationLabels);
+  const beforeNodeLabels = mapGeometrySignatures(metrics.presentationArtifacts.nodeLabels);
+  const afterNodeLabels = mapGeometrySignatures(canonicalMetrics.presentationArtifacts.nodeLabels);
+  const defectMetrics = ["crossings", "labelRouteHits", "labelNear20", "labelOverlap", "overlapPairs"];
+  const roundedOnlyDefects = Object.fromEntries(defectMetrics.map((name) => [name, metrics[name] === 0 && canonicalMetrics[name] > 0]));
+  return {
+    boundary: "AFTER_SELECTION_BEFORE_ACCEPTANCE",
+    rule: "nearest-integer",
+    applied: relaxationFinalCanonicalizationMode === "round-once",
+    originalPositions: positions,
+    canonicalPositions,
+    changedEntityCount: deltas.filter((delta) => delta.distance > 0).length,
+    maxDisplacement: Math.max(0, ...deltas.map((delta) => delta.distance)),
+    meanDisplacement: deltas.reduce((sum, delta) => sum + delta.distance, 0) / Math.max(1, deltas.length),
+    displacementByEntity: deltas,
+    presentation: {
+      routeGeometryChanged: compareSignatureMaps(beforeRoutes, afterRoutes).length,
+      relationLabelGeometryChanged: compareSignatureMaps(beforeRelationLabels, afterRelationLabels).length,
+      nodeLabelGeometryChanged: compareSignatureMaps(beforeNodeLabels, afterNodeLabels).length,
+      metricDelta: Object.fromEntries([...new Set([...defectMetrics, "routeMedian", "routeMax", "labelCorridorDeficit", "fitScale", "score"])].map((name) => [name, (canonicalMetrics[name] ?? 0) - (metrics[name] ?? 0)])),
+      originalExtent: metrics.extent,
+      canonicalExtent: canonicalMetrics.extent,
+      extentDelta: canonicalMetrics.extent.map((value, index) => value - metrics.extent[index]),
+      originalFitScale: metrics.fitScale,
+      canonicalFitScale: canonicalMetrics.fitScale,
+      originalScore: metrics.score,
+      canonicalScore: canonicalMetrics.score,
+      originalConstrainedScore: constrainedRelaxationScore(metrics, positions, referencePositions),
+      canonicalConstrainedScore: constrainedRelaxationScore(canonicalMetrics, canonicalPositions, referencePositions),
+      constrainedScoreDelta: constrainedRelaxationScore(canonicalMetrics, canonicalPositions, referencePositions) - constrainedRelaxationScore(metrics, positions, referencePositions),
+      roundedOnlyDefects,
+    },
+    canonicalMetrics,
+  };
+}
 function gridSlots(nodeCount) {
   const columns = Math.max(3, Math.ceil(Math.sqrt(nodeCount * 1.35)));
   const rows = Math.max(2, Math.ceil(nodeCount / columns));
@@ -1087,6 +1135,12 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   const movedNodeIds = ids.filter((id) => Math.hypot(best[id].x - referencePositions[id].x, best[id].y - referencePositions[id].y) > 1e-9);
   const inputFractionalCoordinates = Object.values(inputPositions).flatMap((point) => [point.x, point.y]).filter((value) => !Number.isInteger(value)).length;
   const inputQuantizationMaxDelta = Math.max(0, ...Object.keys(inputPositions).map((id) => Math.hypot(referencePositions[id].x - inputPositions[id].x, referencePositions[id].y - inputPositions[id].y)));
+  const finalCanonicalization = relaxationFinalCanonicalizationMode === "audit" || relaxationFinalCanonicalizationMode === "round-once"
+    ? deriveFinalCoordinateCanonicalization(best, bestMetrics, referencePositions)
+    : null;
+  const outputPositions = finalCanonicalization?.applied ? finalCanonicalization.canonicalPositions : best;
+  const outputMetrics = finalCanonicalization?.applied ? finalCanonicalization.canonicalMetrics : bestMetrics;
+  const outputScore = finalCanonicalization?.applied ? constrainedRelaxationScore(outputMetrics, outputPositions, referencePositions) : bestScore;
   return {
     mode: relaxationMoveMode === "cluster"
       ? "POST_STRUCTURAL_SMALL_CLUSTER_RELAXATION"
@@ -1106,7 +1160,8 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       configuredDuplicateRequests: relaxationLatticeProbe ? candidateRequests - configuredCandidateKeys.size : null,
       hypotheticalUniqueStates: relaxationLatticeProbe ? Object.fromEntries([...hypotheticalKeys].map(([step, keys]) => [step, keys.size])) : null,
     },
-    inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: best, metrics: bestMetrics, score: bestScore, changed: acceptedMoves > 0,
+    inputPositions, startPositions: referencePositions, startMetrics: presentationMetrics(referencePositions), positions: outputPositions, metrics: outputMetrics, score: outputScore, changed: acceptedMoves > 0,
+    finalCanonicalization: finalCanonicalization ? { ...finalCanonicalization, canonicalMetrics: undefined } : null,
     cheapScreen: cheapScreenStats ? { mode: relaxationCheapScreenMode, ...cheapScreenStats } : null,
     prioritization: prioritizationStats ? {
       ...prioritizationStats,
@@ -1239,7 +1294,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, presentationRepairRounds, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationFinalCanonicalizationMode, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
 }, null, 2));
