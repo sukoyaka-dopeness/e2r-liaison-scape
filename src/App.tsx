@@ -34,6 +34,7 @@ import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation
 import { publishDatasetOpenTiming, publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming, type DatasetOpenTimingSample } from "./presentation-diagnostics";
 import { deriveActualProductInitialLayout, type ActualProductInitialLayoutOptIn } from "./actual-product-initial-layout";
 import { acceptanceFixturePath, parseAcceptanceFixture } from "./acceptance-fixture-access";
+import { readAcceptancePayload, storeAcceptancePayload } from "./acceptance-payload-reopen";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
@@ -63,6 +64,8 @@ export default function App() {
   const acceptanceFixture = import.meta.env.DEV
     ? parseAcceptanceFixture(new URLSearchParams(window.location.search).get("acceptance-fixture"), new URLSearchParams(window.location.search).get("acceptance-locale"))
     : null;
+  const acceptancePayloadReopen = import.meta.env.DEV
+    && new URLSearchParams(window.location.search).get("acceptance-reopen") === "saved";
   const initialLayoutOptIn = new URLSearchParams(window.location.search).get("initial-layout") === "coarse-objective-prototype-v1"
     ? "coarse-objective-prototype-v1" as ActualProductInitialLayoutOptIn
     : undefined;
@@ -307,6 +310,15 @@ export default function App() {
   }, [locale]);
 
   useEffect(() => {
+    if (!acceptancePayloadReopen || dataset || view !== "home") return;
+    const raw = readAcceptancePayload(window.sessionStorage);
+    if (!raw) return;
+    beginDatasetOpenTiming("local");
+    scheduleDatasetOpen(() => open(raw, null, "local"));
+  }, []);
+
+  useEffect(() => {
+    if (acceptancePayloadReopen && readAcceptancePayload(window.sessionStorage)) return;
     if (!acceptanceFixture || dataset || view !== "home") return;
     beginDatasetOpenTiming("local");
     setLocale(acceptanceFixture.locale);
@@ -1595,6 +1607,7 @@ export default function App() {
     setDatasetModified(false);
     setCoordinatesDirty(false);
     adoptedCoordinateEntityIdsRef.current.clear();
+    if (acceptancePayloadReopen) storeAcceptancePayload(window.sessionStorage, serializeDataset(saved));
     setMessage(translate(locale, "coordinateSaveSuccess"));
   }
 
