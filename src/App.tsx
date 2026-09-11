@@ -43,8 +43,13 @@ type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-fa
 type OpenDatasetResult = { status: "accepted-or-staged" } | { status: "parse-error" } | { status: "validation-error" } | { status: "target-error" };
 type DatasetReplacementSource = "handoff" | "local" | "sample" | "new";
 type TargetedHandoff = Extract<DatasetHandoffFragment, { kind: "targeted" }>;
+export type ActualProductDiagnosticInitialLayout = {
+  positions: Record<string, { x: number; y: number }>;
+  arm: "full-post" | "adaptive-post";
+};
+type AppProps = { initialLayoutOverride?: ActualProductDiagnosticInitialLayout };
 
-export default function App() {
+export default function App({ initialLayoutOverride }: AppProps = {}) {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
     window.localStorage,
     window.navigator.language,
@@ -922,7 +927,25 @@ export default function App() {
     const graphStartedAt = preparationStartedAt;
     const openedGraph = buildEntityGraph(nextDataset);
     const graphCompletedAt = performance.now();
-    const initialLayout = deriveActualProductInitialLayout({ nodes: openedGraph.nodes, edges: openedGraph.edges, storedPositions, optIn: initialLayoutOptIn });
+    const overrideIds = initialLayoutOverride ? Object.keys(initialLayoutOverride.positions) : [];
+    const completeDiagnosticOverride = import.meta.env.DEV
+      && Object.keys(storedPositions).length === 0
+      && overrideIds.length === openedGraph.nodes.length
+      && openedGraph.nodes.every((node) => {
+        const position = initialLayoutOverride?.positions[node.id];
+        return position !== undefined && Number.isFinite(position.x) && Number.isFinite(position.y);
+      });
+    const diagnosticOverride = completeDiagnosticOverride ? initialLayoutOverride! : undefined;
+    const initialLayout = diagnosticOverride
+      ? {
+        positions: diagnosticOverride.positions,
+        authority: "diagnostic-candidate" as const,
+        provider: `ecr3-${diagnosticOverride.arm}`,
+        strategy: diagnosticOverride.arm,
+        status: "prototype",
+        reason: "completed",
+      }
+      : deriveActualProductInitialLayout({ nodes: openedGraph.nodes, edges: openedGraph.edges, storedPositions, optIn: initialLayoutOptIn });
     const initialPositions = initialLayout.positions;
     setNodeLayerOrder(openedGraph.nodes.map(({ id }) => id));
     setEdgeLayerOrder(openedGraph.edges.map(({ id }) => id));

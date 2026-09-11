@@ -1,0 +1,16 @@
+.ecr3-review-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font: 12px/1.4 system-ui, sans-serif;
+}
+
+.ecr3-review-banner strong { color: var(--foreground); }
+.ecr3-review-banner label { display: inline-flex; align-items: center; gap: 5px; }
+.ecr3-review-banner select { font: inherit; }
+.ecr3-review-banner span { flex-basis: 100%; }
+.ecr3-review-loading, .ecr3-review-error { padding: 32px; font-family: system-ui, sans-serif; }

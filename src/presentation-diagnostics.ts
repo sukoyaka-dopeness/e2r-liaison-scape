@@ -62,7 +62,7 @@ export type DatasetOpenTimingSample = {
   edgeCount?: number;
   durations?: Readonly<Record<string, number>>;
   initialLayout?: {
-    authority: "stored" | "mixed-completion" | "current" | "bounded-provider";
+    authority: "stored" | "mixed-completion" | "current" | "bounded-provider" | "diagnostic-candidate";
     provider: string;
     strategy?: string;
     status?: string;
