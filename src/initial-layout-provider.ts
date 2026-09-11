@@ -110,8 +110,9 @@ export function deriveBoundedInitialLayout(input: BoundedInitialLayoutInput): In
   const uniqueIds = new Set(ids);
   const budgetMs = Math.max(1, input.budgetMs ?? DEFAULT_BUDGET_MS);
   const maxIterations = Math.max(0, Math.floor(input.maxIterations ?? DEFAULT_MAX_ITERATIONS));
-  if (ids.length === 0 || uniqueIds.size !== ids.length || input.relations.some((relation) => !uniqueIds.has(relation.sourceId) || !uniqueIds.has(relation.targetId))) return fallback(input, "invalid-input", startedAt);
-  let positions = solveAutoLayout({ entities: ids.map((id) => ({ id })), relations: input.relations }, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
+  if (ids.length === 0 || uniqueIds.size !== ids.length) return fallback(input, "invalid-input", startedAt);
+  const relations = input.relations.filter((relation) => uniqueIds.has(relation.sourceId) && uniqueIds.has(relation.targetId));
+  let positions = solveAutoLayout({ entities: ids.map((id) => ({ id })), relations }, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
   if (!finitePositions(positions, ids) || !bodySafe(positions, ids)) return fallback(input, "unsafe-candidate", startedAt);
   let iterations = 0;
   let currentScore = score(positions, entities);

@@ -23,8 +23,14 @@ test("bounded provider is deterministic, complete, and does not mutate input", (
   assert.equal(Object.keys(first.positions).length, 3);
 });
 
-test("invalid input falls back to current placement", () => {
-  const result = deriveBoundedInitialLayout({ ...input, relations: [{ id: "bad", sourceId: "a", targetId: "missing" }] });
+test("hidden non-Entity endpoints are ignored like the Product graph projection", () => {
+  const result = deriveBoundedInitialLayout({ ...input, relations: [...input.relations, { id: "hidden", sourceId: "a", targetId: "event-1" }] });
+  assert.equal(result.status, "prototype");
+  assert.equal(Object.keys(result.positions).length, 3);
+});
+
+test("duplicate Entity IDs fall back to current placement", () => {
+  const result = deriveBoundedInitialLayout({ ...input, entities: [...input.entities, { id: "a", label: "Duplicate" }] });
   assert.equal(result.status, "fallback");
   assert.equal(result.provider, "current-fallback");
   assert.equal(result.reason, "invalid-input");
