@@ -1316,6 +1316,7 @@ function summarizePresentationProfiler() {
       nodeObstacleMs: pass.route.nodeObstacleMs,
       occupiedPathBoundsMs: pass.route.occupiedPathBoundsMs,
       occupiedPathCheckMs: pass.route.occupiedPathCheckMs,
+      occupiedPathPointComparisons: pass.route.occupiedPathPointComparisons,
       labelPressureMs: pass.route.labelPressureMs,
       candidateScoreAssemblyMs: pass.route.candidateScoreAssemblyMs,
       arbitrationMs: pass.route.arbitrationMs,

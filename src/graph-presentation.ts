@@ -104,6 +104,7 @@ function emptyRouteArbitrationProfile(): RouteArbitrationProfile {
     occupiedPathBoundsMs: 0,
     arbitrationMs: 0,
     occupiedPathCheckMs: 0,
+    occupiedPathPointComparisons: 0,
     labelPressureMs: 0,
     candidateScoreAssemblyMs: 0,
     candidateComparisons: 0,

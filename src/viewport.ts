@@ -764,6 +764,7 @@ export type RouteArbitrationProfile = {
   occupiedPathBoundsMs: number;
   arbitrationMs: number;
   occupiedPathCheckMs: number;
+  occupiedPathPointComparisons: number;
   labelPressureMs: number;
   candidateScoreAssemblyMs: number;
   candidateComparisons: number;
@@ -1072,8 +1073,10 @@ export function routeGraphEdge(
       let consecutiveNearDistance = 0;
       let previousPoint: Point | null = null;
       for (const point of innerSamples) {
-        const isNear = occupiedInnerSamples.some((occupiedPoint) =>
-          (point.x - occupiedPoint.x) ** 2 + (point.y - occupiedPoint.y) ** 2 < 64);
+        const isNear = occupiedInnerSamples.some((occupiedPoint) => {
+          if (routeProfile) routeProfile.occupiedPathPointComparisons += 1;
+          return (point.x - occupiedPoint.x) ** 2 + (point.y - occupiedPoint.y) ** 2 < 64;
+        });
         consecutiveNearDistance = isNear && previousPoint
           ? consecutiveNearDistance + Math.hypot(point.x - previousPoint.x, point.y - previousPoint.y)
           : 0;
