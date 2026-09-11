@@ -82,6 +82,39 @@ test("cheap candidate prioritization is diagnostic opt-in and keeps full present
   assert.ok((prototype.postStructuralRelaxation?.prioritization?.fullValidated ?? 0) > 0);
 });
 
+test("dynamic cheap candidate prioritization reranks after accepted moves", () => {
+  const dynamic = runSearch({
+    E2R_PRESENTATION_GEOMETRY_CACHE: "1",
+    E2R_PRESENTATION_EXACT_CANDIDATE_REUSE: "1",
+    E2R_RELAXATION_PRIORITIZATION: "dynamic-cheap-ranking",
+  }) as ReturnType<typeof runSearch> & {
+    postStructuralRelaxation?: {
+      evaluated: number;
+      acceptedMoves: number;
+      prioritization?: {
+        dynamic: boolean;
+        candidatePlans: number;
+        uniqueConsidered: number;
+        rerankCount: number;
+        acceptedMoveReranks: number;
+        planningMs: number;
+        fullValidated: number;
+        skippedFullValidation: number;
+      } | null;
+    } | null;
+  };
+  assert.equal(dynamic.searchBudget.relaxationPrioritizationMode, "dynamic-cheap-ranking");
+  assert.equal(dynamic.postStructuralRelaxation?.prioritization?.dynamic, true);
+  assert.ok((dynamic.postStructuralRelaxation?.prioritization?.candidatePlans ?? 0) > 0);
+  assert.ok((dynamic.postStructuralRelaxation?.prioritization?.uniqueConsidered ?? 0) > 0);
+  assert.ok((dynamic.postStructuralRelaxation?.prioritization?.rerankCount ?? 0) > 0);
+  assert.ok((dynamic.postStructuralRelaxation?.prioritization?.acceptedMoveReranks ?? 0) > 0);
+  assert.ok(Number.isFinite(dynamic.postStructuralRelaxation?.prioritization?.planningMs));
+  assert.ok((dynamic.postStructuralRelaxation?.prioritization?.fullValidated ?? 0) > 0);
+  assert.ok((dynamic.postStructuralRelaxation?.prioritization?.skippedFullValidation ?? 0) > 0);
+  assert.ok((dynamic.postStructuralRelaxation?.evaluated ?? Infinity) > 0);
+});
+
 test("final coordinate canonicalization is a post-selection diagnostic boundary", () => {
   const audit = runSearch({ E2R_RELAXATION_FINAL_CANONICALIZATION: "audit" }) as ReturnType<typeof runSearch> & {
     floatSelected?: { family: string; positions: Record<string, { x: number; y: number }>; metrics: { score: number } } | null;

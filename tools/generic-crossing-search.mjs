@@ -890,13 +890,17 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     localEvaluationMs: 0,
     scopeSamples: [],
   } : null;
-  const prioritizationEnabled = relaxationPrioritizationMode === "cheap-ranking" && relaxationMoveMode === "single";
+  const prioritizationEnabled = (relaxationPrioritizationMode === "cheap-ranking" || relaxationPrioritizationMode === "dynamic-cheap-ranking") && relaxationMoveMode === "single";
+  const dynamicPrioritizationEnabled = relaxationPrioritizationMode === "dynamic-cheap-ranking" && relaxationMoveMode === "single";
   const prioritizationStats = prioritizationEnabled ? {
     mode: relaxationPrioritizationMode,
+    dynamic: dynamicPrioritizationEnabled,
     audit: relaxationPrioritizationAudit,
     topK: relaxationPriorityTopK,
     guard: "remote-propagation-risk",
     guardRiskThreshold: 3,
+    candidatePlans: 0,
+    uniqueConsidered: 0,
     considered: 0,
     candidateGroups: 0,
     selectedForFullValidation: 0,
@@ -909,6 +913,8 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
     acceptedMoves: 0,
     acceptedMovesTopK: 0,
     acceptedMovesRetained: 0,
+    rerankCount: 0,
+    acceptedMoveReranks: 0,
     remotePropagationFullValidated: 0,
     remotePropagationRetained: 0,
     remotePropagationSkipped: 0,
@@ -961,9 +967,10 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
   } else {
     for (const id of moveTargetIds) for (const step of steps) for (const angle of directions) movePlans.push({ ids: [id], step, angles: [angle] });
   }
+  if (prioritizationStats) prioritizationStats.candidatePlans = movePlans.length;
   const priorityDescriptors = new Map();
   const prioritySelectedPlanIndexes = new Set();
-  if (prioritizationStats) {
+  if (prioritizationStats && !dynamicPrioritizationEnabled) {
     const planningStartedAt = performance.now();
     const groups = new Map();
     for (let planIndex = 0; planIndex < movePlans.length; planIndex += 1) {
@@ -1003,10 +1010,96 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       });
     }
     prioritizationStats.considered = priorityDescriptors.size;
+    prioritizationStats.uniqueConsidered = priorityDescriptors.size;
     prioritizationStats.selectedForFullValidation = prioritySelectedPlanIndexes.size;
     prioritizationStats.planningMs = performance.now() - planningStartedAt;
   }
-  for (let planIndex = 0; planIndex < movePlans.length; planIndex += 1) {
+  const dynamicGroups = dynamicPrioritizationEnabled ? [...movePlans.reduce((groups, plan, planIndex) => {
+    const groupKey = `${plan.ids.slice().sort(compareId).join("\u0000")}|${plan.step}`;
+    if (!groups.has(groupKey)) groups.set(groupKey, []);
+    groups.get(groupKey).push(planIndex);
+    return groups;
+  }, new Map()).values()] : null;
+  const dynamicRemainingPlans = dynamicGroups?.map((planIndexes) => new Set(planIndexes)) ?? null;
+  let dynamicGroupIndex = 0;
+  let dynamicQueue = [];
+  let dynamicActiveGroup = null;
+  let dynamicNeedsRerank = true;
+  const dynamicDescriptors = new Map();
+  const dynamicConsideredPlanIndexes = new Set();
+  const describeDynamicPlan = (planIndex) => {
+    const plan = movePlans[planIndex];
+    const rawCandidate = clonePositions(current);
+    plan.ids.forEach((planId, index) => {
+      const angle = plan.angles[index];
+      rawCandidate[planId].x += Math.cos(angle) * plan.step;
+      rawCandidate[planId].y += Math.sin(angle) * plan.step;
+    });
+    const candidate = quantizePositions(rawCandidate, relaxationLatticeStep);
+    if (plan.ids.some((planId) => Math.hypot(candidate[planId].x - referencePositions[planId].x, candidate[planId].y - referencePositions[planId].y) > maxDisplacement)) return null;
+    if (nodeFeasibility(candidate).overlapPairs > 0) return null;
+    return { planIndex, candidate, signal: cheapRelaxationPrioritySignal(current, candidate, plan, currentMetrics, pressureWeight) };
+  };
+  const nextDynamicPlan = () => {
+    while (dynamicGroupIndex < (dynamicRemainingPlans?.length ?? 0)) {
+      if (dynamicQueue.length === 0) {
+        if (!dynamicNeedsRerank) {
+          dynamicGroupIndex += 1;
+          dynamicNeedsRerank = true;
+          dynamicActiveGroup = null;
+          continue;
+        }
+        const remaining = dynamicRemainingPlans[dynamicGroupIndex];
+        const rerankStartedAt = performance.now();
+        const descriptors = [...remaining].map(describeDynamicPlan).filter((descriptor) => descriptor !== null);
+        descriptors.forEach((descriptor) => dynamicConsideredPlanIndexes.add(descriptor.planIndex));
+        for (const planIndex of remaining) if (!descriptors.some((descriptor) => descriptor.planIndex === planIndex)) remaining.delete(planIndex);
+        if (descriptors.length === 0) {
+          dynamicGroupIndex += 1;
+          dynamicActiveGroup = null;
+          continue;
+        }
+        descriptors.sort((left, right) => left.signal.score - right.signal.score || right.signal.riskScore - left.signal.riskScore || left.planIndex - right.planIndex);
+        descriptors.forEach((descriptor, index) => { descriptor.rank = index + 1; });
+        const retained = relaxationPrioritizationAudit ? descriptors : descriptors.filter((descriptor) => descriptor.rank <= relaxationPriorityTopK || descriptor.signal.riskScore >= 3);
+        if (!relaxationPrioritizationAudit) prioritizationStats.skippedFullValidation += descriptors.length - retained.length;
+        dynamicQueue = retained.map((descriptor) => descriptor.planIndex);
+        for (const descriptor of retained) {
+          remaining.delete(descriptor.planIndex);
+          dynamicDescriptors.set(descriptor.planIndex, descriptor);
+          descriptor.retained = true;
+          prioritySelectedPlanIndexes.add(descriptor.planIndex);
+          if (descriptor.signal.riskScore >= 3 && descriptor.rank > relaxationPriorityTopK) prioritizationStats.guardRetained += 1;
+        }
+        dynamicActiveGroup = dynamicGroupIndex;
+        dynamicNeedsRerank = false;
+        prioritizationStats.rerankCount += 1;
+        prioritizationStats.candidateGroups = Math.max(prioritizationStats.candidateGroups, dynamicGroupIndex + 1);
+        prioritizationStats.considered += descriptors.length;
+        prioritizationStats.uniqueConsidered = dynamicConsideredPlanIndexes.size;
+        prioritizationStats.selectedForFullValidation += retained.length;
+        descriptors.forEach((descriptor, index) => {
+          if (descriptor.rank <= 1) prioritizationStats.rankCounts.top1 += 1;
+          if (descriptor.rank <= 2) prioritizationStats.rankCounts.top2 += 1;
+          if (descriptor.rank <= 4) prioritizationStats.rankCounts.top4 += 1;
+          if (prioritizationStats.signalSamples.length < 16) prioritizationStats.signalSamples.push({ planIndex: descriptor.planIndex, ids: movePlans[descriptor.planIndex].ids, step: movePlans[descriptor.planIndex].step, rank: descriptor.rank, retained: retained.includes(descriptor), signal: descriptor.signal });
+        });
+        prioritizationStats.planningMs += performance.now() - rerankStartedAt;
+        if (dynamicQueue.length === 0) {
+          dynamicGroupIndex += 1;
+          dynamicNeedsRerank = true;
+          dynamicActiveGroup = null;
+          continue;
+        }
+      }
+      return dynamicQueue.shift();
+    }
+    return null;
+  };
+  const totalPlanIterations = movePlans.length;
+  for (let planIteration = 0; planIteration < totalPlanIterations; planIteration += 1) {
+    const planIndex = dynamicPrioritizationEnabled ? nextDynamicPlan() : planIteration;
+    if (planIndex === null) break;
     const plan = movePlans[planIndex];
       const id = plan.ids[0];
       const rawCandidate = clonePositions(current);
@@ -1042,7 +1135,7 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
         }
         continue;
       }
-      const priorityDescriptor = priorityDescriptors.get(planIndex);
+      const priorityDescriptor = dynamicPrioritizationEnabled ? dynamicDescriptors.get(planIndex) : priorityDescriptors.get(planIndex);
       if (prioritizationStats && priorityDescriptor && !priorityDescriptor.retained && !relaxationPrioritizationAudit) {
         prioritizationStats.skippedFullValidation += 1;
         continue;
@@ -1148,6 +1241,12 @@ function constrainedPostStructuralRelaxation(startPositions, ids, maxDisplacemen
       if (score < currentScore) {
         if (cheapScreenStats) cheapScreenStats.acceptedTrace.push({ nodeIds: plan.ids, step: plan.step, angles: plan.angles, scoreBefore: currentScore, scoreAfter: score });
         current = candidate; currentMetrics = metrics; currentScore = score; acceptedMoves += 1;
+        if (dynamicPrioritizationEnabled) {
+          for (const queuedPlanIndex of dynamicQueue) dynamicRemainingPlans[dynamicActiveGroup].add(queuedPlanIndex);
+          dynamicQueue = [];
+          dynamicNeedsRerank = true;
+          prioritizationStats.acceptedMoveReranks += 1;
+        }
       }
       if (score < bestScore) { best = candidate; bestMetrics = metrics; bestScore = score; }
   }
