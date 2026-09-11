@@ -3,6 +3,7 @@ import {
   solveAutoLayout,
   type LayoutPoint,
 } from "./auto-layout.ts";
+import { generateBoundedCoarseCandidate } from "./initial-layout-coarse-objective.ts";
 
 export type InitialLayoutProviderEntity = {
   id: string;
@@ -14,19 +15,27 @@ export type InitialLayoutProviderRelation = {
   id: string;
   sourceId: string;
   targetId: string;
+  label?: string;
 };
+
+export type InitialLayoutProviderStrategy =
+  | "label-envelope-v1"
+  | "coarse-objective-prototype-v1";
 
 export type BoundedInitialLayoutInput = {
   entities: readonly InitialLayoutProviderEntity[];
   relations: readonly InitialLayoutProviderRelation[];
   locale?: string;
+  strategy?: InitialLayoutProviderStrategy;
   budgetMs?: number;
   maxIterations?: number;
 };
 
 export type InitialLayoutProviderResult = {
   positions: Record<string, LayoutPoint>;
-  provider: "post-structural-relaxation-v1-prototype" | "current-fallback";
+  provider: "post-structural-relaxation-v1-prototype" | "coarse-objective-prototype-v1" | "current-fallback";
+  strategy: InitialLayoutProviderStrategy;
+  ownership: "derived";
   status: "prototype" | "fallback";
   reason: "completed" | "invalid-input" | "budget-exceeded" | "unsafe-candidate";
   iterations: number;
@@ -92,9 +101,9 @@ function score(positions: Record<string, LayoutPoint>, entities: readonly Initia
   return span(positions, entities.map((entity) => entity.id)) + labelOverlapPenalty(positions, entities) * 400;
 }
 
-function fallback(input: BoundedInitialLayoutInput, reason: InitialLayoutProviderResult["reason"], startedAt: number): InitialLayoutProviderResult {
+function fallback(input: BoundedInitialLayoutInput, reason: InitialLayoutProviderResult["reason"], startedAt: number, strategy: InitialLayoutProviderStrategy): InitialLayoutProviderResult {
   const positions = solveAutoLayout({ entities: input.entities.map(({ id }) => ({ id })), relations: input.relations }, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
-  return { positions, provider: "current-fallback", status: "fallback", reason, iterations: 0, elapsedMs: performance.now() - startedAt };
+  return { positions, provider: "current-fallback", strategy, ownership: "derived", status: "fallback", reason, iterations: 0, elapsedMs: performance.now() - startedAt };
 }
 
 /**
@@ -105,21 +114,46 @@ function fallback(input: BoundedInitialLayoutInput, reason: InitialLayoutProvide
  */
 export function deriveBoundedInitialLayout(input: BoundedInitialLayoutInput): InitialLayoutProviderResult {
   const startedAt = performance.now();
+  const strategy = input.strategy ?? "label-envelope-v1";
   const entities = [...input.entities].sort((left, right) => left.id.localeCompare(right.id));
   const ids = entities.map(({ id }) => id);
   const uniqueIds = new Set(ids);
   const budgetMs = Math.max(1, input.budgetMs ?? DEFAULT_BUDGET_MS);
   const maxIterations = Math.max(0, Math.floor(input.maxIterations ?? DEFAULT_MAX_ITERATIONS));
-  if (ids.length === 0 || uniqueIds.size !== ids.length) return fallback(input, "invalid-input", startedAt);
+  if (ids.length === 0 || uniqueIds.size !== ids.length) return fallback(input, "invalid-input", startedAt, strategy);
   const relations = input.relations.filter((relation) => uniqueIds.has(relation.sourceId) && uniqueIds.has(relation.targetId));
+
+  if (strategy === "coarse-objective-prototype-v1") {
+    const coarse = generateBoundedCoarseCandidate({
+      entities,
+      relations,
+      budgetMs,
+      maxIterations,
+    });
+    if (coarse.status !== "completed" || !finitePositions(coarse.positions, ids) || !bodySafe(coarse.positions, ids)) {
+      const reason = coarse.reason === "budget-exceeded" ? "budget-exceeded" : "unsafe-candidate";
+      return fallback(input, reason, startedAt, strategy);
+    }
+    return {
+      positions: coarse.positions,
+      provider: "coarse-objective-prototype-v1",
+      strategy,
+      ownership: "derived",
+      status: "prototype",
+      reason: "completed",
+      iterations: coarse.iterations,
+      elapsedMs: performance.now() - startedAt,
+    };
+  }
+
   let positions = solveAutoLayout({ entities: ids.map((id) => ({ id })), relations }, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
-  if (!finitePositions(positions, ids) || !bodySafe(positions, ids)) return fallback(input, "unsafe-candidate", startedAt);
+  if (!finitePositions(positions, ids) || !bodySafe(positions, ids)) return fallback(input, "unsafe-candidate", startedAt, strategy);
   let iterations = 0;
   let currentScore = score(positions, entities);
   for (; iterations < maxIterations; iterations += 1) {
     for (const entity of entities) {
       for (const direction of DIRECTIONS) {
-        if (performance.now() - startedAt > budgetMs) return fallback(input, "budget-exceeded", startedAt);
+        if (performance.now() - startedAt > budgetMs) return fallback(input, "budget-exceeded", startedAt, strategy);
         const candidate = { ...positions, [entity.id]: { x: positions[entity.id]!.x + direction.x * 6, y: positions[entity.id]!.y + direction.y * 6 } };
         if (!bodySafe(candidate, ids)) continue;
         const candidateScore = score(candidate, entities);
@@ -127,6 +161,6 @@ export function deriveBoundedInitialLayout(input: BoundedInitialLayoutInput): In
       }
     }
   }
-  if (!finitePositions(positions, ids) || !bodySafe(positions, ids)) return fallback(input, "unsafe-candidate", startedAt);
-  return { positions, provider: "post-structural-relaxation-v1-prototype", status: "prototype", reason: "completed", iterations, elapsedMs: performance.now() - startedAt };
+  if (!finitePositions(positions, ids) || !bodySafe(positions, ids)) return fallback(input, "unsafe-candidate", startedAt, strategy);
+  return { positions, provider: "post-structural-relaxation-v1-prototype", strategy, ownership: "derived", status: "prototype", reason: "completed", iterations, elapsedMs: performance.now() - startedAt };
 }

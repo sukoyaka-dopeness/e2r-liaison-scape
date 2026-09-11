@@ -29,16 +29,35 @@ test("hidden non-Entity endpoints are ignored like the Product graph projection"
   assert.equal(Object.keys(result.positions).length, 3);
 });
 
+test("coarse objective is available through the bounded provider boundary", () => {
+  const first = deriveBoundedInitialLayout({ ...input, strategy: "coarse-objective-prototype-v1" });
+  const second = deriveBoundedInitialLayout({ ...input, entities: [...input.entities].reverse(), strategy: "coarse-objective-prototype-v1" });
+  assert.equal(first.status, "prototype");
+  assert.equal(first.provider, "coarse-objective-prototype-v1");
+  assert.equal(first.strategy, "coarse-objective-prototype-v1");
+  assert.equal(first.ownership, "derived");
+  assert.deepEqual(first.positions, second.positions);
+});
+
 test("duplicate Entity IDs fall back to current placement", () => {
   const result = deriveBoundedInitialLayout({ ...input, entities: [...input.entities, { id: "a", label: "Duplicate" }] });
   assert.equal(result.status, "fallback");
   assert.equal(result.provider, "current-fallback");
   assert.equal(result.reason, "invalid-input");
+  assert.equal(result.ownership, "derived");
 });
 
 test("budget exhaustion falls back without exposing a partial candidate", () => {
   const result = deriveBoundedInitialLayout({ ...input, budgetMs: 1, maxIterations: 100 });
   assert.equal(result.status, "fallback");
   assert.equal(result.provider, "current-fallback");
+  assert.equal(result.reason, "budget-exceeded");
+});
+
+test("coarse budget exhaustion falls back as a whole result", () => {
+  const result = deriveBoundedInitialLayout({ ...input, strategy: "coarse-objective-prototype-v1", budgetMs: 1, maxIterations: 100 });
+  assert.equal(result.status, "fallback");
+  assert.equal(result.provider, "current-fallback");
+  assert.equal(result.strategy, "coarse-objective-prototype-v1");
   assert.equal(result.reason, "budget-exceeded");
 });
