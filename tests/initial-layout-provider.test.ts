@@ -21,12 +21,27 @@ test("bounded provider is deterministic, complete, and does not mutate input", (
   assert.deepEqual(first.positions, second.positions);
   assert.deepEqual(input.entities.map(({ id }) => id), ["a", "b", "c"]);
   assert.equal(Object.keys(first.positions).length, 3);
+  assert.equal(first.provider, "label-envelope-v1-prototype");
+  assert.equal(first.strategy, "label-envelope-v1");
+  assert.equal(first.ownership, "derived");
 });
 
 test("hidden non-Entity endpoints are ignored like the Product graph projection", () => {
   const result = deriveBoundedInitialLayout({ ...input, relations: [...input.relations, { id: "hidden", sourceId: "a", targetId: "event-1" }] });
   assert.equal(result.status, "prototype");
   assert.equal(Object.keys(result.positions).length, 3);
+});
+
+test("fallback retains the same Product-visible relation projection", () => {
+  const result = deriveBoundedInitialLayout({
+    ...input,
+    relations: [...input.relations, { id: "hidden", sourceId: "a", targetId: "event-1" }],
+    budgetMs: 1,
+    maxIterations: 100,
+  });
+  assert.equal(result.status, "fallback");
+  assert.equal(result.reason, "budget-exceeded");
+  assert.deepEqual(result.positions, deriveBoundedInitialLayout({ ...input, budgetMs: 1, maxIterations: 100 }).positions);
 });
 
 test("coarse objective is available through the bounded provider boundary", () => {

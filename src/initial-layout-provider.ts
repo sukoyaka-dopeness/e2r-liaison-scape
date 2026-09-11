@@ -33,7 +33,7 @@ export type BoundedInitialLayoutInput = {
 
 export type InitialLayoutProviderResult = {
   positions: Record<string, LayoutPoint>;
-  provider: "post-structural-relaxation-v1-prototype" | "coarse-objective-prototype-v1" | "current-fallback";
+  provider: "label-envelope-v1-prototype" | "coarse-objective-prototype-v1" | "current-fallback";
   strategy: InitialLayoutProviderStrategy;
   ownership: "derived";
   status: "prototype" | "fallback";
@@ -101,16 +101,19 @@ function score(positions: Record<string, LayoutPoint>, entities: readonly Initia
   return span(positions, entities.map((entity) => entity.id)) + labelOverlapPenalty(positions, entities) * 400;
 }
 
-function fallback(input: BoundedInitialLayoutInput, reason: InitialLayoutProviderResult["reason"], startedAt: number, strategy: InitialLayoutProviderStrategy): InitialLayoutProviderResult {
-  const positions = solveAutoLayout({ entities: input.entities.map(({ id }) => ({ id })), relations: input.relations }, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
+function fallback(input: BoundedInitialLayoutInput, relations: readonly InitialLayoutProviderRelation[], reason: InitialLayoutProviderResult["reason"], startedAt: number, strategy: InitialLayoutProviderStrategy): InitialLayoutProviderResult {
+  const positions = solveAutoLayout({
+    entities: input.entities.map(({ id }) => ({ id })),
+    relations: relations.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
+  }, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
   return { positions, provider: "current-fallback", strategy, ownership: "derived", status: "fallback", reason, iterations: 0, elapsedMs: performance.now() - startedAt };
 }
 
 /**
  * Opt-in runtime-provider prototype. It is deliberately not wired into App.
- * It uses only Node/label envelopes and always returns the current Product
- * placement if its bounded, presentation-independent candidate is unsafe or
- * exceeds the budget.
+ * Its strategies are bounded, presentation-informed geometric proxies and
+ * never claim to be the diagnostic Post materializer. Each strategy returns
+ * the current Product placement if its candidate is unsafe or exceeds budget.
  */
 export function deriveBoundedInitialLayout(input: BoundedInitialLayoutInput): InitialLayoutProviderResult {
   const startedAt = performance.now();
@@ -120,19 +123,19 @@ export function deriveBoundedInitialLayout(input: BoundedInitialLayoutInput): In
   const uniqueIds = new Set(ids);
   const budgetMs = Math.max(1, input.budgetMs ?? DEFAULT_BUDGET_MS);
   const maxIterations = Math.max(0, Math.floor(input.maxIterations ?? DEFAULT_MAX_ITERATIONS));
-  if (ids.length === 0 || uniqueIds.size !== ids.length) return fallback(input, "invalid-input", startedAt, strategy);
-  const relations = input.relations.filter((relation) => uniqueIds.has(relation.sourceId) && uniqueIds.has(relation.targetId));
+  const visibleRelations = input.relations.filter((relation) => uniqueIds.has(relation.sourceId) && uniqueIds.has(relation.targetId));
+  if (ids.length === 0 || uniqueIds.size !== ids.length) return fallback(input, visibleRelations, "invalid-input", startedAt, strategy);
 
   if (strategy === "coarse-objective-prototype-v1") {
     const coarse = generateBoundedCoarseCandidate({
       entities,
-      relations,
+      relations: visibleRelations,
       budgetMs,
       maxIterations,
     });
     if (coarse.status !== "completed" || !finitePositions(coarse.positions, ids) || !bodySafe(coarse.positions, ids)) {
       const reason = coarse.reason === "budget-exceeded" ? "budget-exceeded" : "unsafe-candidate";
-      return fallback(input, reason, startedAt, strategy);
+      return fallback(input, visibleRelations, reason, startedAt, strategy);
     }
     return {
       positions: coarse.positions,
@@ -146,14 +149,14 @@ export function deriveBoundedInitialLayout(input: BoundedInitialLayoutInput): In
     };
   }
 
-  let positions = solveAutoLayout({ entities: ids.map((id) => ({ id })), relations }, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
-  if (!finitePositions(positions, ids) || !bodySafe(positions, ids)) return fallback(input, "unsafe-candidate", startedAt, strategy);
+  let positions = solveAutoLayout({ entities: ids.map((id) => ({ id })), relations: visibleRelations }, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
+  if (!finitePositions(positions, ids) || !bodySafe(positions, ids)) return fallback(input, visibleRelations, "unsafe-candidate", startedAt, strategy);
   let iterations = 0;
   let currentScore = score(positions, entities);
   for (; iterations < maxIterations; iterations += 1) {
     for (const entity of entities) {
       for (const direction of DIRECTIONS) {
-        if (performance.now() - startedAt > budgetMs) return fallback(input, "budget-exceeded", startedAt, strategy);
+        if (performance.now() - startedAt > budgetMs) return fallback(input, visibleRelations, "budget-exceeded", startedAt, strategy);
         const candidate = { ...positions, [entity.id]: { x: positions[entity.id]!.x + direction.x * 6, y: positions[entity.id]!.y + direction.y * 6 } };
         if (!bodySafe(candidate, ids)) continue;
         const candidateScore = score(candidate, entities);
@@ -161,6 +164,6 @@ export function deriveBoundedInitialLayout(input: BoundedInitialLayoutInput): In
       }
     }
   }
-  if (!finitePositions(positions, ids) || !bodySafe(positions, ids)) return fallback(input, "unsafe-candidate", startedAt, strategy);
-  return { positions, provider: "post-structural-relaxation-v1-prototype", strategy, ownership: "derived", status: "prototype", reason: "completed", iterations, elapsedMs: performance.now() - startedAt };
+  if (!finitePositions(positions, ids) || !bodySafe(positions, ids)) return fallback(input, visibleRelations, "unsafe-candidate", startedAt, strategy);
+  return { positions, provider: "label-envelope-v1-prototype", strategy, ownership: "derived", status: "prototype", reason: "completed", iterations, elapsedMs: performance.now() - startedAt };
 }
