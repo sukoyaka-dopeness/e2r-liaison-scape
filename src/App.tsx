@@ -33,6 +33,7 @@ import { solveAutoLayout } from "./auto-layout";
 import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation, type AutomaticRouteDecision, type DerivedAutomaticRoute } from "./graph-presentation";
 import { publishDatasetOpenTiming, publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming, type DatasetOpenTimingSample } from "./presentation-diagnostics";
 import { deriveActualProductInitialLayout, type ActualProductInitialLayoutOptIn } from "./actual-product-initial-layout";
+import { acceptanceFixturePath, parseAcceptanceFixture } from "./acceptance-fixture-access";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
@@ -59,6 +60,9 @@ export default function App() {
   const [datasetLoading, setDatasetLoading] = useState(false);
   const [datasetLoadingVisible, setDatasetLoadingVisible] = useState(false);
   const timingDiagnosticsEnabled = new URLSearchParams(window.location.search).get("diagnostic") === "timing";
+  const acceptanceFixture = import.meta.env.DEV
+    ? parseAcceptanceFixture(new URLSearchParams(window.location.search).get("acceptance-fixture"), new URLSearchParams(window.location.search).get("acceptance-locale"))
+    : null;
   const initialLayoutOptIn = new URLSearchParams(window.location.search).get("initial-layout") === "coarse-objective-prototype-v1"
     ? "coarse-objective-prototype-v1" as ActualProductInitialLayoutOptIn
     : undefined;
@@ -301,6 +305,16 @@ export default function App() {
     saveLocale(window.localStorage, locale);
     applyLocale(locale, document);
   }, [locale]);
+
+  useEffect(() => {
+    if (!acceptanceFixture || dataset || view !== "home") return;
+    beginDatasetOpenTiming("local");
+    setLocale(acceptanceFixture.locale);
+    void fetch(`${import.meta.env.BASE_URL}${acceptanceFixturePath(acceptanceFixture).replace(/^\//, "")}`)
+      .then((response) => { if (!response.ok) throw new Error(`Acceptance fixture request failed: ${response.status}`); return response.text(); })
+      .then((raw) => scheduleDatasetOpen(() => open(raw, null, "local")))
+      .catch(() => { finishDatasetLoading(); setMessage(translate(acceptanceFixture.locale, "sampleDatasetLoadFailure")); });
+  }, []);
 
   useEffect(() => {
     if (startupHandoffStartedRef.current) return;
