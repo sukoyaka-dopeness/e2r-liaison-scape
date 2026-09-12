@@ -7,7 +7,7 @@ const SELF_LOOP_ORIENTATION_PREFERENCE_WEIGHT = 0.05;
 const NODE_LABEL_ROUTE_HARD_CLEARANCE = 4;
 const NODE_LABEL_ROUTE_HALO_WIDTH = 16;
 const NODE_LABEL_ROUTE_HALO_WEIGHT = 8;
-const ENTITY_ATTACHMENT_SHAPE: EntityAttachmentShape = {
+export const ENTITY_ATTACHMENT_SHAPE: EntityAttachmentShape = {
   kind: "rounded-rectangle",
   halfWidth: 32,
   halfHeight: 32,

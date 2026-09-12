@@ -19,7 +19,7 @@ import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { readRelationArrowDisplay, readRelationLineStyle } from "./presentation-extension";
 import { getRelationArrowheadGeometries } from "./relation-arrow-presentation";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, fitGraphView, getNodeLabelTextGeometry, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, type LabelRect, zoomScale } from "./viewport";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, ENTITY_ATTACHMENT_SHAPE, fitGraphView, getEntityAttachment, getNodeLabelTextGeometry, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, type LabelRect, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
@@ -2176,9 +2176,11 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
                     const { title, descriptionLines, descriptionBaselines } = labelGeometry;
                     const offsetX = placement.x - presentationPosition.x;
                     const offsetY = placement.y - presentationPosition.y;
-                    const labelDistance = Math.max(1, Math.hypot(offsetX, offsetY));
-                    const directionX = offsetX / labelDistance;
-                    const directionY = offsetY / labelDistance;
+                    const nodeAttachment = getEntityAttachment({
+                      center: { x: 0, y: 0 },
+                      direction: { x: offsetX, y: offsetY },
+                      shape: ENTITY_ATTACHMENT_SHAPE,
+                    });
                     const connectorEndpoint = nodeLabelConnectorEndpoint({ x: offsetX, y: offsetY }, labelGeometry);
                     return <g
                       className="node-label-group"
@@ -2190,8 +2192,8 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
                       {shouldShowNodeLabelConnector({ x: offsetX, y: offsetY }) && (
                         <line
                           className="node-label-connector"
-                          x1={directionX * 33}
-                          y1={directionY * 33}
+                          x1={nodeAttachment.point.x}
+                          y1={nodeAttachment.point.y}
                           x2={connectorEndpoint.x}
                           y2={connectorEndpoint.y}
                         />

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { COORDINATE_DRAFT_EXTENSION_ID, COORDINATE_EXTENSION_ID, applyStoredCoordinates, buildEntityGraph, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type Dataset, type GraphEdge } from "../src/dataset.ts";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, getEntityAttachment, getNodeLabelTextGeometry, graphEdgePath, minimumPathToLabelRectDistance, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, wrapNodeLabel, zoomScale, type RouteCandidateDiagnostic } from "../src/viewport.ts";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, ENTITY_ATTACHMENT_SHAPE, fitGraphView, getArrowheadGeometry, getEntityAttachment, getNodeLabelTextGeometry, graphEdgePath, minimumPathToLabelRectDistance, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, wrapNodeLabel, zoomScale, type RouteCandidateDiagnostic } from "../src/viewport.ts";
 import { interpolateLabelRect, isLabelTransitionPathSafe, reconcileRelationLabelVisualState } from "../src/relation-label-presentation.ts";
 
 test("automatic Relation routing treats node labels as rectangular obstacles", () => {
@@ -1308,6 +1308,28 @@ test("node label connectors appear only when labels are outside the icon", () =>
   assert.equal(shouldShowNodeLabelConnector({ x: 0, y: 0 }), false);
   assert.equal(shouldShowNodeLabelConnector({ x: 32, y: 0 }), false);
   assert.equal(shouldShowNodeLabelConnector({ x: 47, y: 0 }), true);
+});
+
+test("node-label connector Node-side attachment follows the shared rounded-rectangle shape", () => {
+  const directions = [
+    { x: 120, y: 0 },
+    { x: 0, y: -120 },
+    { x: 120, y: 120 },
+    { x: -120, y: -120 },
+  ];
+  for (const direction of directions) {
+    const attachment = getEntityAttachment({ center: { x: 0, y: 0 }, direction, shape: ENTITY_ATTACHMENT_SHAPE });
+    assert.ok(attachment.distance <= Math.hypot(direction.x, direction.y));
+    assert.ok(Math.abs(Math.hypot(attachment.point.x, attachment.point.y) - attachment.distance) < 1e-8);
+    if (direction.x === 0) assert.equal(Math.abs(attachment.point.x), 0);
+    if (direction.y === 0) assert.equal(Math.abs(attachment.point.y), 0);
+    if (direction.x !== 0 && direction.y !== 0) {
+      assertClose(Math.abs(attachment.point.x), Math.abs(attachment.point.y));
+      assert.equal(Math.sign(attachment.point.x), Math.sign(direction.x));
+      assert.equal(Math.sign(attachment.point.y), Math.sign(direction.y));
+    }
+  }
+  assertClose(getEntityAttachment({ center: { x: 0, y: 0 }, direction: { x: 1, y: 1 }, shape: ENTITY_ATTACHMENT_SHAPE }).distance, 40.2842712474619);
 });
 
 test("polyline grab helpers use arc length and project onto segments", () => {
