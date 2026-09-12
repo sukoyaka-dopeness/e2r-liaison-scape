@@ -22,7 +22,7 @@ function runSearch(extraEnvironment: Record<string, string> = {}, fixturePath = 
   return JSON.parse(output) as {
     graph: { nodes: number; edges: number };
     profile?: { stages?: Record<string, { wallMs?: number }> };
-    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationAdaptiveMargin: number; relaxationFinalCanonicalizationMode: string; globalPlacementMode: string; globalSpacingScale: number; globalSpacingY: number; globalSpacingStage2Mode: string; screenSpaceAuditEnabled: boolean };
+    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationAdaptiveMargin: number; relaxationFinalCanonicalizationMode: string; globalPlacementMode: string; globalPlacementAblation: string; globalSpacingScale: number; globalSpacingY: number; globalSpacingStage2Mode: string; screenSpaceAuditEnabled: boolean };
     globalPlacementMode: string;
     globalSpacingScale: number;
     globalSpacingY: number;
@@ -97,6 +97,57 @@ test("diagnostic synthetic scaling inputs stay outside the production provider b
   assert.equal(synthetic.graph.nodes, 8);
   assert.equal(synthetic.graph.edges, 16);
   assert.ok((synthetic.profile?.stages?.["stage1-structural"]?.wallMs ?? 0) > 0);
+});
+
+test("production-native simplification bypasses Stage 1 and Stage 2 with one authoritative evaluation", () => {
+  const simplified = runSearch({
+    E2R_GLOBAL_PLACEMENT_ABLATION: "direct-anisotropic",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+    E2R_RELAXATION_FINAL_CANONICALIZATION: "round-once",
+  }) as ReturnType<typeof runSearch> & {
+    ablation?: { mode: string; stage1Search: string; stage2Search: string; fullPresentationEvaluations: number };
+    profile?: { fullPresentationEvaluations?: number; stages?: Record<string, { fullPresentationEvaluations?: number }> };
+  };
+  assert.equal(simplified.searchBudget.globalPlacementAblation, "direct-anisotropic");
+  assert.equal(simplified.ablation?.stage1Search, "bypassed");
+  assert.equal(simplified.ablation?.stage2Search, "bypassed");
+  assert.equal(simplified.ablation?.fullPresentationEvaluations, 2);
+  assert.equal(simplified.profile?.stages?.["production-simplification-ablation"]?.fullPresentationEvaluations, 2);
+  assert.equal(simplified.selected?.family, "product-current-anisotropic");
+  assert.ok(Object.values(simplified.selected?.positions ?? {}).every(({ x, y }) => Number.isInteger(x) && Number.isInteger(y)));
+});
+
+test("production-native two-arm ablation keeps authoritative selection bounded", () => {
+  const twoArm = runSearch({
+    E2R_GLOBAL_PLACEMENT_ABLATION: "direct-two-arm",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+  }) as ReturnType<typeof runSearch> & {
+    ablation?: { candidateFamilies: string[]; fullPresentationEvaluations: number };
+  };
+  assert.deepEqual(twoArm.ablation?.candidateFamilies, ["product-current", "product-current-anisotropic"]);
+  assert.equal(twoArm.ablation?.fullPresentationEvaluations, 2);
+  assert.equal(twoArm.profile?.stages?.["production-simplification-ablation"]?.fullPresentationEvaluations, 2);
+  assert.ok(twoArm.selected?.family === "product-current" || twoArm.selected?.family === "product-current-anisotropic");
+});
+
+test("bounded grid ablation keeps cheap structural planning separate from authoritative validation", () => {
+  const grid = runSearch({
+    E2R_GLOBAL_PLACEMENT_ABLATION: "bounded-grid-one",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+  }) as ReturnType<typeof runSearch> & {
+    ablation?: { stage1Search: string; stage2Search: string; candidateArmCount: number; fullPresentationEvaluations: number; cheapPlanning?: { mode: string; evaluated: number; zeroCrossingFinalistCount: number } | null };
+  };
+  assert.equal(grid.ablation?.stage1Search, "bypassed");
+  assert.equal(grid.ablation?.stage2Search, "bypassed");
+  assert.equal(grid.ablation?.candidateArmCount, 1);
+  assert.equal(grid.ablation?.fullPresentationEvaluations, 1);
+  assert.equal(grid.ablation?.cheapPlanning?.mode, "bounded-grid-search");
+  assert.ok((grid.ablation?.cheapPlanning?.evaluated ?? 0) > 0);
+  assert.ok((grid.ablation?.cheapPlanning?.zeroCrossingFinalistCount ?? -1) >= 0);
+  assert.ok(grid.selected?.family === "bounded-grid-anisotropic" || grid.selected === null);
 });
 
 test("local presentation approximation is diagnostic opt-in and preserves full validation boundary", () => {

@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { createHash } from "node:crypto";
 import { buildEntityGraph } from "../src/dataset.ts";
+import { settleInitialPlacement, solveAutoLayout } from "../src/auto-layout.ts";
 import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
 import { INITIAL_ENTITY_CLEARANCE } from "../src/initial-entity-placement.ts";
@@ -86,6 +87,7 @@ const globalSpacingScale = Number.isFinite(parsedGlobalSpacingScale) && parsedGl
 const parsedGlobalSpacingY = Number.parseFloat(process.env.E2R_GLOBAL_SPACING_Y ?? String(globalSpacingScale));
 const globalSpacingY = Number.isFinite(parsedGlobalSpacingY) && parsedGlobalSpacingY > 0 ? parsedGlobalSpacingY : globalSpacingScale;
 const globalSpacingStage2Mode = process.env.E2R_GLOBAL_SPACING_STAGE2 === "off" ? "off" : "full";
+const globalPlacementAblation = process.env.E2R_GLOBAL_PLACEMENT_ABLATION ?? "off";
 const edges = graph.edges.map((edge) => ({
   ...edge,
   label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
@@ -113,6 +115,57 @@ function globallySpacePositions(positions, scale, yScale = scale) {
 }
 function globalPlacementTransform(positions) {
   return globallySpacePositions(positions, globalSpacingScale, globalPlacementMode === "viewport-anisotropic" ? globalSpacingY : globalSpacingScale);
+}
+
+function productionPlacementSeed(iterations) {
+  const input = {
+    entities: graph.nodes.map(({ id }) => ({ id })),
+    relations: edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
+  };
+  return iterations === 0 ? solveAutoLayout(input, { iterations: 0 }) : settleInitialPlacement(input);
+}
+
+function productionAblationPlan(mode) {
+  const current = productionPlacementSeed(3);
+  const structural = productionPlacementSeed(0);
+  const anisotropic = () => globallySpacePositions(current, globalSpacingScale, globalSpacingY);
+  const uniform = () => globallySpacePositions(current, globalSpacingScale, globalSpacingScale);
+  const structuralAnisotropic = () => globallySpacePositions(structural, globalSpacingScale, globalSpacingY);
+  switch (mode) {
+    case "direct-current": return { specs: [{ family: "product-current", positions: current }] };
+    case "direct-anisotropic": return { specs: [{ family: "product-current-anisotropic", positions: anisotropic() }] };
+    case "direct-uniform": return { specs: [{ family: "product-current-uniform", positions: uniform() }] };
+    case "direct-structural": return { specs: [{ family: "structural-seed-anisotropic", positions: structuralAnisotropic() }] };
+    case "direct-two-arm": return { specs: [
+      { family: "product-current", positions: current },
+      { family: "product-current-anisotropic", positions: anisotropic() },
+    ] };
+    case "direct-three-arm": return { specs: [
+      { family: "product-current", positions: current },
+      { family: "product-current-anisotropic", positions: anisotropic() },
+      { family: "structural-seed-anisotropic", positions: structuralAnisotropic() },
+    ] };
+    case "bounded-grid-one": {
+      const ids = graph.nodes.map((node) => node.id).sort(compareId);
+      const grid = genericGridSearch(ids, 4, 400);
+      const finalists = grid.finalists.filter((candidate) => candidate.straightCrossings === 0);
+      const selected = finalists[0] ?? grid.finalists[0];
+      return {
+        specs: selected ? [{ family: "bounded-grid-anisotropic", positions: globallySpacePositions(selected.positions, globalSpacingScale, globalSpacingY) }] : [],
+        cheapSearch: { mode: "bounded-grid-search", seeds: grid.seeds, rounds: grid.rounds, evaluated: grid.evaluated, finalistCount: grid.finalists.length, zeroCrossingFinalistCount: finalists.length },
+      };
+    }
+    case "bounded-grid-two": {
+      const ids = graph.nodes.map((node) => node.id).sort(compareId);
+      const grid = genericGridSearch(ids, 4, 400);
+      const finalists = (grid.finalists.filter((candidate) => candidate.straightCrossings === 0).length ? grid.finalists.filter((candidate) => candidate.straightCrossings === 0) : grid.finalists).slice(0, 2);
+      return {
+        specs: finalists.map((candidate, index) => ({ family: `bounded-grid-anisotropic-${index + 1}`, positions: globallySpacePositions(candidate.positions, globalSpacingScale, globalSpacingY) })),
+        cheapSearch: { mode: "bounded-grid-search", seeds: grid.seeds, rounds: grid.rounds, evaluated: grid.evaluated, finalistCount: grid.finalists.length, zeroCrossingFinalistCount: grid.finalists.filter((candidate) => candidate.straightCrossings === 0).length },
+      };
+    }
+    default: return null;
+  }
 }
 function positionsKey(positions) {
   return Object.entries(positions).sort(([left], [right]) => compareId(left, right))
@@ -1474,7 +1527,88 @@ function derivePressureNeighborhood(metrics, positions) {
   }
   return { pressureNodeIds, expandedNodeIds: [...expanded].sort(compareId), radius };
 }
+
+function productionSimplificationSearch(mode) {
+  const plan = productionAblationPlan(mode);
+  if (!plan) return null;
+  const specs = plan.specs;
+  startProfileStage("production-simplification-ablation");
+  const candidates = specs.map((spec) => {
+    const positions = clonePositions(spec.positions);
+    const metrics = presentationMetrics(positions);
+    return {
+      family: spec.family,
+      structuralCrossings: straightCrossingsForPositions(positions),
+      positions,
+      metrics,
+      eligible: metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0,
+    };
+  });
+  candidates.sort((left, right) => Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score || left.family.localeCompare(right.family));
+  const floatSelected = candidates[0] ?? null;
+  const finalCanonicalization = floatSelected && (relaxationFinalCanonicalizationMode === "audit" || relaxationFinalCanonicalizationMode === "round-once")
+    ? {
+      selectedCandidateIndex: candidates.indexOf(floatSelected),
+      selectedFamily: floatSelected.family,
+      selectedStructuralCrossings: floatSelected.structuralCrossings,
+      selectedEligibleBeforeCanonicalization: floatSelected.eligible,
+      ...deriveFinalCoordinateCanonicalization(floatSelected.positions, floatSelected.metrics),
+    }
+    : null;
+  const canonicalMetrics = finalCanonicalization?.canonicalMetrics;
+  const roundedSelected = canonicalMetrics
+    ? {
+      ...floatSelected,
+      positions: clonePositions(finalCanonicalization.canonicalPositions),
+      metrics: canonicalMetrics,
+      eligible: canonicalMetrics.crossings === 0 && canonicalMetrics.overlapPairs === 0 && canonicalMetrics.labelRouteHits === 0 && canonicalMetrics.labelOverlap === 0 && canonicalMetrics.labelNear20 === 0,
+      score: canonicalMetrics.score,
+    }
+    : null;
+  finishProfileStage("production-simplification-ablation");
+  return {
+    orderSearch: { mode: "PRODUCTION_NATIVE_SEED_ONLY", evaluated: 0, orders: [] },
+    gridSearch: { mode: "NOT_RUN", evaluated: 0, finalists: [] },
+    presentationRepair: { mode: "PRODUCTION_SIMPLIFICATION_STAGE2_BYPASS", evaluated: 0, seedsPerFinalist: 0, rounds: 0, finalists: [] },
+    postStructuralRelaxation: null,
+    relaxationTargeting,
+    relaxationTargetLimit,
+    presentationRepairRounds,
+    relaxationStepMode,
+    relaxationLatticeStep,
+    relaxationCheapScreenMode,
+    pressureTargetingFallback: null,
+    pressureNeighborhood: { pressureNodeIds: [], expandedNodeIds: [], radius: 0 },
+    globalPlacementMode,
+    globalSpacingScale,
+    globalSpacingY,
+    globalSpacingStage2Mode: "off",
+    globallySpacedStart: floatSelected?.positions ?? null,
+    presentationEvaluations: candidates.length,
+    zeroCrossingStructural: candidates.filter((candidate) => candidate.structuralCrossings === 0).length,
+    zeroCrossingPresentation: candidates.filter((candidate) => candidate.metrics.crossings === 0).length,
+    minimumStructuralCrossings: candidates.length ? Math.min(...candidates.map((candidate) => candidate.structuralCrossings)) : null,
+    boundedFallbackCount: 0,
+    candidates,
+    floatSelected,
+    roundedSelected,
+    finalCanonicalization: finalCanonicalization ? { ...finalCanonicalization, canonicalMetrics: undefined } : null,
+    selected: finalCanonicalization?.applied ? roundedSelected : floatSelected,
+    ablation: {
+      mode,
+      formulation: "production-native deterministic seed(s) plus optional global transform; one full Product presentation per arm",
+      candidateFamilies: specs.map(({ family }) => family),
+      stage1Search: "bypassed",
+      stage2Search: "bypassed",
+      candidateArmCount: candidates.length,
+      fullPresentationEvaluations: profile.fullPresentationEvaluations,
+      cheapPlanning: plan.cheapSearch ?? null,
+    },
+  };
+}
 function genericSearch() {
+  const simplified = productionSimplificationSearch(globalPlacementAblation);
+  if (simplified) return simplified;
   const ids = graph.nodes.map((node) => node.id).sort(compareId);
   startProfileStage("stage1-structural");
   const orderSearch = ids.length <= 9 ? exactCircularOrders(ids) : heuristicCircularOrders(ids);
@@ -1652,7 +1786,9 @@ console.log(JSON.stringify({
   fixturePath,
   graph: { nodes: graph.nodes.length, edges: edges.length },
   hardBoundary: { rule: "INITIAL_ENTITY_CLEARANCE", value: INITIAL_ENTITY_CLEARANCE, overlapRejected: true },
-  strategy: "exact circular-order search for n<=9; deterministic heuristic circular-order search above that; Product presentation evaluates only finalists",
+  strategy: globalPlacementAblation !== "off"
+    ? "production-native simplification ablation; deterministic Product seed(s) and optional global transform; Product presentation evaluates only bounded arms"
+    : "exact circular-order search for n<=9; deterministic heuristic circular-order search above that; Product presentation evaluates only finalists",
   elapsedMs: Math.round((performance.now() - startedAt) * 100) / 100,
   profile: {
     presentationCalls: profile.presentationCalls,
@@ -1682,7 +1818,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationAdaptiveMargin: adaptiveMarginThreshold, relaxationFinalCanonicalizationMode, globalPlacementMode, globalSpacingScale, globalSpacingY, globalSpacingStage2Mode, screenSpaceAuditEnabled, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationAdaptiveMargin: adaptiveMarginThreshold, relaxationFinalCanonicalizationMode, globalPlacementMode, globalPlacementAblation, globalSpacingScale, globalSpacingY, globalSpacingStage2Mode, screenSpaceAuditEnabled, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
   selectedPresentation: selectedPresentationDigest(search.selected),
