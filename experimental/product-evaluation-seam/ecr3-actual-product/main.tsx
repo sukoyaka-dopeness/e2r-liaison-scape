@@ -6,10 +6,10 @@ import "./review.css";
 
 type Fixture = "lighthouse" | "titanic" | "apollo-11";
 type Locale = "en" | "ja";
-type Arm = "current" | "full-post" | "adaptive-post";
+type Arm = "current" | "full-post" | "adaptive-post" | "global-placement3";
 const fixtures: readonly Fixture[] = ["lighthouse", "titanic", "apollo-11"];
 const locales: readonly Locale[] = ["en", "ja"];
-const arms: readonly Arm[] = ["current", "full-post", "adaptive-post"];
+const arms: readonly Arm[] = ["current", "full-post", "adaptive-post", "global-placement3"];
 
 function queryValue<T extends string>(name: string, allowed: readonly T[], fallback: T): T {
   const value = new URLSearchParams(window.location.search).get(name) as T | null;

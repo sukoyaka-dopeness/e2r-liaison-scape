@@ -12,12 +12,17 @@ const canonicalFixtureFiles = {
   "apollo-11": "apollo-11-mission",
   lighthouse: "lighthouse-restoration-demo",
 };
-const ecr3Arms = new Set(["full-post", "adaptive-post"]);
+const ecr3Arms = new Set(["full-post", "adaptive-post", "global-placement3"]);
 
 function runEcr3Search(fixturePath: string, arm: string): Promise<Record<string, { x: number; y: number }>> {
   const armEnvironment = arm === "adaptive-post" ? {
     E2R_RELAXATION_PRIORITIZATION: "adaptive-cheap-ranking",
     E2R_RELAXATION_ADAPTIVE_MARGIN: "0.10",
+  } : arm === "global-placement3" ? {
+    E2R_GLOBAL_PLACEMENT_MODE: "viewport-anisotropic",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+    E2R_GLOBAL_SPACING_STAGE2: "off",
   } : {};
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [path.resolve(process.cwd(), "tools/generic-crossing-search.mjs"), fixturePath], {
