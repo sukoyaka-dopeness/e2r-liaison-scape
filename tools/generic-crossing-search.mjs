@@ -164,6 +164,20 @@ function productionAblationPlan(mode) {
         cheapSearch: { mode: "bounded-grid-search", seeds: grid.seeds, rounds: grid.rounds, evaluated: grid.evaluated, finalistCount: grid.finalists.length, zeroCrossingFinalistCount: grid.finalists.filter((candidate) => candidate.straightCrossings === 0).length },
       };
     }
+    case "frontier-4":
+    case "frontier-8":
+    case "frontier-12": {
+      const limit = Number(mode.slice("frontier-".length));
+      const frontier = productionStructuralFrontier(limit);
+      return {
+        specs: frontier.representatives.map((candidate, index) => ({
+          family: `structural-frontier-${index + 1}-${candidate.family}`,
+          positions: globalPlacementTransform(candidate.positions),
+          source: candidate,
+        })),
+        cheapSearch: frontier.summary,
+      };
+    }
     default: return null;
   }
 }
@@ -866,6 +880,114 @@ function genericGridSearch(ids, seeds = 16, rounds = 1200) {
     if (!unique.has(key) || unique.get(key).cheapScore > candidate.cheapScore) unique.set(key, candidate);
   }
   return { mode: "GRID_SWAP_AND_EMPTY_SLOT_SEARCH", evaluated, seeds, rounds, finalists: [...unique.values()].sort((left, right) => left.cheapScore - right.cheapScore).slice(0, 12) };
+}
+function structuralCandidateFeatureVector(positions, structuralCrossings, cheapScore) {
+  const nodeDistances = [];
+  for (let left = 0; left < graph.nodes.length; left += 1) for (let right = left + 1; right < graph.nodes.length; right += 1) {
+    const first = positions[graph.nodes[left].id]; const second = positions[graph.nodes[right].id];
+    nodeDistances.push(Math.hypot(first.x - second.x, first.y - second.y));
+  }
+  const edgeLengths = edges.map((edge) => Math.hypot(positions[edge.sourceId].x - positions[edge.targetId].x, positions[edge.sourceId].y - positions[edge.targetId].y));
+  const xs = Object.values(positions).map(({ x }) => x); const ys = Object.values(positions).map(({ y }) => y);
+  const width = Math.max(...xs) - Math.min(...xs); const height = Math.max(...ys) - Math.min(...ys);
+  const mean = (values) => values.reduce((sum, value) => sum + value, 0) / Math.max(1, values.length);
+  const sortedEdges = edgeLengths.slice().sort((left, right) => left - right);
+  const medianEdge = sortedEdges.length ? sortedEdges[Math.floor(sortedEdges.length / 2)] : 0;
+  const meanNodeSeparation = mean(nodeDistances);
+  const minNodeSeparation = nodeDistances.length ? Math.min(...nodeDistances) : 0;
+  const aspect = height > 0 ? width / height : 0;
+  return {
+    fingerprint: createHash("sha256").update(positionsKey(positions)).digest("hex").slice(0, 12),
+    structuralCrossings,
+    cheapScore,
+    minNodeSeparation,
+    meanNodeSeparation,
+    medianEdge,
+    maxEdge: edgeLengths.length ? Math.max(...edgeLengths) : 0,
+    width,
+    height,
+    aspect: height > 0 ? width / height : 0,
+    featureVector: [structuralCrossings, cheapScore / 1000000, minNodeSeparation / 100, meanNodeSeparation / 100, medianEdge / 100, (edgeLengths.length ? Math.max(...edgeLengths) : 0) / 100, width / 100, height / 100, aspect],
+  };
+}
+function structuralCandidatePool(ids) {
+  const orderSearch = ids.length <= 9 ? exactCircularOrders(ids) : heuristicCircularOrders(ids);
+  const variants = [
+    { aspect: 1.18, scale: 1, phase: -Math.PI / 2 },
+    { aspect: 1.30, scale: 1, phase: -Math.PI / 2 },
+    { aspect: 1.30, scale: 1.1, phase: -Math.PI / 2 },
+    { aspect: 1.18, scale: 1.1, phase: -Math.PI / 2 },
+  ];
+  const candidates = [];
+  for (const orderResult of orderSearch.orders) for (const variant of variants) {
+    const positions = ellipsePositions(orderResult.order, variant);
+    const cheapScore = orderResult.chordCrossings * 1000000;
+    candidates.push({ family: "circular-order", positions, ...structuralCandidateFeatureVector(positions, orderResult.chordCrossings, cheapScore) });
+  }
+  const gridSearch = genericGridSearch(ids);
+  for (const finalist of gridSearch.finalists) {
+    candidates.push({ family: "grid-structural", positions: clonePositions(finalist.positions), ...structuralCandidateFeatureVector(finalist.positions, finalist.straightCrossings, finalist.cheapScore) });
+  }
+  return { candidates, orderSearch, gridSearch };
+}
+function candidateDominates(left, right) {
+  const noWorse = left.structuralCrossings <= right.structuralCrossings
+    && left.cheapScore <= right.cheapScore
+    && left.minNodeSeparation >= right.minNodeSeparation
+    && left.maxEdge <= right.maxEdge;
+  const strict = left.structuralCrossings < right.structuralCrossings
+    || left.cheapScore < right.cheapScore
+    || left.minNodeSeparation > right.minNodeSeparation
+    || left.maxEdge < right.maxEdge;
+  return noWorse && strict;
+}
+function structuralFrontierCandidates(candidates) {
+  return candidates.filter((candidate, index) => !candidates.some((other, otherIndex) => otherIndex !== index && candidateDominates(other, candidate)));
+}
+function normalizedFeatureDistance(left, right, ranges) {
+  return Math.sqrt(left.featureVector.reduce((sum, value, index) => sum + ((value - right.featureVector[index]) / Math.max(1, ranges[index])) ** 2, 0));
+}
+function selectStructuralRepresentatives(candidates, frontier, limit) {
+  if (candidates.length <= limit) return candidates.slice();
+  const pool = [...frontier, ...candidates.filter((candidate) => !frontier.includes(candidate))];
+  const ranges = candidates[0].featureVector.map((_, index) => Math.max(1, ...candidates.map((candidate) => Math.abs(candidate.featureVector[index]))));
+  const selected = [];
+  const anchor = pool.slice().sort((left, right) => left.structuralCrossings - right.structuralCrossings || left.cheapScore - right.cheapScore || right.minNodeSeparation - left.minNodeSeparation)[0];
+  if (anchor) selected.push(anchor);
+  while (selected.length < limit && selected.length < pool.length) {
+    const available = pool.filter((candidate) => !selected.includes(candidate));
+    available.sort((left, right) => {
+      const leftDistance = Math.min(...selected.map((chosen) => normalizedFeatureDistance(left, chosen, ranges)));
+      const rightDistance = Math.min(...selected.map((chosen) => normalizedFeatureDistance(right, chosen, ranges)));
+      return rightDistance - leftDistance || left.structuralCrossings - right.structuralCrossings || left.cheapScore - right.cheapScore;
+    });
+    selected.push(available[0]);
+  }
+  return selected;
+}
+function productionStructuralFrontier(limit) {
+  const ids = graph.nodes.map((node) => node.id).sort(compareId);
+  const pool = structuralCandidatePool(ids);
+  const frontier = structuralFrontierCandidates(pool.candidates);
+  const representatives = selectStructuralRepresentatives(pool.candidates, frontier, limit);
+  const familyCounts = Object.fromEntries([...new Set(pool.candidates.map(({ family }) => family))].map((family) => [family, pool.candidates.filter((candidate) => candidate.family === family).length]));
+  return {
+    representatives,
+    summary: {
+      mode: "structural-frontier-farthest-point",
+      evaluated: pool.gridSearch.evaluated,
+      poolCount: pool.candidates.length,
+      frontierCount: frontier.length,
+      representativeCount: representatives.length,
+      limit,
+      familyCounts,
+      featureNames: ["structuralCrossings", "cheapScore", "minNodeSeparation", "meanNodeSeparation", "medianEdge", "maxEdge", "width", "height", "aspect"],
+      orderMode: pool.orderSearch.mode,
+      gridMode: pool.gridSearch.mode,
+      gridZeroCrossingFinalistCount: pool.gridSearch.finalists.filter((candidate) => candidate.straightCrossings === 0).length,
+      representativeFamilies: representatives.map(({ family }) => family),
+    },
+  };
 }
 function fullPresentationScore(metrics) {
   return metrics.score + metrics.overlapPairs * 5000000;
@@ -1596,13 +1718,25 @@ function productionSimplificationSearch(mode) {
     selected: finalCanonicalization?.applied ? roundedSelected : floatSelected,
     ablation: {
       mode,
-      formulation: "production-native deterministic seed(s) plus optional global transform; one full Product presentation per arm",
+      formulation: mode.startsWith("frontier-")
+        ? "cheap structural frontier plus farthest-point representatives; full Product presentation only for the bounded portfolio"
+        : "production-native deterministic seed(s) plus optional global transform; one full Product presentation per arm",
       candidateFamilies: specs.map(({ family }) => family),
       stage1Search: "bypassed",
       stage2Search: "bypassed",
       candidateArmCount: candidates.length,
       fullPresentationEvaluations: profile.fullPresentationEvaluations,
       cheapPlanning: plan.cheapSearch ?? null,
+      representatives: specs.map(({ family, source }) => ({
+        family,
+        sourceFamily: source?.family ?? null,
+        sourceFingerprint: source?.fingerprint ?? null,
+        structuralCrossings: source?.structuralCrossings ?? null,
+        cheapScore: source?.cheapScore ?? null,
+        minNodeSeparation: source?.minNodeSeparation ?? null,
+        meanNodeSeparation: source?.meanNodeSeparation ?? null,
+        aspect: source?.aspect ?? null,
+      })),
     },
   };
 }
@@ -1821,5 +1955,7 @@ console.log(JSON.stringify({
   searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationAdaptiveMargin: adaptiveMarginThreshold, relaxationFinalCanonicalizationMode, globalPlacementMode, globalPlacementAblation, globalSpacingScale, globalSpacingY, globalSpacingStage2Mode, screenSpaceAuditEnabled, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
+  floatSelectedPositionFingerprint: search.floatSelected ? createHash("sha256").update(positionsKey(search.floatSelected.positions)).digest("hex").slice(0, 12) : null,
+  selectedPositionFingerprint: search.selected ? createHash("sha256").update(positionsKey(search.selected.positions)).digest("hex").slice(0, 12) : null,
   selectedPresentation: selectedPresentationDigest(search.selected),
 }, null, 2));

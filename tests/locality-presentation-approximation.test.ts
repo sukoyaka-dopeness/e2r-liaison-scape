@@ -150,6 +150,53 @@ test("bounded grid ablation keeps cheap structural planning separate from author
   assert.ok(grid.selected?.family === "bounded-grid-anisotropic" || grid.selected === null);
 });
 
+test("structural frontier ablation retains a diverse bounded presentation portfolio", () => {
+  const frontier = runSearch({
+    E2R_GLOBAL_PLACEMENT_ABLATION: "frontier-4",
+    E2R_GLOBAL_PLACEMENT_MODE: "viewport-anisotropic",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+    E2R_RELAXATION_FINAL_CANONICALIZATION: "off",
+  }) as ReturnType<typeof runSearch> & {
+    ablation?: {
+      candidateArmCount: number;
+      fullPresentationEvaluations: number;
+      cheapPlanning?: { mode: string; poolCount: number; frontierCount: number; representativeCount: number; representativeFamilies: string[] } | null;
+      representatives?: Array<{ sourceFamily: string | null }>;
+    };
+  };
+  assert.equal(frontier.searchBudget.globalPlacementAblation, "frontier-4");
+  assert.equal(frontier.ablation?.candidateArmCount, 4);
+  assert.equal(frontier.ablation?.fullPresentationEvaluations, 4);
+  assert.equal(frontier.ablation?.cheapPlanning?.mode, "structural-frontier-farthest-point");
+  assert.ok((frontier.ablation?.cheapPlanning?.poolCount ?? 0) >= 4);
+  assert.ok((frontier.ablation?.cheapPlanning?.frontierCount ?? 0) > 0);
+  assert.equal(frontier.ablation?.cheapPlanning?.representativeCount, 4);
+  assert.equal(frontier.ablation?.cheapPlanning?.representativeFamilies?.length, 4);
+  assert.equal(frontier.ablation?.representatives?.length, 4);
+});
+
+test("structural frontier K12 remains bounded while exposing the full diversity audit", () => {
+  const frontier = runSearch({
+    E2R_GLOBAL_PLACEMENT_ABLATION: "frontier-12",
+    E2R_GLOBAL_PLACEMENT_MODE: "viewport-anisotropic",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+    E2R_RELAXATION_FINAL_CANONICALIZATION: "off",
+  }) as ReturnType<typeof runSearch> & {
+    ablation?: {
+      candidateArmCount: number;
+      fullPresentationEvaluations: number;
+      cheapPlanning?: { poolCount: number; frontierCount: number; representativeCount: number } | null;
+    };
+  };
+  assert.equal(frontier.ablation?.candidateArmCount, 12);
+  assert.equal(frontier.ablation?.fullPresentationEvaluations, 12);
+  assert.ok((frontier.ablation?.cheapPlanning?.poolCount ?? 0) > 12);
+  assert.ok((frontier.ablation?.cheapPlanning?.frontierCount ?? 0) > 0);
+  assert.equal(frontier.ablation?.cheapPlanning?.representativeCount, 12);
+});
+
 test("local presentation approximation is diagnostic opt-in and preserves full validation boundary", () => {
   const baseline = runSearch();
   assert.equal(baseline.searchBudget.relaxationApproximationMode, "off");
