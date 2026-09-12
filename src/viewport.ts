@@ -354,6 +354,7 @@ export function getArrowheadGeometry(samples: Point[], strokeWidth: number): Arr
 }
 export type LabelRect = Point & { width: number; height: number; directionX: number; directionY: number };
 export type RouteYieldPath = { samples: Point[]; deviation: number };
+export type NodeLabelVisualLine = { left: number; right: number; top: number; bottom: number };
 
 export type NodeLabelTextGeometry = {
   title: string;
@@ -362,6 +363,7 @@ export type NodeLabelTextGeometry = {
   descriptionBaselines: number[];
   width: number;
   height: number;
+  visualLines: NodeLabelVisualLine[];
   visualBounds: { left: number; right: number; top: number; bottom: number };
 };
 
@@ -369,6 +371,8 @@ export type NodeLabelTextGeometry = {
  * Returns the shared Node-label layout contract used by placement and SVG text.
  * The LabelRect remains the conservative collision/hit footprint; visualBounds
  * is the smaller text-plus-outline envelope used only for connector attachment.
+ * visualLines keeps that attachment envelope close to the individual rendered
+ * lines instead of making a short line inherit the width of a longer sibling.
  */
 export function getNodeLabelTextGeometry(name: string, description: string): NodeLabelTextGeometry {
   const descriptionLines = description.trim()
@@ -387,7 +391,23 @@ export function getNodeLabelTextGeometry(name: string, description: string): Nod
   const titleInkBottom = titleBaseline + 5;
   const descriptionInkTops = descriptionBaselines.map((baseline) => baseline - 10);
   const descriptionInkBottoms = descriptionBaselines.map((baseline) => baseline + 5);
-  const visualWidth = Math.max(4, Math.min(180, contentWidth + 4));
+  const visualLines: NodeLabelVisualLine[] = [
+    {
+      left: -(Math.max(4, Math.min(180, textDisplayWidth(title, 22) + 4))) / 2,
+      right: Math.max(4, Math.min(180, textDisplayWidth(title, 22) + 4)) / 2,
+      top: titleInkTop,
+      bottom: titleInkBottom,
+    },
+    ...descriptionLines.map((line, index) => {
+      const lineWidth = Math.max(4, Math.min(180, textDisplayWidth(line, 20) + 4));
+      return {
+        left: -lineWidth / 2,
+        right: lineWidth / 2,
+        top: descriptionInkTops[index]!,
+        bottom: descriptionInkBottoms[index]!,
+      };
+    }),
+  ];
   return {
     title,
     descriptionLines,
@@ -395,12 +415,56 @@ export function getNodeLabelTextGeometry(name: string, description: string): Nod
     descriptionBaselines,
     width,
     height,
+    visualLines,
     visualBounds: {
-      left: -visualWidth / 2,
-      right: visualWidth / 2,
-      top: Math.min(titleInkTop, ...descriptionInkTops),
-      bottom: Math.max(titleInkBottom, ...descriptionInkBottoms),
+      left: Math.min(...visualLines.map((line) => line.left)),
+      right: Math.max(...visualLines.map((line) => line.right)),
+      top: Math.min(...visualLines.map((line) => line.top)),
+      bottom: Math.max(...visualLines.map((line) => line.bottom)),
     },
+  };
+}
+
+function rayEntryToRect(offset: Point, direction: Point, rect: NodeLabelVisualLine): number | null {
+  const absoluteRect = {
+    left: offset.x + rect.left,
+    right: offset.x + rect.right,
+    top: offset.y + rect.top,
+    bottom: offset.y + rect.bottom,
+  };
+  const intervals = [
+    direction.x > 0.000001
+      ? [(absoluteRect.left) / direction.x, (absoluteRect.right) / direction.x]
+      : direction.x < -0.000001
+        ? [(absoluteRect.right) / direction.x, (absoluteRect.left) / direction.x]
+        : 0 >= absoluteRect.left && 0 <= absoluteRect.right ? [-Infinity, Infinity] : null,
+    direction.y > 0.000001
+      ? [(absoluteRect.top) / direction.y, (absoluteRect.bottom) / direction.y]
+      : direction.y < -0.000001
+        ? [(absoluteRect.bottom) / direction.y, (absoluteRect.top) / direction.y]
+        : 0 >= absoluteRect.top && 0 <= absoluteRect.bottom ? [-Infinity, Infinity] : null,
+  ];
+  if (intervals.some((interval) => interval === null)) return null;
+  const entry = Math.max(0, intervals[0]![0], intervals[1]![0]);
+  const exit = Math.min(intervals[0]![1], intervals[1]![1]);
+  return entry <= exit ? entry : null;
+}
+
+function enclosingVisualBoundaryPoint(offset: Point, direction: Point, bounds: NodeLabelVisualLine): Point {
+  const horizontalBoundary = direction.x > 0.001
+    ? bounds.left / direction.x
+    : direction.x < -0.001
+      ? bounds.right / direction.x
+      : -Infinity;
+  const verticalBoundary = direction.y > 0.001
+    ? bounds.top / direction.y
+    : direction.y < -0.001
+      ? bounds.bottom / direction.y
+      : -Infinity;
+  const boundaryOffset = Math.max(horizontalBoundary, verticalBoundary);
+  return {
+    x: offset.x + direction.x * boundaryOffset,
+    y: offset.y + direction.y * boundaryOffset,
   };
 }
 
@@ -412,26 +476,27 @@ export function getNodeLabelTextGeometry(name: string, description: string): Nod
  */
 export function nodeLabelConnectorEndpoint(
   offset: Point,
-  geometry: Pick<NodeLabelTextGeometry, "visualBounds">,
+  geometry: Pick<NodeLabelTextGeometry, "visualBounds"> & { visualLines?: readonly NodeLabelVisualLine[] },
 ): Point {
   const distance = Math.hypot(offset.x, offset.y);
   if (distance <= 0) return { x: 0, y: 0 };
   const directionX = offset.x / distance;
   const directionY = offset.y / distance;
-  const horizontalBoundary = directionX > 0.001
-    ? geometry.visualBounds.left / directionX
-    : directionX < -0.001
-      ? geometry.visualBounds.right / directionX
-      : -Infinity;
-  const verticalBoundary = directionY > 0.001
-    ? geometry.visualBounds.top / directionY
-    : directionY < -0.001
-      ? geometry.visualBounds.bottom / directionY
-      : -Infinity;
-  const boundaryOffset = Math.max(horizontalBoundary, verticalBoundary);
+  const boundaryEntries = [
+    ...(geometry.visualLines ?? [])
+      .map((line) => rayEntryToRect(offset, { x: directionX, y: directionY }, line))
+      .filter((entry): entry is number => entry !== null),
+  ].filter((entry): entry is number => entry !== null);
+  if (!boundaryEntries.length) {
+    // A ray can pass between disjoint line envelopes. Preserve the prior
+    // enclosing-envelope attachment in that case rather than creating a
+    // connector that ends at the Node center.
+    return enclosingVisualBoundaryPoint(offset, { x: directionX, y: directionY }, geometry.visualBounds);
+  }
+  const boundaryOffset = Math.min(...boundaryEntries);
   return {
-    x: offset.x + directionX * boundaryOffset,
-    y: offset.y + directionY * boundaryOffset,
+    x: directionX * boundaryOffset,
+    y: directionY * boundaryOffset,
   };
 }
 

@@ -1239,6 +1239,27 @@ test("node-label connector attaches to the near side of the visual envelope", ()
   assert.ok(Math.abs(right.y) < 1e-12);
 });
 
+test("node-label connector uses individual multiline visual envelopes without changing LabelRect geometry", () => {
+  const geometry = getNodeLabelTextGeometry("Three", "A long description ending in short");
+  assert.equal(geometry.visualLines.length, geometry.descriptionLines.length + 1);
+  assert.ok(geometry.visualLines.at(-1)!.right - geometry.visualLines.at(-1)!.left < geometry.visualBounds.right - geometry.visualBounds.left);
+
+  const offset = { x: 160, y: 80 };
+  const endpoint = nodeLabelConnectorEndpoint(offset, geometry);
+  const relativeToLabel = { x: endpoint.x - offset.x, y: endpoint.y - offset.y };
+  assert.ok(geometry.visualLines.some((line) => (
+    relativeToLabel.x >= line.left - 1e-9
+    && relativeToLabel.x <= line.right + 1e-9
+    && relativeToLabel.y >= line.top - 1e-9
+    && relativeToLabel.y <= line.bottom + 1e-9
+  )));
+  assert.ok(Number.isFinite(endpoint.x) && Number.isFinite(endpoint.y));
+
+  const japanese = getNodeLabelTextGeometry("三", "これは日本語の長い説明の最後");
+  assert.equal(japanese.visualLines.length, japanese.descriptionLines.length + 1);
+  assert.ok(Number.isFinite(nodeLabelConnectorEndpoint({ x: -160, y: -80 }, japanese).x));
+});
+
 test("safe near-equivalent route candidates prefer the previous remote side", () => {
   const traces: RouteCandidateDiagnostic[][] = [];
   const route = routeGraphEdge(

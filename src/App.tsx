@@ -2155,8 +2155,34 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
                   </g>
                 </g>;
               })}
-              {displayedNodes.map((node) => { const position = nodePosition(node); const presentationPosition = positions[node.id] ?? node; return (
+              {displayedNodes.map((node) => {
+                const position = nodePosition(node);
+                const presentationPosition = positions[node.id] ?? node;
+                const placement = nodeLabelPlacements.get(node.id)!;
+                const labelGeometry = getNodeLabelTextGeometry(node.label, node.description);
+                const { title, descriptionLines, descriptionBaselines } = labelGeometry;
+                const offsetX = placement.x - presentationPosition.x;
+                const offsetY = placement.y - presentationPosition.y;
+                const showLabelConnector = shouldShowNodeLabelConnector({ x: offsetX, y: offsetY });
+                const nodeAttachment = showLabelConnector ? getEntityAttachment({
+                  center: { x: 0, y: 0 },
+                  direction: { x: offsetX, y: offsetY },
+                  shape: ENTITY_ATTACHMENT_SHAPE,
+                }) : null;
+                const connectorEndpoint = showLabelConnector
+                  ? nodeLabelConnectorEndpoint({ x: offsetX, y: offsetY }, labelGeometry)
+                  : null;
+                return (
                  <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}${selectedId === node.id || hoveredEntityId === node.id || relationCreationPreview?.sourceId === node.id ? " handle-visible" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onPointerEnter={(event) => { if (event.pointerType === "mouse") setHoveredEntityId(node.id); }} onPointerLeave={(event) => { if (event.pointerType === "mouse") setHoveredEntityId((value) => value === node.id ? null : value); }} onContextMenu={(event) => openObjectContextFromPointer("entity", node.id, event)} onPointerDown={(event) => { event.stopPropagation(); if (event.pointerType === "mouse" && event.button !== 0) return; setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
+                  {showLabelConnector && nodeAttachment && connectorEndpoint && (
+                    <line
+                      className="node-label-connector"
+                      x1={nodeAttachment.point.x}
+                      y1={nodeAttachment.point.y}
+                      x2={connectorEndpoint.x}
+                      y2={connectorEndpoint.y}
+                    />
+                  )}
                   <rect className="connection-handle-corridor" x="24" y="4" width="20" height="28" onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }} />
                   <circle className="connection-hit-target" cx="34" cy="16" r="12" onPointerDown={(event) => startRelationCreation(event, node.id)} />
                   <circle className="connection-handle" cx="34" cy="16" r="8.5" onPointerDown={(event) => startRelationCreation(event, node.id)} />
@@ -2170,34 +2196,13 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
                     onPointerEnter={(event) => setPlacementHover(event, "entity", node.id)}
                     onPointerLeave={() => setHoveredPlacement((value) => value?.target === "entity" && value.id === node.id ? null : value)}
                   />
-                  {(() => {
-                    const placement = nodeLabelPlacements.get(node.id)!;
-                    const labelGeometry = getNodeLabelTextGeometry(node.label, node.description);
-                    const { title, descriptionLines, descriptionBaselines } = labelGeometry;
-                    const offsetX = placement.x - presentationPosition.x;
-                    const offsetY = placement.y - presentationPosition.y;
-                    const nodeAttachment = getEntityAttachment({
-                      center: { x: 0, y: 0 },
-                      direction: { x: offsetX, y: offsetY },
-                      shape: ENTITY_ATTACHMENT_SHAPE,
-                    });
-                    const connectorEndpoint = nodeLabelConnectorEndpoint({ x: offsetX, y: offsetY }, labelGeometry);
-                    return <g
+                  <g
                       className="node-label-group"
                       data-entity-id={node.id}
                        onContextMenuCapture={(event) => openObjectContextFromPointer("node-label", node.id, event)}
                        onContextMenu={(event) => openObjectContextFromPointer("node-label", node.id, event)}
                       onPointerDown={(event) => { event.stopPropagation(); startGraphPointer(event, { kind: "node-label", id: node.id }); }}
                     >
-                      {shouldShowNodeLabelConnector({ x: offsetX, y: offsetY }) && (
-                        <line
-                          className="node-label-connector"
-                          x1={nodeAttachment.point.x}
-                          y1={nodeAttachment.point.y}
-                          x2={connectorEndpoint.x}
-                          y2={connectorEndpoint.y}
-                        />
-                      )}
                       <rect
                         className="label-drag-hit"
                         x={offsetX - placement.width / 2}
@@ -2213,8 +2218,7 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
                       {descriptionLines.map((line, index) => (
                         <text key={`description-${index}`} className="node-description" textAnchor="middle" x={offsetX} y={offsetY + descriptionBaselines[index]!}>{line}</text>
                       ))}
-                    </g>;
-                  })()}
+                    </g>
                 </g>
               ); })}
             </g>

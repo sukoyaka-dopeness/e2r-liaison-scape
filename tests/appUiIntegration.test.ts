@@ -547,6 +547,30 @@ test("dismisses a placement ownership popover when a node drag starts", async ()
   }});
 });
 
+test("paints the Node-label connector below the Node selection affordance", async () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [
+      { id: "entity-source", name: "Source", description: "A deliberately long Node label description" },
+      { id: "entity-target", name: "Target", description: "Another deliberately long Node label description" },
+    ],
+    events: [],
+    relations: [{ id: "relation-source-target", sourceId: "entity-source", targetId: "entity-target", name: "Connects" }],
+  };
+  await withProductionApp({ dataset, callback: async (environment) => {
+    const node = environment.document.querySelector('[data-entity-id="entity-source"].node') as SVGGElement;
+    const connector = node.querySelector(".node-label-connector");
+    const body = node.querySelector(".entity-body");
+    const labelGroup = node.querySelector(".node-label-group");
+    assert.ok(connector);
+    assert.ok(body);
+    assert.ok(labelGroup);
+    const children = Array.from(node.children);
+    assert.ok(children.indexOf(connector) < children.indexOf(body));
+    assert.ok(children.indexOf(body) < children.indexOf(labelGroup));
+  }});
+});
+
 test("keeps the derived route and label presentation stable when node drag state starts without geometry movement", async () => {
   const dataset: Dataset = {
     version: "1.0",
