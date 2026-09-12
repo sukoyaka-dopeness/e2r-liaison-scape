@@ -355,6 +355,86 @@ export function getArrowheadGeometry(samples: Point[], strokeWidth: number): Arr
 export type LabelRect = Point & { width: number; height: number; directionX: number; directionY: number };
 export type RouteYieldPath = { samples: Point[]; deviation: number };
 
+export type NodeLabelTextGeometry = {
+  title: string;
+  descriptionLines: string[];
+  titleBaseline: number;
+  descriptionBaselines: number[];
+  width: number;
+  height: number;
+  visualBounds: { left: number; right: number; top: number; bottom: number };
+};
+
+/**
+ * Returns the shared Node-label layout contract used by placement and SVG text.
+ * The LabelRect remains the conservative collision/hit footprint; visualBounds
+ * is the smaller text-plus-outline envelope used only for connector attachment.
+ */
+export function getNodeLabelTextGeometry(name: string, description: string): NodeLabelTextGeometry {
+  const descriptionLines = description.trim()
+    ? wrapNodeLabel(truncateNodeText(description, 28), 20)
+    : [];
+  const title = truncateNodeText(name, 22);
+  const titleBaseline = descriptionLines.length === 0 ? 4 : descriptionLines.length === 1 ? -3 : -15;
+  const descriptionBaselines = descriptionLines.map((_, index) => descriptionLines.length === 1 ? 12 : index * 15);
+  const contentWidth = Math.max(
+    textDisplayWidth(title, 22),
+    ...descriptionLines.map((line) => textDisplayWidth(line, 20)),
+  );
+  const width = Math.max(48, Math.min(180, contentWidth + 12));
+  const height = descriptionLines.length === 0 ? 20 : descriptionLines.length === 1 ? 34 : 48;
+  const titleInkTop = titleBaseline - 12;
+  const titleInkBottom = titleBaseline + 5;
+  const descriptionInkTops = descriptionBaselines.map((baseline) => baseline - 10);
+  const descriptionInkBottoms = descriptionBaselines.map((baseline) => baseline + 5);
+  const visualWidth = Math.max(4, Math.min(180, contentWidth + 4));
+  return {
+    title,
+    descriptionLines,
+    titleBaseline,
+    descriptionBaselines,
+    width,
+    height,
+    visualBounds: {
+      left: -visualWidth / 2,
+      right: visualWidth / 2,
+      top: Math.min(titleInkTop, ...descriptionInkTops),
+      bottom: Math.max(titleInkBottom, ...descriptionInkBottoms),
+    },
+  };
+}
+
+/**
+ * Finds the first intersection from the Node center toward a label's visual
+ * text envelope. This intentionally differs from the conservative LabelRect:
+ * a transparent hit/collision rectangle must not create a visible connector
+ * gap when the rendered glyphs sit inside it.
+ */
+export function nodeLabelConnectorEndpoint(
+  offset: Point,
+  geometry: Pick<NodeLabelTextGeometry, "visualBounds">,
+): Point {
+  const distance = Math.hypot(offset.x, offset.y);
+  if (distance <= 0) return { x: 0, y: 0 };
+  const directionX = offset.x / distance;
+  const directionY = offset.y / distance;
+  const horizontalBoundary = directionX > 0.001
+    ? geometry.visualBounds.left / directionX
+    : directionX < -0.001
+      ? geometry.visualBounds.right / directionX
+      : -Infinity;
+  const verticalBoundary = directionY > 0.001
+    ? geometry.visualBounds.top / directionY
+    : directionY < -0.001
+      ? geometry.visualBounds.bottom / directionY
+      : -Infinity;
+  const boundaryOffset = Math.max(horizontalBoundary, verticalBoundary);
+  return {
+    x: offset.x + directionX * boundaryOffset,
+    y: offset.y + directionY * boundaryOffset,
+  };
+}
+
 export function minimumPathToLabelRectDistance(samples: Point[], rect: LabelRect): number {
   if (!samples.length || !Number.isFinite(rect.x) || !Number.isFinite(rect.y) || !Number.isFinite(rect.width) || !Number.isFinite(rect.height)) return Infinity;
   const left = rect.x - rect.width / 2;
@@ -562,14 +642,8 @@ export function placeNodeLabel(
   providedYieldingRouteBounds?: readonly (PointBounds | null)[],
 ): LabelRect {
   const startedAt = performance.now();
-  const descriptionLines = description.trim()
-    ? wrapNodeLabel(truncateNodeText(description, 28), 20)
-    : [];
-  const width = Math.max(48, Math.min(180, Math.max(
-    textDisplayWidth(name, 22),
-    ...descriptionLines.map((line) => textDisplayWidth(line, 20)),
-  ) + 12));
-  const height = descriptionLines.length === 0 ? 20 : descriptionLines.length === 1 ? 34 : 48;
+  const geometry = getNodeLabelTextGeometry(name, description);
+  const { width, height } = geometry;
   const angles = Array.from({ length: 32 }, (_, index) => Math.PI / 2 + index * Math.PI / 16);
   let edgePathBounds = providedEdgePathBounds;
   let yieldingRouteBounds = providedYieldingRouteBounds;

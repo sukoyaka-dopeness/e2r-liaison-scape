@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { COORDINATE_DRAFT_EXTENSION_ID, COORDINATE_EXTENSION_ID, applyStoredCoordinates, buildEntityGraph, getEntityDetail, getRelationDetail, getStoredCoordinates, loadDataset, serializeDataset, updateEntityDetails, updateRelationDetails, validateDatasetForExport, type Dataset, type GraphEdge } from "../src/dataset.ts";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, getEntityAttachment, graphEdgePath, minimumPathToLabelRectDistance, nearestPolylineArcFraction, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, wrapNodeLabel, zoomScale, type RouteCandidateDiagnostic } from "../src/viewport.ts";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, compareRouteGeometry, curveOffsetFromControlPoint, fitGraphView, getArrowheadGeometry, getEntityAttachment, getNodeLabelTextGeometry, graphEdgePath, minimumPathToLabelRectDistance, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeEdgeLabel, placeNodeLabel, pinchZoomScale, pointAtDistanceFromRouteEnd, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, wrapNodeLabel, zoomScale, type RouteCandidateDiagnostic } from "../src/viewport.ts";
 import { interpolateLabelRect, isLabelTransitionPathSafe, reconcileRelationLabelVisualState } from "../src/relation-label-presentation.ts";
 
 test("automatic Relation routing treats node labels as rectangular obstacles", () => {
@@ -1214,6 +1214,29 @@ test("node-label route halo anticipates a route just outside hard clearance", ()
   const second = placeNodeLabel({ x: 100, y: 100 }, "Node", "", [], [], routeNearPreferredCandidate);
   assert.notDeepEqual(first, { x: 100, y: 150, width: 48, height: 20, directionX: 0, directionY: 1 });
   assert.deepEqual(first, second);
+});
+
+test("node-label geometry keeps the collision footprint conservative and the text envelope tight", () => {
+  const geometry = getNodeLabelTextGeometry("A short label", "Detail");
+  assert.equal(geometry.width, 96.5);
+  assert.equal(geometry.height, 34);
+  assert.equal(geometry.descriptionLines.length, 1);
+  assert.ok(geometry.visualBounds.right - geometry.visualBounds.left <= geometry.width);
+  assert.ok(geometry.visualBounds.bottom <= geometry.height / 2);
+  assert.equal(placeNodeLabel({ x: 0, y: 0 }, "A short label", "A compact description", [], [], []).width, geometry.width);
+});
+
+test("node-label connector attaches to the near side of the visual envelope", () => {
+  const geometry = getNodeLabelTextGeometry("Node", "first line second line third line");
+  const above = nodeLabelConnectorEndpoint({ x: 0, y: -120 }, geometry);
+  const below = nodeLabelConnectorEndpoint({ x: 0, y: 120 }, geometry);
+  const right = nodeLabelConnectorEndpoint({ x: 120, y: 0 }, geometry);
+  assert.equal(above.y, -120 + geometry.visualBounds.bottom);
+  assert.equal(below.y, 120 + geometry.visualBounds.top);
+  assert.equal(right.x, 120 + geometry.visualBounds.left);
+  assert.ok(Math.abs(above.x) < 1e-12);
+  assert.ok(Math.abs(below.x) < 1e-12);
+  assert.ok(Math.abs(right.y) < 1e-12);
 });
 
 test("safe near-equivalent route candidates prefer the previous remote side", () => {

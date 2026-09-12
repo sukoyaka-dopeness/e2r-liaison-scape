@@ -19,7 +19,7 @@ import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { readRelationArrowDisplay, readRelationLineStyle } from "./presentation-extension";
 import { getRelationArrowheadGeometries } from "./relation-arrow-presentation";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, fitGraphView, nearestPolylineArcFraction, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, truncateNodeText, type LabelRect, wrapNodeLabel, zoomScale } from "./viewport";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, fitGraphView, getNodeLabelTextGeometry, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, type LabelRect, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
@@ -2172,18 +2172,14 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
                   />
                   {(() => {
                     const placement = nodeLabelPlacements.get(node.id)!;
-                    const descriptionLines = node.description.trim()
-                      ? wrapNodeLabel(truncateNodeText(node.description, 28), 20)
-                      : [];
+                    const labelGeometry = getNodeLabelTextGeometry(node.label, node.description);
+                    const { title, descriptionLines, descriptionBaselines } = labelGeometry;
                     const offsetX = placement.x - presentationPosition.x;
                     const offsetY = placement.y - presentationPosition.y;
                     const labelDistance = Math.max(1, Math.hypot(offsetX, offsetY));
                     const directionX = offsetX / labelDistance;
                     const directionY = offsetY / labelDistance;
-                    const boundaryDistance = Math.min(
-                      Math.abs(directionX) > .001 ? placement.width / 2 / Math.abs(directionX) : Infinity,
-                      Math.abs(directionY) > .001 ? placement.height / 2 / Math.abs(directionY) : Infinity,
-                    );
+                    const connectorEndpoint = nodeLabelConnectorEndpoint({ x: offsetX, y: offsetY }, labelGeometry);
                     return <g
                       className="node-label-group"
                       data-entity-id={node.id}
@@ -2196,8 +2192,8 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
                           className="node-label-connector"
                           x1={directionX * 33}
                           y1={directionY * 33}
-                          x2={offsetX - directionX * boundaryDistance}
-                          y2={offsetY - directionY * boundaryDistance}
+                          x2={connectorEndpoint.x}
+                          y2={connectorEndpoint.y}
                         />
                       )}
                       <rect
@@ -2211,9 +2207,9 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
                         onPointerEnter={(event) => setPlacementHover(event, "node-label", node.id)}
                         onPointerLeave={() => setHoveredPlacement((value) => value?.target === "node-label" && value.id === node.id ? null : value)}
                       />
-                      <text className="node-label" textAnchor="middle" x={offsetX} y={offsetY + (descriptionLines.length === 0 ? 4 : descriptionLines.length === 1 ? -3 : -15)}>{truncateNodeText(node.label, 22)}</text>
+                      <text className="node-label" textAnchor="middle" x={offsetX} y={offsetY + labelGeometry.titleBaseline}>{title}</text>
                       {descriptionLines.map((line, index) => (
-                        <text key={`description-${index}`} className="node-description" textAnchor="middle" x={offsetX} y={offsetY + (descriptionLines.length === 1 ? 12 : index * 15)}>{line}</text>
+                        <text key={`description-${index}`} className="node-description" textAnchor="middle" x={offsetX} y={offsetY + descriptionBaselines[index]!}>{line}</text>
                       ))}
                     </g>;
                   })()}
