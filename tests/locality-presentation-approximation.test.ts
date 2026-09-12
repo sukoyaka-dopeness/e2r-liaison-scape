@@ -25,7 +25,7 @@ function runSearch(extraEnvironment: Record<string, string> = {}) {
     globalSpacingScale: number;
     globalSpacingY: number;
     globalSpacingStage2Mode: string;
-    selected?: { family: string; metrics?: { fitScale: number; minimumSeparation: number; screenSpace?: { nodeMinimumSeparation: number; labelNear20: number; routeMax: number } | null } } | null;
+    selected?: { family: string; positions?: Record<string, { x: number; y: number }>; metrics?: { fitScale: number; minimumSeparation: number; screenSpace?: { nodeMinimumSeparation: number; labelNear20: number; routeMax: number } | null } } | null;
     postStructuralRelaxation?: {
       approximation?: {
         mode: string;
@@ -70,6 +70,19 @@ test("viewport-anisotropic placement is an explicit diagnostic arm and can bypas
   assert.equal(anisotropic.globalPlacementMode, "viewport-anisotropic");
   assert.equal(anisotropic.globalSpacingY, 1.12);
   assert.equal(anisotropic.selected?.family, "global-spacing-only");
+});
+
+test("global placement applies accepted round-once finalization after selection", () => {
+  const finalized = runSearch({
+    E2R_GLOBAL_PLACEMENT_MODE: "viewport-anisotropic",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+    E2R_GLOBAL_SPACING_STAGE2: "off",
+    E2R_RELAXATION_FINAL_CANONICALIZATION: "round-once",
+  });
+  assert.equal(finalized.searchBudget.relaxationFinalCanonicalizationMode, "round-once");
+  assert.equal(finalized.selected?.family, "global-spacing-only");
+  assert.ok(Object.values(finalized.selected?.positions ?? {}).every(({ x, y }) => Number.isInteger(x) && Number.isInteger(y)));
 });
 
 test("local presentation approximation is diagnostic opt-in and preserves full validation boundary", () => {

@@ -33,7 +33,7 @@ import { solveAutoLayout } from "./auto-layout";
 import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation, type AutomaticRouteDecision, type DerivedAutomaticRoute } from "./graph-presentation";
 import { publishDatasetOpenTiming, publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming, type DatasetOpenTimingSample } from "./presentation-diagnostics";
 import { deriveActualProductInitialLayout, type ActualProductInitialLayoutOptIn } from "./actual-product-initial-layout";
-import { acceptanceFixturePath, parseAcceptanceFixture } from "./acceptance-fixture-access";
+import { acceptanceFixturePath, acceptanceLayoutPath, parseAcceptanceFixture, type AcceptanceLayoutArm } from "./acceptance-fixture-access";
 import { readAcceptancePayload, storeAcceptancePayload } from "./acceptance-payload-reopen";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
@@ -71,9 +71,11 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
     : null;
   const acceptancePayloadReopen = import.meta.env.DEV
     && new URLSearchParams(window.location.search).get("acceptance-reopen") === "saved";
-  const initialLayoutOptIn = new URLSearchParams(window.location.search).get("initial-layout") === "coarse-objective-prototype-v1"
+  const initialLayoutParam = new URLSearchParams(window.location.search).get("initial-layout");
+  const initialLayoutOptIn = initialLayoutParam === "coarse-objective-prototype-v1"
     ? "coarse-objective-prototype-v1" as ActualProductInitialLayoutOptIn
     : undefined;
+  const productInitialLayoutArm: AcceptanceLayoutArm | null = import.meta.env.DEV && initialLayoutParam === "global-placement3" ? "global-placement3" : null;
   const [datasetOpenTimingEvents, setDatasetOpenTimingEvents] = useState<DatasetOpenTimingSample[]>([]);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
@@ -90,6 +92,7 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
   const [viewportToolbarCollapsed, setViewportToolbarCollapsed] = useState(false);
   const [viewportToolbarPosition, setViewportToolbarPosition] = useState<{ x: number; y: number } | null>(null);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const productInitialLayoutOverrideRef = useRef<ActualProductDiagnosticInitialLayout | null>(null);
   const [liveDragPosition, setLiveDragPosition] = useState<{ id: string; position: { x: number; y: number } } | null>(null);
   const [presentationRevision, setPresentationRevision] = useState(0);
   const [coordinatesDirty, setCoordinatesDirty] = useState(false);
@@ -327,8 +330,21 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
     if (!acceptanceFixture || dataset || view !== "home") return;
     beginDatasetOpenTiming("local");
     setLocale(acceptanceFixture.locale);
-    void fetch(`${import.meta.env.BASE_URL}${acceptanceFixturePath(acceptanceFixture).replace(/^\//, "")}`)
-      .then((response) => { if (!response.ok) throw new Error(`Acceptance fixture request failed: ${response.status}`); return response.text(); })
+    const layoutRequest = productInitialLayoutArm
+      ? fetch(`${import.meta.env.BASE_URL}${acceptanceLayoutPath({ ...acceptanceFixture, arm: productInitialLayoutArm }).replace(/^\//, "")}`)
+        .then((response) => response.ok ? response.json() as Promise<{ positions?: Record<string, { x: number; y: number }> }> : null)
+        .then((result) => result?.positions ? { positions: result.positions, arm: productInitialLayoutArm } : null)
+        .catch(() => null)
+      : Promise.resolve(null);
+    void Promise.all([
+      fetch(`${import.meta.env.BASE_URL}${acceptanceFixturePath(acceptanceFixture).replace(/^\//, "")}`),
+      layoutRequest,
+    ])
+      .then(([response, override]) => {
+        if (!response.ok) throw new Error(`Acceptance fixture request failed: ${response.status}`);
+        productInitialLayoutOverrideRef.current = override;
+        return response.text();
+      })
       .then((raw) => scheduleDatasetOpen(() => open(raw, null, "local")))
       .catch(() => { finishDatasetLoading(); setMessage(translate(acceptanceFixture.locale, "sampleDatasetLoadFailure")); });
   }, []);
@@ -927,20 +943,23 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
     const graphStartedAt = preparationStartedAt;
     const openedGraph = buildEntityGraph(nextDataset);
     const graphCompletedAt = performance.now();
-    const overrideIds = initialLayoutOverride ? Object.keys(initialLayoutOverride.positions) : [];
+    const productOverride = productInitialLayoutOverrideRef.current;
+    const activeInitialLayoutOverride = initialLayoutOverride ?? productOverride;
+    const overrideIds = activeInitialLayoutOverride ? Object.keys(activeInitialLayoutOverride.positions) : [];
     const completeDiagnosticOverride = import.meta.env.DEV
       && Object.keys(storedPositions).length === 0
       && overrideIds.length === openedGraph.nodes.length
       && openedGraph.nodes.every((node) => {
-        const position = initialLayoutOverride?.positions[node.id];
+        const position = activeInitialLayoutOverride?.positions[node.id];
         return position !== undefined && Number.isFinite(position.x) && Number.isFinite(position.y);
       });
-    const diagnosticOverride = completeDiagnosticOverride ? initialLayoutOverride! : undefined;
+    const diagnosticOverride = completeDiagnosticOverride ? activeInitialLayoutOverride! : undefined;
+    if (!initialLayoutOverride && diagnosticOverride) productInitialLayoutOverrideRef.current = null;
     const initialLayout = diagnosticOverride
       ? {
         positions: diagnosticOverride.positions,
-        authority: "diagnostic-candidate" as const,
-        provider: `ecr3-${diagnosticOverride.arm}`,
+        authority: initialLayoutOverride ? "diagnostic-candidate" as const : "bounded-provider" as const,
+        provider: initialLayoutOverride ? `ecr3-${diagnosticOverride.arm}` : "global-placement3",
         strategy: diagnosticOverride.arm,
         status: "prototype",
         reason: "completed",

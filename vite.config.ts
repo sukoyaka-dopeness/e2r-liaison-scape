@@ -23,6 +23,7 @@ function runEcr3Search(fixturePath: string, arm: string): Promise<Record<string,
     E2R_GLOBAL_SPACING_SCALE: "0.88",
     E2R_GLOBAL_SPACING_Y: "1.12",
     E2R_GLOBAL_SPACING_STAGE2: "off",
+    E2R_RELAXATION_FINAL_CANONICALIZATION: "round-once",
   } : {};
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [path.resolve(process.cwd(), "tools/generic-crossing-search.mjs"), fixturePath], {
