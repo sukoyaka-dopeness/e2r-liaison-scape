@@ -2,13 +2,14 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import test from "node:test";
 
-function runSearch(extraEnvironment: Record<string, string> = {}) {
+function runSearch(extraEnvironment: Record<string, string> = {}, fixturePath = "experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json") {
   const output = execFileSync(process.execPath, [
     "--experimental-strip-types",
     "tools/generic-crossing-search.mjs",
-    "experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json",
+    fixturePath,
   ], {
     encoding: "utf8",
+    maxBuffer: 100 * 1024 * 1024,
     env: {
       ...process.env,
       E2R_PRESENTATION_FINALIST_LIMIT: "1",
@@ -20,6 +21,7 @@ function runSearch(extraEnvironment: Record<string, string> = {}) {
   });
   return JSON.parse(output) as {
     graph: { nodes: number; edges: number };
+    profile?: { stages?: Record<string, { wallMs?: number }> };
     searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationAdaptiveMargin: number; relaxationFinalCanonicalizationMode: string; globalPlacementMode: string; globalSpacingScale: number; globalSpacingY: number; globalSpacingStage2Mode: string; screenSpaceAuditEnabled: boolean };
     globalPlacementMode: string;
     globalSpacingScale: number;
@@ -83,6 +85,18 @@ test("global placement applies accepted round-once finalization after selection"
   assert.equal(finalized.searchBudget.relaxationFinalCanonicalizationMode, "round-once");
   assert.equal(finalized.selected?.family, "global-spacing-only");
   assert.ok(Object.values(finalized.selected?.positions ?? {}).every(({ x, y }) => Number.isInteger(x) && Number.isInteger(y)));
+});
+
+test("diagnostic synthetic scaling inputs stay outside the production provider boundary", () => {
+  const synthetic = runSearch({
+    E2R_GLOBAL_PLACEMENT_MODE: "viewport-anisotropic",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+    E2R_GLOBAL_SPACING_STAGE2: "off",
+  }, "synthetic:k4-4");
+  assert.equal(synthetic.graph.nodes, 8);
+  assert.equal(synthetic.graph.edges, 16);
+  assert.ok((synthetic.profile?.stages?.["stage1-structural"]?.wallMs ?? 0) > 0);
 });
 
 test("local presentation approximation is diagnostic opt-in and preserves full validation boundary", () => {

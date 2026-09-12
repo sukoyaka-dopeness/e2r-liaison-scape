@@ -6,16 +6,29 @@ import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "..
 import { INITIAL_ENTITY_CLEARANCE } from "../src/initial-entity-placement.ts";
 
 const fixturePath = process.argv[2] ?? "experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json";
-function syntheticK33Dataset() {
-  const left = ["left-a", "left-b", "left-c"]; const right = ["right-a", "right-b", "right-c"];
+function syntheticBipartiteDataset(leftSize, rightSize, legacyIds = false) {
+  const idFor = (side, index) => legacyIds ? `${side}-${String.fromCharCode(97 + index)}` : `${side}-${index + 1}`;
+  const left = Array.from({ length: leftSize }, (_, index) => idFor("left", index));
+  const right = Array.from({ length: rightSize }, (_, index) => idFor("right", index));
   return {
-    version: "1.0",
-    entities: [...left, ...right].map((id) => ({ id, name: id.replace("-", " ") })),
+    version: "1.0", entities: [...left, ...right].map((id) => ({ id, name: id.replace("-", " ") })),
     events: [],
     relations: left.flatMap((sourceId) => right.map((targetId) => ({ id: `${sourceId}-${targetId}`, sourceId, targetId, name: "connected" }))),
   };
 }
-const dataset = fixturePath === "synthetic:k3-3" ? syntheticK33Dataset() : JSON.parse(fs.readFileSync(fixturePath, "utf8"));
+function syntheticK33Dataset() { return syntheticBipartiteDataset(3, 3, true); }
+function syntheticDatasetFromPath(value) {
+  const match = /^synthetic:k(\d+)-(\d+)$/.exec(value);
+  if (!match) return null;
+  const leftSize = Number.parseInt(match[1], 10);
+  const rightSize = Number.parseInt(match[2], 10);
+  return leftSize >= 1 && rightSize >= 1 && leftSize <= 20 && rightSize <= 20
+    ? syntheticBipartiteDataset(leftSize, rightSize)
+    : null;
+}
+const dataset = fixturePath === "synthetic:k3-3"
+  ? syntheticK33Dataset()
+  : syntheticDatasetFromPath(fixturePath) ?? JSON.parse(fs.readFileSync(fixturePath, "utf8"));
 const graph = buildEntityGraph(dataset);
 const profile = { presentationCalls: 0, fullPresentationEvaluations: 0, presentationMs: 0, duplicatePositionCalls: 0, presentationCacheHits: 0, stages: {} };
 const presentationCache = new Map();
