@@ -67,8 +67,11 @@ const parsedAdaptiveMarginThreshold = Number.parseFloat(process.env.E2R_RELAXATI
 const adaptiveMarginThreshold = Number.isFinite(parsedAdaptiveMarginThreshold) && parsedAdaptiveMarginThreshold >= 0 ? parsedAdaptiveMarginThreshold : 0.10;
 const relaxationFinalCanonicalizationMode = process.env.E2R_RELAXATION_FINAL_CANONICALIZATION ?? "off";
 const screenSpaceAuditEnabled = process.env.E2R_GLOBAL_SPACING_SCREEN_AUDIT === "1";
+const globalPlacementMode = process.env.E2R_GLOBAL_PLACEMENT_MODE ?? "uniform";
 const parsedGlobalSpacingScale = Number.parseFloat(process.env.E2R_GLOBAL_SPACING_SCALE ?? "1");
 const globalSpacingScale = Number.isFinite(parsedGlobalSpacingScale) && parsedGlobalSpacingScale > 0 ? parsedGlobalSpacingScale : 1;
+const parsedGlobalSpacingY = Number.parseFloat(process.env.E2R_GLOBAL_SPACING_Y ?? String(globalSpacingScale));
+const globalSpacingY = Number.isFinite(parsedGlobalSpacingY) && parsedGlobalSpacingY > 0 ? parsedGlobalSpacingY : globalSpacingScale;
 const globalSpacingStage2Mode = process.env.E2R_GLOBAL_SPACING_STAGE2 === "off" ? "off" : "full";
 const edges = graph.edges.map((edge) => ({
   ...edge,
@@ -83,8 +86,8 @@ const emptyState = {
 
 function compareId(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 function clonePositions(positions) { return Object.fromEntries(Object.entries(positions).map(([id, point]) => [id, { ...point }])); }
-function globallySpacePositions(positions, scale) {
-  if (scale === 1) return clonePositions(positions);
+function globallySpacePositions(positions, scale, yScale = scale) {
+  if (scale === 1 && yScale === 1) return clonePositions(positions);
   const points = Object.values(positions);
   const center = {
     x: points.reduce((sum, point) => sum + point.x, 0) / Math.max(1, points.length),
@@ -92,8 +95,11 @@ function globallySpacePositions(positions, scale) {
   };
   return Object.fromEntries(Object.entries(positions).map(([id, point]) => [id, {
     x: center.x + (point.x - center.x) * scale,
-    y: center.y + (point.y - center.y) * scale,
+    y: center.y + (point.y - center.y) * yScale,
   }]));
+}
+function globalPlacementTransform(positions) {
+  return globallySpacePositions(positions, globalSpacingScale, globalPlacementMode === "viewport-anisotropic" ? globalSpacingY : globalSpacingScale);
 }
 function positionsKey(positions) {
   return Object.entries(positions).sort(([left], [right]) => compareId(left, right))
@@ -1484,15 +1490,16 @@ function genericSearch() {
   // This keeps the diagnostic bounded while making label safety decisive once the
   // structural feasibility condition has already been found.
   const zeroCrossingFinalists = gridSearch.finalists.filter((finalist) => finalist.straightCrossings === 0).slice(0, Math.max(1, presentationFinalistLimit));
-  const spacingFinalists = globalSpacingScale === 1 ? zeroCrossingFinalists : zeroCrossingFinalists.map((finalist) => ({
+  const placementActive = globalPlacementMode === "viewport-anisotropic" ? globalSpacingScale !== 1 || globalSpacingY !== 1 : globalSpacingScale !== 1;
+  const spacingFinalists = !placementActive ? zeroCrossingFinalists : zeroCrossingFinalists.map((finalist) => ({
     ...finalist,
-    positions: globallySpacePositions(finalist.positions, globalSpacingScale),
+    positions: globalPlacementTransform(finalist.positions),
   }));
   startProfileStage("stage2-presentation-and-relaxation");
   const presentationRepair = globalSpacingStage2Mode === "off"
     ? { mode: "DIAGNOSTIC_STAGE2_SKIPPED", evaluated: 0, seedsPerFinalist: 0, rounds: 0, finalists: [] }
     : refineForPresentation(spacingFinalists, ids, 1, presentationRepairRounds);
-  if (globalSpacingScale !== 1 && globalSpacingStage2Mode !== "off") candidates.length = 0;
+  if (placementActive && globalSpacingStage2Mode !== "off") candidates.length = 0;
   for (const finalist of presentationRepair.finalists) {
     const metrics = finalist.metrics;
     const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
@@ -1504,7 +1511,7 @@ function genericSearch() {
   const pressureTargetingFallback = relaxationTargeting === "pressure" && pressureNeighborhood.expandedNodeIds.length === 0 ? "NO_PRESSURE_SIGNAL_FALLBACK_TO_FULL_NODE" : null;
   const relaxationNodeIds = relaxationTargeting === "pressure" && !pressureTargetingFallback ? pressureNeighborhood.expandedNodeIds : ids;
   const globallySpacedStart = structuralSelected
-    ? globalSpacingStage2Mode === "off" ? globallySpacePositions(structuralSelected.positions, globalSpacingScale) : clonePositions(structuralSelected.positions)
+    ? globalSpacingStage2Mode === "off" ? globalPlacementTransform(structuralSelected.positions) : clonePositions(structuralSelected.positions)
     : null;
   const postStructuralRelaxation = globalSpacingStage2Mode === "off" || !globallySpacedStart
     ? null
@@ -1550,7 +1557,7 @@ function genericSearch() {
     }
     : null;
   finishProfileStage("stage2-presentation-and-relaxation");
-  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, relaxationTargetLimit, presentationRepairRounds, relaxationStepMode, relaxationLatticeStep, relaxationCheapScreenMode, pressureTargetingFallback, pressureNeighborhood, globalSpacingScale, globalSpacingStage2Mode, globallySpacedStart, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, floatSelected, roundedSelected, finalCanonicalization: finalCanonicalization ? { ...finalCanonicalization, canonicalMetrics: undefined } : null, selected: finalCanonicalization?.applied ? roundedSelected : floatSelected };
+  return { orderSearch, gridSearch, presentationRepair, postStructuralRelaxation, relaxationTargeting, relaxationTargetLimit, presentationRepairRounds, relaxationStepMode, relaxationLatticeStep, relaxationCheapScreenMode, pressureTargetingFallback, pressureNeighborhood, globalPlacementMode, globalSpacingScale, globalSpacingY, globalSpacingStage2Mode, globallySpacedStart, presentationEvaluations: candidates.length, zeroCrossingStructural, zeroCrossingPresentation, minimumStructuralCrossings, boundedFallbackCount: boundedFallback.length, candidates, floatSelected, roundedSelected, finalCanonicalization: finalCanonicalization ? { ...finalCanonicalization, canonicalMetrics: undefined } : null, selected: finalCanonicalization?.applied ? roundedSelected : floatSelected };
 }
 function complexityProbe() {
   return [9, 10, 12, 16, 25].map((nodeCount) => ({
@@ -1662,7 +1669,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationAdaptiveMargin: adaptiveMarginThreshold, relaxationFinalCanonicalizationMode, globalSpacingScale, globalSpacingStage2Mode, screenSpaceAuditEnabled, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationAdaptiveMargin: adaptiveMarginThreshold, relaxationFinalCanonicalizationMode, globalPlacementMode, globalSpacingScale, globalSpacingY, globalSpacingStage2Mode, screenSpaceAuditEnabled, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
   scaling: complexityProbe(),
   ...search,
   selectedPresentation: selectedPresentationDigest(search.selected),

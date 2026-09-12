@@ -20,8 +20,10 @@ function runSearch(extraEnvironment: Record<string, string> = {}) {
   });
   return JSON.parse(output) as {
     graph: { nodes: number; edges: number };
-    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationAdaptiveMargin: number; relaxationFinalCanonicalizationMode: string; globalSpacingScale: number; globalSpacingStage2Mode: string; screenSpaceAuditEnabled: boolean };
+    searchBudget: { relaxationApproximationMode: string; relaxationPrioritizationMode: string; relaxationPriorityTopK: number; relaxationAdaptiveMargin: number; relaxationFinalCanonicalizationMode: string; globalPlacementMode: string; globalSpacingScale: number; globalSpacingY: number; globalSpacingStage2Mode: string; screenSpaceAuditEnabled: boolean };
+    globalPlacementMode: string;
     globalSpacingScale: number;
+    globalSpacingY: number;
     globalSpacingStage2Mode: string;
     selected?: { family: string; metrics?: { fitScale: number; minimumSeparation: number; screenSpace?: { nodeMinimumSeparation: number; labelNear20: number; routeMax: number } | null } } | null;
     postStructuralRelaxation?: {
@@ -53,6 +55,21 @@ test("screen-space audit applies the actual viewport fit scale without changing 
   assert.ok(Math.abs((metrics?.screenSpace?.nodeMinimumSeparation ?? 0) - (metrics?.minimumSeparation ?? 0) * (metrics?.fitScale ?? 0)) < 1e-6);
   assert.ok((metrics?.screenSpace?.labelNear20 ?? -1) >= 0);
   assert.ok((metrics?.screenSpace?.routeMax ?? -1) >= 0);
+});
+
+test("viewport-anisotropic placement is an explicit diagnostic arm and can bypass Stage 2", () => {
+  const anisotropic = runSearch({
+    E2R_GLOBAL_PLACEMENT_MODE: "viewport-anisotropic",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+    E2R_GLOBAL_SPACING_STAGE2: "off",
+  });
+  assert.equal(anisotropic.searchBudget.globalPlacementMode, "viewport-anisotropic");
+  assert.equal(anisotropic.searchBudget.globalSpacingScale, 0.88);
+  assert.equal(anisotropic.searchBudget.globalSpacingY, 1.12);
+  assert.equal(anisotropic.globalPlacementMode, "viewport-anisotropic");
+  assert.equal(anisotropic.globalSpacingY, 1.12);
+  assert.equal(anisotropic.selected?.family, "global-spacing-only");
 });
 
 test("local presentation approximation is diagnostic opt-in and preserves full validation boundary", () => {
