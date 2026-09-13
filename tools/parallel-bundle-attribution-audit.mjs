@@ -338,7 +338,7 @@ function summarizeCustomPresentation(dataset, positions, edges, routes, relation
   };
 }
 
-function atomicIncidentPortfolio(dataset, positions) {
+function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {}) {
   const startedAt = performance.now();
   const graph = buildEntityGraph(dataset);
   const edges = graph.edges.map((edge) => ({ ...edge, label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "" }));
@@ -364,7 +364,7 @@ function atomicIncidentPortfolio(dataset, positions) {
     const unitY = dy / chordLength;
     const maximumLabelWidth = Math.max(...group.map((edge) => relationLabelDisplayWidth(edge.label)));
     const projectedLabel = maximumLabelWidth * Math.abs(unitY) + 22 * Math.abs(unitX);
-    const gaps = [...new Set([56, 72, 88, Math.min(176, Math.max(56, Math.round((projectedLabel + 16) / 8) * 8))])];
+    const gaps = [...new Set([40, 56, 72, 88, Math.min(176, Math.max(56, Math.round((projectedLabel + 16) / 8) * 8))])];
     const centers = [-96, -64, -32, 0, 32, 64, 96];
     const incidentOrdinary = edges.filter((edge) => edge.parallelCount === 1
       && edge.sourceId !== edge.targetId
@@ -415,15 +415,26 @@ function atomicIncidentPortfolio(dataset, positions) {
       const laneSeparation = metrics?.laneSeparationScreen ?? 0;
       const sideBias = metrics?.bundleSideBias ?? 10;
       const routeTotal = groupRoutes.reduce((sum, route) => sum + routeLength(route.samples), 0);
+      const hardFailures = [
+        obstacleCount > 0 ? "obstacle" : null,
+        laneSeparation < 16 ? "lane-separation" : null,
+        labelClearance < 4 ? "label-clearance" : null,
+        minimumOwnership < 0 ? "label-ownership" : null,
+        incidentOrdinary.length > 0 && outerClearance < 4 ? "outer-clearance" : null,
+        summary.crossings > 0 ? "crossing" : null,
+        new Set(offsets.map((offset) => Math.round(offset * 100) / 100)).size !== offsets.length ? "physical-order" : null,
+      ].filter(Boolean);
       const hardPenalty = obstacleCount * 1e9 + summary.crossings * 1e7 + (minimumOwnership < 0 ? 1e6 + Math.abs(minimumOwnership) * 1000 : 0);
       const readablePenalty = Math.max(0, 12 - labelClearance) * 10000
         + Math.max(0, 8 - outerClearance) * 20000
         + Math.max(0, 18 - laneSeparation) * 5000;
       const score = hardPenalty + readablePenalty + sideBias * 1000 + routeTotal * .01;
-      candidates.push({ score, gap, center, offsets, routes, labels, summary, minimumOwnership, obstacleCount });
+      candidates.push({ score, gap, center, offsets, routes, labels, summary, minimumOwnership, obstacleCount, hardFailures });
     }
-    candidates.sort((left, right) => left.score - right.score || left.gap - right.gap || Math.abs(left.center) - Math.abs(right.center) || left.center - right.center);
-    const selected = candidates[0];
+    const feasibleCandidates = candidates.filter((candidate) => candidate.hardFailures.length === 0);
+    const selectionPool = hardFirst && feasibleCandidates.length > 0 ? feasibleCandidates : candidates;
+    selectionPool.sort((left, right) => left.score - right.score || left.gap - right.gap || Math.abs(left.center) - Math.abs(right.center) || left.center - right.center);
+    const selected = selectionPool[0];
     routesById = new Map(selected.routes.map((route) => [route.id, route]));
     decisions.push({
       edgeIds: group.map((edge) => edge.id),
@@ -433,6 +444,9 @@ function atomicIncidentPortfolio(dataset, positions) {
       selectedOffsets: selected.offsets,
       minimumOwnership: selected.minimumOwnership,
       obstacleCount: selected.obstacleCount,
+      hardFeasible: selected.hardFailures.length === 0,
+      hardFailures: selected.hardFailures,
+      feasibleCandidateCount: feasibleCandidates.length,
       endpointAngularCapacityDegrees: endpointAngularCapacity(group, edges, positions),
     });
   }
@@ -443,7 +457,10 @@ function atomicIncidentPortfolio(dataset, positions) {
     previousPlacements: new Map(), manualAnchors: new Map(),
   });
   return summarizeCustomPresentation(dataset, positions, edges, routes, labels, {
-    formulation: "atomic-bundle-reservation-plus-incident-ordinary-reroute",
+    formulation: hardFirst
+      ? "hard-feasibility-first-endpoint-sector-portfolio"
+      : "atomic-bundle-reservation-plus-incident-ordinary-reroute",
+    hardFirst,
     decisions,
     elapsedMs: Math.round((performance.now() - startedAt) * 10) / 10,
   });
@@ -487,6 +504,10 @@ function runCell(name, locale, dataset, positions, source) {
   const jointIncidentRepeat = atomicIncidentPortfolio(dataset, positions);
   jointIncident.incidentAllocator.deterministic = JSON.stringify(jointIncident.routeGeometry) === JSON.stringify(jointIncidentRepeat.routeGeometry);
   evaluated.push({ arm: "joint-incident-portfolio", ...jointIncident });
+  const hardFirst = atomicIncidentPortfolio(dataset, positions, { hardFirst: true });
+  const hardFirstRepeat = atomicIncidentPortfolio(dataset, positions, { hardFirst: true });
+  hardFirst.incidentAllocator.deterministic = JSON.stringify(hardFirst.routeGeometry) === JSON.stringify(hardFirstRepeat.routeGeometry);
+  evaluated.push({ arm: "hard-feasibility-first", ...hardFirst });
   const angularRelievedPositions = relieveIncidentAngularCapacity(graph.edges, positions);
   const angularJoint = atomicIncidentPortfolio(dataset, angularRelievedPositions);
   const angularJointRepeat = atomicIncidentPortfolio(dataset, angularRelievedPositions);
@@ -535,10 +556,17 @@ const report = {
   results,
 };
 
-if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "2") {
+if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "3") {
+  console.log(report.results.map((cell) => {
+    const arm = cell.arms.find(({ arm }) => arm === "hard-feasibility-first");
+    const group = arm?.groups[0];
+    const decision = arm?.incidentAllocator?.decisions[0];
+    return `${cell.name}/${cell.locale}: feasible=${decision?.hardFeasible ?? "n/a"} candidates=${decision?.feasibleCandidateCount ?? 0}/${decision?.candidateCount ?? 0} failures=${(decision?.hardFailures ?? []).join("+") || "none"} angle=${decision?.endpointAngularCapacityDegrees?.toFixed?.(1) ?? "n/a"} lane=${group?.laneSeparationScreen ?? "n/a"} label=${group?.relationLabelClearanceScreen ?? "n/a"} ownership=${group ? Math.min(...group.labelAssociation.map(({ ownershipMargin }) => ownershipMargin)) : "n/a"} outer=${group?.outerOrdinaryClearanceScreen ?? "n/a"} bias=${group?.bundleSideBias ?? "n/a"} obstacles=${group?.obstacleInfluence.length ?? "n/a"} ordinaryChanges=${arm?.ordinaryRouteChangesFromFixedRoutingBaseline ?? "n/a"} ms=${arm?.incidentAllocator?.elapsedMs ?? "n/a"} deterministic=${arm?.incidentAllocator?.deterministic ?? false}`;
+  }).join("\n"));
+} else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "2") {
   console.log(JSON.stringify(report.results.map((cell) => ({
     cell: `${cell.name}/${cell.locale}`,
-    arms: cell.arms.filter(({ arm }) => ["fixed-routing-baseline", "routing-pair-16", "routing-bundle-16", "routing-corridor-aware", "joint-incident-portfolio", "angular-relief-plus-joint-incident"].includes(arm)).map(({ arm, crossings, routeMedianScreen, groups, incidentAllocator, ordinaryRouteChangesFromFixedRoutingBaseline }) => ({
+    arms: cell.arms.filter(({ arm }) => ["fixed-routing-baseline", "routing-pair-16", "routing-bundle-16", "routing-corridor-aware", "joint-incident-portfolio", "hard-feasibility-first", "angular-relief-plus-joint-incident"].includes(arm)).map(({ arm, crossings, routeMedianScreen, groups, incidentAllocator, ordinaryRouteChangesFromFixedRoutingBaseline }) => ({
       arm,
       crossings,
       median: routeMedianScreen,
@@ -554,13 +582,17 @@ if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "2") {
       evaluations: incidentAllocator?.decisions.reduce((sum, decision) => sum + decision.candidateCount, 0),
       elapsedMs: incidentAllocator?.elapsedMs,
       deterministic: incidentAllocator?.deterministic,
+      hardFirst: incidentAllocator?.hardFirst,
+      hardFeasible: groups[0]?.hardFeasible,
+      hardFailures: groups[0]?.hardFailures,
+      feasibleCandidates: groups[0]?.feasibleCandidateCount,
     })),
   })), null, 2));
 } else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "1") {
   console.log(JSON.stringify(report.results.map((cell) => ({
     name: cell.name,
     locale: cell.locale,
-    arms: cell.arms.filter(({ arm }) => ["fixed-routing-baseline", "routing-pair-16", "routing-bundle-16", "routing-corridor-aware", "joint-incident-portfolio", "angular-relief-plus-joint-incident"].includes(arm)).map(({ arm, crossings, routeMedianScreen, groups, incidentAllocator, routeChangesFromFixedRoutingBaseline, ordinaryRouteChangesFromFixedRoutingBaseline }) => ({
+    arms: cell.arms.filter(({ arm }) => ["fixed-routing-baseline", "routing-pair-16", "routing-bundle-16", "routing-corridor-aware", "joint-incident-portfolio", "hard-feasibility-first", "angular-relief-plus-joint-incident"].includes(arm)).map(({ arm, crossings, routeMedianScreen, groups, incidentAllocator, routeChangesFromFixedRoutingBaseline, ordinaryRouteChangesFromFixedRoutingBaseline }) => ({
       arm,
       crossings,
       routeMedianScreen,
