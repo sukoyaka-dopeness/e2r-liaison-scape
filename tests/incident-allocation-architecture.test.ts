@@ -5,6 +5,7 @@ import { planEndpointAllocations, type EndpointPlanCandidate } from "../experime
 import { compressIncidentCandidates } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/candidate-compression.ts";
 import { deriveGeometryCandidateFamily } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/geometry-derived-candidates.ts";
 import { decidePlacementRequestLifecycle } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/placement-request-lifecycle.ts";
+import { applyCapacityNegotiatedPlacement } from "../experimental/product-evaluation-seam/structural-placement/capacity-negotiated-placement.ts";
 
 const candidate = (overrides: Partial<IncidentAllocationCandidate> = {}): IncidentAllocationCandidate => ({
   id: "candidate-a", hardFailures: [], requiredHalfSectorDegrees: 20,
@@ -113,4 +114,17 @@ test("placement request lifecycle applies only at a safe ownership boundary", ()
   assert.deepEqual(decidePlacementRequestLifecycle({ ...base, hasAuthoredCoordinates: true }), { action: "defer", reason: "manual-authority" });
   assert.deepEqual(decidePlacementRequestLifecycle({ ...base, requestToken: "old" }), { action: "discard", reason: "stale-request" });
   assert.deepEqual(decidePlacementRequestLifecycle(base, true), { action: "discard", reason: "cancelled" });
+});
+
+test("capacity-negotiated placement uses the request and fails closed on graph-wide safety", () => {
+  const positions = { hub: { x: 0, y: 0 }, near: { x: 80, y: 0 }, remote: { x: 80, y: 1 } };
+  const request = { endpointId: "hub", bundleAngleRadians: 0, requiredHalfSectorDegrees: 30, incidentNeighbors: [{ id: "near", angleRadians: 0.05, radius: 80 }] };
+  const result = applyCapacityNegotiatedPlacement(positions, request);
+  assert.equal(result.status, "applied");
+  assert.deepEqual(result.movedNeighborIds, ["near"]);
+  assert.notDeepEqual(result.positions, positions);
+  assert.ok(result.afterMinimumSeparation >= result.beforeMinimumSeparation * 0.88);
+  assert.ok(result.afterExtent <= result.beforeExtent * 1.25);
+  const unsafe = applyCapacityNegotiatedPlacement(positions, request, { maxNodeSeparationLossRatio: 0, maxExtentGrowthRatio: 0 });
+  assert.equal(unsafe.status, "rejected");
 });
