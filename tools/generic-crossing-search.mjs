@@ -200,6 +200,29 @@ function productionAblationPlan(mode) {
         cheapSearch: { ...frontier.summary, mode: "structural-frontier-loss-audit", auditCandidateCount: frontier.poolCandidates.length },
       };
     }
+    case "frontier-progressive-audit": {
+      const frontier = productionStructuralFrontier(12);
+      return {
+        specs: frontier.frontierCandidates.map((candidate, index) => ({
+          family: `structural-frontier-progressive-audit-${index + 1}-${candidate.family}`,
+          positions: clonePositions(candidate.positions),
+          source: candidate,
+        })),
+        cheapSearch: { ...frontier.summary, mode: "structural-frontier-progressive-audit", auditCandidateCount: frontier.frontierCandidates.length },
+      };
+    }
+    case "frontier-progressive-12": {
+      const progressive = progressiveStructuralFrontier(12);
+      const placementEligible = progressive.frontierCandidates.some((candidate) => candidate.structuralCrossings === 0);
+      return {
+        specs: progressive.representatives.map((candidate, index) => ({
+          family: `structural-progressive-frontier-${index + 1}-${candidate.family}`,
+          positions: placementEligible ? globalPlacementTransform(candidate.positions) : clonePositions(candidate.positions),
+          source: candidate,
+        })),
+        cheapSearch: { ...progressive.summary, placementEligible },
+      };
+    }
     case "frontier-adaptive-12": {
       const probe = productionStructuralFrontier(12);
       const adaptiveLimit = Math.min(probe.poolCandidates.length, Math.max(12, probe.frontierCandidates.length));
@@ -1058,6 +1081,46 @@ function productionStructuralFrontier(limit, featureMode = "global") {
     },
   };
 }
+function progressiveStructuralFrontier(limit) {
+  const base = productionStructuralFrontier(limit);
+  const groups = new Map();
+  for (const candidate of base.frontierCandidates) {
+    const key = `${candidate.family}|${candidate.structuralCrossings}|${Math.round(candidate.cheapScore / 1000000)}|${Math.round(candidate.minNodeSeparation)}|${Math.round(candidate.maxEdge)}`;
+    const group = groups.get(key) ?? { key, candidates: [] };
+    group.candidates.push(candidate);
+    groups.set(key, group);
+  }
+  const orderedGroups = [...groups.values()].sort((left, right) => {
+    const leftCandidate = left.candidates[0]; const rightCandidate = right.candidates[0];
+    return leftCandidate.structuralCrossings - rightCandidate.structuralCrossings
+      || leftCandidate.cheapScore - rightCandidate.cheapScore
+      || rightCandidate.minNodeSeparation - leftCandidate.minNodeSeparation
+      || left.key.localeCompare(right.key);
+  });
+  const initialGroup = orderedGroups[0]?.candidates ?? [];
+  const selected = initialGroup.length >= limit
+    ? initialGroup.slice(0, limit)
+    : [...initialGroup, ...selectStructuralRepresentatives(
+      base.frontierCandidates.filter((candidate) => !initialGroup.includes(candidate)),
+      orderedGroups.slice(1).flatMap((group) => group.candidates),
+      Math.max(0, limit - initialGroup.length),
+    )];
+  const selectedGroupCount = orderedGroups.filter((group) => group.candidates.some((candidate) => selected.includes(candidate))).length;
+  return {
+    representatives: selected,
+    frontierCandidates: base.frontierCandidates,
+    summary: {
+      ...base.summary,
+      mode: "structural-frontier-progressive-cheap-strata",
+      progressivePolicy: "complete-best-cheap-stratum-then-frontier-fill; no authoritative early-stop bound",
+      initialStratumKey: orderedGroups[0]?.key ?? null,
+      initialStratumCount: initialGroup.length,
+      stratumCount: orderedGroups.length,
+      widenedStrata: Math.max(0, selectedGroupCount - (initialGroup.length > 0 ? 1 : 0)),
+      selectedGroupCount,
+    },
+  };
+}
 function fullPresentationScore(metrics) {
   return metrics.score + metrics.overlapPairs * 5000000;
 }
@@ -1787,8 +1850,10 @@ function productionSimplificationSearch(mode) {
     selected: finalCanonicalization?.applied ? roundedSelected : floatSelected,
     ablation: {
       mode,
-      formulation: mode.startsWith("frontier-")
-        ? "cheap structural frontier plus farthest-point representatives; full Product presentation only for the bounded portfolio"
+      formulation: mode === "frontier-progressive-12"
+        ? "diagnostic cheap-strata progressive frontier fill; no authoritative early-stop bound"
+        : mode.startsWith("frontier-")
+          ? "cheap structural frontier plus farthest-point representatives; full Product presentation only for the bounded portfolio"
         : "production-native deterministic seed(s) plus optional global transform; one full Product presentation per arm",
       candidateFamilies: specs.map(({ family }) => family),
       stage1Search: "bypassed",

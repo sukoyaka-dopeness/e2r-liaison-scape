@@ -223,6 +223,29 @@ test("density-aware adaptive frontier widens only when the cheap frontier itself
   assert.equal(adaptive.selected?.metrics?.overlapPairs, 0);
 });
 
+test("progressive frontier completes the best cheap stratum before bounded representative fill", () => {
+  const progressive = runSearch({
+    E2R_GLOBAL_PLACEMENT_ABLATION: "frontier-progressive-12",
+    E2R_GLOBAL_PLACEMENT_MODE: "viewport-anisotropic",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+    E2R_GLOBAL_SPACING_STAGE2: "off",
+    E2R_RELAXATION_FINAL_CANONICALIZATION: "off",
+  }, "synthetic:k7-7") as ReturnType<typeof runSearch> & {
+    ablation?: {
+      candidateArmCount: number;
+      cheapPlanning?: { mode: string; progressivePolicy: string; initialStratumCount: number; widenedStrata: number } | null;
+    };
+  };
+  assert.equal(progressive.ablation?.cheapPlanning?.mode, "structural-frontier-progressive-cheap-strata");
+  assert.equal(progressive.ablation?.cheapPlanning?.progressivePolicy, "complete-best-cheap-stratum-then-frontier-fill; no authoritative early-stop bound");
+  assert.equal(progressive.ablation?.cheapPlanning?.initialStratumCount, 12);
+  assert.equal(progressive.ablation?.cheapPlanning?.widenedStrata, 0);
+  assert.equal(progressive.ablation?.candidateArmCount, 12);
+  assert.equal(progressive.selected?.metrics?.crossings, 129);
+  assert.equal(progressive.selected?.metrics?.labelRouteHits, 8);
+});
+
 test("topology-aware frontier remains diagnostic and reports its feature mode", () => {
   const topology = runSearch({
     E2R_GLOBAL_PLACEMENT_ABLATION: "frontier-topology-12",
