@@ -7,6 +7,7 @@ import { decideIncidentAllocation } from "../experimental/product-evaluation-sea
 import { planEndpointAllocations } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/endpoint-plan.ts";
 import { isCompressedGeometryFamilyMember } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/candidate-compression.ts";
 import { deriveGeometryCandidateFamily } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/geometry-derived-candidates.ts";
+import { applyCapacityNegotiatedPlacement } from "../experimental/product-evaluation-seam/structural-placement/capacity-negotiated-placement.ts";
 
 const canonicalExamples = "C:/Users/extra/E2R/e2r-spec/examples";
 const canonicalCells = [
@@ -246,6 +247,57 @@ function relieveIncidentAngularCapacity(edges, positions, minimumDegrees = 32) {
     }
   }
   return adjusted;
+}
+
+function applyWholeGraphCapacityCorrection(graph, positions, shortageDecisions) {
+  let adjusted = clonePositions(positions);
+  const applications = [];
+  const directNodeIds = new Set();
+  for (const decision of shortageDecisions) {
+    const group = parallelGroups(graph.edges).find((candidate) => candidate.map(({ id }) => id).join("\u0000") === decision.edgeIds.join("\u0000"));
+    if (!group) continue;
+    const endpointIds = [...new Set(group.flatMap((edge) => [edge.sourceId, edge.targetId]))].sort();
+    for (const endpointId of endpointIds) {
+      directNodeIds.add(endpointId);
+      const oppositeId = endpointIds.find((id) => id !== endpointId);
+      const endpoint = adjusted[endpointId];
+      const opposite = adjusted[oppositeId];
+      if (!endpoint || !opposite) continue;
+      const bundleAngleRadians = Math.atan2(opposite.y - endpoint.y, opposite.x - endpoint.x);
+      const incidentNeighbors = graph.edges
+        .filter((edge) => edge.parallelCount === 1 && edge.sourceId !== edge.targetId && (edge.sourceId === endpointId || edge.targetId === endpointId))
+        .map((edge) => {
+          const neighborId = edge.sourceId === endpointId ? edge.targetId : edge.sourceId;
+          const neighbor = adjusted[neighborId];
+          if (!neighbor) return null;
+          const dx = neighbor.x - endpoint.x;
+          const dy = neighbor.y - endpoint.y;
+          return { id: neighborId, angleRadians: Math.atan2(dy, dx), radius: Math.hypot(dx, dy) };
+        })
+        .filter(Boolean);
+      const correction = applyCapacityNegotiatedPlacement(adjusted, {
+        endpointId,
+        bundleAngleRadians,
+        requiredHalfSectorDegrees: decision.allocationDecision.shortage.requiredHalfSectorDegrees,
+        incidentNeighbors,
+      }, {
+        maxNodeSeparationLossRatio: 0.12,
+        maxExtentGrowthRatio: 0.25,
+        maxFitScaleLossRatio: 0.1,
+        viewport: { width: 800, height: 500, padding: 24 },
+        maxMovedNeighborDisplacement: 140,
+      });
+      applications.push({ endpointId, status: correction.status, reason: correction.reason, movedNeighborIds: correction.movedNeighborIds, beforeMinimumSeparation: correction.beforeMinimumSeparation, afterMinimumSeparation: correction.afterMinimumSeparation, beforeExtent: correction.beforeExtent, afterExtent: correction.afterExtent, beforeFitScale: correction.beforeFitScale, afterFitScale: correction.afterFitScale, maxMovedNeighborDisplacement: correction.maxMovedNeighborDisplacement });
+      for (const id of correction.movedNeighborIds) directNodeIds.add(id);
+      if (correction.status !== "applied") {
+        if (correction.reason === "no-neighbors" || correction.reason === "no-relief-needed") continue;
+        return { status: "rejected", positions, applications, changedNodeIds: [], directNodeIds: [...directNodeIds] };
+      }
+      adjusted = clonePositions(correction.positions);
+    }
+  }
+  const changedNodeIds = Object.keys(positions).filter((id) => Math.hypot(adjusted[id].x - positions[id].x, adjusted[id].y - positions[id].y) > 0.01);
+  return { status: applications.length > 0 ? "applied" : "not-needed", positions: adjusted, applications, changedNodeIds, directNodeIds: [...directNodeIds] };
 }
 
 function midpoint(samples) {
@@ -774,6 +826,22 @@ function runCell(name, locale, dataset, positions, source) {
     negotiated.incidentAllocator.minimumNodeSeparationBefore = presentation(dataset, positions).groups[0]?.minimumNodeSeparationScreen ?? null;
     negotiated.incidentAllocator.minimumNodeSeparationAfter = presentation(dataset, negotiatedPositions).groups[0]?.minimumNodeSeparationScreen ?? null;
     evaluated.push({ arm: "capacity-request-placement-counterfactual", ...negotiated });
+    const shortageDecisions = hardFirst.incidentAllocator.decisions.filter(({ allocationDecision }) => allocationDecision.status === "capacity-shortage");
+    const safeCorrection = applyWholeGraphCapacityCorrection(graph, positions, shortageDecisions);
+    if (safeCorrection.status === "applied") {
+      const safetyPlan = endpointPlanPortfolio(dataset, safeCorrection.positions);
+      const safetyRepeat = endpointPlanPortfolio(dataset, safeCorrection.positions);
+      safetyPlan.incidentAllocator.deterministic = JSON.stringify(safetyPlan.routeGeometry) === JSON.stringify(safetyRepeat.routeGeometry);
+      safetyPlan.incidentAllocator.placementCorrection = safeCorrection;
+      safetyPlan.incidentAllocator.changedNodeIds = safeCorrection.changedNodeIds;
+      safetyPlan.incidentAllocator.unrelatedNodeIds = safeCorrection.changedNodeIds.filter((id) => !safeCorrection.directNodeIds.includes(id));
+      safetyPlan.incidentAllocator.directRelationIds = graph.edges.filter((edge) => [edge.sourceId, edge.targetId].some((id) => safeCorrection.directNodeIds.includes(id))).map(({ id }) => id);
+      evaluated.push({ arm: "capacity-request-placement-whole-graph-safe", ...safetyPlan });
+    } else {
+      const rejectedPlan = endpointPlanPortfolio(dataset, positions);
+      rejectedPlan.incidentAllocator.placementCorrection = safeCorrection;
+      evaluated.push({ arm: "capacity-request-placement-whole-graph-safe", ...rejectedPlan });
+    }
   }
   const angularRelievedPositions = relieveIncidentAngularCapacity(graph.edges, positions);
   const angularJoint = atomicIncidentPortfolio(dataset, angularRelievedPositions);
@@ -790,6 +858,7 @@ function runCell(name, locale, dataset, positions, source) {
         ...arm,
         routeChangesFromFixedRoutingBaseline: arm.arm === "fixed-routing-baseline" ? 0 : changedRouteIds.length,
         ordinaryRouteChangesFromFixedRoutingBaseline: arm.arm === "fixed-routing-baseline" ? 0 : changedRouteIds.filter((id) => !parallelIds.has(id)).length,
+        unrelatedRouteChanges: changedRouteIds.filter((id) => !(arm.incidentAllocator?.directRelationIds ?? []).includes(id)),
       };
     }),
   };
@@ -850,6 +919,37 @@ if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "6") {
       geometryDerived: geometryDerived ? { candidates: geometryDerived.incidentAllocator.candidateCount, plan: geometryDerived.incidentAllocator.endpointPlan.decision.status, selected: geometryDerived.incidentAllocator.endpointPlan.decision.selectedCandidateIds ?? [], selectedPlanMatchesFull: geometryDerived.incidentAllocator.selectedPlanMatchesFull, feasiblePlanRetention: geometryDerived.incidentAllocator.feasiblePlanRetention, elapsedMs: geometryDerived.incidentAllocator.elapsedMs, candidateGenerationMs: geometryDerived.incidentAllocator.candidateGenerationElapsedMs, oracleGenerationMs: geometryDerived.incidentAllocator.oracleGenerationElapsedMs, comboEvals: geometryDerived.incidentAllocator.authoritativeCombinationEvaluations, group: geometryDerived.groups[0] ? { lane: geometryDerived.groups[0].laneSeparationScreen, label: geometryDerived.groups[0].relationLabelClearanceScreen, ownership: Math.min(...geometryDerived.groups[0].labelAssociation.map(({ ownershipMargin }) => ownershipMargin)), outer: geometryDerived.groups[0].outerOrdinaryClearanceScreen, bias: geometryDerived.groups[0].bundleSideBias } : null } : null,
     };
   }), null, 2));
+} else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "7") {
+  console.log(JSON.stringify(report.results.map((cell) => {
+    const arm = cell.arms.find(({ arm }) => arm === "capacity-request-placement-whole-graph-safe");
+    if (!arm) return null;
+    const correction = arm.incidentAllocator.placementCorrection;
+    return {
+      cell: `${cell.name}/${cell.locale}`,
+      status: correction?.status ?? "not-requested",
+      changedNodeIds: correction?.changedNodeIds ?? [],
+      directNodeIds: correction?.directNodeIds ?? [],
+      unrelatedNodeIds: arm.incidentAllocator.unrelatedNodeIds ?? [],
+      applications: correction?.applications ?? [],
+      plan: arm.incidentAllocator.endpointPlan?.decision?.status ?? null,
+      crossings: arm.crossings,
+      fitScale: arm.fitScale,
+      graph: arm.graph,
+      groups: arm.groups.map((group) => ({
+        edgeIds: group.edgeIds,
+        lane: group.laneSeparationScreen,
+        label: group.relationLabelClearanceScreen,
+        ownership: Math.min(...group.labelAssociation.map(({ ownershipMargin }) => ownershipMargin), 0),
+        outer: group.outerOrdinaryClearanceScreen,
+        bias: group.bundleSideBias,
+        obstacleInfluence: group.obstacleInfluence,
+        minimumNodeSeparation: group.minimumNodeSeparationScreen,
+      })),
+      ordinaryRouteChanges: arm.ordinaryRouteChangesFromFixedRoutingBaseline,
+      unrelatedRouteChanges: arm.unrelatedRouteChanges ?? [],
+      elapsedMs: arm.incidentAllocator.elapsedMs,
+    };
+  }).filter(Boolean), null, 2));
 } else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "5") {
   console.log(JSON.stringify(report.results.map((cell) => {
     const arm = cell.arms.find(({ arm }) => arm === "capacity-request-placement-counterfactual");

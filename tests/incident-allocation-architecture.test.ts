@@ -128,3 +128,37 @@ test("capacity-negotiated placement uses the request and fails closed on graph-w
   const unsafe = applyCapacityNegotiatedPlacement(positions, request, { maxNodeSeparationLossRatio: 0, maxExtentGrowthRatio: 0 });
   assert.equal(unsafe.status, "rejected");
 });
+
+test("capacity negotiation preserves incident angular ordering instead of collapsing neighbors", () => {
+  const positions = {
+    hub: { x: 0, y: 0 },
+    near: { x: 80, y: 2 },
+    nearer: { x: 80, y: 4 },
+    remote: { x: -120, y: 0 },
+  };
+  const result = applyCapacityNegotiatedPlacement(positions, {
+    endpointId: "hub", bundleAngleRadians: 0, requiredHalfSectorDegrees: 24,
+    minimumAngularSeparationDegrees: 6,
+    incidentNeighbors: [
+      { id: "near", angleRadians: Math.atan2(2, 80), radius: Math.hypot(80, 2) },
+      { id: "nearer", angleRadians: Math.atan2(4, 80), radius: Math.hypot(80, 4) },
+    ],
+  });
+  assert.equal(result.status, "applied");
+  assert.ok(result.positions.nearer.y > result.positions.near.y);
+  assert.equal(result.maxMovedNeighborDisplacement > 0, true);
+});
+
+test("capacity negotiation rejects a correction that would materially reduce viewport fit", () => {
+  const positions = { hub: { x: 0, y: 0 }, near: { x: 80, y: 0 }, far: { x: 84, y: 0 } };
+  const result = applyCapacityNegotiatedPlacement(positions, {
+    endpointId: "hub", bundleAngleRadians: 0, requiredHalfSectorDegrees: 120,
+    incidentNeighbors: [{ id: "near", angleRadians: 0, radius: 80 }],
+  }, {
+    maxNodeSeparationLossRatio: 0.2, maxExtentGrowthRatio: 10,
+    maxFitScaleLossRatio: 0.01, viewport: { width: 100, height: 100, padding: 10 },
+  });
+  assert.equal(result.status, "rejected");
+  assert.equal(result.reason, "unsafe-fit-scale");
+  assert.deepEqual(result.positions, positions);
+});
