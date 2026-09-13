@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { buildEntityGraph } from "../src/dataset.ts";
 import { settleInitialPlacement, solveAutoLayout } from "../src/auto-layout.ts";
 import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
-import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision } from "../src/viewport.ts";
+import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence } from "../src/viewport.ts";
 import { INITIAL_ENTITY_CLEARANCE } from "../src/initial-entity-placement.ts";
 
 const fixturePath = process.argv[2] ?? "experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json";
@@ -91,6 +91,7 @@ const parsedGlobalSpacingY = Number.parseFloat(process.env.E2R_GLOBAL_SPACING_Y 
 const globalSpacingY = Number.isFinite(parsedGlobalSpacingY) && parsedGlobalSpacingY > 0 ? parsedGlobalSpacingY : globalSpacingScale;
 const globalSpacingStage2Mode = process.env.E2R_GLOBAL_SPACING_STAGE2 === "off" ? "off" : "full";
 const globalPlacementAblation = process.env.E2R_GLOBAL_PLACEMENT_ABLATION ?? "off";
+const obstaclePlacementAuditEnabled = process.env.E2R_OBSTACLE_PLACEMENT_AUDIT === "1";
 const edges = graph.edges.map((edge) => ({
   ...edge,
   label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "",
@@ -2052,8 +2053,150 @@ function selectedPresentationDigest(selected) {
   };
 }
 
+function obstaclePlacementAudit(selected) {
+  if (!selected) return null;
+  const positions = selected.positions;
+  const artifacts = selected.metrics?.presentationArtifacts;
+  if (!artifacts) return null;
+  const nodeById = new Map(graph.nodes.map((node) => [node.id, node]));
+  const edgeById = new Map(edges.map((edge) => [edge.id, edge]));
+  const obstacleInfluence = new Map();
+  const addInfluence = (nodeId, routeId) => {
+    if (!obstacleInfluence.has(nodeId)) obstacleInfluence.set(nodeId, new Set());
+    obstacleInfluence.get(nodeId).add(routeId);
+  };
+  for (const route of artifacts.routedEdges) {
+    for (const node of graph.nodes) {
+      if (node.id === route.sourceId || node.id === route.targetId) continue;
+      if (routeSamplesHaveNodeInfluence(route.samples, [positions[node.id] ?? node])) addInfluence(node.id, route.id);
+    }
+  }
+  const crossingCauseCounts = new Map();
+  for (const detail of selected.metrics.crossingDetails ?? []) {
+    const routes = detail.routes.map((id) => edgeById.get(id)).filter(Boolean);
+    const type = routes.some((edge) => edge.sourceId === edge.targetId)
+      ? "self-loop-interaction"
+      : routes.some((edge) => edge.parallelCount > 1)
+        ? "parallel-relation-presentation"
+        : "ordinary-route-crossing";
+    crossingCauseCounts.set(type, (crossingCauseCounts.get(type) ?? 0) + 1);
+  }
+  const nearestObstacleForRoute = (route) => {
+    const obstacles = graph.nodes
+      .filter((node) => node.id !== route.sourceId && node.id !== route.targetId)
+      .map((node) => ({
+        nodeId: node.id,
+        minimumDistance: Math.min(...route.samples.map((point) => Math.hypot(point.x - positions[node.id].x, point.y - positions[node.id].y))),
+      }))
+      .sort((left, right) => left.minimumDistance - right.minimumDistance || compareId(left.nodeId, right.nodeId));
+    const direct = Math.hypot(route.targetPosition.x - route.sourcePosition.x, route.targetPosition.y - route.sourcePosition.y);
+    const length = route.samples.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - route.samples[index].x, point.y - route.samples[index].y), 0);
+    return {
+      routeId: route.id,
+      sourceId: route.sourceId,
+      targetId: route.targetId,
+      directLength: direct,
+      routedLength: length,
+      detourRatio: length / Math.max(1, direct),
+      nearestObstacle: obstacles[0] ?? null,
+      influencedObstacleIds: obstacles.filter((obstacle) => routeSamplesHaveNodeInfluence(route.samples, [positions[obstacle.nodeId]])).map((obstacle) => obstacle.nodeId),
+    };
+  };
+  const focusNodes = [...obstacleInfluence.entries()]
+    .map(([nodeId, routeIds]) => ({ nodeId, influencedRouteCount: routeIds.size, routeIds: [...routeIds].sort(compareId) }))
+    .sort((left, right) => right.influencedRouteCount - left.influencedRouteCount || compareId(left.nodeId, right.nodeId));
+  const moveDistance = INITIAL_ENTITY_CLEARANCE;
+  const directions = [
+    { name: "east", x: 1, y: 0 }, { name: "west", x: -1, y: 0 },
+    { name: "south", x: 0, y: 1 }, { name: "north", x: 0, y: -1 },
+    { name: "south-east", x: 1, y: 1 }, { name: "south-west", x: -1, y: 1 },
+    { name: "north-east", x: 1, y: -1 }, { name: "north-west", x: -1, y: -1 },
+  ];
+  const candidates = [];
+  for (const focus of focusNodes) for (const direction of directions) {
+    const point = positions[focus.nodeId];
+    const movedPositions = clonePositions(positions);
+    movedPositions[focus.nodeId] = {
+      x: point.x + direction.x * moveDistance,
+      y: point.y + direction.y * moveDistance,
+    };
+    const metrics = presentationMetrics(movedPositions);
+    const changedCrossingRoutes = new Set((selected.metrics.crossingDetails ?? []).flatMap((detail) => detail.routes));
+    const remainingCrossingRoutes = new Set((metrics.crossingDetails ?? []).flatMap((detail) => detail.routes));
+    candidates.push({
+      nodeId: focus.nodeId,
+      direction: direction.name,
+      delta: { x: direction.x * moveDistance, y: direction.y * moveDistance },
+      metrics: {
+        crossings: metrics.crossings,
+        labelRouteHits: metrics.labelRouteHits,
+        labelNear20: metrics.labelNear20,
+        labelOverlap: metrics.labelOverlap,
+        overlapPairs: metrics.overlapPairs,
+        routeMedian: metrics.routeMedian,
+        routeMax: metrics.routeMax,
+        fitScale: metrics.fitScale,
+        screenNodeMinimumSeparation: metrics.screenSpace?.nodeMinimumSeparation ?? null,
+        score: metrics.score,
+      },
+      deltaFromBase: {
+        crossings: metrics.crossings - selected.metrics.crossings,
+        labelRouteHits: metrics.labelRouteHits - selected.metrics.labelRouteHits,
+        labelNear20: metrics.labelNear20 - selected.metrics.labelNear20,
+        score: metrics.score - selected.metrics.score,
+      },
+      crossingRouteDelta: {
+        removedRoutes: [...changedCrossingRoutes].filter((id) => !remainingCrossingRoutes.has(id)).sort(compareId),
+        addedRoutes: [...remainingCrossingRoutes].filter((id) => !changedCrossingRoutes.has(id)).sort(compareId),
+      },
+      presentation: selectedPresentationDigest({ metrics }),
+    });
+  }
+  candidates.sort((left, right) => left.metrics.score - right.metrics.score || compareId(left.nodeId, right.nodeId) || left.direction.localeCompare(right.direction));
+  const usefulMoves = candidates.filter((candidate) => candidate.metrics.crossings < selected.metrics.crossings
+    || candidate.metrics.labelRouteHits < selected.metrics.labelRouteHits
+    || candidate.metrics.labelNear20 < selected.metrics.labelNear20);
+  const crossingReducingMoves = candidates.filter((candidate) => candidate.metrics.crossings < selected.metrics.crossings);
+  const balancedCrossingReducingMoves = crossingReducingMoves.filter((candidate) => candidate.metrics.labelRouteHits <= selected.metrics.labelRouteHits
+    && candidate.metrics.labelNear20 <= selected.metrics.labelNear20
+    && candidate.metrics.labelOverlap <= selected.metrics.labelOverlap
+    && candidate.metrics.overlapPairs <= selected.metrics.overlapPairs);
+  const unaffectedCrossings = (selected.metrics.crossingDetails ?? []).filter((detail) => {
+    const routes = detail.routes.map((id) => edgeById.get(id)).filter(Boolean);
+    return routes.some((edge) => edge.sourceId === edge.targetId) || routes.some((edge) => edge.parallelCount > 1);
+  });
+  return {
+    contract: "OBSTACLE-SENSITIVE-PLACEMENT-AUDIT-v1",
+    basis: "authoritative Product route samples and generic one-clearance local moves around inferred obstacle Nodes",
+    moveDistance,
+    focusNodes,
+    crossingCauseCounts: Object.fromEntries([...crossingCauseCounts.entries()].sort(([left], [right]) => left.localeCompare(right))),
+    crossingRouteEvidence: [...new Set((selected.metrics.crossingDetails ?? []).flatMap((detail) => detail.routes))]
+      .sort(compareId)
+      .map((routeId) => nearestObstacleForRoute(artifacts.routedEdges.find((route) => route.id === routeId)))
+      .filter(Boolean),
+    presentationResidualCrossings: {
+      count: unaffectedCrossings.length,
+      routes: unaffectedCrossings.map((detail) => detail.routes).sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right))),
+    },
+    candidateCount: candidates.length,
+    usefulMoveCount: usefulMoves.length,
+    crossingReducingMoveCount: crossingReducingMoves.length,
+    balancedCrossingReducingMoveCount: balancedCrossingReducingMoves.length,
+    bestMoves: candidates.slice(0, 12),
+    usefulMoves: usefulMoves.slice(0, 24),
+    interpretation: {
+      placementSensitiveSignal: crossingReducingMoves.length > 0,
+      qualitySafePlacementSignal: balancedCrossingReducingMoves.length > 0,
+      obstacleInfluencedNodeCount: focusNodes.length,
+      allEvaluatedMovesPreserveNodeIds: candidates.every((candidate) => nodeById.has(candidate.nodeId)),
+    },
+  };
+}
+
 const startedAt = performance.now();
 const search = genericSearch();
+const obstacleAudit = obstaclePlacementAuditEnabled ? obstaclePlacementAudit(search.selected) : null;
 console.log(JSON.stringify({
   contract: "LIAISONSCAPE-GENERIC-CROSSING-SEARCH-v1",
   diagnosticOnly: true,
@@ -2098,4 +2241,5 @@ console.log(JSON.stringify({
   floatSelectedPositionFingerprint: search.floatSelected ? createHash("sha256").update(positionsKey(search.floatSelected.positions)).digest("hex").slice(0, 12) : null,
   selectedPositionFingerprint: search.selected ? createHash("sha256").update(positionsKey(search.selected.positions)).digest("hex").slice(0, 12) : null,
   selectedPresentation: selectedPresentationDigest(search.selected),
+  obstaclePlacementAudit: obstacleAudit,
 }, null, 2));
