@@ -2,7 +2,7 @@ import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
 import { createFeedbackStageInput, createPresentationPassSnapshot, createRouteSelectionSnapshot, type FeedbackStageInput, type PresentationPassSnapshot } from "./presentation-stage-contracts.ts";
 import { dependencyFingerprint, type PresentationDependencyTrace } from "./presentation-dependency.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, pointBounds, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type PointBounds, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteGeometryCache, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, pointBounds, relationLabelDisplayWidth, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type PointBounds, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteGeometryCache, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -170,7 +170,7 @@ export type AutomaticRoutingInput = {
   /** Development-only automatic parallel-group spacing; omitted by normal Product callers. */
   parallelBundleSpacing?: number;
   /** Development-only slot policy for parallel-group spacing. */
-  parallelBundleMode?: "pair" | "bundle";
+  parallelBundleMode?: "pair" | "bundle" | "corridor";
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
   profiler?: AutomaticPresentationProfiler;
   routeDecisionPass?: AutomaticRouteDecision["pass"];
@@ -226,6 +226,12 @@ export function deriveAutomaticRoutes({
   const occupiedPathIds: string[] = [];
   const overlapCounts = new Map<string, number>();
   const nodeMap = new Map(graph.nodes.map((node) => [node.id, node]));
+  const parallelBundleLabelWidths = new Map<string, number>();
+  for (const edge of graph.edges) {
+    if (edge.parallelCount <= 1) continue;
+    const key = [edge.sourceId, edge.targetId].sort().join("\u0000");
+    parallelBundleLabelWidths.set(key, Math.max(parallelBundleLabelWidths.get(key) ?? 0, relationLabelDisplayWidth(edge.label)));
+  }
   // During active drag, use the labels that were actually displayed in the
   // preceding presentation for stationary Nodes, plus the current label for
   // the dragged Node. This avoids scoring a route against a provisional
@@ -328,6 +334,7 @@ export function deriveAutomaticRoutes({
       geometryCache,
       parallelBundleSpacing,
       parallelBundleMode,
+      parallelBundleLabelWidths.get([edge.sourceId, edge.targetId].sort().join("\u0000")) ?? 0,
     );
     const isEligibleShape = edge.sourceId !== edge.targetId
       && edge.parallelCount === 1
@@ -499,6 +506,7 @@ export function deriveAutomaticRoutes({
         geometryCache,
         parallelBundleSpacing,
         parallelBundleMode,
+        parallelBundleLabelWidths.get([edge.sourceId, edge.targetId].sort().join("\u0000")) ?? 0,
       )
       : null;
     const routeWithoutObstaclesOrOccupiedPaths = routeWithoutObstacles !== null
@@ -522,6 +530,7 @@ export function deriveAutomaticRoutes({
         geometryCache,
         parallelBundleSpacing,
         parallelBundleMode,
+        parallelBundleLabelWidths.get([edge.sourceId, edge.targetId].sort().join("\u0000")) ?? 0,
       )
       : null;
     const obstacleComparison = routeWithoutObstacles === null
@@ -750,7 +759,7 @@ export type BoundedAutomaticPresentationInput = {
   /** Development-only automatic parallel-group spacing; omitted by normal Product callers. */
   parallelBundleSpacing?: number;
   /** Development-only slot policy for parallel-group spacing. */
-  parallelBundleMode?: "pair" | "bundle";
+  parallelBundleMode?: "pair" | "bundle" | "corridor";
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
   profiler?: AutomaticPresentationProfiler;
   /** Diagnostic-only replay input for the first canonical route pass. */

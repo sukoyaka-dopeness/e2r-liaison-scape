@@ -250,6 +250,7 @@ function runCell(name, locale, dataset, positions, source) {
     ["fixed-routing-baseline", positions, 0, "bundle"],
     ["routing-pair-16", positions, 16, "pair"],
     ["routing-bundle-16", positions, 16, "bundle"],
+    ["routing-corridor-aware", positions, 16, "corridor"],
     ["placement-mirror-x", transformPositions(positions, "mirror-x"), 0, "bundle"],
     ["placement-mirror-y", transformPositions(positions, "mirror-y"), 0, "bundle"],
     ["placement-rotate-90", transformPositions(positions, "rotate-90"), 0, "bundle"],

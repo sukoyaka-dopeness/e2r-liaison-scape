@@ -577,7 +577,7 @@ export function placeEdgeLabel(
 ): LabelRect {
   const startedAt = performance.now();
   const fallback = samples[Math.floor(samples.length / 2)] ?? { x: 0, y: 0 };
-  const width = Math.max(48, Math.min(220, textDisplayWidth(label, 32) + 12));
+  const width = relationLabelDisplayWidth(label);
   const candidateIndexes = [20, 16, 24, 12, 28, 8, 32, 4, 36]
     .map((index) => Math.max(0, Math.min(samples.length - 1, Math.round(index / 40 * (samples.length - 1)))))
     .filter((index, position, indexes) => indexes.indexOf(index) === position);
@@ -802,6 +802,11 @@ export function placeNodeLabel(
   return selected;
 }
 
+/** Deterministic visual width shared by Relation-label placement and corridor probes. */
+export function relationLabelDisplayWidth(value: string): number {
+  return Math.max(48, Math.min(220, textDisplayWidth(value, 32) + 12));
+}
+
 export function fitGraphView(
   points: Point[],
   width: number,
@@ -953,7 +958,8 @@ export function routeGraphEdge(
   routeProfile?: RouteArbitrationProfile,
   geometryCache?: RouteGeometryCache,
   parallelBundleSpacing = 0,
-  parallelBundleMode: "pair" | "bundle" = "bundle",
+  parallelBundleMode: "pair" | "bundle" | "corridor" = "bundle",
+  parallelBundleLabelWidth = 0,
 ): RouteGeometry {
   if (source.x === target.x && source.y === target.y && selfRelation) {
     if (manualSelfLoop === undefined) return selectAutomaticSelfLoopGeometry(source, parallelIndex, obstacles);
@@ -1040,9 +1046,15 @@ export function routeGraphEdge(
     * (parallelCount > 1 ? canonicalPhysicalSideSign : 1);
   const rank = Math.floor(parallelIndex / 2) + 1;
   const spacing = Math.max(0, parallelBundleSpacing);
+  const chordNormalLabelProjection = parallelBundleLabelWidth * Math.abs(unitY) + 22 * Math.abs(unitX);
+  const corridorMinimumLaneSeparation = chordNormalLabelProjection + 16;
+  const nominalLaneSeparation = parallelCount > 1 ? 80 : 0;
+  const corridorExtra = parallelBundleMode === "corridor"
+    ? Math.max(0, (corridorMinimumLaneSeparation - nominalLaneSeparation) / 2)
+    : 0;
   const spacingUnits = parallelBundleMode === "pair"
     ? spacing
-    : spacing * Math.max(1, parallelCount - 1 + rank - 1);
+    : spacing * Math.max(1, parallelCount - 1 + rank - 1) + corridorExtra;
   const baseOffset = parallelCount === 1 ? 0 : direction * (40 + (rank - 1) * 24 + spacingUnits);
   // Callers exclude the source and target by identity. Keep unrelated nodes
   // even when they have been dragged onto an endpoint's coordinates.

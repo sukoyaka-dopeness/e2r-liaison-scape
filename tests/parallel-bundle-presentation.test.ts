@@ -6,7 +6,7 @@ import { ENTITY_ATTACHMENT_SHAPE, getEntityAttachment, routeSamplesHaveNodeInflu
 type Node = { id: string; label: string; description: string; x: number; y: number };
 type Edge = { id: string; sourceId: string; targetId: string; parallelIndex: number; parallelCount: number; label: string };
 
-function routes(nodes: Node[], edges: Edge[], options: { spacing?: number; mode?: "pair" | "bundle" } = {}) {
+function routes(nodes: Node[], edges: Edge[], options: { spacing?: number; mode?: "pair" | "bundle" | "corridor" } = {}) {
   const positions = Object.fromEntries(nodes.map((node) => [node.id, { x: node.x, y: node.y }]));
   return deriveAutomaticRoutes({
     graph: { nodes, edges },
@@ -22,6 +22,11 @@ function routes(nodes: Node[], edges: Edge[], options: { spacing?: number; mode?
 function midpointSeparation(samples: ReadonlyArray<ReadonlyArray<{ x: number; y: number }>>) {
   const yValues = samples.map((path) => path[20]!.y).sort((left, right) => left - right);
   return Math.min(...yValues.slice(1).map((value, index) => value - yValues[index]!));
+}
+
+function verticalBundleSeparation(samples: ReadonlyArray<ReadonlyArray<{ x: number; y: number }>>) {
+  const xValues = samples.map((path) => path[20]!.x).sort((left, right) => left - right);
+  return Math.min(...xValues.slice(1).map((value, index) => value - xValues[index]!));
 }
 
 function sideSign(route: { controlPoint: { x: number; y: number }; sourceId: string; targetId: string }, nodes: Node[]) {
@@ -75,6 +80,18 @@ test("bundle spacing widens same-side slots in groups larger than two", () => {
   assert.ok(midpointSeparation(bundle.map(({ samples }) => samples)) > midpointSeparation(pair.map(({ samples }) => samples)));
 });
 
+test("corridor mode uses long label width for a vertical bundle without changing default routing", () => {
+  const nodes: Node[] = [
+    { id: "a", label: "A", description: "", x: 0, y: 0 },
+    { id: "b", label: "B", description: "", x: 0, y: 360 },
+  ];
+  const edges = parallelEdges().map((edge) => ({ ...edge, label: `Very long Relation label ${edge.id}` }));
+  const baseline = routes(nodes, edges, { spacing: 16, mode: "bundle" });
+  const corridor = routes(nodes, edges, { spacing: 16, mode: "corridor" });
+  assert.ok(verticalBundleSeparation(corridor.map(({ samples }) => samples)) > verticalBundleSeparation(baseline.map(({ samples }) => samples)));
+  assert.deepEqual(corridor, routes(nodes, edges, { spacing: 16, mode: "corridor" }));
+});
+
 test("reverse-direction groups preserve opposite physical side ordering", () => {
   const forward = routes(endpoints, parallelEdges("a", "b"), { spacing: 16, mode: "bundle" });
   const reverse = routes(endpoints, parallelEdges("b", "a"), { spacing: 16, mode: "bundle" });
@@ -86,16 +103,17 @@ test("manual offsets and ordinary Relations are not changed by the opt-in parall
   const nodes = [...endpoints, { id: "c", label: "C", description: "", x: 180, y: 160 }];
   const edges = [...parallelEdges(), { id: "ordinary", sourceId: "a", targetId: "c", parallelIndex: 0, parallelCount: 1, label: "Ordinary" }];
   const baseline = routes(nodes, edges);
-  const manuallyOffset = (spacing: number) => deriveAutomaticRoutes({
+  const manuallyOffset = (spacing: number, mode: "bundle" | "corridor" = "bundle") => deriveAutomaticRoutes({
     graph: { nodes, edges },
     positions: Object.fromEntries(nodes.map((node) => [node.id, { x: node.x, y: node.y }])),
     edgeCurveOffsets: { p1: 92 },
     selfLoopOverrides: {},
     provisionalNodeLabels: [],
     parallelBundleSpacing: spacing,
-    parallelBundleMode: "bundle",
+    parallelBundleMode: mode,
   });
   assert.deepEqual(manuallyOffset(16).find(({ id }) => id === "p1")!.samples, manuallyOffset(0).find(({ id }) => id === "p1")!.samples);
+  assert.deepEqual(manuallyOffset(16, "corridor").find(({ id }) => id === "p1")!.samples, manuallyOffset(0, "corridor").find(({ id }) => id === "p1")!.samples);
   assert.deepEqual(manuallyOffset(16).find(({ id }) => id === "ordinary")!.samples, baseline.find(({ id }) => id === "ordinary")!.samples);
 });
 
@@ -115,4 +133,5 @@ test("self-loop geometry is outside the parallel bundle policy", () => {
   const node: Node = { id: "a", label: "A", description: "", x: 0, y: 0 };
   const edge: Edge = { id: "loop", sourceId: "a", targetId: "a", parallelIndex: 0, parallelCount: 1, label: "Loop" };
   assert.deepEqual(routes([node], [edge])[0]!.samples, routes([node], [edge], { spacing: 16, mode: "bundle" })[0]!.samples);
+  assert.deepEqual(routes([node], [edge])[0]!.samples, routes([node], [edge], { spacing: 16, mode: "corridor" })[0]!.samples);
 });

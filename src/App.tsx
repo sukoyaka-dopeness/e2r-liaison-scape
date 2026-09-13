@@ -50,7 +50,7 @@ export type ActualProductDiagnosticInitialLayout = {
 type AppProps = {
   initialLayoutOverride?: ActualProductDiagnosticInitialLayout;
   /** Development-only review seam; normal Product callers omit it. */
-  parallelBundleVariant?: "pair-16" | "bundle-16";
+  parallelBundleVariant?: "pair-16" | "bundle-16" | "corridor-aware";
 };
 
 export default function App({ initialLayoutOverride, parallelBundleVariant }: AppProps = {}) {
@@ -526,7 +526,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
       routeDecisionSink: routeDecisions === null ? undefined : (decision) => routeDecisions.push(decision),
       profiler: presentationProfiler,
       parallelBundleSpacing: import.meta.env.DEV && parallelBundleVariant ? 16 : undefined,
-      parallelBundleMode: parallelBundleVariant === "pair-16" ? "pair" : "bundle",
+      parallelBundleMode: parallelBundleVariant === "pair-16" ? "pair" : parallelBundleVariant === "corridor-aware" ? "corridor" : "bundle",
     });
     const completedAt = performance.now();
     const openTiming = datasetOpenTimingRef.current;
