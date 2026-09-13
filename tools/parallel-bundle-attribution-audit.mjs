@@ -5,7 +5,7 @@ import { deriveAutomaticRelationLabels, deriveBoundedAutomaticPresentation } fro
 import { fitGraphView, placeNodeLabel, relationLabelDisplayWidth, routeGraphEdge, routeSamplesHaveNodeInfluence } from "../src/viewport.ts";
 import { decideIncidentAllocation } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/incident-allocation.ts";
 import { planEndpointAllocations } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/endpoint-plan.ts";
-import { compressIncidentCandidates } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/candidate-compression.ts";
+import { isCompressedGeometryFamilyMember } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/candidate-compression.ts";
 
 const canonicalExamples = "C:/Users/extra/E2R/e2r-spec/examples";
 const canonicalCells = [
@@ -587,7 +587,7 @@ function endpointPlanPortfolio(dataset, positions, maxStates = 512, { compressed
   const source = compressed
     ? atomicIncidentPortfolio(dataset, positions, {
       hardFirst: true, collectCandidates: true, independentGroups: true,
-      candidateFilter: ({ gap, center }) => [40, 56, 72, 88, 176].includes(gap) && [-96, -64, 0, 64, 96].includes(center),
+      candidateFilter: ({ gap, center }) => isCompressedGeometryFamilyMember(gap, center),
     })
     : oracleSource;
   const fullInventories = oracleSource.candidateInventories;

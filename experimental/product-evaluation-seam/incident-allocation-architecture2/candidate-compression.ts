@@ -7,13 +7,17 @@ export type CompressibleIncidentCandidate = {
   score: number;
 };
 
+export const COMPRESSED_GAP_FAMILY = [40, 56, 72, 88, 176] as const;
+export const COMPRESSED_CENTER_FAMILY = [-96, -64, 0, 64, 96] as const;
+export function isCompressedGeometryFamilyMember(gap: number, center: number) {
+  return (COMPRESSED_GAP_FAMILY as readonly number[]).includes(gap)
+    && (COMPRESSED_CENTER_FAMILY as readonly number[]).includes(center);
+}
+
 /** Keep a small geometry family; feasibility remains an audit result, not a pruning signal. */
 export function compressIncidentCandidates<T extends CompressibleIncidentCandidate>(candidates: readonly T[], maxCandidates = 30): T[] {
   if (candidates.length <= maxCandidates) return [...candidates];
-  const gaps = [...new Set(candidates.map(({ gap }) => gap))].sort((left, right) => left - right);
-  const representativeGaps = [...new Set([gaps[0], gaps[Math.floor(gaps.length / 2)], gaps.at(-1)])];
-  const centers = [-96, -64, 0, 64, 96];
-  const selected = candidates.filter(({ gap, center }) => representativeGaps.includes(gap) && centers.includes(center));
+  const selected = candidates.filter(({ gap, center }) => isCompressedGeometryFamilyMember(gap, center));
   const bestPerPolicy = new Map<string, T>();
   for (const candidate of candidates) {
     const prior = bestPerPolicy.get(candidate.ordinaryPolicy);
