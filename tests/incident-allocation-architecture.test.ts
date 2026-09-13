@@ -3,6 +3,8 @@ import test from "node:test";
 import { decideIncidentAllocation, type IncidentAllocationCandidate } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/incident-allocation.ts";
 import { planEndpointAllocations, type EndpointPlanCandidate } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/endpoint-plan.ts";
 import { compressIncidentCandidates } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/candidate-compression.ts";
+import { deriveGeometryCandidateFamily } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/geometry-derived-candidates.ts";
+import { decidePlacementRequestLifecycle } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/placement-request-lifecycle.ts";
 
 const candidate = (overrides: Partial<IncidentAllocationCandidate> = {}): IncidentAllocationCandidate => ({
   id: "candidate-a", hardFailures: [], requiredHalfSectorDegrees: 20,
@@ -92,4 +94,23 @@ test("candidate compression keeps representative gap/center families determinist
   assert.deepEqual(compressed.map(({ id }) => id), compressIncidentCandidates(input.toReversed(), 30).map(({ id }) => id));
   assert.ok(compressed.some(({ gap }) => gap === 40));
   assert.ok(compressed.some(({ gap }) => gap === 176));
+});
+
+test("geometry-derived family is demand-sensitive, bounded, and deterministic", () => {
+  const demand = { projectedLabelWidth: 168, chordLength: 360, parallelCount: 3, incidentOrdinaryCount: 2, availableHalfSectorDegrees: 14 };
+  const family = deriveGeometryCandidateFamily(demand);
+  assert.ok(family.gaps.length <= 3);
+  assert.ok(family.centers.length <= 3);
+  assert.deepEqual(family, deriveGeometryCandidateFamily(demand));
+  assert.ok(family.gaps.some((gap) => gap > 40));
+  assert.deepEqual(family.ordinaryPolicies, ["preserve-unaffected", "reroute-all"]);
+});
+
+test("placement request lifecycle applies only at a safe ownership boundary", () => {
+  const base = { phase: "idle" as const, requestToken: "r1", currentToken: "r1", hasAuthoredCoordinates: false, hasManualRouteOrLabel: false };
+  assert.deepEqual(decidePlacementRequestLifecycle({ ...base, phase: "initial-open" }), { action: "apply", reason: "initial-open" });
+  assert.deepEqual(decidePlacementRequestLifecycle({ ...base, phase: "dragging" }), { action: "defer", reason: "active-drag" });
+  assert.deepEqual(decidePlacementRequestLifecycle({ ...base, hasAuthoredCoordinates: true }), { action: "defer", reason: "manual-authority" });
+  assert.deepEqual(decidePlacementRequestLifecycle({ ...base, requestToken: "old" }), { action: "discard", reason: "stale-request" });
+  assert.deepEqual(decidePlacementRequestLifecycle(base, true), { action: "discard", reason: "cancelled" });
 });

@@ -6,6 +6,7 @@ import { fitGraphView, placeNodeLabel, relationLabelDisplayWidth, routeGraphEdge
 import { decideIncidentAllocation } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/incident-allocation.ts";
 import { planEndpointAllocations } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/endpoint-plan.ts";
 import { isCompressedGeometryFamilyMember } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/candidate-compression.ts";
+import { deriveGeometryCandidateFamily } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/geometry-derived-candidates.ts";
 
 const canonicalExamples = "C:/Users/extra/E2R/e2r-spec/examples";
 const canonicalCells = [
@@ -396,7 +397,7 @@ function summarizeCustomPresentation(dataset, positions, edges, routes, relation
   };
 }
 
-function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collectCandidates = false, independentGroups = false, candidateFilter } = {}) {
+function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collectCandidates = false, independentGroups = false, candidateFilter, geometryDerived = false } = {}) {
   const startedAt = performance.now();
   const graph = buildEntityGraph(dataset);
   const edges = graph.edges.map((edge) => ({ ...edge, label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "" }));
@@ -423,13 +424,17 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collec
     const unitY = dy / chordLength;
     const maximumLabelWidth = Math.max(...group.map((edge) => relationLabelDisplayWidth(edge.label)));
     const projectedLabel = maximumLabelWidth * Math.abs(unitY) + 22 * Math.abs(unitX);
-    const gaps = [...new Set([40, 56, 72, 88, Math.min(176, Math.max(56, Math.round((projectedLabel + 16) / 8) * 8))])];
-    const centers = [-96, -64, -32, 0, 32, 64, 96];
     const incidentOrdinary = edges.filter((edge) => edge.parallelCount === 1
       && edge.sourceId !== edge.targetId
       && endpointIds.some((id) => edge.sourceId === id || edge.targetId === id));
+    const availableHalfSectorDegrees = endpointAngularCapacity(group, edges, positions);
+    const family = geometryDerived
+      ? deriveGeometryCandidateFamily({ projectedLabelWidth: projectedLabel, chordLength, parallelCount: group.length, incidentOrdinaryCount: incidentOrdinary.length, availableHalfSectorDegrees })
+      : { gaps: [...new Set([40, 56, 72, 88, Math.min(176, Math.max(56, Math.round((projectedLabel + 16) / 8) * 8))])], centers: [-96, -64, -32, 0, 32, 64, 96], ordinaryPolicies: ["preserve-unaffected", "reroute-all"] };
+    const gaps = family.gaps;
+    const centers = family.centers;
     const candidates = [];
-    for (const gap of gaps) for (const center of centers) for (const ordinaryPolicy of ["preserve-unaffected", "reroute-all"]) {
+    for (const gap of gaps) for (const center of centers) for (const ordinaryPolicy of family.ordinaryPolicies) {
       if (candidateFilter && !candidateFilter({ gap, center, ordinaryPolicy })) continue;
       const preferredPhysicalSign = (edge) => (edge.parallelIndex % 2 === 0 ? 1 : -1)
         * (edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1);
@@ -446,7 +451,6 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collec
       const candidateRoutes = new Map(routesById);
       const halfBundleWidth = Math.max(...physicalOffsets.map((offset) => Math.abs(offset))) + projectedLabel / 2 + 8;
       const requiredHalfSectorDegrees = Math.atan2(halfBundleWidth, chordLength / 2) * 180 / Math.PI;
-      const availableHalfSectorDegrees = endpointAngularCapacity(group, edges, positions);
       const affectedOrdinary = incidentOrdinary.filter((edge) =>
         incidentAngleFromBundle(edge, endpointIds, positions) <= requiredHalfSectorDegrees + 4);
       const groupRoutes = group.map((edge, index) => {
@@ -566,8 +570,11 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collec
   const result = summarizeCustomPresentation(dataset, positions, edges, routes, labels, {
     formulation: hardFirst
       ? "hard-feasibility-first-endpoint-sector-portfolio"
-      : "atomic-bundle-reservation-plus-incident-ordinary-reroute",
+      : geometryDerived
+        ? "geometry-derived-label-port-sector-family"
+        : "atomic-bundle-reservation-plus-incident-ordinary-reroute",
     hardFirst,
+    geometryDerived,
     decisions,
     elapsedMs: Math.round((performance.now() - startedAt) * 10) / 10,
   });
@@ -581,7 +588,7 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collec
   return result;
 }
 
-function endpointPlanPortfolio(dataset, positions, maxStates = 512, { compressed = false } = {}) {
+function endpointPlanPortfolio(dataset, positions, maxStates = 512, { compressed = false, geometryDerived = false } = {}) {
   const startedAt = performance.now();
   const oracleSource = atomicIncidentPortfolio(dataset, positions, { hardFirst: true, collectCandidates: true, independentGroups: true });
   const source = compressed
@@ -589,6 +596,8 @@ function endpointPlanPortfolio(dataset, positions, maxStates = 512, { compressed
       hardFirst: true, collectCandidates: true, independentGroups: true,
       candidateFilter: ({ gap, center }) => isCompressedGeometryFamilyMember(gap, center),
     })
+    : geometryDerived
+      ? atomicIncidentPortfolio(dataset, positions, { hardFirst: true, collectCandidates: true, independentGroups: true, geometryDerived: true })
     : oracleSource;
   const fullInventories = oracleSource.candidateInventories;
   const inventories = source.candidateInventories;
@@ -672,6 +681,7 @@ function endpointPlanPortfolio(dataset, positions, maxStates = 512, { compressed
     candidateGenerationElapsedMs: source.incidentAllocator.elapsedMs,
     oracleGenerationElapsedMs: compressed ? oracleSource.incidentAllocator.elapsedMs : source.incidentAllocator.elapsedMs,
     compressed,
+    geometryDerived,
     feasiblePlanRetention: fullInventories.every((inventory) => {
       const fullFeasible = inventory.candidates.filter(({ hardFailures }) => hardFailures.length === 0);
       const compressedIds = new Set(inventories.find(({ groupId }) => groupId === inventory.groupId)?.candidates.map(({ id }) => id));
@@ -744,6 +754,13 @@ function runCell(name, locale, dataset, positions, source) {
   compressedPlan.incidentAllocator.selectedPlanMatchesFull = JSON.stringify(compressedPlan.incidentAllocator.endpointPlan?.decision?.selectedCandidateIds ?? [])
     === JSON.stringify(endpointPlan.incidentAllocator.endpointPlan?.decision?.selectedCandidateIds ?? []);
   evaluated.push({ arm: "endpoint-plan-compressed", ...compressedPlan });
+  const geometryPlan = endpointPlanPortfolio(dataset, positions, 512, { geometryDerived: true });
+  const geometryRepeat = endpointPlanPortfolio(dataset, positions, 512, { geometryDerived: true });
+  geometryPlan.incidentAllocator.deterministic = JSON.stringify(geometryPlan.routeGeometry) === JSON.stringify(geometryRepeat.routeGeometry)
+    && JSON.stringify(geometryPlan.incidentAllocator.endpointPlan) === JSON.stringify(geometryRepeat.incidentAllocator.endpointPlan);
+  geometryPlan.incidentAllocator.selectedPlanMatchesFull = JSON.stringify(geometryPlan.incidentAllocator.endpointPlan?.decision?.selectedCandidateIds ?? [])
+    === JSON.stringify(endpointPlan.incidentAllocator.endpointPlan?.decision?.selectedCandidateIds ?? []);
+  evaluated.push({ arm: "endpoint-plan-geometry-derived", ...geometryPlan });
   const capacityRequests = hardFirst.incidentAllocator.decisions
     .filter(({ allocationDecision }) => allocationDecision.status === "capacity-shortage")
     .map(({ allocationDecision }) => allocationDecision.shortage.requiredHalfSectorDegrees);
@@ -825,10 +842,12 @@ if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "6") {
   console.log(JSON.stringify(report.results.map((cell) => {
     const full = cell.arms.find(({ arm }) => arm === "endpoint-plan");
     const compressed = cell.arms.find(({ arm }) => arm === "endpoint-plan-compressed");
+    const geometryDerived = cell.arms.find(({ arm }) => arm === "endpoint-plan-geometry-derived");
     return {
       cell: `${cell.name}/${cell.locale}`,
       full: full ? { candidates: full.incidentAllocator.candidateCount, plan: full.incidentAllocator.endpointPlan.decision.status, selected: full.incidentAllocator.endpointPlan.decision.selectedCandidateIds ?? [], feasiblePlanRetention: full.incidentAllocator.feasiblePlanRetention } : null,
       compressed: compressed ? { candidates: compressed.incidentAllocator.candidateCount, plan: compressed.incidentAllocator.endpointPlan.decision.status, selected: compressed.incidentAllocator.endpointPlan.decision.selectedCandidateIds ?? [], selectedPlanMatchesFull: compressed.incidentAllocator.selectedPlanMatchesFull, feasiblePlanRetention: compressed.incidentAllocator.feasiblePlanRetention, elapsedMs: compressed.incidentAllocator.elapsedMs, candidateGenerationMs: compressed.incidentAllocator.candidateGenerationElapsedMs, oracleGenerationMs: compressed.incidentAllocator.oracleGenerationElapsedMs, comboEvals: compressed.incidentAllocator.authoritativeCombinationEvaluations, group: compressed.groups[0] ? { lane: compressed.groups[0].laneSeparationScreen, label: compressed.groups[0].relationLabelClearanceScreen, ownership: Math.min(...compressed.groups[0].labelAssociation.map(({ ownershipMargin }) => ownershipMargin)), outer: compressed.groups[0].outerOrdinaryClearanceScreen, bias: compressed.groups[0].bundleSideBias } : null } : null,
+      geometryDerived: geometryDerived ? { candidates: geometryDerived.incidentAllocator.candidateCount, plan: geometryDerived.incidentAllocator.endpointPlan.decision.status, selected: geometryDerived.incidentAllocator.endpointPlan.decision.selectedCandidateIds ?? [], selectedPlanMatchesFull: geometryDerived.incidentAllocator.selectedPlanMatchesFull, feasiblePlanRetention: geometryDerived.incidentAllocator.feasiblePlanRetention, elapsedMs: geometryDerived.incidentAllocator.elapsedMs, candidateGenerationMs: geometryDerived.incidentAllocator.candidateGenerationElapsedMs, oracleGenerationMs: geometryDerived.incidentAllocator.oracleGenerationElapsedMs, comboEvals: geometryDerived.incidentAllocator.authoritativeCombinationEvaluations, group: geometryDerived.groups[0] ? { lane: geometryDerived.groups[0].laneSeparationScreen, label: geometryDerived.groups[0].relationLabelClearanceScreen, ownership: Math.min(...geometryDerived.groups[0].labelAssociation.map(({ ownershipMargin }) => ownershipMargin)), outer: geometryDerived.groups[0].outerOrdinaryClearanceScreen, bias: geometryDerived.groups[0].bundleSideBias } : null } : null,
     };
   }), null, 2));
 } else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "5") {
