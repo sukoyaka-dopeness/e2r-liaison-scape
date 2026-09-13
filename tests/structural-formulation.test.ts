@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { structuralFormulations } from '../tools/structural-formulation.mjs';
 import { structuralFormulations2 } from '../tools/structural-formulation2.mjs';
+import { structuralFormulations3 } from '../tools/structural-formulation3.mjs';
 
 test('structural research preserves inputs and is invariant to node/edge enumeration', () => {
   const nodes=Array.from({length:8},(_,i)=>({id:String(i)}));
@@ -50,4 +51,18 @@ test('guarded crossing grid ignores self and duplicate edges and keeps bounded c
   assert.deepEqual(structuralFormulations2(nodes,edges),structuralFormulations2(nodes,edges.concat(edges,{sourceId:'a',targetId:'a'})));
   assert.throws(()=>structuralFormulations2(Array.from({length:65},(_,i)=>({id:String(i)})),[]));
   assert.throws(()=>structuralFormulations2([{id:'a'},{id:'a'}],[]));
+});
+
+test('joint constrained structural placement is deterministic and rejects unsafe separation', () => {
+  const nodes=Array.from({length:14},(_,i)=>({id:String(i)}));
+  const edges=nodes.slice(0,7).flatMap(a=>nodes.slice(7).map(b=>({sourceId:a.id,targetId:b.id,label:'bounded label'})));
+  const first=structuralFormulations3(nodes,edges);
+  assert.ok(first.length>0&&first.length<=12);
+  assert.deepEqual(first,structuralFormulations3(nodes.toReversed(),edges.toReversed()));
+  assert.deepEqual(structuralFormulations3(nodes,edges.concat({sourceId:'0',targetId:'7',label:'x'})), structuralFormulations3(nodes,edges.concat({sourceId:'7',targetId:'0',label:'x'})));
+  for(const candidate of first) {
+    assert.ok(candidate.cheap.minimumSeparation===null||candidate.cheap.minimumSeparation>=144.5);
+    assert.ok(Number.isFinite(candidate.cheap.minimumAngularGapDegrees));
+    assert.ok(Number.isFinite(candidate.cheap.coarseCorridorDeficit));
+  }
 });
