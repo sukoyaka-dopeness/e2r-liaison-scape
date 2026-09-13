@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { buildEntityGraph } from "../src/dataset.ts";
 import { deriveAutomaticRelationLabels, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { fitGraphView, placeNodeLabel, relationLabelDisplayWidth, routeGraphEdge, routeSamplesHaveNodeInfluence } from "../src/viewport.ts";
+import { decideIncidentAllocation } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/incident-allocation.ts";
 
 const canonicalExamples = "C:/Users/extra/E2R/e2r-spec/examples";
 const canonicalCells = [
@@ -61,6 +62,8 @@ function syntheticBundle(reverse = false) {
 function syntheticTwoParallel(labelMode) {
   const labels = labelMode === "long-long"
     ? ["Long parallel Relation label alpha", "Long parallel Relation label beta"]
+    : labelMode === "long-short"
+      ? ["Long parallel Relation label alpha", "short B"]
     : ["short A", "short B"];
   return {
     version: "1.0",
@@ -82,6 +85,42 @@ function syntheticTwoParallel(labelMode) {
       outer: { x: 170, y: 200 },
       obstacle: { x: 72, y: 180 },
     },
+  };
+}
+
+function syntheticMultipleOrdinary({ asymmetric = false } = {}) {
+  return {
+    version: "1.0",
+    entities: ["a", "b", "o1", "o2", "o3", "obstacle"].map((id) => ({ id, name: id, description: "" })),
+    events: [],
+    relations: [
+      { id: "p1", name: "Long parallel alpha", sourceId: "a", targetId: "b" },
+      { id: "p2", name: "Long parallel beta", sourceId: "a", targetId: "b" },
+      { id: "o1-edge", name: "ordinary one", sourceId: "a", targetId: "o1" },
+      { id: "o2-edge", name: "ordinary two", sourceId: "a", targetId: "o2" },
+      { id: "o3-edge", name: "ordinary three", sourceId: "b", targetId: "o3" },
+    ],
+    positions: {
+      a: { x: 0, y: 0 }, b: { x: 360, y: 0 },
+      o1: { x: 170, y: asymmetric ? 55 : 95 }, o2: { x: 80, y: -145 },
+      o3: { x: 440, y: asymmetric ? 45 : 130 }, obstacle: { x: 180, y: 68 },
+    },
+  };
+}
+
+function syntheticSharedBundles() {
+  return {
+    version: "1.0",
+    entities: ["hub", "right", "down", "ordinary"].map((id) => ({ id, name: id, description: "" })),
+    events: [],
+    relations: [
+      { id: "right-a", name: "right alpha", sourceId: "hub", targetId: "right" },
+      { id: "right-b", name: "right beta", sourceId: "hub", targetId: "right" },
+      { id: "down-a", name: "down alpha", sourceId: "hub", targetId: "down" },
+      { id: "down-b", name: "down beta", sourceId: "hub", targetId: "down" },
+      { id: "ordinary-edge", name: "ordinary", sourceId: "hub", targetId: "ordinary" },
+    ],
+    positions: { hub: { x: 0, y: 0 }, right: { x: 360, y: 0 }, down: { x: 20, y: 340 }, ordinary: { x: 170, y: 105 } },
   };
 }
 
@@ -154,6 +193,22 @@ function endpointAngularCapacity(group, edges, positions) {
       });
     return ordinaryAngles.length === 0 ? Infinity : Math.min(...ordinaryAngles.map((angle) => angularDistance(angle, bundleAngle)));
   }), Infinity) * 180 / Math.PI;
+}
+
+function incidentAngleFromBundle(edge, endpointIds, positions) {
+  return Math.min(...endpointIds.flatMap((endpointId) => {
+    if (edge.sourceId !== endpointId && edge.targetId !== endpointId) return [];
+    const oppositeId = endpointIds.find((id) => id !== endpointId);
+    const neighborId = edge.sourceId === endpointId ? edge.targetId : edge.sourceId;
+    const endpoint = positions[endpointId];
+    const opposite = positions[oppositeId];
+    const neighbor = positions[neighborId];
+    if (!endpoint || !opposite || !neighbor) return [];
+    return [angularDistance(
+      Math.atan2(neighbor.y - endpoint.y, neighbor.x - endpoint.x),
+      Math.atan2(opposite.y - endpoint.y, opposite.x - endpoint.x),
+    ) * 180 / Math.PI];
+  }), Infinity);
 }
 
 function relieveIncidentAngularCapacity(edges, positions, minimumDegrees = 32) {
@@ -370,7 +425,7 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {})
       && edge.sourceId !== edge.targetId
       && endpointIds.some((id) => edge.sourceId === id || edge.targetId === id));
     const candidates = [];
-    for (const gap of gaps) for (const center of centers) {
+    for (const gap of gaps) for (const center of centers) for (const ordinaryPolicy of ["preserve-unaffected", "reroute-all"]) {
       const preferredPhysicalSign = (edge) => (edge.parallelIndex % 2 === 0 ? 1 : -1)
         * (edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1);
       const physicalOffsetById = new Map();
@@ -384,6 +439,11 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {})
       const physicalOffsets = rawPhysicalOffsets.map((value) => value - rawMean + center);
       const offsets = group.map((edge, index) => physicalOffsets[index] * (edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1));
       const candidateRoutes = new Map(routesById);
+      const halfBundleWidth = Math.max(...physicalOffsets.map((offset) => Math.abs(offset))) + projectedLabel / 2 + 8;
+      const requiredHalfSectorDegrees = Math.atan2(halfBundleWidth, chordLength / 2) * 180 / Math.PI;
+      const availableHalfSectorDegrees = endpointAngularCapacity(group, edges, positions);
+      const affectedOrdinary = incidentOrdinary.filter((edge) =>
+        incidentAngleFromBundle(edge, endpointIds, positions) <= requiredHalfSectorDegrees + 4);
       const groupRoutes = group.map((edge, index) => {
         const source = positions[edge.sourceId];
         const target = positions[edge.targetId];
@@ -393,7 +453,8 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {})
         return route;
       });
       const reservedPaths = groupRoutes.map((route) => route.samples);
-      for (const edge of incidentOrdinary) {
+      const reroutedOrdinary = ordinaryPolicy === "reroute-all" ? incidentOrdinary : affectedOrdinary;
+      for (const edge of reroutedOrdinary) {
         const source = positions[edge.sourceId];
         const target = positions[edge.targetId];
         const obstacles = graph.nodes.filter((node) => node.id !== edge.sourceId && node.id !== edge.targetId).map((node) => positions[node.id]);
@@ -429,18 +490,49 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {})
         + Math.max(0, 8 - outerClearance) * 20000
         + Math.max(0, 18 - laneSeparation) * 5000;
       const score = hardPenalty + readablePenalty + sideBias * 1000 + routeTotal * .01;
-      candidates.push({ score, gap, center, offsets, routes, labels, summary, minimumOwnership, obstacleCount, hardFailures });
+      const id = `${gap}:${center}:${ordinaryPolicy}`;
+      candidates.push({
+        id, score, gap, center, ordinaryPolicy, offsets, routes, labels, summary,
+        minimumOwnership, obstacleCount, hardFailures, requiredHalfSectorDegrees,
+        availableHalfSectorDegrees, bundleWidthPx: halfBundleWidth * 2 * summary.fitScale,
+        bundleRelationIds: group.map(({ id }) => id),
+        conflictingRelationIds: affectedOrdinary.map(({ id }) => id),
+        pressure: {
+          labelReservationDeficitPx: Math.max(0, 4 - labelClearance),
+          outerGuardDeficitPx: incidentOrdinary.length > 0 ? Math.max(0, 4 - outerClearance) : 0,
+          obstacleConflictCount: obstacleCount,
+          portConflictCount: affectedOrdinary.length,
+        },
+        detourCost: routeTotal,
+      });
     }
     const feasibleCandidates = candidates.filter((candidate) => candidate.hardFailures.length === 0);
-    const selectionPool = hardFirst && feasibleCandidates.length > 0 ? feasibleCandidates : candidates;
-    selectionPool.sort((left, right) => left.score - right.score || left.gap - right.gap || Math.abs(left.center) - Math.abs(right.center) || left.center - right.center);
-    const selected = selectionPool[0];
+    const allocation = decideIncidentAllocation(endpointIds, candidates.map((candidate) => ({
+      id: candidate.id,
+      hardFailures: candidate.hardFailures,
+      requiredHalfSectorDegrees: candidate.requiredHalfSectorDegrees,
+      availableHalfSectorDegrees: candidate.availableHalfSectorDegrees,
+      bundleWidthPx: candidate.bundleWidthPx,
+      bundleRelationIds: candidate.bundleRelationIds,
+      conflictingRelationIds: candidate.conflictingRelationIds,
+      pressure: candidate.pressure,
+      qualityCost: candidate.score,
+      detourCost: candidate.detourCost,
+    })));
+    const selectedId = hardFirst
+      ? allocation.decision.status === "feasible"
+        ? allocation.decision.selectedCandidateId
+        : allocation.diagnosticFallbackCandidateId
+      : [...candidates].sort((left, right) => left.score - right.score || left.id.localeCompare(right.id))[0].id;
+    const selected = candidates.find(({ id }) => id === selectedId);
+    if (!selected) throw new Error("Incident diagnostic candidate selection failed");
     routesById = new Map(selected.routes.map((route) => [route.id, route]));
     decisions.push({
       edgeIds: group.map((edge) => edge.id),
       candidateCount: candidates.length,
       selectedGap: selected.gap,
       selectedCenter: selected.center,
+      ordinaryPolicy: selected.ordinaryPolicy,
       selectedOffsets: selected.offsets,
       minimumOwnership: selected.minimumOwnership,
       obstacleCount: selected.obstacleCount,
@@ -448,6 +540,9 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {})
       hardFailures: selected.hardFailures,
       feasibleCandidateCount: feasibleCandidates.length,
       endpointAngularCapacityDegrees: endpointAngularCapacity(group, edges, positions),
+      allocationDecision: allocation.decision,
+      diagnosticFallbackCandidateId: allocation.diagnosticFallbackCandidateId,
+      diagnosticFallbackRendered: hardFirst && allocation.decision.status === "capacity-shortage",
     });
   }
   const routes = edges.map((edge) => routesById.get(edge.id));
@@ -538,10 +633,24 @@ for (const reverse of [false, true]) {
   const { positions, ...payload } = dataset;
   results.push(runCell(reverse ? "synthetic-reverse-bundle" : "synthetic-long-short-obstacle", "n/a", payload, positions, "bounded-synthetic-counterfactual"));
 }
-for (const labelMode of ["short-short", "long-long"]) {
+for (const labelMode of ["short-short", "long-short", "long-long"]) {
   const dataset = syntheticTwoParallel(labelMode);
   const { positions, ...payload } = dataset;
   results.push(runCell(`synthetic-two-${labelMode}`, "n/a", payload, positions, "bounded-synthetic-counterfactual"));
+}
+for (const [name, dataset] of [
+  ["synthetic-multiple-ordinary", syntheticMultipleOrdinary()],
+  ["synthetic-asymmetric-incident", syntheticMultipleOrdinary({ asymmetric: true })],
+  ["synthetic-shared-parallel-bundles", syntheticSharedBundles()],
+]) {
+  const { positions, ...payload } = dataset;
+  results.push(runCell(name, "n/a", payload, positions, "bounded-synthetic-counterfactual"));
+}
+
+for (const mode of ["mirror-x", "rotate-90"]) {
+  const dataset = syntheticMultipleOrdinary({ asymmetric: true });
+  const { positions, ...payload } = dataset;
+  results.push(runCell(`synthetic-asymmetric-${mode}`, "n/a", payload, transformPositions(positions, mode), "bounded-transform-counterfactual"));
 }
 
 const report = {
@@ -556,7 +665,25 @@ const report = {
   results,
 };
 
-if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "3") {
+if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "4") {
+  console.log(JSON.stringify(report.results.map((cell) => {
+    const arm = cell.arms.find(({ arm }) => arm === "hard-feasibility-first");
+    return {
+      cell: `${cell.name}/${cell.locale}`,
+      elapsedMs: arm?.incidentAllocator?.elapsedMs,
+      ordinaryRouteChanges: arm?.ordinaryRouteChangesFromFixedRoutingBaseline,
+      decisions: arm?.incidentAllocator?.decisions.map((decision) => ({
+        edgeIds: decision.edgeIds,
+        status: decision.allocationDecision.status,
+        feasibleCandidates: decision.feasibleCandidateCount,
+        candidateCount: decision.candidateCount,
+        ordinaryPolicy: decision.ordinaryPolicy,
+        diagnosticFallbackRendered: decision.diagnosticFallbackRendered,
+        capacityRequest: decision.allocationDecision.status === "capacity-shortage" ? decision.allocationDecision.shortage : null,
+      })) ?? [],
+    };
+  }), null, 2));
+} else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "3") {
   console.log(report.results.map((cell) => {
     const arm = cell.arms.find(({ arm }) => arm === "hard-feasibility-first");
     const group = arm?.groups[0];
