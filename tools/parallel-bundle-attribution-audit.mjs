@@ -4,6 +4,7 @@ import { buildEntityGraph } from "../src/dataset.ts";
 import { deriveAutomaticRelationLabels, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { fitGraphView, placeNodeLabel, relationLabelDisplayWidth, routeGraphEdge, routeSamplesHaveNodeInfluence } from "../src/viewport.ts";
 import { decideIncidentAllocation } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/incident-allocation.ts";
+import { planEndpointAllocations } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/endpoint-plan.ts";
 
 const canonicalExamples = "C:/Users/extra/E2R/e2r-spec/examples";
 const canonicalCells = [
@@ -108,19 +109,20 @@ function syntheticMultipleOrdinary({ asymmetric = false } = {}) {
   };
 }
 
-function syntheticSharedBundles() {
+function syntheticSharedBundles(angleDegrees = 90) {
+  const angle = angleDegrees * Math.PI / 180;
   return {
     version: "1.0",
     entities: ["hub", "right", "down", "ordinary"].map((id) => ({ id, name: id, description: "" })),
     events: [],
     relations: [
-      { id: "right-a", name: "right alpha", sourceId: "hub", targetId: "right" },
-      { id: "right-b", name: "right beta", sourceId: "hub", targetId: "right" },
-      { id: "down-a", name: "down alpha", sourceId: "hub", targetId: "down" },
-      { id: "down-b", name: "down beta", sourceId: "hub", targetId: "down" },
+      { id: "right-a", name: "Long right parallel relation alpha", sourceId: "hub", targetId: "right" },
+      { id: "right-b", name: "Long right parallel relation beta", sourceId: "hub", targetId: "right" },
+      { id: "down-a", name: "Long angled parallel relation alpha", sourceId: "hub", targetId: "down" },
+      { id: "down-b", name: "Long angled parallel relation beta", sourceId: "hub", targetId: "down" },
       { id: "ordinary-edge", name: "ordinary", sourceId: "hub", targetId: "ordinary" },
     ],
-    positions: { hub: { x: 0, y: 0 }, right: { x: 360, y: 0 }, down: { x: 20, y: 340 }, ordinary: { x: 170, y: 105 } },
+    positions: { hub: { x: 0, y: 0 }, right: { x: 360, y: 0 }, down: { x: Math.cos(angle) * 340, y: Math.sin(angle) * 340 }, ordinary: { x: 170, y: 105 } },
   };
 }
 
@@ -393,7 +395,7 @@ function summarizeCustomPresentation(dataset, positions, edges, routes, relation
   };
 }
 
-function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {}) {
+function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collectCandidates = false, independentGroups = false } = {}) {
   const startedAt = performance.now();
   const graph = buildEntityGraph(dataset);
   const edges = graph.edges.map((edge) => ({ ...edge, label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "" }));
@@ -406,6 +408,7 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {})
   });
   let routesById = new Map(baseline.routedEdges.map((route) => [route.id, route]));
   const decisions = [];
+  const candidateInventories = [];
   for (const group of parallelGroups(edges)) {
     const endpointIds = [...new Set(group.flatMap((edge) => [edge.sourceId, edge.targetId]))].sort();
     if (endpointIds.length !== 2) continue;
@@ -504,8 +507,15 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {})
           portConflictCount: affectedOrdinary.length,
         },
         detourCost: routeTotal,
+        affectedRouteIds: [...new Set([...group.map(({ id }) => id), ...reroutedOrdinary.map(({ id }) => id)])],
+        endpointReservations: endpointIds.map((endpointId, endpointIndex) => {
+          const baseAngle = endpointIndex === 0 ? Math.atan2(dy, dx) : Math.atan2(-dy, -dx);
+          const signedCenterAngle = Math.atan2(center, chordLength / 2) * (endpointIndex === 0 ? 1 : -1);
+          return { endpointId, centerAngleDegrees: (baseAngle + signedCenterAngle) * 180 / Math.PI, halfWidthDegrees: requiredHalfSectorDegrees };
+        }),
       });
     }
+    candidateInventories.push({ groupId: group.map(({ id }) => id).join("+"), endpointIds, candidates });
     const feasibleCandidates = candidates.filter((candidate) => candidate.hardFailures.length === 0);
     const allocation = decideIncidentAllocation(endpointIds, candidates.map((candidate) => ({
       id: candidate.id,
@@ -526,7 +536,7 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {})
       : [...candidates].sort((left, right) => left.score - right.score || left.id.localeCompare(right.id))[0].id;
     const selected = candidates.find(({ id }) => id === selectedId);
     if (!selected) throw new Error("Incident diagnostic candidate selection failed");
-    routesById = new Map(selected.routes.map((route) => [route.id, route]));
+    if (!independentGroups) routesById = new Map(selected.routes.map((route) => [route.id, route]));
     decisions.push({
       edgeIds: group.map((edge) => edge.id),
       candidateCount: candidates.length,
@@ -551,7 +561,7 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {})
     nodes: graph.nodes.map((node) => positions[node.id]),
     previousPlacements: new Map(), manualAnchors: new Map(),
   });
-  return summarizeCustomPresentation(dataset, positions, edges, routes, labels, {
+  const result = summarizeCustomPresentation(dataset, positions, edges, routes, labels, {
     formulation: hardFirst
       ? "hard-feasibility-first-endpoint-sector-portfolio"
       : "atomic-bundle-reservation-plus-incident-ordinary-reroute",
@@ -559,6 +569,101 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false } = {})
     decisions,
     elapsedMs: Math.round((performance.now() - startedAt) * 10) / 10,
   });
+  if (collectCandidates) {
+    result.candidateInventories = candidateInventories;
+    result.baselineRoutes = baseline.routedEdges;
+    result.edges = edges;
+    result.graphNodes = graph.nodes;
+    result.provisionalNodeLabels = provisionalNodeLabels;
+  }
+  return result;
+}
+
+function endpointPlanPortfolio(dataset, positions, maxStates = 512) {
+  const startedAt = performance.now();
+  const source = atomicIncidentPortfolio(dataset, positions, { hardFirst: true, collectCandidates: true, independentGroups: true });
+  const groups = source.candidateInventories.map((inventory) => ({
+    id: inventory.groupId,
+    candidates: inventory.candidates.map((candidate) => ({
+      id: `${inventory.groupId}|${candidate.id}`,
+      groupId: inventory.groupId,
+      hardFailures: candidate.hardFailures,
+      reservations: candidate.endpointReservations,
+      changedOrdinaryRelationIds: candidate.affectedRouteIds.filter((id) => !candidate.bundleRelationIds.includes(id)),
+      qualityCost: candidate.score,
+    })),
+    capacityRequest: (() => {
+      const allocation = decideIncidentAllocation(inventory.endpointIds, inventory.candidates.map((candidate) => ({
+        id: candidate.id, hardFailures: candidate.hardFailures,
+        requiredHalfSectorDegrees: candidate.requiredHalfSectorDegrees,
+        availableHalfSectorDegrees: candidate.availableHalfSectorDegrees,
+        bundleWidthPx: candidate.bundleWidthPx,
+        bundleRelationIds: candidate.bundleRelationIds,
+        conflictingRelationIds: candidate.conflictingRelationIds,
+        pressure: candidate.pressure, qualityCost: candidate.score, detourCost: candidate.detourCost,
+      })));
+      if (allocation.decision.status !== "capacity-shortage") return undefined;
+      const shortage = allocation.decision.shortage;
+      return {
+        endpointIds: shortage.endpointIds,
+        requiredHalfSectorDegrees: shortage.requiredHalfSectorDegrees,
+        availableHalfSectorDegrees: shortage.availableHalfSectorDegrees,
+        shortageDegrees: shortage.shortageDegrees,
+        bundleWidthPx: shortage.bundleWidthPx,
+        bundleRelationIds: shortage.bundleRelationIds,
+        conflictingRelationIds: shortage.conflictingRelationIds,
+        hardFailures: shortage.hardFailures,
+        labelReservationDeficitPx: shortage.pressure.labelReservationDeficitPx,
+        outerGuardDeficitPx: shortage.pressure.outerGuardDeficitPx,
+        obstacleConflictCount: shortage.pressure.obstacleConflictCount,
+        portConflictCount: shortage.pressure.portConflictCount,
+      };
+    })(),
+  }));
+  const materialized = new Map();
+  const materialize = (selectedIds) => {
+    const key = [...selectedIds].sort().join("\u0000");
+    if (materialized.has(key)) return materialized.get(key);
+    const routesById = new Map(source.baselineRoutes.map((route) => [route.id, route]));
+    for (const selectedId of selectedIds) {
+      const separator = selectedId.indexOf("|");
+      const groupId = selectedId.slice(0, separator);
+      const candidateId = selectedId.slice(separator + 1);
+      const candidate = source.candidateInventories.find((inventory) => inventory.groupId === groupId)?.candidates.find(({ id }) => id === candidateId);
+      if (!candidate) continue;
+      for (const route of candidate.routes) if (candidate.affectedRouteIds.includes(route.id)) routesById.set(route.id, route);
+    }
+    const routes = source.edges.map((edge) => routesById.get(edge.id));
+    const labels = deriveAutomaticRelationLabels({ routedEdges: routes, nodes: source.graphNodes.map((node) => positions[node.id]), previousPlacements: new Map(), manualAnchors: new Map() });
+    const summary = summarizeCustomPresentation(dataset, positions, source.edges, routes, labels, null);
+    const failures = [
+      summary.crossings > 0 ? "crossing" : null,
+      ...summary.groups.flatMap((group) => [
+        (group.obstacleInfluence?.length ?? 0) > 0 ? "obstacle" : null,
+        group.laneSeparationScreen !== null && group.laneSeparationScreen < 16 ? "lane-separation" : null,
+        group.relationLabelClearanceScreen !== null && group.relationLabelClearanceScreen < 4 ? "label-clearance" : null,
+        Math.min(...(group.labelAssociation ?? []).map(({ ownershipMargin }) => ownershipMargin), 0) < 0 ? "label-ownership" : null,
+        group.outerOrdinaryClearanceScreen !== null && group.outerOrdinaryClearanceScreen < 4 ? "outer-clearance" : null,
+      ]),
+    ].filter(Boolean);
+    const value = { routes, labels, summary, failures };
+    materialized.set(key, value);
+    return value;
+  };
+  const plan = planEndpointAllocations(groups, maxStates, (selected) => materialize(selected.map(({ id }) => id)).failures);
+  const selectedIds = plan.decision.status === "feasible" ? plan.decision.selectedCandidateIds : plan.diagnosticFallbackCandidateIds;
+  const selected = materialize(selectedIds);
+  const result = summarizeCustomPresentation(dataset, positions, source.edges, selected.routes, selected.labels, {
+    formulation: "bounded-endpoint-plan-multi-bundle-allocation",
+    endpointPlan: plan,
+    groupCount: groups.length,
+    candidateCount: groups.reduce((sum, group) => sum + group.candidates.length, 0),
+    maxStates,
+    atomicCommit: plan.decision.status === "feasible",
+    authoritativeCombinationEvaluations: materialized.size,
+    elapsedMs: Math.round((performance.now() - startedAt) * 10) / 10,
+  });
+  return result;
 }
 
 function g3Positions(fixturePath) {
@@ -603,6 +708,25 @@ function runCell(name, locale, dataset, positions, source) {
   const hardFirstRepeat = atomicIncidentPortfolio(dataset, positions, { hardFirst: true });
   hardFirst.incidentAllocator.deterministic = JSON.stringify(hardFirst.routeGeometry) === JSON.stringify(hardFirstRepeat.routeGeometry);
   evaluated.push({ arm: "hard-feasibility-first", ...hardFirst });
+  const endpointPlan = endpointPlanPortfolio(dataset, positions);
+  const endpointPlanRepeat = endpointPlanPortfolio(dataset, positions);
+  endpointPlan.incidentAllocator.deterministic = JSON.stringify(endpointPlan.routeGeometry) === JSON.stringify(endpointPlanRepeat.routeGeometry)
+    && JSON.stringify(endpointPlan.incidentAllocator.endpointPlan) === JSON.stringify(endpointPlanRepeat.incidentAllocator.endpointPlan);
+  evaluated.push({ arm: "endpoint-plan", ...endpointPlan });
+  const capacityRequests = hardFirst.incidentAllocator.decisions
+    .filter(({ allocationDecision }) => allocationDecision.status === "capacity-shortage")
+    .map(({ allocationDecision }) => allocationDecision.shortage.requiredHalfSectorDegrees);
+  if (capacityRequests.length > 0) {
+    const requestedHalfSector = Math.max(...capacityRequests);
+    const negotiatedPositions = relieveIncidentAngularCapacity(graph.edges, positions, requestedHalfSector);
+    const negotiated = endpointPlanPortfolio(dataset, negotiatedPositions);
+    const negotiatedRepeat = endpointPlanPortfolio(dataset, negotiatedPositions);
+    negotiated.incidentAllocator.deterministic = JSON.stringify(negotiated.routeGeometry) === JSON.stringify(negotiatedRepeat.routeGeometry);
+    negotiated.incidentAllocator.requestedHalfSectorDegrees = requestedHalfSector;
+    negotiated.incidentAllocator.minimumNodeSeparationBefore = presentation(dataset, positions).groups[0]?.minimumNodeSeparationScreen ?? null;
+    negotiated.incidentAllocator.minimumNodeSeparationAfter = presentation(dataset, negotiatedPositions).groups[0]?.minimumNodeSeparationScreen ?? null;
+    evaluated.push({ arm: "capacity-request-placement-counterfactual", ...negotiated });
+  }
   const angularRelievedPositions = relieveIncidentAngularCapacity(graph.edges, positions);
   const angularJoint = atomicIncidentPortfolio(dataset, angularRelievedPositions);
   const angularJointRepeat = atomicIncidentPortfolio(dataset, angularRelievedPositions);
@@ -642,6 +766,7 @@ for (const [name, dataset] of [
   ["synthetic-multiple-ordinary", syntheticMultipleOrdinary()],
   ["synthetic-asymmetric-incident", syntheticMultipleOrdinary({ asymmetric: true })],
   ["synthetic-shared-parallel-bundles", syntheticSharedBundles()],
+  ["synthetic-conflicting-parallel-bundles", syntheticSharedBundles(28)],
 ]) {
   const { positions, ...payload } = dataset;
   results.push(runCell(name, "n/a", payload, positions, "bounded-synthetic-counterfactual"));
@@ -665,30 +790,40 @@ const report = {
   results,
 };
 
-if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "4") {
+if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "5") {
   console.log(JSON.stringify(report.results.map((cell) => {
-    const arm = cell.arms.find(({ arm }) => arm === "hard-feasibility-first");
+    const arm = cell.arms.find(({ arm }) => arm === "capacity-request-placement-counterfactual");
+    return arm ? {
+      cell: `${cell.name}/${cell.locale}`,
+      plan: arm.incidentAllocator.endpointPlan.decision,
+      requestedHalfSectorDegrees: arm.incidentAllocator.requestedHalfSectorDegrees,
+      minimumNodeSeparationBefore: arm.incidentAllocator.minimumNodeSeparationBefore,
+      minimumNodeSeparationAfter: arm.incidentAllocator.minimumNodeSeparationAfter,
+      crossings: arm.crossings,
+      ordinaryRouteChanges: arm.ordinaryRouteChangesFromFixedRoutingBaseline,
+      elapsedMs: arm.incidentAllocator.elapsedMs,
+    } : null;
+  }).filter(Boolean), null, 2));
+} else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "4") {
+  console.log(JSON.stringify(report.results.map((cell) => {
+    const arm = cell.arms.find(({ arm }) => arm === "endpoint-plan");
+    const plan = arm?.incidentAllocator?.endpointPlan;
     return {
       cell: `${cell.name}/${cell.locale}`,
       elapsedMs: arm?.incidentAllocator?.elapsedMs,
       ordinaryRouteChanges: arm?.ordinaryRouteChangesFromFixedRoutingBaseline,
-      decisions: arm?.incidentAllocator?.decisions.map((decision) => ({
-        edgeIds: decision.edgeIds,
-        status: decision.allocationDecision.status,
-        feasibleCandidates: decision.feasibleCandidateCount,
-        candidateCount: decision.candidateCount,
-        ordinaryPolicy: decision.ordinaryPolicy,
-        diagnosticFallbackRendered: decision.diagnosticFallbackRendered,
-        capacityRequest: decision.allocationDecision.status === "capacity-shortage" ? decision.allocationDecision.shortage : null,
-      })) ?? [],
+      groupCount: arm?.incidentAllocator?.groupCount ?? 0,
+      candidateCount: arm?.incidentAllocator?.candidateCount ?? 0,
+      plan: plan?.decision ?? null,
+      diagnosticFallbackCandidateIds: plan?.diagnosticFallbackCandidateIds ?? [],
     };
   }), null, 2));
 } else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "3") {
   console.log(report.results.map((cell) => {
-    const arm = cell.arms.find(({ arm }) => arm === "hard-feasibility-first");
+    const arm = cell.arms.find(({ arm }) => arm === "endpoint-plan");
     const group = arm?.groups[0];
-    const decision = arm?.incidentAllocator?.decisions[0];
-    return `${cell.name}/${cell.locale}: feasible=${decision?.hardFeasible ?? "n/a"} candidates=${decision?.feasibleCandidateCount ?? 0}/${decision?.candidateCount ?? 0} failures=${(decision?.hardFailures ?? []).join("+") || "none"} angle=${decision?.endpointAngularCapacityDegrees?.toFixed?.(1) ?? "n/a"} lane=${group?.laneSeparationScreen ?? "n/a"} label=${group?.relationLabelClearanceScreen ?? "n/a"} ownership=${group ? Math.min(...group.labelAssociation.map(({ ownershipMargin }) => ownershipMargin)) : "n/a"} outer=${group?.outerOrdinaryClearanceScreen ?? "n/a"} bias=${group?.bundleSideBias ?? "n/a"} obstacles=${group?.obstacleInfluence.length ?? "n/a"} ordinaryChanges=${arm?.ordinaryRouteChangesFromFixedRoutingBaseline ?? "n/a"} ms=${arm?.incidentAllocator?.elapsedMs ?? "n/a"} deterministic=${arm?.incidentAllocator?.deterministic ?? false}`;
+    const plan = arm?.incidentAllocator?.endpointPlan;
+    return `${cell.name}/${cell.locale}: plan=${plan?.decision?.status ?? "no-groups"} groups=${arm?.incidentAllocator?.groupCount ?? 0} candidates=${arm?.incidentAllocator?.candidateCount ?? 0} states=${plan?.decision?.exploredStates ?? plan?.decision?.shortage?.exploredStates ?? 0}/${arm?.incidentAllocator?.maxStates ?? 0} reason=${plan?.decision?.status === "capacity-shortage" ? plan.decision.shortage.reason : "none"} lane=${group?.laneSeparationScreen ?? "n/a"} label=${group?.relationLabelClearanceScreen ?? "n/a"} ownership=${group ? Math.min(...group.labelAssociation.map(({ ownershipMargin }) => ownershipMargin)) : "n/a"} outer=${group?.outerOrdinaryClearanceScreen ?? "n/a"} bias=${group?.bundleSideBias ?? "n/a"} ordinaryChanges=${arm?.ordinaryRouteChangesFromFixedRoutingBaseline ?? "n/a"} ms=${arm?.incidentAllocator?.elapsedMs ?? "n/a"} deterministic=${arm?.incidentAllocator?.deterministic ?? false}`;
   }).join("\n"));
 } else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "2") {
   console.log(JSON.stringify(report.results.map((cell) => ({

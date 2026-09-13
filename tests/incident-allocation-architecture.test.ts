@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { decideIncidentAllocation, type IncidentAllocationCandidate } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/incident-allocation.ts";
+import { planEndpointAllocations, type EndpointPlanCandidate } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/endpoint-plan.ts";
 
 const candidate = (overrides: Partial<IncidentAllocationCandidate> = {}): IncidentAllocationCandidate => ({
   id: "candidate-a", hardFailures: [], requiredHalfSectorDegrees: 20,
@@ -35,4 +36,50 @@ test("capacity shortage is distinct from diagnostic fallback rendering", () => {
 test("incident allocation decision is deterministic across input order", () => {
   const candidates = [candidate({ id: "z" }), candidate({ id: "a" })];
   assert.deepEqual(decideIncidentAllocation(["a", "b"], candidates), decideIncidentAllocation(["a", "b"], candidates.toReversed()));
+});
+
+const planCandidate = (id: string, groupId: string, angle: number, halfWidth = 12, changes: string[] = []): EndpointPlanCandidate => ({
+  id, groupId, hardFailures: [], qualityCost: 1,
+  reservations: [{ endpointId: "hub", centerAngleDegrees: angle, halfWidthDegrees: halfWidth }],
+  changedOrdinaryRelationIds: changes,
+});
+
+test("endpoint plan backtracks across bundles instead of committing the first local winner", () => {
+  const result = planEndpointAllocations([
+    { id: "a", candidates: [planCandidate("a-local", "a", 10), planCandidate("a-joint", "a", 40)] },
+    { id: "b", candidates: [planCandidate("b-only", "b", 0)] },
+  ]);
+  assert.equal(result.decision.status, "feasible");
+  if (result.decision.status === "feasible") assert.deepEqual(result.decision.selectedCandidateIds, ["a-joint", "b-only"]);
+});
+
+test("endpoint plan reports sector shortage without accepting diagnostic fallback", () => {
+  const result = planEndpointAllocations([
+    { id: "a", candidates: [planCandidate("a", "a", 0, 20)] },
+    { id: "b", candidates: [planCandidate("b", "b", 25, 20)] },
+  ]);
+  assert.equal(result.decision.status, "capacity-shortage");
+  assert.deepEqual(result.diagnosticFallbackCandidateIds, ["a", "b"]);
+  if (result.decision.status === "capacity-shortage") {
+    assert.equal(result.decision.shortage.reason, "sector-conflict");
+    assert.equal(result.decision.shortage.shortageDegrees, 15);
+  }
+});
+
+test("endpoint plan rejects two bundles claiming the same ordinary Relation", () => {
+  const result = planEndpointAllocations([
+    { id: "a", candidates: [planCandidate("a", "a", 0, 10, ["ordinary"])] },
+    { id: "b", candidates: [planCandidate("b", "b", 90, 10, ["ordinary"])] },
+  ]);
+  assert.equal(result.decision.status, "capacity-shortage");
+  if (result.decision.status === "capacity-shortage") assert.equal(result.decision.shortage.reason, "ordinary-claim-conflict");
+});
+
+test("endpoint plan backtracks when authoritative combined presentation rejects a combination", () => {
+  const result = planEndpointAllocations([
+    { id: "a", candidates: [planCandidate("a-first", "a", 0, 5), planCandidate("a-safe", "a", 30, 5)] },
+    { id: "b", candidates: [planCandidate("b", "b", 90, 5)] },
+  ], 32, (selected) => selected.some(({ id }) => id === "a-first") ? ["crossing"] : []);
+  assert.equal(result.decision.status, "feasible");
+  if (result.decision.status === "feasible") assert.deepEqual(result.decision.selectedCandidateIds, ["a-safe", "b"]);
 });
