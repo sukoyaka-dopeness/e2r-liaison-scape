@@ -6,10 +6,10 @@ import "./review.css";
 
 type Fixture = "lighthouse" | "titanic" | "apollo-11";
 type Locale = "en" | "ja";
-type Arm = "current" | "full-post" | "adaptive-post" | "global-placement3";
+type Arm = "current" | "full-post" | "adaptive-post" | "global-placement3" | "frontier-12";
 const fixtures: readonly Fixture[] = ["lighthouse", "titanic", "apollo-11"];
 const locales: readonly Locale[] = ["en", "ja"];
-const arms: readonly Arm[] = ["current", "full-post", "adaptive-post", "global-placement3"];
+const arms: readonly Arm[] = ["current", "full-post", "adaptive-post", "global-placement3", "frontier-12"];
 
 function queryValue<T extends string>(name: string, allowed: readonly T[], fallback: T): T {
   const value = new URLSearchParams(window.location.search).get(name) as T | null;
@@ -48,14 +48,15 @@ function ReviewSurface() {
     window.location.href = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
   }
 
-  if (error) return <main className="ecr3-review-error"><h1>ECR3 Actual Product review unavailable</h1><p>{error}</p></main>;
+  if (error) return <main className="ecr3-review-error"><h1>Initial Layout Actual Product review unavailable</h1><p>{error}</p></main>;
   if (arm !== "current" && !override) return <main className="ecr3-review-loading"><h1>Preparing ECR3 Actual Product review</h1><p>Generating the selected candidate from the canonical fixture…</p></main>;
   return <>
-    <div className="ecr3-review-banner" aria-label="ECR3 Actual Product review controls">
-      <strong>ECR3 Actual Product human review</strong>
+    <div className="ecr3-review-banner" aria-label="Initial Layout Actual Product review controls">
+      <strong>Initial Layout Actual Product human review</strong>
       <label>Fixture <select value={fixture} onChange={(event) => switchReview("fixture", event.target.value)}>{fixtures.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
       <label>Locale <select value={locale} onChange={(event) => switchReview("locale", event.target.value)}>{locales.map((value) => <option key={value} value={value}>{value.toUpperCase()}</option>)}</select></label>
       <label>Arm <select value={arm} onChange={(event) => switchReview("arm", event.target.value)}>{arms.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+      <span data-review-arm={arm}>Active arm: {arm}</span>
       <span>Canonical Dataset → normal App open / routing / labels / fit / interaction</span>
     </div>
     <App initialLayoutOverride={override} />

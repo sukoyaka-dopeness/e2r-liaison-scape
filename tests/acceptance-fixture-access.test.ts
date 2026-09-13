@@ -12,4 +12,5 @@ test("acceptance fixture access permits only named canonical fixtures and locale
 test("fixture URL remains a server endpoint and does not duplicate fixture content", () => {
   assert.equal(acceptanceFixturePath({ name: "titanic", locale: "en" }), "/__acceptance-fixtures/titanic.en.e2r.json");
   assert.equal(acceptanceLayoutPath({ name: "titanic", locale: "en", arm: "global-placement3" }), "/__acceptance-layouts?fixture=titanic&locale=en&arm=global-placement3");
+  assert.equal(acceptanceLayoutPath({ name: "titanic", locale: "ja", arm: "frontier-12" }), "/__acceptance-layouts?fixture=titanic&locale=ja&arm=frontier-12");
 });

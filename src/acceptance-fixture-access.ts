@@ -1,6 +1,6 @@
 export type AcceptanceFixtureName = "titanic" | "apollo-11" | "lighthouse";
 export type AcceptanceFixtureLocale = "en" | "ja";
-export type AcceptanceLayoutArm = "global-placement3";
+export type AcceptanceLayoutArm = "global-placement3" | "frontier-12";
 export const ACCEPTANCE_FIXTURE_ENDPOINT = "/__acceptance-fixtures";
 export const ACCEPTANCE_LAYOUT_ENDPOINT = "/__acceptance-layouts";
 const FIXTURE_NAMES: ReadonlySet<string> = new Set(["titanic", "apollo-11", "lighthouse"]);

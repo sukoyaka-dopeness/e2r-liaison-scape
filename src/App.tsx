@@ -45,7 +45,7 @@ type DatasetReplacementSource = "handoff" | "local" | "sample" | "new";
 type TargetedHandoff = Extract<DatasetHandoffFragment, { kind: "targeted" }>;
 export type ActualProductDiagnosticInitialLayout = {
   positions: Record<string, { x: number; y: number }>;
-  arm: "full-post" | "adaptive-post" | "global-placement3";
+  arm: "full-post" | "adaptive-post" | "global-placement3" | "frontier-12";
 };
 type AppProps = { initialLayoutOverride?: ActualProductDiagnosticInitialLayout };
 
