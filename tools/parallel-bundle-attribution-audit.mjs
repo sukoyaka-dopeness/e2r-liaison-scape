@@ -5,6 +5,7 @@ import { deriveAutomaticRelationLabels, deriveBoundedAutomaticPresentation } fro
 import { fitGraphView, placeNodeLabel, relationLabelDisplayWidth, routeGraphEdge, routeSamplesHaveNodeInfluence } from "../src/viewport.ts";
 import { decideIncidentAllocation } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/incident-allocation.ts";
 import { planEndpointAllocations } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/endpoint-plan.ts";
+import { compressIncidentCandidates } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/candidate-compression.ts";
 
 const canonicalExamples = "C:/Users/extra/E2R/e2r-spec/examples";
 const canonicalCells = [
@@ -395,7 +396,7 @@ function summarizeCustomPresentation(dataset, positions, edges, routes, relation
   };
 }
 
-function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collectCandidates = false, independentGroups = false } = {}) {
+function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collectCandidates = false, independentGroups = false, candidateFilter } = {}) {
   const startedAt = performance.now();
   const graph = buildEntityGraph(dataset);
   const edges = graph.edges.map((edge) => ({ ...edge, label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "" }));
@@ -429,6 +430,7 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collec
       && endpointIds.some((id) => edge.sourceId === id || edge.targetId === id));
     const candidates = [];
     for (const gap of gaps) for (const center of centers) for (const ordinaryPolicy of ["preserve-unaffected", "reroute-all"]) {
+      if (candidateFilter && !candidateFilter({ gap, center, ordinaryPolicy })) continue;
       const preferredPhysicalSign = (edge) => (edge.parallelIndex % 2 === 0 ? 1 : -1)
         * (edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1);
       const physicalOffsetById = new Map();
@@ -579,10 +581,18 @@ function atomicIncidentPortfolio(dataset, positions, { hardFirst = false, collec
   return result;
 }
 
-function endpointPlanPortfolio(dataset, positions, maxStates = 512) {
+function endpointPlanPortfolio(dataset, positions, maxStates = 512, { compressed = false } = {}) {
   const startedAt = performance.now();
-  const source = atomicIncidentPortfolio(dataset, positions, { hardFirst: true, collectCandidates: true, independentGroups: true });
-  const groups = source.candidateInventories.map((inventory) => ({
+  const oracleSource = atomicIncidentPortfolio(dataset, positions, { hardFirst: true, collectCandidates: true, independentGroups: true });
+  const source = compressed
+    ? atomicIncidentPortfolio(dataset, positions, {
+      hardFirst: true, collectCandidates: true, independentGroups: true,
+      candidateFilter: ({ gap, center }) => [40, 56, 72, 88, 176].includes(gap) && [-96, -64, 0, 64, 96].includes(center),
+    })
+    : oracleSource;
+  const fullInventories = oracleSource.candidateInventories;
+  const inventories = source.candidateInventories;
+  const groups = inventories.map((inventory) => ({
     id: inventory.groupId,
     candidates: inventory.candidates.map((candidate) => ({
       id: `${inventory.groupId}|${candidate.id}`,
@@ -593,7 +603,7 @@ function endpointPlanPortfolio(dataset, positions, maxStates = 512) {
       qualityCost: candidate.score,
     })),
     capacityRequest: (() => {
-      const allocation = decideIncidentAllocation(inventory.endpointIds, inventory.candidates.map((candidate) => ({
+      const allocation = decideIncidentAllocation(inventory.endpointIds, fullInventories.find(({ groupId }) => groupId === inventory.groupId).candidates.map((candidate) => ({
         id: candidate.id, hardFailures: candidate.hardFailures,
         requiredHalfSectorDegrees: candidate.requiredHalfSectorDegrees,
         availableHalfSectorDegrees: candidate.availableHalfSectorDegrees,
@@ -629,7 +639,7 @@ function endpointPlanPortfolio(dataset, positions, maxStates = 512) {
       const separator = selectedId.indexOf("|");
       const groupId = selectedId.slice(0, separator);
       const candidateId = selectedId.slice(separator + 1);
-      const candidate = source.candidateInventories.find((inventory) => inventory.groupId === groupId)?.candidates.find(({ id }) => id === candidateId);
+      const candidate = fullInventories.find((inventory) => inventory.groupId === groupId)?.candidates.find(({ id }) => id === candidateId);
       if (!candidate) continue;
       for (const route of candidate.routes) if (candidate.affectedRouteIds.includes(route.id)) routesById.set(route.id, route);
     }
@@ -658,6 +668,20 @@ function endpointPlanPortfolio(dataset, positions, maxStates = 512) {
     endpointPlan: plan,
     groupCount: groups.length,
     candidateCount: groups.reduce((sum, group) => sum + group.candidates.length, 0),
+    fullCandidateCount: fullInventories.reduce((sum, group) => sum + group.candidates.length, 0),
+    candidateGenerationElapsedMs: source.incidentAllocator.elapsedMs,
+    oracleGenerationElapsedMs: compressed ? oracleSource.incidentAllocator.elapsedMs : source.incidentAllocator.elapsedMs,
+    compressed,
+    feasiblePlanRetention: fullInventories.every((inventory) => {
+      const fullFeasible = inventory.candidates.filter(({ hardFailures }) => hardFailures.length === 0);
+      const compressedIds = new Set(inventories.find(({ groupId }) => groupId === inventory.groupId)?.candidates.map(({ id }) => id));
+      return fullFeasible.length === 0 || fullFeasible.some(({ id }) => compressedIds.has(id));
+    }),
+    feasibleGroupRetention: fullInventories.map((inventory) => ({
+      groupId: inventory.groupId,
+      fullFeasible: inventory.candidates.filter(({ hardFailures }) => hardFailures.length === 0).length,
+      retainedFeasible: inventories.find(({ groupId }) => groupId === inventory.groupId)?.candidates.filter(({ hardFailures }) => hardFailures.length === 0).length ?? 0,
+    })),
     maxStates,
     atomicCommit: plan.decision.status === "feasible",
     authoritativeCombinationEvaluations: materialized.size,
@@ -713,6 +737,13 @@ function runCell(name, locale, dataset, positions, source) {
   endpointPlan.incidentAllocator.deterministic = JSON.stringify(endpointPlan.routeGeometry) === JSON.stringify(endpointPlanRepeat.routeGeometry)
     && JSON.stringify(endpointPlan.incidentAllocator.endpointPlan) === JSON.stringify(endpointPlanRepeat.incidentAllocator.endpointPlan);
   evaluated.push({ arm: "endpoint-plan", ...endpointPlan });
+  const compressedPlan = endpointPlanPortfolio(dataset, positions, 512, { compressed: true });
+  const compressedRepeat = endpointPlanPortfolio(dataset, positions, 512, { compressed: true });
+  compressedPlan.incidentAllocator.deterministic = JSON.stringify(compressedPlan.routeGeometry) === JSON.stringify(compressedRepeat.routeGeometry)
+    && JSON.stringify(compressedPlan.incidentAllocator.endpointPlan) === JSON.stringify(compressedRepeat.incidentAllocator.endpointPlan);
+  compressedPlan.incidentAllocator.selectedPlanMatchesFull = JSON.stringify(compressedPlan.incidentAllocator.endpointPlan?.decision?.selectedCandidateIds ?? [])
+    === JSON.stringify(endpointPlan.incidentAllocator.endpointPlan?.decision?.selectedCandidateIds ?? []);
+  evaluated.push({ arm: "endpoint-plan-compressed", ...compressedPlan });
   const capacityRequests = hardFirst.incidentAllocator.decisions
     .filter(({ allocationDecision }) => allocationDecision.status === "capacity-shortage")
     .map(({ allocationDecision }) => allocationDecision.shortage.requiredHalfSectorDegrees);
@@ -790,7 +821,17 @@ const report = {
   results,
 };
 
-if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "5") {
+if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "6") {
+  console.log(JSON.stringify(report.results.map((cell) => {
+    const full = cell.arms.find(({ arm }) => arm === "endpoint-plan");
+    const compressed = cell.arms.find(({ arm }) => arm === "endpoint-plan-compressed");
+    return {
+      cell: `${cell.name}/${cell.locale}`,
+      full: full ? { candidates: full.incidentAllocator.candidateCount, plan: full.incidentAllocator.endpointPlan.decision.status, selected: full.incidentAllocator.endpointPlan.decision.selectedCandidateIds ?? [], feasiblePlanRetention: full.incidentAllocator.feasiblePlanRetention } : null,
+      compressed: compressed ? { candidates: compressed.incidentAllocator.candidateCount, plan: compressed.incidentAllocator.endpointPlan.decision.status, selected: compressed.incidentAllocator.endpointPlan.decision.selectedCandidateIds ?? [], selectedPlanMatchesFull: compressed.incidentAllocator.selectedPlanMatchesFull, feasiblePlanRetention: compressed.incidentAllocator.feasiblePlanRetention, elapsedMs: compressed.incidentAllocator.elapsedMs, candidateGenerationMs: compressed.incidentAllocator.candidateGenerationElapsedMs, oracleGenerationMs: compressed.incidentAllocator.oracleGenerationElapsedMs, comboEvals: compressed.incidentAllocator.authoritativeCombinationEvaluations, group: compressed.groups[0] ? { lane: compressed.groups[0].laneSeparationScreen, label: compressed.groups[0].relationLabelClearanceScreen, ownership: Math.min(...compressed.groups[0].labelAssociation.map(({ ownershipMargin }) => ownershipMargin)), outer: compressed.groups[0].outerOrdinaryClearanceScreen, bias: compressed.groups[0].bundleSideBias } : null } : null,
+    };
+  }), null, 2));
+} else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "5") {
   console.log(JSON.stringify(report.results.map((cell) => {
     const arm = cell.arms.find(({ arm }) => arm === "capacity-request-placement-counterfactual");
     return arm ? {

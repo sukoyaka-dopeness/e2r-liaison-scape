@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { decideIncidentAllocation, type IncidentAllocationCandidate } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/incident-allocation.ts";
 import { planEndpointAllocations, type EndpointPlanCandidate } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/endpoint-plan.ts";
+import { compressIncidentCandidates } from "../experimental/product-evaluation-seam/incident-allocation-architecture2/candidate-compression.ts";
 
 const candidate = (overrides: Partial<IncidentAllocationCandidate> = {}): IncidentAllocationCandidate => ({
   id: "candidate-a", hardFailures: [], requiredHalfSectorDegrees: 20,
@@ -82,4 +83,13 @@ test("endpoint plan backtracks when authoritative combined presentation rejects 
   ], 32, (selected) => selected.some(({ id }) => id === "a-first") ? ["crossing"] : []);
   assert.equal(result.decision.status, "feasible");
   if (result.decision.status === "feasible") assert.deepEqual(result.decision.selectedCandidateIds, ["a-safe", "b"]);
+});
+
+test("candidate compression keeps representative gap/center families deterministically", () => {
+  const input = Array.from({ length: 40 }, (_, index) => ({ id: `${index}`, gap: [40, 56, 72, 88, 176][index % 5], center: [-96, -64, -32, 0, 32, 64, 96][index % 7], ordinaryPolicy: index % 2 ? "reroute-all" : "preserve-unaffected", hardFailures: [], score: index }));
+  const compressed = compressIncidentCandidates(input, 30);
+  assert.ok(compressed.length <= 30);
+  assert.deepEqual(compressed.map(({ id }) => id), compressIncidentCandidates(input.toReversed(), 30).map(({ id }) => id));
+  assert.ok(compressed.some(({ gap }) => gap === 40));
+  assert.ok(compressed.some(({ gap }) => gap === 176));
 });
