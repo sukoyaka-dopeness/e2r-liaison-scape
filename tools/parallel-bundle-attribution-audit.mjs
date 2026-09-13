@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import { spawnSync } from "node:child_process";
 import { buildEntityGraph } from "../src/dataset.ts";
-import { deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
-import { fitGraphView, placeNodeLabel, routeSamplesHaveNodeInfluence } from "../src/viewport.ts";
+import { deriveAutomaticRelationLabels, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
+import { fitGraphView, placeNodeLabel, relationLabelDisplayWidth, routeGraphEdge, routeSamplesHaveNodeInfluence } from "../src/viewport.ts";
 
 const canonicalExamples = "C:/Users/extra/E2R/e2r-spec/examples";
 const canonicalCells = [
@@ -58,6 +58,33 @@ function syntheticBundle(reverse = false) {
   };
 }
 
+function syntheticTwoParallel(labelMode) {
+  const labels = labelMode === "long-long"
+    ? ["Long parallel Relation label alpha", "Long parallel Relation label beta"]
+    : ["short A", "short B"];
+  return {
+    version: "1.0",
+    entities: [
+      { id: "a", name: "Source", description: "" },
+      { id: "b", name: "Target", description: "" },
+      { id: "outer", name: "Outer ordinary", description: "" },
+      { id: "obstacle", name: "Nearby obstacle", description: "" },
+    ],
+    events: [],
+    relations: [
+      { id: "p1", name: labels[0], sourceId: "a", targetId: "b" },
+      { id: "p2", name: labels[1], sourceId: "a", targetId: "b" },
+      { id: "outer-edge", name: "nearby ordinary Relation", sourceId: "a", targetId: "outer" },
+    ],
+    positions: {
+      a: { x: 0, y: 0 },
+      b: { x: 0, y: 360 },
+      outer: { x: 170, y: 200 },
+      obstacle: { x: 72, y: 180 },
+    },
+  };
+}
+
 function clonePositions(positions) {
   return Object.fromEntries(Object.entries(positions).map(([id, point]) => [id, { ...point }]));
 }
@@ -104,6 +131,62 @@ function rectDistance(first, second) {
 
 function routeLength(samples) {
   return samples.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - samples[index].x, point.y - samples[index].y), 0);
+}
+
+function angularDistance(left, right) {
+  return Math.abs(Math.atan2(Math.sin(left - right), Math.cos(left - right)));
+}
+
+function endpointAngularCapacity(group, edges, positions) {
+  const endpointIds = [...new Set(group.flatMap((edge) => [edge.sourceId, edge.targetId]))];
+  return Math.min(...endpointIds.map((endpointId) => {
+    const otherEndpointId = endpointIds.find((id) => id !== endpointId);
+    const endpoint = positions[endpointId];
+    const otherEndpoint = positions[otherEndpointId];
+    if (!endpoint || !otherEndpoint) return Infinity;
+    const bundleAngle = Math.atan2(otherEndpoint.y - endpoint.y, otherEndpoint.x - endpoint.x);
+    const ordinaryAngles = edges
+      .filter((edge) => edge.parallelCount === 1 && (edge.sourceId === endpointId || edge.targetId === endpointId))
+      .flatMap((edge) => {
+        const neighborId = edge.sourceId === endpointId ? edge.targetId : edge.sourceId;
+        const neighbor = positions[neighborId];
+        return neighbor ? [Math.atan2(neighbor.y - endpoint.y, neighbor.x - endpoint.x)] : [];
+      });
+    return ordinaryAngles.length === 0 ? Infinity : Math.min(...ordinaryAngles.map((angle) => angularDistance(angle, bundleAngle)));
+  }), Infinity) * 180 / Math.PI;
+}
+
+function relieveIncidentAngularCapacity(edges, positions, minimumDegrees = 32) {
+  const adjusted = clonePositions(positions);
+  const minimum = minimumDegrees * Math.PI / 180;
+  for (const group of parallelGroups(edges)) {
+    const endpointIds = [...new Set(group.flatMap((edge) => [edge.sourceId, edge.targetId]))].sort();
+    for (const endpointId of endpointIds) {
+      const oppositeId = endpointIds.find((id) => id !== endpointId);
+      const endpoint = adjusted[endpointId];
+      const opposite = adjusted[oppositeId];
+      if (!endpoint || !opposite) continue;
+      const bundleAngle = Math.atan2(opposite.y - endpoint.y, opposite.x - endpoint.x);
+      const incident = edges.filter((edge) => edge.parallelCount === 1 && (edge.sourceId === endpointId || edge.targetId === endpointId))
+        .sort((left, right) => left.id.localeCompare(right.id));
+      for (const edge of incident) {
+        const neighborId = edge.sourceId === endpointId ? edge.targetId : edge.sourceId;
+        const neighbor = adjusted[neighborId];
+        if (!neighbor) continue;
+        const dx = neighbor.x - endpoint.x;
+        const dy = neighbor.y - endpoint.y;
+        const radius = Math.hypot(dx, dy);
+        if (radius < 1) continue;
+        const currentAngle = Math.atan2(dy, dx);
+        const signedDelta = Math.atan2(Math.sin(currentAngle - bundleAngle), Math.cos(currentAngle - bundleAngle));
+        if (Math.abs(signedDelta) >= minimum) continue;
+        const direction = signedDelta === 0 ? (neighborId.localeCompare(endpointId) < 0 ? -1 : 1) : Math.sign(signedDelta);
+        const targetAngle = bundleAngle + direction * minimum;
+        adjusted[neighborId] = { x: endpoint.x + Math.cos(targetAngle) * radius, y: endpoint.y + Math.sin(targetAngle) * radius };
+      }
+    }
+  }
+  return adjusted;
 }
 
 function midpoint(samples) {
@@ -224,6 +307,148 @@ function presentation(dataset, positions, { spacing = 0, mode = "bundle" } = {})
   };
 }
 
+function summarizeCustomPresentation(dataset, positions, edges, routes, relationLabels, policy) {
+  const fitScale = fitGraphView(Object.values(positions), 800, 500).scale;
+  const crossingCount = routes.reduce((count, route, index) => count + routes.slice(index + 1).filter((other) => {
+    if ([route.sourceId, route.targetId].some((id) => id === other.sourceId || id === other.targetId)) return false;
+    for (let left = 1; left < route.samples.length; left += 1) for (let right = 1; right < other.samples.length; right += 1) {
+      const a = route.samples[left - 1]; const b = route.samples[left]; const c = other.samples[right - 1]; const d = other.samples[right];
+      const denominator = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x);
+      if (Math.abs(denominator) < 1e-9) continue;
+      const ac = c.x - a.x; const acy = c.y - a.y;
+      const t = (ac * (d.y - c.y) - acy * (d.x - c.x)) / denominator;
+      const u = (ac * (b.y - a.y) - acy * (b.x - a.x)) / denominator;
+      if (t > 0 && t < 1 && u > 0 && u < 1) return true;
+    }
+    return false;
+  }).length, 0);
+  const groups = parallelGroups(edges).map((group) => ({
+    ...groupMetrics(group, routes, positions, relationLabels, routes, fitScale),
+    minimumEndpointAngularCapacityDegrees: Math.round(endpointAngularCapacity(group, edges, positions) * 10) / 10,
+  }));
+  return {
+    graph: { nodes: Object.keys(positions).length, edges: edges.length },
+    fitScale: Math.round(fitScale * 1000) / 1000,
+    crossings: crossingCount,
+    routeMedianScreen: Math.round(routes.map((route) => routeLength(route.samples)).sort((left, right) => left - right)[Math.floor(routes.length / 2)] * fitScale * 10) / 10,
+    groups,
+    routeCount: routes.length,
+    routeGeometry: Object.fromEntries(routes.map((route) => [route.id, JSON.stringify(route.samples)])),
+    incidentAllocator: policy,
+  };
+}
+
+function atomicIncidentPortfolio(dataset, positions) {
+  const startedAt = performance.now();
+  const graph = buildEntityGraph(dataset);
+  const edges = graph.edges.map((edge) => ({ ...edge, label: dataset.relations.find((relation) => relation.id === edge.id)?.name ?? "" }));
+  const provisionalNodeLabels = graph.nodes.map((node) => placeNodeLabel(
+    positions[node.id], node.label, node.description, [], graph.nodes.filter((other) => other.id !== node.id).map((other) => positions[other.id]), [],
+  ));
+  const baseline = deriveBoundedAutomaticPresentation({
+    graph: { nodes: graph.nodes, edges }, positions, edgeCurveOffsets: {}, selfLoopOverrides: {}, provisionalNodeLabels,
+    previousNodeLabelPlacements: new Map(), previousRelationLabelPlacements: new Map(), manualNodeLabelOffsets: new Map(), manualRelationLabelAnchors: new Map(),
+  });
+  let routesById = new Map(baseline.routedEdges.map((route) => [route.id, route]));
+  const decisions = [];
+  for (const group of parallelGroups(edges)) {
+    const endpointIds = [...new Set(group.flatMap((edge) => [edge.sourceId, edge.targetId]))].sort();
+    if (endpointIds.length !== 2) continue;
+    const first = positions[endpointIds[0]];
+    const second = positions[endpointIds[1]];
+    if (!first || !second) continue;
+    const dx = second.x - first.x;
+    const dy = second.y - first.y;
+    const chordLength = Math.max(1, Math.hypot(dx, dy));
+    const unitX = dx / chordLength;
+    const unitY = dy / chordLength;
+    const maximumLabelWidth = Math.max(...group.map((edge) => relationLabelDisplayWidth(edge.label)));
+    const projectedLabel = maximumLabelWidth * Math.abs(unitY) + 22 * Math.abs(unitX);
+    const gaps = [...new Set([56, 72, 88, Math.min(176, Math.max(56, Math.round((projectedLabel + 16) / 8) * 8))])];
+    const centers = [-96, -64, -32, 0, 32, 64, 96];
+    const incidentOrdinary = edges.filter((edge) => edge.parallelCount === 1
+      && edge.sourceId !== edge.targetId
+      && endpointIds.some((id) => edge.sourceId === id || edge.targetId === id));
+    const candidates = [];
+    for (const gap of gaps) for (const center of centers) {
+      const preferredPhysicalSign = (edge) => (edge.parallelIndex % 2 === 0 ? 1 : -1)
+        * (edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1);
+      const physicalOffsetById = new Map();
+      for (const sign of [-1, 1]) {
+        group.filter((edge) => preferredPhysicalSign(edge) === sign)
+          .sort((left, right) => Math.floor(left.parallelIndex / 2) - Math.floor(right.parallelIndex / 2) || left.id.localeCompare(right.id))
+          .forEach((edge, index) => physicalOffsetById.set(edge.id, sign * (gap / 2 + index * gap)));
+      }
+      const rawPhysicalOffsets = group.map((edge) => physicalOffsetById.get(edge.id));
+      const rawMean = rawPhysicalOffsets.reduce((sum, value) => sum + value, 0) / rawPhysicalOffsets.length;
+      const physicalOffsets = rawPhysicalOffsets.map((value) => value - rawMean + center);
+      const offsets = group.map((edge, index) => physicalOffsets[index] * (edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1));
+      const candidateRoutes = new Map(routesById);
+      const groupRoutes = group.map((edge, index) => {
+        const source = positions[edge.sourceId];
+        const target = positions[edge.targetId];
+        const geometry = routeGraphEdge(source, target, edge.parallelIndex, edge.parallelCount, [], [], false, 0, offsets[index]);
+        const route = { ...edge, ...geometry };
+        candidateRoutes.set(edge.id, route);
+        return route;
+      });
+      const reservedPaths = groupRoutes.map((route) => route.samples);
+      for (const edge of incidentOrdinary) {
+        const source = positions[edge.sourceId];
+        const target = positions[edge.targetId];
+        const obstacles = graph.nodes.filter((node) => node.id !== edge.sourceId && node.id !== edge.targetId).map((node) => positions[node.id]);
+        const geometry = routeGraphEdge(source, target, edge.parallelIndex, edge.parallelCount, obstacles, reservedPaths, false, 0, undefined, undefined, provisionalNodeLabels, edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1);
+        candidateRoutes.set(edge.id, { ...edge, ...geometry });
+      }
+      const routes = edges.map((edge) => candidateRoutes.get(edge.id));
+      const labels = deriveAutomaticRelationLabels({
+        routedEdges: routes,
+        nodes: graph.nodes.map((node) => positions[node.id]),
+        previousPlacements: new Map(), manualAnchors: new Map(),
+      });
+      const summary = summarizeCustomPresentation(dataset, positions, edges, routes, labels, null);
+      const metrics = summary.groups.find((candidate) => candidate.edgeIds.join("\u0000") === group.map((edge) => edge.id).join("\u0000"));
+      const obstacleCount = metrics?.obstacleInfluence.length ?? 0;
+      const minimumOwnership = Math.min(...(metrics?.labelAssociation.map(({ ownershipMargin }) => ownershipMargin) ?? [0]));
+      const labelClearance = metrics?.relationLabelClearanceScreen ?? 0;
+      const outerClearance = metrics?.outerOrdinaryClearanceScreen ?? 1000;
+      const laneSeparation = metrics?.laneSeparationScreen ?? 0;
+      const sideBias = metrics?.bundleSideBias ?? 10;
+      const routeTotal = groupRoutes.reduce((sum, route) => sum + routeLength(route.samples), 0);
+      const hardPenalty = obstacleCount * 1e9 + summary.crossings * 1e7 + (minimumOwnership < 0 ? 1e6 + Math.abs(minimumOwnership) * 1000 : 0);
+      const readablePenalty = Math.max(0, 12 - labelClearance) * 10000
+        + Math.max(0, 8 - outerClearance) * 20000
+        + Math.max(0, 18 - laneSeparation) * 5000;
+      const score = hardPenalty + readablePenalty + sideBias * 1000 + routeTotal * .01;
+      candidates.push({ score, gap, center, offsets, routes, labels, summary, minimumOwnership, obstacleCount });
+    }
+    candidates.sort((left, right) => left.score - right.score || left.gap - right.gap || Math.abs(left.center) - Math.abs(right.center) || left.center - right.center);
+    const selected = candidates[0];
+    routesById = new Map(selected.routes.map((route) => [route.id, route]));
+    decisions.push({
+      edgeIds: group.map((edge) => edge.id),
+      candidateCount: candidates.length,
+      selectedGap: selected.gap,
+      selectedCenter: selected.center,
+      selectedOffsets: selected.offsets,
+      minimumOwnership: selected.minimumOwnership,
+      obstacleCount: selected.obstacleCount,
+      endpointAngularCapacityDegrees: endpointAngularCapacity(group, edges, positions),
+    });
+  }
+  const routes = edges.map((edge) => routesById.get(edge.id));
+  const labels = deriveAutomaticRelationLabels({
+    routedEdges: routes,
+    nodes: graph.nodes.map((node) => positions[node.id]),
+    previousPlacements: new Map(), manualAnchors: new Map(),
+  });
+  return summarizeCustomPresentation(dataset, positions, edges, routes, labels, {
+    formulation: "atomic-bundle-reservation-plus-incident-ordinary-reroute",
+    decisions,
+    elapsedMs: Math.round((performance.now() - startedAt) * 10) / 10,
+  });
+}
+
 function g3Positions(fixturePath) {
   const result = spawnSync(process.execPath, ["--experimental-strip-types", "tools/generic-crossing-search.mjs", fixturePath], {
     cwd: process.cwd(), encoding: "utf8", maxBuffer: 100 * 1024 * 1024,
@@ -258,6 +483,15 @@ function runCell(name, locale, dataset, positions, source) {
   const graph = buildEntityGraph(dataset);
   const parallelIds = new Set(graph.edges.filter((edge) => edge.parallelCount > 1).map((edge) => edge.id));
   const evaluated = arms.map(([arm, armPositions, spacing, mode]) => ({ arm, ...presentation(dataset, armPositions, { spacing, mode }) }));
+  const jointIncident = atomicIncidentPortfolio(dataset, positions);
+  const jointIncidentRepeat = atomicIncidentPortfolio(dataset, positions);
+  jointIncident.incidentAllocator.deterministic = JSON.stringify(jointIncident.routeGeometry) === JSON.stringify(jointIncidentRepeat.routeGeometry);
+  evaluated.push({ arm: "joint-incident-portfolio", ...jointIncident });
+  const angularRelievedPositions = relieveIncidentAngularCapacity(graph.edges, positions);
+  const angularJoint = atomicIncidentPortfolio(dataset, angularRelievedPositions);
+  const angularJointRepeat = atomicIncidentPortfolio(dataset, angularRelievedPositions);
+  angularJoint.incidentAllocator.deterministic = JSON.stringify(angularJoint.routeGeometry) === JSON.stringify(angularJointRepeat.routeGeometry);
+  evaluated.push({ arm: "angular-relief-plus-joint-incident", ...angularJoint });
   const baseline = evaluated[0].routeGeometry;
   const compareRoutes = (current) => Object.keys({ ...baseline, ...current }).filter((id) => baseline[id] !== current[id]);
   return {
@@ -283,9 +517,14 @@ for (const reverse of [false, true]) {
   const { positions, ...payload } = dataset;
   results.push(runCell(reverse ? "synthetic-reverse-bundle" : "synthetic-long-short-obstacle", "n/a", payload, positions, "bounded-synthetic-counterfactual"));
 }
+for (const labelMode of ["short-short", "long-long"]) {
+  const dataset = syntheticTwoParallel(labelMode);
+  const { positions, ...payload } = dataset;
+  results.push(runCell(`synthetic-two-${labelMode}`, "n/a", payload, positions, "bounded-synthetic-counterfactual"));
+}
 
-console.log(JSON.stringify({
-  contract: "PARALLEL-INCIDENT-BUNDLE-GEOMETRY-ATTRIBUTION-v1",
+const report = {
+  contract: "PARALLEL-INCIDENT-GEOMETRY-FORMULATION-EXPLORATION-v1",
   diagnosticOnly: true,
   method: {
     routingCounterfactual: "same positions, baseline vs pair-16 vs bundle-16 slot policy",
@@ -294,4 +533,52 @@ console.log(JSON.stringify({
     warning: "counterfactual transforms are attribution probes, not production rules",
   },
   results,
-}, null, 2));
+};
+
+if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "2") {
+  console.log(JSON.stringify(report.results.map((cell) => ({
+    cell: `${cell.name}/${cell.locale}`,
+    arms: cell.arms.filter(({ arm }) => ["fixed-routing-baseline", "routing-pair-16", "routing-bundle-16", "routing-corridor-aware", "joint-incident-portfolio", "angular-relief-plus-joint-incident"].includes(arm)).map(({ arm, crossings, routeMedianScreen, groups, incidentAllocator, ordinaryRouteChangesFromFixedRoutingBaseline }) => ({
+      arm,
+      crossings,
+      median: routeMedianScreen,
+      lane: groups[0]?.laneSeparationScreen ?? null,
+      label: groups[0]?.relationLabelClearanceScreen ?? null,
+      ownership: groups[0] ? Math.min(...groups[0].labelAssociation.map(({ ownershipMargin }) => ownershipMargin)) : null,
+      outer: groups[0]?.outerOrdinaryClearanceScreen ?? null,
+      bias: groups[0]?.bundleSideBias ?? null,
+      obstacles: groups[0]?.obstacleInfluence.length ?? null,
+      angle: groups[0]?.minimumEndpointAngularCapacityDegrees ?? null,
+      nodeSeparation: groups[0]?.minimumNodeSeparationScreen ?? null,
+      ordinaryChanges: ordinaryRouteChangesFromFixedRoutingBaseline,
+      evaluations: incidentAllocator?.decisions.reduce((sum, decision) => sum + decision.candidateCount, 0),
+      elapsedMs: incidentAllocator?.elapsedMs,
+      deterministic: incidentAllocator?.deterministic,
+    })),
+  })), null, 2));
+} else if (process.env.E2R_PARALLEL_AUDIT_SUMMARY === "1") {
+  console.log(JSON.stringify(report.results.map((cell) => ({
+    name: cell.name,
+    locale: cell.locale,
+    arms: cell.arms.filter(({ arm }) => ["fixed-routing-baseline", "routing-pair-16", "routing-bundle-16", "routing-corridor-aware", "joint-incident-portfolio", "angular-relief-plus-joint-incident"].includes(arm)).map(({ arm, crossings, routeMedianScreen, groups, incidentAllocator, routeChangesFromFixedRoutingBaseline, ordinaryRouteChangesFromFixedRoutingBaseline }) => ({
+      arm,
+      crossings,
+      routeMedianScreen,
+      group: groups[0] ? {
+        lane: groups[0].laneSeparationScreen,
+        label: groups[0].relationLabelClearanceScreen,
+        ownership: Math.min(...groups[0].labelAssociation.map(({ ownershipMargin }) => ownershipMargin)),
+        outer: groups[0].outerOrdinaryClearanceScreen,
+        bias: groups[0].bundleSideBias,
+        obstacles: groups[0].obstacleInfluence.length,
+        angle: groups[0].minimumEndpointAngularCapacityDegrees,
+        nodeSeparation: groups[0].minimumNodeSeparationScreen,
+      } : null,
+      incidentAllocator,
+      routeChangesFromFixedRoutingBaseline,
+      ordinaryRouteChangesFromFixedRoutingBaseline,
+    })),
+  })), null, 2));
+} else {
+  console.log(JSON.stringify(report, null, 2));
+}
