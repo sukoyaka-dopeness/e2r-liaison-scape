@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { structuralFormulations } from "./structural-formulation.mjs";
 import { createHash } from "node:crypto";
 import { buildEntityGraph } from "../src/dataset.ts";
 import { settleInitialPlacement, solveAutoLayout } from "../src/auto-layout.ts";
@@ -19,13 +20,15 @@ function syntheticBipartiteDataset(leftSize, rightSize, legacyIds = false) {
 }
 function syntheticK33Dataset() { return syntheticBipartiteDataset(3, 3, true); }
 function syntheticDatasetFromPath(value) {
-  const match = /^synthetic:k(\d+)-(\d+)$/.exec(value);
+  const match = /^synthetic:k(\d+)-(\d+)(-minus-one)?$/.exec(value);
   if (!match) return null;
   const leftSize = Number.parseInt(match[1], 10);
   const rightSize = Number.parseInt(match[2], 10);
-  return leftSize >= 1 && rightSize >= 1 && leftSize <= 20 && rightSize <= 20
+  const generated = leftSize >= 1 && rightSize >= 1 && leftSize <= 20 && rightSize <= 20
     ? syntheticBipartiteDataset(leftSize, rightSize)
     : null;
+  if (generated && match[3]) generated.relations = generated.relations.slice(1);
+  return generated;
 }
 const dataset = fixturePath === "synthetic:k3-3"
   ? syntheticK33Dataset()
@@ -132,6 +135,8 @@ function productionAblationPlan(mode) {
   const uniform = () => globallySpacePositions(current, globalSpacingScale, globalSpacingScale);
   const structuralAnisotropic = () => globallySpacePositions(structural, globalSpacingScale, globalSpacingY);
   switch (mode) {
+    case "structural-native-audit": return { specs: structuralFormulations(graph.nodes, edges) };
+    case "structural-native-small": return { specs: structuralFormulations(graph.nodes, edges).filter(({family}) => /^(crossing-ring|ordered-stress|twin-spokes)/.test(family)) };
     case "direct-current": return { specs: [{ family: "product-current", positions: current }] };
     case "direct-anisotropic": return { specs: [{ family: "product-current-anisotropic", positions: anisotropic() }] };
     case "direct-uniform": return { specs: [{ family: "product-current-uniform", positions: uniform() }] };

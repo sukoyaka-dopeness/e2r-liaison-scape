@@ -1,0 +1,68 @@
+[
+  {
+    "fixture": "../e2r-spec/examples/lighthouse-restoration-demo.en.e2r.json",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  },
+  {
+    "fixture": "../e2r-spec/examples/lighthouse-restoration-demo.ja.e2r.json",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  },
+  {
+    "fixture": "../e2r-spec/examples/titanic-final-voyage.en.e2r.json",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  },
+  {
+    "fixture": "../e2r-spec/examples/titanic-final-voyage.ja.e2r.json",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  },
+  {
+    "fixture": "../e2r-spec/examples/apollo-11-mission.en.e2r.json",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  },
+  {
+    "fixture": "../e2r-spec/examples/apollo-11-mission.ja.e2r.json",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  },
+  {
+    "fixture": "synthetic:k7-7",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  },
+  {
+    "fixture": "synthetic:k6-8",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  },
+  {
+    "fixture": "synthetic:k8-8",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  },
+  {
+    "fixture": "synthetic:k5-9",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  },
+  {
+    "fixture": "synthetic:k7-7-minus-one",
+    "sameFingerprint": true,
+    "sameDigest": true,
+    "sameMetrics": true
+  }
+]

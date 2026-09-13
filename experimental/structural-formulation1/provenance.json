@@ -1,0 +1,19 @@
+{
+  "node": "v24.18.0",
+  "files": {
+    "tools/structural-formulation.mjs": "876c033a001bd39f75873dd40a342476097e52c651be69cfc94b4ea12ac9bc1f",
+    "tools/generic-crossing-search.mjs": "1eaaf09a2d793ac58cbf90006f10c731a8caa90f6c62b95385eda8eb43200467",
+    "src/graph-presentation.ts": "69fcdff9e31cd1d1478bef309da5ca36d2af1f2e9bb0144b8653a94d19804616",
+    "src/viewport.ts": "c247078b6b19718c8ef82786c47a0028cc7033712cc2fe5499e1573aef97a811",
+    "../e2r-spec/examples/lighthouse-restoration-demo.en.e2r.json": "e42c23f5a52ff9e0b35610adca82699ffbac6de282d3ca5b114e5b88f8bc0a1a",
+    "../e2r-spec/examples/lighthouse-restoration-demo.ja.e2r.json": "ef6fc10e067e999ce7dcbf8cb5701776968957221d7399d5dac1b2cad84d2cb0",
+    "../e2r-spec/examples/titanic-final-voyage.en.e2r.json": "361c958f9895b3ea045993eccde745d199c38eed07b03e26affe1957e258cc60",
+    "../e2r-spec/examples/titanic-final-voyage.ja.e2r.json": "635f7b89317d29d985a825e0ee2771d937bc109c9ed7c2652b0c8685ba944c3f",
+    "../e2r-spec/examples/apollo-11-mission.en.e2r.json": "6976bfd273fc4515f8bfbb34ed15c2255ac7577d8f05ecd4c5307427210ebe8c",
+    "../e2r-spec/examples/apollo-11-mission.ja.e2r.json": "3427efedc88e5318efe7753c56f5738a26fd330331895a25730c10430f8f5f0c"
+  },
+  "roundOnce": true,
+  "geometryCache": true,
+  "exactMetadataReuse": true,
+  "productDefaultChanged": false
+}

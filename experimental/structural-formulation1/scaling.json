@@ -1,0 +1,310 @@
+[
+  {
+    "fixture": "synthetic:k10-10",
+    "arm": "structural-native-small",
+    "graph": {
+      "nodes": 20,
+      "edges": 100
+    },
+    "elapsedMs": 3653.39,
+    "full": 7,
+    "selected": {
+      "family": "twin-spokes-rotated",
+      "metrics": {
+        "score": 42968258.7080929,
+        "crossings": 400,
+        "labelRouteHits": 11,
+        "labelNear20": 29,
+        "labelOverlap": 0,
+        "overlapPairs": 0,
+        "minimumSeparation": 149,
+        "extent": [
+          1408,
+          1792
+        ],
+        "aspectRatio": 0.7857142857142857,
+        "fitScale": 0.16594827586206898,
+        "routeMedian": 668.2349971808515,
+        "routeMax": 1060.2878136625127
+      }
+    },
+    "fingerprint": "6b8f4abc5183",
+    "digest": "c1fdc69ec0b41f4079a100329b295c690d56a1ab3b3db7199dbc392ff1124638",
+    "candidates": [
+      {
+        "family": "twin-spokes-rotated",
+        "metrics": {
+          "score": 42698404.210990205,
+          "crossings": 400,
+          "labelRouteHits": 7,
+          "labelNear20": 26,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 149.59999999999997,
+          "extent": [
+            1408,
+            1792.0000000000002
+          ],
+          "aspectRatio": 0.7857142857142856,
+          "fitScale": 0.16594827586206895,
+          "routeMedian": 668.3001832421406,
+          "routeMax": 1060.287813662513
+        }
+      },
+      {
+        "family": "twin-spokes",
+        "metrics": {
+          "score": 43108394.129566446,
+          "crossings": 400,
+          "labelRouteHits": 11,
+          "labelNear20": 36,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 149.59999999999997,
+          "extent": [
+            1408,
+            1792.0000000000002
+          ],
+          "aspectRatio": 0.7857142857142856,
+          "fitScale": 0.16594827586206895,
+          "routeMedian": 663.2594713606471,
+          "routeMax": 1060.287813662513
+        }
+      },
+      {
+        "family": "ordered-stress",
+        "metrics": {
+          "score": 106747359.19343188,
+          "crossings": 967,
+          "labelRouteHits": 46,
+          "labelNear20": 74,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 99.62114515242561,
+          "extent": [
+            753.4170494718949,
+            912.0122485983183
+          ],
+          "aspectRatio": 0.8261040908494703,
+          "fitScale": 0.3155698101558955,
+          "routeMedian": 451.2242569778215,
+          "routeMax": 601.7101286655892
+        }
+      },
+      {
+        "family": "ordered-stress-rotated",
+        "metrics": {
+          "score": 106881912.06836724,
+          "crossings": 976,
+          "labelRouteHits": 38,
+          "labelNear20": 62,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 96.8138315536649,
+          "extent": [
+            716.5810524701071,
+            958.8944266005935
+          ],
+          "aspectRatio": 0.7472992152123367,
+          "fitScale": 0.30110634293275296,
+          "routeMedian": 441.6764929137592,
+          "routeMax": 609.8465116511353
+        }
+      },
+      {
+        "family": "crossing-ring-rotated",
+        "metrics": {
+          "score": 128771061.19730586,
+          "crossings": 1200,
+          "labelRouteHits": 0,
+          "labelNear20": 1,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 166.44295300412725,
+          "extent": [
+            1056,
+            1344.0000000000002
+          ],
+          "aspectRatio": 0.7857142857142856,
+          "fitScale": 0.21874999999999997,
+          "routeMedian": 775.4159126262755,
+          "routeMax": 1257.8285553542648
+        }
+      },
+      {
+        "family": "crossing-ring",
+        "metrics": {
+          "score": 128991060.7167224,
+          "crossings": 1200,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 166.44295300412745,
+          "extent": [
+            1056,
+            1344.0000000000002
+          ],
+          "aspectRatio": 0.7857142857142856,
+          "fitScale": 0.21874999999999997,
+          "routeMedian": 775.4159126262755,
+          "routeMax": 1257.347971905292
+        }
+      }
+    ]
+  },
+  {
+    "fixture": "synthetic:k12-12",
+    "arm": "structural-native-small",
+    "graph": {
+      "nodes": 24,
+      "edges": 144
+    },
+    "elapsedMs": 7233.85,
+    "full": 7,
+    "selected": {
+      "family": "twin-spokes-rotated",
+      "metrics": {
+        "score": 96103424.82175548,
+        "crossings": 900,
+        "labelRouteHits": 15,
+        "labelNear20": 44,
+        "labelOverlap": 0,
+        "overlapPairs": 0,
+        "minimumSeparation": 149,
+        "extent": [
+          1708,
+          2172
+        ],
+        "aspectRatio": 0.7863720073664825,
+        "fitScale": 0.13774597495527727,
+        "routeMedian": 818.2288157422417,
+        "routeMax": 1302.4602465750665
+      }
+    },
+    "fingerprint": "4d0db20350e8",
+    "digest": "d18a8c85482e0a25a50be438c302170e007dfc3cab120e8f66af4679d6dbfd4d",
+    "candidates": [
+      {
+        "family": "twin-spokes-rotated",
+        "metrics": {
+          "score": 95968580.41371544,
+          "crossings": 900,
+          "labelRouteHits": 15,
+          "labelNear20": 47,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 149.59999999999997,
+          "extent": [
+            1707.2,
+            2172.8
+          ],
+          "aspectRatio": 0.7857142857142857,
+          "fitScale": 0.1376967095851216,
+          "routeMedian": 818.1466977817107,
+          "routeMax": 1302.8609423739138
+        }
+      },
+      {
+        "family": "twin-spokes",
+        "metrics": {
+          "score": 96393848.44543172,
+          "crossings": 901,
+          "labelRouteHits": 11,
+          "labelNear20": 37,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 149.59999999999997,
+          "extent": [
+            1707.2,
+            2172.8
+          ],
+          "aspectRatio": 0.7857142857142857,
+          "fitScale": 0.1376967095851216,
+          "routeMedian": 818.1466977817108,
+          "routeMax": 1302.8609423739135
+        }
+      },
+      {
+        "family": "ordered-stress",
+        "metrics": {
+          "score": 236272269.55948764,
+          "crossings": 2199,
+          "labelRouteHits": 55,
+          "labelNear20": 100,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 98.80411001379873,
+          "extent": [
+            868.3177181471995,
+            1105.180258666625
+          ],
+          "aspectRatio": 0.7856797217811375,
+          "fitScale": 0.26343243286647194,
+          "routeMedian": 513.506152350577,
+          "routeMax": 749.1726887658803
+        }
+      },
+      {
+        "family": "ordered-stress-rotated",
+        "metrics": {
+          "score": 236567256.25883234,
+          "crossings": 2206,
+          "labelRouteHits": 56,
+          "labelNear20": 91,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 98.86662730781715,
+          "extent": [
+            868.3559175237766,
+            1105.131641278254
+          ],
+          "aspectRatio": 0.785748851167984,
+          "fitScale": 0.2634433874899258,
+          "routeMedian": 513.4316049953596,
+          "routeMax": 736.0237326311333
+        }
+      },
+      {
+        "family": "crossing-ring-rotated",
+        "metrics": {
+          "score": 283464747.65594846,
+          "crossings": 2641,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 166.27383865523637,
+          "extent": [
+            1267.2,
+            1612.8000000000002
+          ],
+          "aspectRatio": 0.7857142857142857,
+          "fitScale": 0.18368320610687022,
+          "routeMedian": 945.7394828590164,
+          "routeMax": 1529.4400753008263
+        }
+      },
+      {
+        "family": "crossing-ring",
+        "metrics": {
+          "score": 284324747.65594846,
+          "crossings": 2640,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 166.2738386552362,
+          "extent": [
+            1267.2,
+            1612.8000000000002
+          ],
+          "aspectRatio": 0.7857142857142857,
+          "fitScale": 0.18368320610687022,
+          "routeMedian": 945.7394828590161,
+          "routeMax": 1529.4400753008258
+        }
+      }
+    ]
+  }
+]
