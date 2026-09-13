@@ -167,6 +167,10 @@ export type AutomaticRoutingInput = {
   candidateCache?: RouteCandidateCache;
   /** Opt-in exact endpoint/offset geometry cache; route arbitration remains uncached. */
   geometryCache?: RouteGeometryCache;
+  /** Development-only automatic parallel-group spacing; omitted by normal Product callers. */
+  parallelBundleSpacing?: number;
+  /** Development-only slot policy for parallel-group spacing. */
+  parallelBundleMode?: "pair" | "bundle";
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
   profiler?: AutomaticPresentationProfiler;
   routeDecisionPass?: AutomaticRouteDecision["pass"];
@@ -211,6 +215,8 @@ export function deriveAutomaticRoutes({
   routeTraceSink,
   candidateCache,
   geometryCache,
+  parallelBundleSpacing,
+  parallelBundleMode = "bundle",
   profiler,
   routeDecisionPass = "first",
   replayPrefix,
@@ -320,6 +326,8 @@ export function deriveAutomaticRoutes({
       candidateCache,
       passProfile?.route,
       geometryCache,
+      parallelBundleSpacing,
+      parallelBundleMode,
     );
     const isEligibleShape = edge.sourceId !== edge.targetId
       && edge.parallelCount === 1
@@ -489,6 +497,8 @@ export function deriveAutomaticRoutes({
         undefined,
         passProfile?.route,
         geometryCache,
+        parallelBundleSpacing,
+        parallelBundleMode,
       )
       : null;
     const routeWithoutObstaclesOrOccupiedPaths = routeWithoutObstacles !== null
@@ -510,6 +520,8 @@ export function deriveAutomaticRoutes({
         undefined,
         passProfile?.route,
         geometryCache,
+        parallelBundleSpacing,
+        parallelBundleMode,
       )
       : null;
     const obstacleComparison = routeWithoutObstacles === null
@@ -735,6 +747,10 @@ export type BoundedAutomaticPresentationInput = {
   candidateCache?: RouteCandidateCache;
   /** Opt-in exact endpoint/offset geometry cache; route arbitration remains uncached. */
   geometryCache?: RouteGeometryCache;
+  /** Development-only automatic parallel-group spacing; omitted by normal Product callers. */
+  parallelBundleSpacing?: number;
+  /** Development-only slot policy for parallel-group spacing. */
+  parallelBundleMode?: "pair" | "bundle";
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
   profiler?: AutomaticPresentationProfiler;
   /** Diagnostic-only replay input for the first canonical route pass. */
@@ -808,6 +824,8 @@ export function deriveBoundedAutomaticPresentation({
   presentationDependencySink,
   candidateCache,
   geometryCache,
+  parallelBundleSpacing,
+  parallelBundleMode = "bundle",
   profiler,
   replayPrefix,
   replayPrefixSink,
@@ -834,6 +852,8 @@ export function deriveBoundedAutomaticPresentation({
     edgeCurveOffsets,
     selfLoopOverrides,
     provisionalNodeLabels: [],
+    parallelBundleSpacing,
+    parallelBundleMode,
     routeDecisionPass: "label-free" as const,
   };
   const routesWithoutNodeLabels = deriveAutomaticRoutes({
@@ -848,6 +868,8 @@ export function deriveBoundedAutomaticPresentation({
     profiler,
     routeTraceSink,
     routeDecisionPass: "label-free",
+    parallelBundleSpacing,
+    parallelBundleMode,
   });
   const labelFreeSnapshot = createRouteSelectionSnapshot("label-free", routesWithoutNodeLabels);
   reportDependency("route-selection", "label-free", labelFreeRouteInput, { routes: labelFreeSnapshot.routes });
@@ -867,6 +889,8 @@ export function deriveBoundedAutomaticPresentation({
       draggedNodeId,
       activeDraggedNodeId,
       preserveSafeIncidentPreviousRoute,
+      parallelBundleSpacing,
+      parallelBundleMode,
       routeDecisionPass,
       replayPrefix: routeDecisionPass === "first" ? replayPrefix : undefined,
     };
@@ -890,6 +914,8 @@ export function deriveBoundedAutomaticPresentation({
       routeDecisionPass,
       replayPrefix: routeDecisionPass === "first" ? replayPrefix : undefined,
       replayPrefixSink: routeDecisionPass === "first" ? replayPrefixSink : undefined,
+      parallelBundleSpacing,
+      parallelBundleMode,
     }));
     reportDependency("route-selection", routeDecisionPass, routeStageInput, { routes: routeSnapshot.routes });
     const routeById = new Map(labelFreeSnapshot.routes.map((route) => [route.id, route]));

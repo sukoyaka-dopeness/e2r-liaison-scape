@@ -47,9 +47,13 @@ export type ActualProductDiagnosticInitialLayout = {
   positions: Record<string, { x: number; y: number }>;
   arm: "full-post" | "adaptive-post" | "global-placement3" | "frontier-12";
 };
-type AppProps = { initialLayoutOverride?: ActualProductDiagnosticInitialLayout };
+type AppProps = {
+  initialLayoutOverride?: ActualProductDiagnosticInitialLayout;
+  /** Development-only review seam; normal Product callers omit it. */
+  parallelBundleVariant?: "pair-16" | "bundle-16";
+};
 
-export default function App({ initialLayoutOverride }: AppProps = {}) {
+export default function App({ initialLayoutOverride, parallelBundleVariant }: AppProps = {}) {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
     window.localStorage,
     window.navigator.language,
@@ -521,6 +525,8 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
       feedbackEnabled: dragRef.current?.kind !== "node",
       routeDecisionSink: routeDecisions === null ? undefined : (decision) => routeDecisions.push(decision),
       profiler: presentationProfiler,
+      parallelBundleSpacing: import.meta.env.DEV && parallelBundleVariant ? 16 : undefined,
+      parallelBundleMode: parallelBundleVariant === "pair-16" ? "pair" : "bundle",
     });
     const completedAt = performance.now();
     const openTiming = datasetOpenTimingRef.current;
@@ -554,7 +560,7 @@ export default function App({ initialLayoutOverride }: AppProps = {}) {
       profiler: presentationProfiler,
     });
     return { ...result, derivationPhase, routeDecisions: routeDecisions ?? [] };
-  }, [edgeCurveOffsets, graph, manualLabelRevision, positions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+  }, [edgeCurveOffsets, graph, manualLabelRevision, parallelBundleVariant, positions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {

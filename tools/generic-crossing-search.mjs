@@ -91,6 +91,9 @@ const parsedGlobalSpacingY = Number.parseFloat(process.env.E2R_GLOBAL_SPACING_Y 
 const globalSpacingY = Number.isFinite(parsedGlobalSpacingY) && parsedGlobalSpacingY > 0 ? parsedGlobalSpacingY : globalSpacingScale;
 const globalSpacingStage2Mode = process.env.E2R_GLOBAL_SPACING_STAGE2 === "off" ? "off" : "full";
 const globalPlacementAblation = process.env.E2R_GLOBAL_PLACEMENT_ABLATION ?? "off";
+const parsedParallelBundleSpacing = Number.parseFloat(process.env.E2R_PARALLEL_BUNDLE_SPACING ?? "0");
+const parallelBundleSpacing = Number.isFinite(parsedParallelBundleSpacing) && parsedParallelBundleSpacing > 0 ? parsedParallelBundleSpacing : 0;
+const parallelBundleMode = process.env.E2R_PARALLEL_BUNDLE_MODE === "pair" ? "pair" : "bundle";
 const obstaclePlacementAuditEnabled = process.env.E2R_OBSTACLE_PLACEMENT_AUDIT === "1";
 const edges = graph.edges.map((edge) => ({
   ...edge,
@@ -376,6 +379,8 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
     }) : undefined,
     profiler: presentationProfiler ?? undefined,
     geometryCache: presentationGeometryCache ?? undefined,
+    parallelBundleSpacing,
+    parallelBundleMode,
   });
   if (presentationCostBreakdown) presentationCostBreakdown.authoritativePresentationMs += performance.now() - authoritativePresentationStartedAt;
   const metricAggregationStartedAt = presentationCostProfileEnabled ? performance.now() : 0;
@@ -2235,7 +2240,7 @@ console.log(JSON.stringify({
       wallMs: Math.round(stage.wallMs * 100) / 100,
     }])),
   },
-  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationAdaptiveMargin: adaptiveMarginThreshold, relaxationFinalCanonicalizationMode, globalPlacementMode, globalPlacementAblation, globalSpacingScale, globalSpacingY, globalSpacingStage2Mode, screenSpaceAuditEnabled, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode },
+  searchBudget: { presentationFinalistLimit, presentationRepairRounds, presentationGeometryCacheEnabled, presentationExactCandidateReuseEnabled, relaxationAdmission, relaxationMoveMode, relaxationObjective, relaxationPairLimit, relaxationClusterLimit, relaxationMaxDisplacement, relaxationTargetLimit, relaxationStepMode, relaxationApproximationMode, relaxationApproximationAudit, relaxationPrioritizationMode, relaxationPrioritizationAudit, relaxationPriorityTopK, relaxationAdaptiveMargin: adaptiveMarginThreshold, relaxationFinalCanonicalizationMode, globalPlacementMode, globalPlacementAblation, globalSpacingScale, globalSpacingY, globalSpacingStage2Mode, screenSpaceAuditEnabled, labelCorridorMargin, labelCorridorWeight, relaxationLatticeStep, relaxationLatticeProbe, relaxationCheapScreenMode, parallelBundleSpacing, parallelBundleMode },
   scaling: complexityProbe(),
   ...search,
   floatSelectedPositionFingerprint: search.floatSelected ? createHash("sha256").update(positionsKey(search.floatSelected.positions)).digest("hex").slice(0, 12) : null,

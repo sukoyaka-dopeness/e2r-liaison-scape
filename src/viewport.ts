@@ -952,6 +952,8 @@ export function routeGraphEdge(
   candidateCache?: RouteCandidateCache,
   routeProfile?: RouteArbitrationProfile,
   geometryCache?: RouteGeometryCache,
+  parallelBundleSpacing = 0,
+  parallelBundleMode: "pair" | "bundle" = "bundle",
 ): RouteGeometry {
   if (source.x === target.x && source.y === target.y && selfRelation) {
     if (manualSelfLoop === undefined) return selectAutomaticSelfLoopGeometry(source, parallelIndex, obstacles);
@@ -1037,7 +1039,11 @@ export function routeGraphEdge(
   const direction = (parallelIndex % 2 === 0 ? 1 : -1)
     * (parallelCount > 1 ? canonicalPhysicalSideSign : 1);
   const rank = Math.floor(parallelIndex / 2) + 1;
-  const baseOffset = parallelCount === 1 ? 0 : direction * (40 + (rank - 1) * 24);
+  const spacing = Math.max(0, parallelBundleSpacing);
+  const spacingUnits = parallelBundleMode === "pair"
+    ? spacing
+    : spacing * Math.max(1, parallelCount - 1 + rank - 1);
+  const baseOffset = parallelCount === 1 ? 0 : direction * (40 + (rank - 1) * 24 + spacingUnits);
   // Callers exclude the source and target by identity. Keep unrelated nodes
   // even when they have been dragged onto an endpoint's coordinates.
   const routeObstacles = obstacles;
