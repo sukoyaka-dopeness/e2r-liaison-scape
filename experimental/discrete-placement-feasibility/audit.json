@@ -1,0 +1,2081 @@
+[
+  {
+    "name": "lighthouse-restoration-demo/en",
+    "graph": {
+      "nodes": 10,
+      "edges": 14
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 36,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 26,
+          "prunedCorridor": 4,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 26,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 13,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 18,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 9,
+          "prunedCorridor": 5,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 53,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 78,
+          "prunedCorridor": 10,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 13,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 0,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 15,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 1,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 17,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 4,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 19,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 8,
+          "prunedCorridor": 4,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 13,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 0,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 16,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 2,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 18,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 3,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 27,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 14,
+          "prunedCorridor": 4,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      }
+    ]
+  },
+  {
+    "name": "lighthouse-restoration-demo/ja",
+    "graph": {
+      "nodes": 10,
+      "edges": 14
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 36,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 26,
+          "prunedCorridor": 4,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 26,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 13,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 18,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 9,
+          "prunedCorridor": 5,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 53,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 78,
+          "prunedCorridor": 10,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 13,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 0,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 15,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 1,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 17,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 4,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 22,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 9,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 13,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 0,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 16,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 2,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 15,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 3,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 30,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 16,
+          "prunedCorridor": 3,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 10,
+          "orderLength": 10
+        }
+      }
+    ]
+  },
+  {
+    "name": "titanic-final-voyage/en",
+    "graph": {
+      "nodes": 13,
+      "edges": 12
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 57246,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 56028,
+          "prunedCorridor": 750,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 113,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 115,
+          "prunedCorridor": 2,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 3949,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 5431,
+          "prunedCorridor": 1350,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 1429,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 1354,
+          "prunedCorridor": 501,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 32180,
+          "prunedCorridor": 7599,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 172,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 188,
+          "prunedCorridor": 70,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 162,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 163,
+          "prunedCorridor": 83,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 16,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 0,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 113,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 115,
+          "prunedCorridor": 48,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 16,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 0,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 21,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 4,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      }
+    ]
+  },
+  {
+    "name": "titanic-final-voyage/ja",
+    "graph": {
+      "nodes": 13,
+      "edges": 12
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 57246,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 56028,
+          "prunedCorridor": 750,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 113,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 115,
+          "prunedCorridor": 2,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 5417,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 7203,
+          "prunedCorridor": 1447,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 1429,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 1354,
+          "prunedCorridor": 501,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 32029,
+          "prunedCorridor": 7071,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 172,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 188,
+          "prunedCorridor": 70,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 168,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 175,
+          "prunedCorridor": 77,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 16,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 0,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 121,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 115,
+          "prunedCorridor": 48,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 16,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 0,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 21,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 4,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 13,
+          "orderLength": 13
+        }
+      }
+    ]
+  },
+  {
+    "name": "apollo-11-mission/en",
+    "graph": {
+      "nodes": 9,
+      "edges": 11
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 17,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 5,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 17,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 7,
+          "prunedCorridor": 2,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 69,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 58,
+          "prunedCorridor": 40,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 29,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 18,
+          "prunedCorridor": 9,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 14,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 4,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 12,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 1,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 17,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 4,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 29,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 8,
+          "prunedCorridor": 7,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 18,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 6,
+          "prunedCorridor": 4,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 36,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 25,
+          "prunedCorridor": 4,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 16,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 2,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 175,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 93,
+          "prunedCorridor": 18,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      }
+    ]
+  },
+  {
+    "name": "apollo-11-mission/ja",
+    "graph": {
+      "nodes": 9,
+      "edges": 11
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 17,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 5,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 17,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 7,
+          "prunedCorridor": 2,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 73,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 62,
+          "prunedCorridor": 38,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 17,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 6,
+          "prunedCorridor": 2,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 14,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 4,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 12,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 1,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 17,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 4,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 18,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 6,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 18,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 6,
+          "prunedCorridor": 4,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 29,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 16,
+          "prunedCorridor": 3,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": true,
+        "cheap": {
+          "states": 16,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 2,
+          "prunedCorridor": 1,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": true,
+        "cheap": {
+          "states": 171,
+          "stateLimit": 25000,
+          "solutions": 2,
+          "prunedSector": 92,
+          "prunedCorridor": 16,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 9,
+          "orderLength": 9
+        }
+      }
+    ]
+  },
+  {
+    "name": "synthetic:k7-7",
+    "graph": {
+      "nodes": 14,
+      "edges": 49
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 127184,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 137518,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 128543,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 139899,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 131803,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 132896,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 128020,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 135027,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 129841,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 133386,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 122155,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 134647,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      }
+    ]
+  },
+  {
+    "name": "synthetic:k6-8",
+    "graph": {
+      "nodes": 14,
+      "edges": 48
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 127184,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 137518,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 139153,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 146501,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 99673,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 131726,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 125849,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 128815,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 120368,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 135703,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 119853,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 134063,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      }
+    ]
+  },
+  {
+    "name": "synthetic:k8-8",
+    "graph": {
+      "nodes": 16,
+      "edges": 64
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 169416,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 173216,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 170896,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 172459,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 168272,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 169948,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 168616,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 169372,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 165065,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 170163,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 165065,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 170163,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 16,
+          "orderLength": 16
+        }
+      }
+    ]
+  },
+  {
+    "name": "synthetic:k5-9",
+    "graph": {
+      "nodes": 14,
+      "edges": 45
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 127122,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 126061,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 133767,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 146499,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 129491,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 128623,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 108706,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 123179,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 125483,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 140029,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 125121,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 139145,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      }
+    ]
+  },
+  {
+    "name": "synthetic:k7-7-minus-one",
+    "graph": {
+      "nodes": 14,
+      "edges": 48
+    },
+    "plans": [
+      {
+        "family": "discrete-twin-spokes-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 138227,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 134454,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 120134,
+          "prunedCorridor": 1693,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-twin-spokes-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 123083,
+          "prunedCorridor": 1850,
+          "prunedSymmetry": 0,
+          "sourceFamily": "twin-spokes-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 131803,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 132896,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 123265,
+          "prunedCorridor": 1539,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-crossing-ring-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 126468,
+          "prunedCorridor": 1434,
+          "prunedSymmetry": 0,
+          "sourceFamily": "crossing-ring-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 122750,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 132496,
+          "prunedCorridor": 0,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-wide",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 126527,
+          "prunedCorridor": 718,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      },
+      {
+        "family": "discrete-ordered-stress-rotated-staggered",
+        "feasible": false,
+        "cheap": {
+          "states": 25000,
+          "stateLimit": 25000,
+          "solutions": 0,
+          "prunedSector": 129753,
+          "prunedCorridor": 320,
+          "prunedSymmetry": 0,
+          "sourceFamily": "ordered-stress-rotated",
+          "candidateCellCount": 14,
+          "orderLength": 14
+        }
+      }
+    ]
+  }
+]

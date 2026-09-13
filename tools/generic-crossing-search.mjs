@@ -2,6 +2,7 @@ import fs from "node:fs";
 import { structuralFormulations } from "./structural-formulation.mjs";
 import { structuralFormulations2 } from "./structural-formulation2.mjs";
 import { structuralFormulations3 } from "./structural-formulation3.mjs";
+import { discretePlacementPlans } from "./discrete-placement-feasibility.mjs";
 import { createHash } from "node:crypto";
 import { buildEntityGraph } from "../src/dataset.ts";
 import { settleInitialPlacement, solveAutoLayout } from "../src/auto-layout.ts";
@@ -145,6 +146,7 @@ function productionAblationPlan(mode) {
     case "structural-native-small": return { specs: structuralFormulations(graph.nodes, edges).filter(({family}) => /^(crossing-ring|ordered-stress|twin-spokes)/.test(family)) };
     case "structural-native-v2": return { specs: structuralFormulations2(graph.nodes, edges) };
     case "structural-native-v3": return { specs: structuralFormulations3(graph.nodes, edges) };
+    case "structural-native-discrete": return { specs: discretePlacementPlans(graph.nodes, edges) };
     case "direct-current": return { specs: [{ family: "product-current", positions: current }] };
     case "direct-anisotropic": return { specs: [{ family: "product-current-anisotropic", positions: anisotropic() }] };
     case "direct-uniform": return { specs: [{ family: "product-current-uniform", positions: uniform() }] };

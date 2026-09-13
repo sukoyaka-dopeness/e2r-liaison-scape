@@ -1,0 +1,1623 @@
+[
+  {
+    "fixture": "../e2r-spec/examples/lighthouse-restoration-demo.en.e2r.json",
+    "graph": {
+      "nodes": 10,
+      "edges": 14
+    },
+    "family": "discrete-crossing-ring-wide",
+    "evaluations": 12,
+    "elapsedMs": 441.48,
+    "fingerprint": "e9000ccebd7f",
+    "digest": "7ac5755fe29299777000276064440af45cbb3b1f0b8cddd261549bb8678c78b2",
+    "metrics": {
+      "score": 113478.3156810277,
+      "overlapPairs": 0,
+      "minimumSeparation": 170,
+      "extent": [
+        510,
+        340
+      ],
+      "aspectRatio": 1.5,
+      "fitScale": 0.7623762376237624,
+      "screenSpace": null,
+      "routeMedian": 109.78946402161635,
+      "routeMax": 188.15817494951628,
+      "hopLengths": {
+        "minimum": 0,
+        "median": 170,
+        "maximum": 240.41630560342617,
+        "shortHopCount": 2
+      },
+      "crossings": 0,
+      "crossingDetails": [],
+      "labelRouteHits": 1,
+      "labelNear20": 2,
+      "labelOverlap": 0,
+      "labelCorridorDeficit": 167.20761755979282,
+      "labelCorridorConflictPairs": 10,
+      "labelCorridorMinimumClearance": 0,
+      "labelCorridorMaximumIntrusion": 48,
+      "routeLabelCorridors": [
+        {
+          "id": "clara-thomas-supervises",
+          "nearestLabelDistance": 82.6,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "clara-thomas-mentors",
+          "nearestLabelDistance": 82.6,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "clara-maya",
+          "nearestLabelDistance": 64.1166650536386,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "elias-clara",
+          "nearestLabelDistance": 57.14740484430271,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "sofia-elias",
+          "nearestLabelDistance": 44.113036621842305,
+          "corridorDeficit": 7.77392675631539,
+          "conflictPairs": 2
+        },
+        {
+          "id": "daniel-clara",
+          "nearestLabelDistance": 79.78822509939084,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "maya-beacon",
+          "nearestLabelDistance": 36.92702729622283,
+          "corridorDeficit": 11.072972703777168,
+          "conflictPairs": 1
+        },
+        {
+          "id": "sofia-archive",
+          "nearestLabelDistance": 40,
+          "corridorDeficit": 8,
+          "conflictPairs": 1
+        },
+        {
+          "id": "clara-lighthouse",
+          "nearestLabelDistance": 36.69991613798784,
+          "corridorDeficit": 11.300083862012158,
+          "conflictPairs": 1
+        },
+        {
+          "id": "beacon-self-monitor",
+          "nearestLabelDistance": 4.24153004867874,
+          "corridorDeficit": 65.06063423768812,
+          "conflictPairs": 2
+        },
+        {
+          "id": "beacon-self-calibrate",
+          "nearestLabelDistance": 0,
+          "corridorDeficit": 48,
+          "conflictPairs": 1
+        },
+        {
+          "id": "authority-lighthouse",
+          "nearestLabelDistance": 40,
+          "corridorDeficit": 16,
+          "conflictPairs": 2
+        },
+        {
+          "id": "thomas-maya-friends",
+          "nearestLabelDistance": 63.221965252995574,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "beacon-lighthouse-installed-in",
+          "nearestLabelDistance": 76.71525239561369,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        }
+      ],
+      "usableSpanPenalty": 15714.519644508737,
+      "routeSupports": [
+        {
+          "id": "clara-thomas-supervises",
+          "length": 109.78946402161635,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "clara-thomas-mentors",
+          "length": 109.78946402161635,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "clara-maya",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 125,
+          "usableShortfall": 19
+        },
+        {
+          "id": "elias-clara",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 105.5,
+          "usableShortfall": 0
+        },
+        {
+          "id": "sofia-elias",
+          "length": 106,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "daniel-clara",
+          "length": 159.8477631085024,
+          "horizontalRatio": 0.7071067811865475,
+          "usableSpan": 113.02943725152288,
+          "minimumUsableSpan": 164,
+          "usableShortfall": 50.97056274847712
+        },
+        {
+          "id": "maya-beacon",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 118.5,
+          "usableShortfall": 12.5
+        },
+        {
+          "id": "sofia-archive",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 125,
+          "usableShortfall": 19
+        },
+        {
+          "id": "clara-lighthouse",
+          "length": 161.4555556399778,
+          "horizontalRatio": 0.7071067811865475,
+          "usableSpan": 113.78882014120238,
+          "minimumUsableSpan": 190,
+          "usableShortfall": 76.21117985879762
+        },
+        {
+          "id": "beacon-self-monitor",
+          "length": 188.15817494951628,
+          "horizontalRatio": 0.4999999999999991,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "beacon-self-calibrate",
+          "length": 174.25724484905402,
+          "horizontalRatio": 1,
+          "usableSpan": 18.62559586942645,
+          "minimumUsableSpan": 157.5,
+          "usableShortfall": 138.87440413057354
+        },
+        {
+          "id": "authority-lighthouse",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 131.5,
+          "usableShortfall": 25.5
+        },
+        {
+          "id": "thomas-maya-friends",
+          "length": 159.8477631085024,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152284,
+          "minimumUsableSpan": 138,
+          "usableShortfall": 24.970562748477164
+        },
+        {
+          "id": "beacon-lighthouse-installed-in",
+          "length": 159.84776310850245,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152281,
+          "minimumUsableSpan": 157.5,
+          "usableShortfall": 44.47056274847719
+        }
+      ],
+      "feedbackApplied": true,
+      "pressureNodeIds": [
+        "archive",
+        "authority",
+        "beacon",
+        "clara",
+        "daniel",
+        "lighthouse",
+        "maya",
+        "sofia",
+        "thomas"
+      ],
+      "pressureReasons": {
+        "archive": [
+          "relation-label-span:sofia-archive"
+        ],
+        "authority": [
+          "relation-label-span:authority-lighthouse"
+        ],
+        "beacon": [
+          "relation-label-span:maya-beacon",
+          "relation-label-span:beacon-self-calibrate",
+          "relation-label-span:beacon-self-calibrate",
+          "relation-label-span:beacon-lighthouse-installed-in",
+          "route-label-near:beacon-self-monitor",
+          "route-label-near:beacon-self-monitor",
+          "node-label-route-near:beacon-self-monitor",
+          "route-label-hit:beacon-self-calibrate",
+          "route-label-hit:beacon-self-calibrate",
+          "node-label-route-near:beacon-self-calibrate",
+          "short-hop:beacon-self-monitor",
+          "short-hop:beacon-self-monitor",
+          "short-hop:beacon-self-calibrate",
+          "short-hop:beacon-self-calibrate"
+        ],
+        "clara": [
+          "relation-label-span:clara-maya",
+          "relation-label-span:daniel-clara",
+          "relation-label-span:clara-lighthouse"
+        ],
+        "daniel": [
+          "relation-label-span:daniel-clara"
+        ],
+        "lighthouse": [
+          "relation-label-span:clara-lighthouse",
+          "relation-label-span:authority-lighthouse",
+          "relation-label-span:beacon-lighthouse-installed-in"
+        ],
+        "maya": [
+          "relation-label-span:clara-maya",
+          "relation-label-span:maya-beacon",
+          "relation-label-span:thomas-maya-friends"
+        ],
+        "sofia": [
+          "relation-label-span:sofia-archive"
+        ],
+        "thomas": [
+          "relation-label-span:thomas-maya-friends"
+        ]
+      }
+    },
+    "candidateCount": 12,
+    "cheap": {
+      "states": 13,
+      "stateLimit": 25000,
+      "solutions": 2,
+      "prunedSector": 0,
+      "prunedCorridor": 0,
+      "prunedSymmetry": 0,
+      "sourceFamily": "crossing-ring",
+      "candidateCellCount": 10,
+      "orderLength": 10
+    }
+  },
+  {
+    "fixture": "../e2r-spec/examples/lighthouse-restoration-demo.ja.e2r.json",
+    "graph": {
+      "nodes": 10,
+      "edges": 14
+    },
+    "family": "discrete-crossing-ring-wide",
+    "evaluations": 12,
+    "elapsedMs": 420.05,
+    "fingerprint": "e9000ccebd7f",
+    "digest": "008c666d46170541513abf689985124261b9eecd67b99d80d165bc01c0e56b30",
+    "metrics": {
+      "score": 71584.89598271485,
+      "overlapPairs": 0,
+      "minimumSeparation": 170,
+      "extent": [
+        510,
+        340
+      ],
+      "aspectRatio": 1.5,
+      "fitScale": 0.7623762376237624,
+      "screenSpace": null,
+      "routeMedian": 109.78946402161635,
+      "routeMax": 188.15817494951628,
+      "hopLengths": {
+        "minimum": 0,
+        "median": 170,
+        "maximum": 240.41630560342617,
+        "shortHopCount": 2
+      },
+      "crossings": 0,
+      "crossingDetails": [],
+      "labelRouteHits": 1,
+      "labelNear20": 2,
+      "labelOverlap": 0,
+      "labelCorridorDeficit": 177.27992743252884,
+      "labelCorridorConflictPairs": 9,
+      "labelCorridorMinimumClearance": 0,
+      "labelCorridorMaximumIntrusion": 48,
+      "routeLabelCorridors": [
+        {
+          "id": "clara-thomas-supervises",
+          "nearestLabelDistance": 82.6,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "clara-thomas-mentors",
+          "nearestLabelDistance": 82.6,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "clara-maya",
+          "nearestLabelDistance": 56.392928097331385,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "elias-clara",
+          "nearestLabelDistance": 53.23945254791337,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "sofia-elias",
+          "nearestLabelDistance": 44.113036621842305,
+          "corridorDeficit": 7.77392675631539,
+          "conflictPairs": 2
+        },
+        {
+          "id": "daniel-clara",
+          "nearestLabelDistance": 79.78822509939084,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "maya-beacon",
+          "nearestLabelDistance": 53.23945254791337,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "sofia-archive",
+          "nearestLabelDistance": 40,
+          "corridorDeficit": 8,
+          "conflictPairs": 1
+        },
+        {
+          "id": "clara-lighthouse",
+          "nearestLabelDistance": 20.736499999646036,
+          "corridorDeficit": 27.263500000353964,
+          "conflictPairs": 1
+        },
+        {
+          "id": "beacon-self-monitor",
+          "nearestLabelDistance": 0,
+          "corridorDeficit": 48,
+          "conflictPairs": 1
+        },
+        {
+          "id": "beacon-self-calibrate",
+          "nearestLabelDistance": 5.020999324494479,
+          "corridorDeficit": 42.97900067550552,
+          "conflictPairs": 1
+        },
+        {
+          "id": "authority-lighthouse",
+          "nearestLabelDistance": 40,
+          "corridorDeficit": 16,
+          "conflictPairs": 2
+        },
+        {
+          "id": "thomas-maya-friends",
+          "nearestLabelDistance": 20.73649999964603,
+          "corridorDeficit": 27.26350000035397,
+          "conflictPairs": 1
+        },
+        {
+          "id": "beacon-lighthouse-installed-in",
+          "nearestLabelDistance": 79.78822509939086,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        }
+      ],
+      "usableSpanPenalty": 5241.164719930523,
+      "routeSupports": [
+        {
+          "id": "clara-thomas-supervises",
+          "length": 109.78946402161635,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "clara-thomas-mentors",
+          "length": 109.78946402161635,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "clara-maya",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "elias-clara",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "sofia-elias",
+          "length": 106,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "daniel-clara",
+          "length": 159.8477631085024,
+          "horizontalRatio": 0.7071067811865475,
+          "usableSpan": 113.02943725152288,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "maya-beacon",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "sofia-archive",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "clara-lighthouse",
+          "length": 159.84776310850236,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152286,
+          "minimumUsableSpan": 120,
+          "usableShortfall": 6.9705627484771355
+        },
+        {
+          "id": "beacon-self-monitor",
+          "length": 188.15817494951628,
+          "horizontalRatio": 0.4999999999999991,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "beacon-self-calibrate",
+          "length": 174.25724484905402,
+          "horizontalRatio": 1,
+          "usableSpan": 18.62559586942645,
+          "minimumUsableSpan": 120,
+          "usableShortfall": 101.37440413057355
+        },
+        {
+          "id": "authority-lighthouse",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "thomas-maya-friends",
+          "length": 159.8477631085024,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152284,
+          "minimumUsableSpan": 96,
+          "usableShortfall": 0
+        },
+        {
+          "id": "beacon-lighthouse-installed-in",
+          "length": 159.84776310850245,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152281,
+          "minimumUsableSpan": 130,
+          "usableShortfall": 16.970562748477192
+        }
+      ],
+      "feedbackApplied": true,
+      "pressureNodeIds": [
+        "beacon",
+        "clara",
+        "lighthouse"
+      ],
+      "pressureReasons": {
+        "beacon": [
+          "relation-label-span:beacon-self-calibrate",
+          "relation-label-span:beacon-self-calibrate",
+          "relation-label-span:beacon-lighthouse-installed-in",
+          "route-label-hit:beacon-self-monitor",
+          "route-label-hit:beacon-self-monitor",
+          "node-label-route-near:beacon-self-monitor",
+          "route-label-near:beacon-self-calibrate",
+          "route-label-near:beacon-self-calibrate",
+          "node-label-route-near:beacon-self-calibrate",
+          "short-hop:beacon-self-monitor",
+          "short-hop:beacon-self-monitor",
+          "short-hop:beacon-self-calibrate",
+          "short-hop:beacon-self-calibrate"
+        ],
+        "clara": [
+          "relation-label-span:clara-lighthouse"
+        ],
+        "lighthouse": [
+          "relation-label-span:clara-lighthouse",
+          "relation-label-span:beacon-lighthouse-installed-in"
+        ]
+      }
+    },
+    "candidateCount": 12,
+    "cheap": {
+      "states": 13,
+      "stateLimit": 25000,
+      "solutions": 2,
+      "prunedSector": 0,
+      "prunedCorridor": 0,
+      "prunedSymmetry": 0,
+      "sourceFamily": "crossing-ring",
+      "candidateCellCount": 10,
+      "orderLength": 10
+    }
+  },
+  {
+    "fixture": "../e2r-spec/examples/titanic-final-voyage.en.e2r.json",
+    "graph": {
+      "nodes": 13,
+      "edges": 12
+    },
+    "family": "discrete-ordered-stress-wide",
+    "evaluations": 10,
+    "elapsedMs": 743.51,
+    "fingerprint": "d1855694251e",
+    "digest": "eb797a194a2ef4b8d77f6e7df5cc583e48679571f54e73160cd998282e1f93dc",
+    "metrics": {
+      "score": 27079.981626237164,
+      "overlapPairs": 0,
+      "minimumSeparation": 170,
+      "extent": [
+        680,
+        340
+      ],
+      "aspectRatio": 2,
+      "fitScale": 0.7623762376237624,
+      "screenSpace": null,
+      "routeMedian": 159.8477631085024,
+      "routeMax": 382.7167113716474,
+      "hopLengths": {
+        "minimum": 170,
+        "median": 240.41630560342617,
+        "maximum": 380.13155617496426,
+        "shortHopCount": 0
+      },
+      "crossings": 0,
+      "crossingDetails": [],
+      "labelRouteHits": 0,
+      "labelNear20": 1,
+      "labelOverlap": 0,
+      "labelCorridorDeficit": 116.3616745782703,
+      "labelCorridorConflictPairs": 6,
+      "labelCorridorMinimumClearance": 17.46761917841805,
+      "labelCorridorMaximumIntrusion": 30.53238082158195,
+      "routeLabelCorridors": [
+        {
+          "id": "r1",
+          "nearestLabelDistance": 25.908045231817404,
+          "corridorDeficit": 22.091954768182596,
+          "conflictPairs": 1
+        },
+        {
+          "id": "r2",
+          "nearestLabelDistance": 79.78822509939084,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "r3",
+          "nearestLabelDistance": 22.835855981197238,
+          "corridorDeficit": 25.164144018802762,
+          "conflictPairs": 1
+        },
+        {
+          "id": "r4",
+          "nearestLabelDistance": 81.26899302991505,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "r5",
+          "nearestLabelDistance": 62.86571428971911,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "r6",
+          "nearestLabelDistance": 45.98178987381853,
+          "corridorDeficit": 2.018210126181472,
+          "conflictPairs": 1
+        },
+        {
+          "id": "r7",
+          "nearestLabelDistance": 77.21073590906258,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "r8",
+          "nearestLabelDistance": 37.422510809671735,
+          "corridorDeficit": 10.577489190328265,
+          "conflictPairs": 1
+        },
+        {
+          "id": "r9",
+          "nearestLabelDistance": 17.46761917841805,
+          "corridorDeficit": 56.50987647477518,
+          "conflictPairs": 2
+        },
+        {
+          "id": "r10",
+          "nearestLabelDistance": 59.52609833118442,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "r11",
+          "nearestLabelDistance": 80.43340455899113,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "r12",
+          "nearestLabelDistance": 72.45282948236046,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        }
+      ],
+      "usableSpanPenalty": 5280.642347162128,
+      "routeSupports": [
+        {
+          "id": "r1",
+          "length": 107.39121468728742,
+          "horizontalRatio": 1,
+          "usableSpan": 104.62680800024582,
+          "minimumUsableSpan": 112,
+          "usableShortfall": 7.373191999754184
+        },
+        {
+          "id": "r2",
+          "length": 159.84776310850236,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152286,
+          "minimumUsableSpan": 96,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r3",
+          "length": 201.4022666490342,
+          "horizontalRatio": 0.7071067811865475,
+          "usableSpan": 122.95368036870826,
+          "minimumUsableSpan": 112,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r4",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 112,
+          "usableShortfall": 6
+        },
+        {
+          "id": "r5",
+          "length": 159.8477631085024,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152284,
+          "minimumUsableSpan": 96,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r6",
+          "length": 308.5773808949711,
+          "horizontalRatio": 0.8944271909999159,
+          "usableSpan": 275.9999999999999,
+          "minimumUsableSpan": 144.5,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r7",
+          "length": 159.8477631085024,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152284,
+          "minimumUsableSpan": 216,
+          "usableShortfall": 102.97056274847716
+        },
+        {
+          "id": "r8",
+          "length": 106,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r9",
+          "length": 382.7167113716474,
+          "horizontalRatio": 0.8943184003105634,
+          "usableSpan": 258.60826082529184,
+          "minimumUsableSpan": 112,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r10",
+          "length": 109.78946402161635,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r11",
+          "length": 109.78946402161635,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r12",
+          "length": 308.5773808949711,
+          "horizontalRatio": 0.8944271909999159,
+          "usableSpan": 275.9999999999999,
+          "minimumUsableSpan": 112,
+          "usableShortfall": 0
+        }
+      ],
+      "feedbackApplied": true,
+      "pressureNodeIds": [
+        "andrews",
+        "carpathia",
+        "phillips",
+        "rostron",
+        "titanic",
+        "white-star-line"
+      ],
+      "pressureReasons": {
+        "andrews": [
+          "relation-label-span:r4"
+        ],
+        "carpathia": [
+          "route-label-near:r9",
+          "node-label-route-near:r9"
+        ],
+        "phillips": [
+          "relation-label-span:r7"
+        ],
+        "rostron": [
+          "route-label-near:r9"
+        ],
+        "titanic": [
+          "relation-label-span:r1",
+          "relation-label-span:r4",
+          "relation-label-span:r7"
+        ],
+        "white-star-line": [
+          "relation-label-span:r1",
+          "node-label-route-near:r9"
+        ]
+      }
+    },
+    "candidateCount": 9,
+    "cheap": {
+      "states": 16,
+      "stateLimit": 25000,
+      "solutions": 2,
+      "prunedSector": 0,
+      "prunedCorridor": 0,
+      "prunedSymmetry": 0,
+      "sourceFamily": "ordered-stress",
+      "candidateCellCount": 13,
+      "orderLength": 13
+    }
+  },
+  {
+    "fixture": "../e2r-spec/examples/titanic-final-voyage.ja.e2r.json",
+    "graph": {
+      "nodes": 13,
+      "edges": 12
+    },
+    "family": "discrete-twin-spokes-rotated-wide",
+    "evaluations": 10,
+    "elapsedMs": 739.12,
+    "fingerprint": "6b82e87ccd8b",
+    "digest": "e2df4d2b0c8584a627280ab95ecafe8590208972245b30586f308bfc48aad98f",
+    "metrics": {
+      "score": 19833.640652842776,
+      "overlapPairs": 0,
+      "minimumSeparation": 170,
+      "extent": [
+        680,
+        340
+      ],
+      "aspectRatio": 2,
+      "fitScale": 0.7623762376237624,
+      "screenSpace": null,
+      "routeMedian": 159.84776310850245,
+      "routeMax": 470.12527881169865,
+      "hopLengths": {
+        "minimum": 170,
+        "median": 240.41630560342617,
+        "maximum": 537.5872022286245,
+        "shortHopCount": 0
+      },
+      "crossings": 0,
+      "crossingDetails": [],
+      "labelRouteHits": 0,
+      "labelNear20": 2,
+      "labelOverlap": 0,
+      "labelCorridorDeficit": 174.827613988819,
+      "labelCorridorConflictPairs": 10,
+      "labelCorridorMinimumClearance": 5.832908934426925,
+      "labelCorridorMaximumIntrusion": 42.167091065573075,
+      "routeLabelCorridors": [
+        {
+          "id": "r1",
+          "nearestLabelDistance": 56.392928097331385,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "r2",
+          "nearestLabelDistance": 69.8,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "r3",
+          "nearestLabelDistance": 26.83364389054241,
+          "corridorDeficit": 28.360470167088145,
+          "conflictPairs": 2
+        },
+        {
+          "id": "r4",
+          "nearestLabelDistance": 20.73649999964602,
+          "corridorDeficit": 27.26350000035398,
+          "conflictPairs": 1
+        },
+        {
+          "id": "r5",
+          "nearestLabelDistance": 16.300424398906415,
+          "corridorDeficit": 31.699575601093585,
+          "conflictPairs": 1
+        },
+        {
+          "id": "r6",
+          "nearestLabelDistance": 34.858329429565785,
+          "corridorDeficit": 18.523430970631495,
+          "conflictPairs": 2
+        },
+        {
+          "id": "r7",
+          "nearestLabelDistance": 47.363376410871524,
+          "corridorDeficit": 0.6366235891284759,
+          "conflictPairs": 1
+        },
+        {
+          "id": "r8",
+          "nearestLabelDistance": 82.6,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "r9",
+          "nearestLabelDistance": 44.113036621842284,
+          "corridorDeficit": 3.8869633781577164,
+          "conflictPairs": 1
+        },
+        {
+          "id": "r10",
+          "nearestLabelDistance": 72.78768784203102,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "r11",
+          "nearestLabelDistance": 25.71004078320749,
+          "corridorDeficit": 22.28995921679251,
+          "conflictPairs": 1
+        },
+        {
+          "id": "r12",
+          "nearestLabelDistance": 5.832908934426925,
+          "corridorDeficit": 42.167091065573075,
+          "conflictPairs": 1
+        }
+      ],
+      "usableSpanPenalty": 2197.2049619535183,
+      "routeSupports": [
+        {
+          "id": "r1",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r2",
+          "length": 308.57738089497104,
+          "horizontalRatio": 0.8944271909999159,
+          "usableSpan": 275.99999999999994,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r3",
+          "length": 470.12527881169865,
+          "horizontalRatio": 0.9486832980505137,
+          "usableSpan": 446.0000000000004,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r4",
+          "length": 159.84776310850245,
+          "horizontalRatio": 0.7071067811865475,
+          "usableSpan": 113.02943725152284,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r5",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 96,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r6",
+          "length": 308.5773808949711,
+          "horizontalRatio": 0.8944271909999159,
+          "usableSpan": 275.9999999999999,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r7",
+          "length": 208.69755170204863,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 122.43523705424995,
+          "minimumUsableSpan": 150,
+          "usableShortfall": 27.564762945750047
+        },
+        {
+          "id": "r8",
+          "length": 106,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r9",
+          "length": 106,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "r10",
+          "length": 109.78946402161635,
+          "horizontalRatio": 1,
+          "usableSpan": 102.34133211350547,
+          "minimumUsableSpan": 150,
+          "usableShortfall": 47.65866788649453
+        },
+        {
+          "id": "r11",
+          "length": 109.78946402161635,
+          "horizontalRatio": 1,
+          "usableSpan": 102.34133211350547,
+          "minimumUsableSpan": 140,
+          "usableShortfall": 37.65866788649453
+        },
+        {
+          "id": "r12",
+          "length": 470.12527881169865,
+          "horizontalRatio": 0.9486832980505137,
+          "usableSpan": 446.0000000000004,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        }
+      ],
+      "feedbackApplied": true,
+      "pressureNodeIds": [
+        "carpathia",
+        "ismay",
+        "molly-brown",
+        "phillips",
+        "titanic",
+        "white-star-line"
+      ],
+      "pressureReasons": {
+        "carpathia": [
+          "relation-label-span:r10",
+          "relation-label-span:r11"
+        ],
+        "ismay": [
+          "route-label-near:r5"
+        ],
+        "molly-brown": [
+          "route-label-near:r12"
+        ],
+        "phillips": [
+          "relation-label-span:r7"
+        ],
+        "titanic": [
+          "relation-label-span:r7",
+          "relation-label-span:r10",
+          "relation-label-span:r11",
+          "route-label-near:r12"
+        ],
+        "white-star-line": [
+          "route-label-near:r5",
+          "node-label-route-near:r5",
+          "node-label-route-near:r12"
+        ]
+      }
+    },
+    "candidateCount": 9,
+    "cheap": {
+      "states": 113,
+      "stateLimit": 25000,
+      "solutions": 2,
+      "prunedSector": 115,
+      "prunedCorridor": 2,
+      "prunedSymmetry": 0,
+      "sourceFamily": "twin-spokes-rotated",
+      "candidateCellCount": 13,
+      "orderLength": 13
+    }
+  },
+  {
+    "fixture": "../e2r-spec/examples/apollo-11-mission.en.e2r.json",
+    "graph": {
+      "nodes": 9,
+      "edges": 11
+    },
+    "family": "discrete-ordered-stress-rotated-wide",
+    "evaluations": 13,
+    "elapsedMs": 354.96,
+    "fingerprint": "4465f240ac59",
+    "digest": "5df6285455eac7cb1799352fd0f8c05849ff02a71d61139e49cfe6250bb01d71",
+    "metrics": {
+      "score": 91446.49800191577,
+      "overlapPairs": 0,
+      "minimumSeparation": 170,
+      "extent": [
+        510,
+        340
+      ],
+      "aspectRatio": 1.5,
+      "fitScale": 0.7623762376237624,
+      "screenSpace": null,
+      "routeMedian": 106,
+      "routeMax": 470.68893705244824,
+      "hopLengths": {
+        "minimum": 170,
+        "median": 170,
+        "maximum": 537.5872022286245,
+        "shortHopCount": 0
+      },
+      "crossings": 0,
+      "crossingDetails": [],
+      "labelRouteHits": 2,
+      "labelNear20": 2,
+      "labelOverlap": 0,
+      "labelCorridorDeficit": 156.69780407606274,
+      "labelCorridorConflictPairs": 6,
+      "labelCorridorMinimumClearance": 0,
+      "labelCorridorMaximumIntrusion": 48,
+      "routeLabelCorridors": [
+        {
+          "id": "entity-1",
+          "nearestLabelDistance": 47.490630654898645,
+          "corridorDeficit": 0.509369345101355,
+          "conflictPairs": 1
+        },
+        {
+          "id": "entity-2",
+          "nearestLabelDistance": 67.23452294262248,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "entity-3",
+          "nearestLabelDistance": 0,
+          "corridorDeficit": 92.18843473096138,
+          "conflictPairs": 2
+        },
+        {
+          "id": "entity-4",
+          "nearestLabelDistance": 79.78822509939086,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "entity-5",
+          "nearestLabelDistance": 78.47774117684777,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "entity-6",
+          "nearestLabelDistance": 81.33528703029268,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "entity-7",
+          "nearestLabelDistance": 40,
+          "corridorDeficit": 8,
+          "conflictPairs": 1
+        },
+        {
+          "id": "entity-8",
+          "nearestLabelDistance": 0,
+          "corridorDeficit": 48,
+          "conflictPairs": 1
+        },
+        {
+          "id": "entity-9",
+          "nearestLabelDistance": 40,
+          "corridorDeficit": 8,
+          "conflictPairs": 1
+        },
+        {
+          "id": "entity-10",
+          "nearestLabelDistance": 80.61019675691954,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "entity-11",
+          "nearestLabelDistance": 53.1469486104119,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        }
+      ],
+      "usableSpanPenalty": 5137.827266215831,
+      "routeSupports": [
+        {
+          "id": "entity-1",
+          "length": 106,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-2",
+          "length": 159.84776310850245,
+          "horizontalRatio": 0.7071067811865475,
+          "usableSpan": 113.02943725152284,
+          "minimumUsableSpan": 183.5,
+          "usableShortfall": 70.47056274847716
+        },
+        {
+          "id": "entity-3",
+          "length": 470.68893705244824,
+          "horizontalRatio": 0.9488039404176859,
+          "usableSpan": 445.40926528968885,
+          "minimumUsableSpan": 183.5,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-4",
+          "length": 159.84776310850236,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152288,
+          "minimumUsableSpan": 112,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-5",
+          "length": 106,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-6",
+          "length": 159.84776310850242,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152286,
+          "minimumUsableSpan": 112,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-7",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 125,
+          "usableShortfall": 19
+        },
+        {
+          "id": "entity-8",
+          "length": 308.577380894971,
+          "horizontalRatio": 0.8944271909999159,
+          "usableSpan": 276,
+          "minimumUsableSpan": 112,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-9",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 112,
+          "usableShortfall": 6
+        },
+        {
+          "id": "entity-10",
+          "length": 106,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-11",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 177,
+          "usableShortfall": 71
+        }
+      ],
+      "feedbackApplied": true,
+      "pressureNodeIds": [
+        "aldrin",
+        "collins",
+        "columbia",
+        "eagle",
+        "hornet",
+        "moon",
+        "nasa",
+        "saturn-v"
+      ],
+      "pressureReasons": {
+        "aldrin": [
+          "relation-label-span:entity-2",
+          "node-label-route-near:entity-3",
+          "node-label-route-near:entity-8"
+        ],
+        "collins": [
+          "route-label-hit:entity-3"
+        ],
+        "columbia": [
+          "relation-label-span:entity-7",
+          "relation-label-span:entity-11"
+        ],
+        "eagle": [
+          "relation-label-span:entity-7",
+          "relation-label-span:entity-9"
+        ],
+        "hornet": [
+          "relation-label-span:entity-11"
+        ],
+        "moon": [
+          "relation-label-span:entity-9"
+        ],
+        "nasa": [
+          "relation-label-span:entity-2",
+          "route-label-hit:entity-3",
+          "route-label-hit:entity-8"
+        ],
+        "saturn-v": [
+          "node-label-route-near:entity-3",
+          "route-label-hit:entity-8"
+        ]
+      }
+    },
+    "candidateCount": 12,
+    "cheap": {
+      "states": 16,
+      "stateLimit": 25000,
+      "solutions": 2,
+      "prunedSector": 2,
+      "prunedCorridor": 1,
+      "prunedSymmetry": 0,
+      "sourceFamily": "ordered-stress-rotated",
+      "candidateCellCount": 9,
+      "orderLength": 9
+    }
+  },
+  {
+    "fixture": "../e2r-spec/examples/apollo-11-mission.ja.e2r.json",
+    "graph": {
+      "nodes": 9,
+      "edges": 11
+    },
+    "family": "discrete-ordered-stress-rotated-wide",
+    "evaluations": 13,
+    "elapsedMs": 317.62,
+    "fingerprint": "4465f240ac59",
+    "digest": "6e31aed2b8bcf80693d0a91bfeeb9db85a3083064cb6466ec1603e622bd5636b",
+    "metrics": {
+      "score": 40867.57741039211,
+      "overlapPairs": 0,
+      "minimumSeparation": 170,
+      "extent": [
+        510,
+        340
+      ],
+      "aspectRatio": 1.5,
+      "fitScale": 0.7623762376237624,
+      "screenSpace": null,
+      "routeMedian": 159.84776310850236,
+      "routeMax": 473.6204271694077,
+      "hopLengths": {
+        "minimum": 170,
+        "median": 170,
+        "maximum": 537.5872022286245,
+        "shortHopCount": 0
+      },
+      "crossings": 0,
+      "crossingDetails": [],
+      "labelRouteHits": 1,
+      "labelNear20": 1,
+      "labelOverlap": 0,
+      "labelCorridorDeficit": 158.7823042754742,
+      "labelCorridorConflictPairs": 12,
+      "labelCorridorMinimumClearance": 0,
+      "labelCorridorMaximumIntrusion": 48,
+      "routeLabelCorridors": [
+        {
+          "id": "entity-1",
+          "nearestLabelDistance": 47.490630654898645,
+          "corridorDeficit": 0.509369345101355,
+          "conflictPairs": 1
+        },
+        {
+          "id": "entity-2",
+          "nearestLabelDistance": 87.32954744463947,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "entity-3",
+          "nearestLabelDistance": 0,
+          "corridorDeficit": 48,
+          "conflictPairs": 1
+        },
+        {
+          "id": "entity-4",
+          "nearestLabelDistance": 28.47578830312973,
+          "corridorDeficit": 19.52421169687027,
+          "conflictPairs": 1
+        },
+        {
+          "id": "entity-5",
+          "nearestLabelDistance": 26.59748756273359,
+          "corridorDeficit": 21.40251243726641,
+          "conflictPairs": 1
+        },
+        {
+          "id": "entity-6",
+          "nearestLabelDistance": 75.58873548170183,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "entity-7",
+          "nearestLabelDistance": 40,
+          "corridorDeficit": 16,
+          "conflictPairs": 2
+        },
+        {
+          "id": "entity-8",
+          "nearestLabelDistance": 30.426102796764678,
+          "corridorDeficit": 21.34621079623614,
+          "conflictPairs": 2
+        },
+        {
+          "id": "entity-9",
+          "nearestLabelDistance": 40,
+          "corridorDeficit": 16,
+          "conflictPairs": 2
+        },
+        {
+          "id": "entity-10",
+          "nearestLabelDistance": 68.51968289801437,
+          "corridorDeficit": 0,
+          "conflictPairs": 0
+        },
+        {
+          "id": "entity-11",
+          "nearestLabelDistance": 40,
+          "corridorDeficit": 16,
+          "conflictPairs": 2
+        }
+      ],
+      "usableSpanPenalty": 1215.4403642514242,
+      "routeSupports": [
+        {
+          "id": "entity-1",
+          "length": 106,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-2",
+          "length": 173.28345800351318,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 118.99506086640568,
+          "minimumUsableSpan": 146,
+          "usableShortfall": 27.00493913359432
+        },
+        {
+          "id": "entity-3",
+          "length": 473.6204271694077,
+          "horizontalRatio": 0.9494390514364476,
+          "usableSpan": 442.35628439430053,
+          "minimumUsableSpan": 146,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-4",
+          "length": 159.84776310850236,
+          "horizontalRatio": 0.7071067811865476,
+          "usableSpan": 113.02943725152288,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-5",
+          "length": 106,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-6",
+          "length": 161.45555563997775,
+          "horizontalRatio": 0.7071067811865474,
+          "usableSpan": 113.78882014120235,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-7",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 130,
+          "usableShortfall": 24
+        },
+        {
+          "id": "entity-8",
+          "length": 361.41430550250607,
+          "horizontalRatio": 0.8963468986845625,
+          "usableSpan": 266.2990486836191,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-9",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 100,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-10",
+          "length": 223.6705233072252,
+          "horizontalRatio": 0,
+          "usableSpan": null,
+          "minimumUsableSpan": null,
+          "usableShortfall": 0
+        },
+        {
+          "id": "entity-11",
+          "length": 106,
+          "horizontalRatio": 1,
+          "usableSpan": 106,
+          "minimumUsableSpan": 140,
+          "usableShortfall": 34
+        }
+      ],
+      "feedbackApplied": true,
+      "pressureNodeIds": [
+        "aldrin",
+        "collins",
+        "columbia",
+        "eagle",
+        "hornet",
+        "nasa",
+        "saturn-v"
+      ],
+      "pressureReasons": {
+        "aldrin": [
+          "relation-label-span:entity-2"
+        ],
+        "collins": [
+          "route-label-hit:entity-3"
+        ],
+        "columbia": [
+          "relation-label-span:entity-7",
+          "relation-label-span:entity-11"
+        ],
+        "eagle": [
+          "relation-label-span:entity-7"
+        ],
+        "hornet": [
+          "relation-label-span:entity-11"
+        ],
+        "nasa": [
+          "relation-label-span:entity-2",
+          "route-label-hit:entity-3"
+        ],
+        "saturn-v": [
+          "node-label-route-near:entity-3"
+        ]
+      }
+    },
+    "candidateCount": 12,
+    "cheap": {
+      "states": 16,
+      "stateLimit": 25000,
+      "solutions": 2,
+      "prunedSector": 2,
+      "prunedCorridor": 1,
+      "prunedSymmetry": 0,
+      "sourceFamily": "ordered-stress-rotated",
+      "candidateCellCount": 9,
+      "orderLength": 9
+    }
+  }
+]

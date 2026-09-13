@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { structuralFormulations } from '../tools/structural-formulation.mjs';
 import { structuralFormulations2 } from '../tools/structural-formulation2.mjs';
 import { structuralFormulations3 } from '../tools/structural-formulation3.mjs';
+import { discretePlacementAudit, discretePlacementPlans } from '../tools/discrete-placement-feasibility.mjs';
 
 test('structural research preserves inputs and is invariant to node/edge enumeration', () => {
   const nodes=Array.from({length:8},(_,i)=>({id:String(i)}));
@@ -64,5 +65,21 @@ test('joint constrained structural placement is deterministic and rejects unsafe
     assert.ok(candidate.cheap.minimumSeparation===null||candidate.cheap.minimumSeparation>=144.5);
     assert.ok(Number.isFinite(candidate.cheap.minimumAngularGapDegrees));
     assert.ok(Number.isFinite(candidate.cheap.coarseCorridorDeficit));
+  }
+});
+
+test('discrete placement plans are bounded, deterministic, and expose feasibility pruning', () => {
+  const nodes=Array.from({length:10},(_,i)=>({id:String(i)}));
+  const edges=nodes.slice(0,5).flatMap(a=>nodes.slice(5).map(b=>({sourceId:a.id,targetId:b.id,label:'label'})));
+  const audit=discretePlacementAudit(nodes,edges);
+  const first=discretePlacementPlans(nodes,edges);
+  assert.equal(first.length,0);
+  assert.equal(audit.length,12);
+  assert.ok(audit.some(candidate=>candidate.cheap.states>=25000));
+  assert.deepEqual(first,discretePlacementPlans(nodes.toReversed(),edges.toReversed()));
+  for(const candidate of first) {
+    assert.ok(candidate.cheap.states<=25000);
+    assert.ok(candidate.cheap.solutions>0);
+    assert.ok(candidate.positions);
   }
 });
