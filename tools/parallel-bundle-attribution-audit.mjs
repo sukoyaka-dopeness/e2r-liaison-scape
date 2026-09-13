@@ -753,11 +753,12 @@ function endpointPlanPortfolio(dataset, positions, maxStates = 512, { compressed
 }
 
 function g3Positions(fixturePath) {
+  const placementAblation = process.env.E2R_PARALLEL_PLACEMENT_ABLATION ?? "";
   const result = spawnSync(process.execPath, ["--experimental-strip-types", "tools/generic-crossing-search.mjs", fixturePath], {
     cwd: process.cwd(), encoding: "utf8", maxBuffer: 100 * 1024 * 1024,
     env: {
       ...process.env,
-      E2R_GLOBAL_PLACEMENT_ABLATION: "",
+      E2R_GLOBAL_PLACEMENT_ABLATION: placementAblation,
       E2R_GLOBAL_PLACEMENT_MODE: "viewport-anisotropic",
       E2R_GLOBAL_SPACING_SCALE: "0.88",
       E2R_GLOBAL_SPACING_Y: "1.12",
@@ -769,7 +770,7 @@ function g3Positions(fixturePath) {
   });
   if (result.status !== 0) throw new Error(result.stderr || `G3 search failed with ${result.status}`);
   const parsed = JSON.parse(result.stdout);
-  if (!parsed.selected?.positions) throw new Error("G3 positions missing");
+  if (!parsed.selected?.positions) throw new Error("placement positions missing");
   return parsed.selected.positions;
 }
 

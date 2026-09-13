@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { structuralFormulations } from "./structural-formulation.mjs";
+import { structuralFormulations2 } from "./structural-formulation2.mjs";
 import { createHash } from "node:crypto";
 import { buildEntityGraph } from "../src/dataset.ts";
 import { settleInitialPlacement, solveAutoLayout } from "../src/auto-layout.ts";
@@ -141,6 +142,7 @@ function productionAblationPlan(mode) {
   switch (mode) {
     case "structural-native-audit": return { specs: structuralFormulations(graph.nodes, edges) };
     case "structural-native-small": return { specs: structuralFormulations(graph.nodes, edges).filter(({family}) => /^(crossing-ring|ordered-stress|twin-spokes)/.test(family)) };
+    case "structural-native-v2": return { specs: structuralFormulations2(graph.nodes, edges) };
     case "direct-current": return { specs: [{ family: "product-current", positions: current }] };
     case "direct-anisotropic": return { specs: [{ family: "product-current-anisotropic", positions: anisotropic() }] };
     case "direct-uniform": return { specs: [{ family: "product-current-uniform", positions: uniform() }] };
