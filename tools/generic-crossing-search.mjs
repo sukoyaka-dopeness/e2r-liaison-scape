@@ -178,6 +178,45 @@ function productionAblationPlan(mode) {
         cheapSearch: frontier.summary,
       };
     }
+    case "frontier-topology-12": {
+      const frontier = productionStructuralFrontier(12, "topology-aware");
+      return {
+        specs: frontier.representatives.map((candidate, index) => ({
+          family: `structural-topology-frontier-${index + 1}-${candidate.family}`,
+          positions: globalPlacementTransform(candidate.positions),
+          source: candidate,
+        })),
+        cheapSearch: frontier.summary,
+      };
+    }
+    case "frontier-audit-12": {
+      const frontier = productionStructuralFrontier(12);
+      return {
+        specs: frontier.poolCandidates.map((candidate, index) => ({
+          family: `structural-frontier-audit-${index + 1}-${candidate.family}`,
+          positions: clonePositions(candidate.positions),
+          source: candidate,
+        })),
+        cheapSearch: { ...frontier.summary, mode: "structural-frontier-loss-audit", auditCandidateCount: frontier.poolCandidates.length },
+      };
+    }
+    case "frontier-adaptive-12": {
+      const probe = productionStructuralFrontier(12);
+      const adaptiveLimit = Math.min(probe.poolCandidates.length, Math.max(12, probe.frontierCandidates.length));
+      const frontier = adaptiveLimit === 12 ? probe : productionStructuralFrontier(adaptiveLimit, "adaptive-frontier");
+      // Match the existing G3 fallback for dense pools: when no cheap
+      // zero-crossing structural state exists, G3 keeps the selected raw
+      // geometry instead of applying the viewport transform.
+      const placementEligible = frontier.frontierCandidates.some((candidate) => candidate.structuralCrossings === 0);
+      return {
+        specs: frontier.representatives.map((candidate, index) => ({
+          family: `structural-adaptive-frontier-${index + 1}-${candidate.family}`,
+          positions: placementEligible ? globalPlacementTransform(candidate.positions) : clonePositions(candidate.positions),
+          source: candidate,
+        })),
+        cheapSearch: { ...frontier.summary, mode: "density-aware-adaptive-frontier", adaptiveLimit, frontierRetention: adaptiveLimit === frontier.frontierCandidates.length ? "all-cheap-frontier" : "bounded-representatives", placementEligible },
+      };
+    }
     default: return null;
   }
 }
@@ -896,6 +935,27 @@ function structuralCandidateFeatureVector(positions, structuralCrossings, cheapS
   const meanNodeSeparation = mean(nodeDistances);
   const minNodeSeparation = nodeDistances.length ? Math.min(...nodeDistances) : 0;
   const aspect = height > 0 ? width / height : 0;
+  const crossingSignature = [];
+  for (let left = 0; left < edges.length; left += 1) for (let right = left + 1; right < edges.length; right += 1) {
+    const first = edges[left]; const second = edges[right];
+    crossingSignature.push(
+      ![first.sourceId, first.targetId].some((id) => id === second.sourceId || id === second.targetId)
+      && segmentIntersection(positions[first.sourceId], positions[first.targetId], positions[second.sourceId], positions[second.targetId])
+        ? 1 : 0,
+    );
+  }
+  const topologyFeatureVector = [
+    structuralCrossings,
+    cheapScore / 1000000,
+    minNodeSeparation / 100,
+    meanNodeSeparation / 100,
+    medianEdge / 100,
+    (edgeLengths.length ? Math.max(...edgeLengths) : 0) / 100,
+    width / 100,
+    height / 100,
+    aspect,
+    ...crossingSignature,
+  ];
   return {
     fingerprint: createHash("sha256").update(positionsKey(positions)).digest("hex").slice(0, 12),
     structuralCrossings,
@@ -908,6 +968,7 @@ function structuralCandidateFeatureVector(positions, structuralCrossings, cheapS
     height,
     aspect: height > 0 ? width / height : 0,
     featureVector: [structuralCrossings, cheapScore / 1000000, minNodeSeparation / 100, meanNodeSeparation / 100, medianEdge / 100, (edgeLengths.length ? Math.max(...edgeLengths) : 0) / 100, width / 100, height / 100, aspect],
+    topologyFeatureVector,
   };
 }
 function structuralCandidatePool(ids) {
@@ -947,45 +1008,53 @@ function structuralFrontierCandidates(candidates) {
 function normalizedFeatureDistance(left, right, ranges) {
   return Math.sqrt(left.featureVector.reduce((sum, value, index) => sum + ((value - right.featureVector[index]) / Math.max(1, ranges[index])) ** 2, 0));
 }
-function selectStructuralRepresentatives(candidates, frontier, limit) {
+function selectStructuralRepresentatives(candidates, frontier, limit, featureMode = "global") {
   if (candidates.length <= limit) return candidates.slice();
+  if (featureMode === "adaptive-frontier" && limit === frontier.length) return frontier.slice();
   const pool = [...frontier, ...candidates.filter((candidate) => !frontier.includes(candidate))];
-  const ranges = candidates[0].featureVector.map((_, index) => Math.max(1, ...candidates.map((candidate) => Math.abs(candidate.featureVector[index]))));
+  const vectorFor = (candidate) => featureMode === "topology-aware" ? candidate.topologyFeatureVector : candidate.featureVector;
+  const ranges = vectorFor(candidates[0]).map((_, index) => Math.max(1, ...candidates.map((candidate) => Math.abs(vectorFor(candidate)[index]))));
   const selected = [];
   const anchor = pool.slice().sort((left, right) => left.structuralCrossings - right.structuralCrossings || left.cheapScore - right.cheapScore || right.minNodeSeparation - left.minNodeSeparation)[0];
   if (anchor) selected.push(anchor);
   while (selected.length < limit && selected.length < pool.length) {
     const available = pool.filter((candidate) => !selected.includes(candidate));
     available.sort((left, right) => {
-      const leftDistance = Math.min(...selected.map((chosen) => normalizedFeatureDistance(left, chosen, ranges)));
-      const rightDistance = Math.min(...selected.map((chosen) => normalizedFeatureDistance(right, chosen, ranges)));
+      const leftDistance = Math.min(...selected.map((chosen) => normalizedFeatureDistance({ ...left, featureVector: vectorFor(left) }, { ...chosen, featureVector: vectorFor(chosen) }, ranges)));
+      const rightDistance = Math.min(...selected.map((chosen) => normalizedFeatureDistance({ ...right, featureVector: vectorFor(right) }, { ...chosen, featureVector: vectorFor(chosen) }, ranges)));
       return rightDistance - leftDistance || left.structuralCrossings - right.structuralCrossings || left.cheapScore - right.cheapScore;
     });
     selected.push(available[0]);
   }
   return selected;
 }
-function productionStructuralFrontier(limit) {
+function productionStructuralFrontier(limit, featureMode = "global") {
   const ids = graph.nodes.map((node) => node.id).sort(compareId);
   const pool = structuralCandidatePool(ids);
   const frontier = structuralFrontierCandidates(pool.candidates);
-  const representatives = selectStructuralRepresentatives(pool.candidates, frontier, limit);
+  const representatives = selectStructuralRepresentatives(pool.candidates, frontier, limit, featureMode);
   const familyCounts = Object.fromEntries([...new Set(pool.candidates.map(({ family }) => family))].map((family) => [family, pool.candidates.filter((candidate) => candidate.family === family).length]));
   return {
     representatives,
+    poolCandidates: pool.candidates,
+    frontierCandidates: frontier,
     summary: {
-      mode: "structural-frontier-farthest-point",
+      mode: featureMode === "topology-aware" ? "structural-topology-frontier-farthest-point" : "structural-frontier-farthest-point",
       evaluated: pool.gridSearch.evaluated,
       poolCount: pool.candidates.length,
       frontierCount: frontier.length,
       representativeCount: representatives.length,
       limit,
       familyCounts,
-      featureNames: ["structuralCrossings", "cheapScore", "minNodeSeparation", "meanNodeSeparation", "medianEdge", "maxEdge", "width", "height", "aspect"],
+      featureNames: featureMode === "topology-aware"
+        ? ["structuralCrossings", "cheapScore", "minNodeSeparation", "meanNodeSeparation", "medianEdge", "maxEdge", "width", "height", "aspect", "crossing-relation-pair-signature"]
+        : ["structuralCrossings", "cheapScore", "minNodeSeparation", "meanNodeSeparation", "medianEdge", "maxEdge", "width", "height", "aspect"],
+      featureMode,
       orderMode: pool.orderSearch.mode,
       gridMode: pool.gridSearch.mode,
       gridZeroCrossingFinalistCount: pool.gridSearch.finalists.filter((candidate) => candidate.straightCrossings === 0).length,
       representativeFamilies: representatives.map(({ family }) => family),
+      frontierSourceFingerprints: frontier.map(({ fingerprint }) => fingerprint),
     },
   };
 }
@@ -1735,6 +1804,7 @@ function productionSimplificationSearch(mode) {
         cheapScore: source?.cheapScore ?? null,
         minNodeSeparation: source?.minNodeSeparation ?? null,
         meanNodeSeparation: source?.meanNodeSeparation ?? null,
+        maxEdge: source?.maxEdge ?? null,
         aspect: source?.aspect ?? null,
       })),
     },

@@ -197,6 +197,47 @@ test("structural frontier K12 remains bounded while exposing the full diversity 
   assert.equal(frontier.ablation?.cheapPlanning?.representativeCount, 12);
 });
 
+test("density-aware adaptive frontier widens only when the cheap frontier itself is dense", () => {
+  const adaptive = runSearch({
+    E2R_GLOBAL_PLACEMENT_ABLATION: "frontier-adaptive-12",
+    E2R_GLOBAL_PLACEMENT_MODE: "viewport-anisotropic",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+    E2R_GLOBAL_SPACING_STAGE2: "off",
+    E2R_RELAXATION_FINAL_CANONICALIZATION: "off",
+  }, "synthetic:k7-7") as ReturnType<typeof runSearch> & {
+    ablation?: {
+      candidateArmCount: number;
+      fullPresentationEvaluations: number;
+      cheapPlanning?: { mode: string; adaptiveLimit: number; frontierRetention: string; frontierCount: number } | null;
+    };
+  };
+  assert.equal(adaptive.ablation?.cheapPlanning?.mode, "density-aware-adaptive-frontier");
+  assert.equal(adaptive.ablation?.cheapPlanning?.adaptiveLimit, 22);
+  assert.equal(adaptive.ablation?.cheapPlanning?.frontierRetention, "all-cheap-frontier");
+  assert.equal(adaptive.ablation?.cheapPlanning?.frontierCount, 22);
+  assert.equal(adaptive.ablation?.candidateArmCount, 22);
+  assert.equal(adaptive.ablation?.fullPresentationEvaluations, 22);
+  assert.equal(adaptive.selected?.metrics?.crossings, 129);
+  assert.equal(adaptive.selected?.metrics?.labelRouteHits, 8);
+  assert.equal(adaptive.selected?.metrics?.overlapPairs, 0);
+});
+
+test("topology-aware frontier remains diagnostic and reports its feature mode", () => {
+  const topology = runSearch({
+    E2R_GLOBAL_PLACEMENT_ABLATION: "frontier-topology-12",
+    E2R_GLOBAL_PLACEMENT_MODE: "viewport-anisotropic",
+    E2R_GLOBAL_SPACING_SCALE: "0.88",
+    E2R_GLOBAL_SPACING_Y: "1.12",
+    E2R_GLOBAL_SPACING_STAGE2: "off",
+    E2R_RELAXATION_FINAL_CANONICALIZATION: "off",
+  }) as ReturnType<typeof runSearch> & {
+    ablation?: { cheapPlanning?: { mode: string; featureMode: string } | null };
+  };
+  assert.equal(topology.ablation?.cheapPlanning?.mode, "structural-topology-frontier-farthest-point");
+  assert.equal(topology.ablation?.cheapPlanning?.featureMode, "topology-aware");
+});
+
 test("local presentation approximation is diagnostic opt-in and preserves full validation boundary", () => {
   const baseline = runSearch();
   assert.equal(baseline.searchBudget.relaxationApproximationMode, "off");
