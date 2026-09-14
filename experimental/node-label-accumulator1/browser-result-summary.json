@@ -1,0 +1,58 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-AUTHORITATIVE-NODE-LABEL-ACCUMULATOR-v1",
+  "diagnosticOnly": true,
+  "browser": "Edge 152",
+  "generatedAt": "2026-09-14T07:24:28.922Z",
+  "budgetTargetsMs": {
+    "preferredInteractiveSlice": 16,
+    "diagnosticCeiling": 50
+  },
+  "cases": [
+    {
+      "id": "canonical-lighthouse-en",
+      "nodes": 10,
+      "passes": {
+        "first": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.4, "maxStepMs": 5.8, "totalStageMs": 38.1, "initialRelationLabelCount": 14, "yieldingRouteCount": 3, "pathBoundsBuildCount": 17, "pathBoundsPointVisits": 697, "candidateEvaluations": 320, "occupiedLabelChecks": 5920, "otherNodeChecks": 2880, "edgePathPointChecks": 34358, "yieldingRoutePointChecks": 7585 },
+        "feedback": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.1, "maxStepMs": 2, "totalStageMs": 10.2, "initialRelationLabelCount": 14, "yieldingRouteCount": 2, "pathBoundsBuildCount": 16, "pathBoundsPointVisits": 656, "candidateEvaluations": 320, "occupiedLabelChecks": 5920, "otherNodeChecks": 2880, "edgePathPointChecks": 34973, "yieldingRoutePointChecks": 3526 }
+      },
+      "cooperative": { "status": "cancelled", "completedUnits": 1, "cancelDeliveryMs": 18.9, "partialProductResultExposed": false }
+    },
+    {
+      "id": "dense-k7-7",
+      "nodes": 14,
+      "passes": {
+        "first": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.3, "maxStepMs": 3.9, "totalStageMs": 51.8, "initialRelationLabelCount": 49, "yieldingRouteCount": 7, "pathBoundsBuildCount": 56, "pathBoundsPointVisits": 2296, "candidateEvaluations": 448, "occupiedLabelChecks": 24864, "otherNodeChecks": 5824, "edgePathPointChecks": 132717, "yieldingRoutePointChecks": 13120 },
+        "feedback": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.2, "maxStepMs": 0.8, "totalStageMs": 8.4, "initialRelationLabelCount": 49, "yieldingRouteCount": 7, "pathBoundsBuildCount": 56, "pathBoundsPointVisits": 2296, "candidateEvaluations": 448, "occupiedLabelChecks": 24864, "otherNodeChecks": 5824, "edgePathPointChecks": 131733, "yieldingRoutePointChecks": 9881 }
+      },
+      "cooperative": { "status": "cancelled", "completedUnits": 1, "cancelDeliveryMs": 1, "partialProductResultExposed": false }
+    },
+    {
+      "id": "parallel-pressure",
+      "nodes": 8,
+      "passes": {
+        "first": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.1, "maxStepMs": 0.6, "totalStageMs": 3, "initialRelationLabelCount": 16, "yieldingRouteCount": 4, "pathBoundsBuildCount": 20, "pathBoundsPointVisits": 820, "candidateEvaluations": 256, "occupiedLabelChecks": 4992, "otherNodeChecks": 1792, "edgePathPointChecks": 24026, "yieldingRoutePointChecks": 4633 },
+        "feedback": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.2, "maxStepMs": 0.5, "totalStageMs": 2.7, "initialRelationLabelCount": 16, "yieldingRouteCount": 0, "pathBoundsBuildCount": 16, "pathBoundsPointVisits": 656, "candidateEvaluations": 256, "occupiedLabelChecks": 4992, "otherNodeChecks": 1792, "edgePathPointChecks": 22468, "yieldingRoutePointChecks": 0 }
+      },
+      "cooperative": { "status": "cancelled", "completedUnits": 1, "cancelDeliveryMs": 1, "partialProductResultExposed": false }
+    },
+    {
+      "id": "long-label-pressure",
+      "nodes": 10,
+      "passes": {
+        "first": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.1, "maxStepMs": 0.3, "totalStageMs": 1.7, "initialRelationLabelCount": 10, "yieldingRouteCount": 6, "pathBoundsBuildCount": 16, "pathBoundsPointVisits": 656, "candidateEvaluations": 320, "occupiedLabelChecks": 4640, "otherNodeChecks": 2880, "edgePathPointChecks": 15580, "yieldingRoutePointChecks": 7298 },
+        "feedback": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.1, "maxStepMs": 0.3, "totalStageMs": 1.2, "initialRelationLabelCount": 10, "yieldingRouteCount": 0, "pathBoundsBuildCount": 10, "pathBoundsPointVisits": 410, "candidateEvaluations": 320, "occupiedLabelChecks": 4640, "otherNodeChecks": 2880, "edgePathPointChecks": 14637, "yieldingRoutePointChecks": 0 }
+      },
+      "cooperative": { "status": "cancelled", "completedUnits": 1, "cancelDeliveryMs": 0, "partialProductResultExposed": false }
+    },
+    {
+      "id": "self-loop-pressure",
+      "nodes": 10,
+      "passes": {
+        "first": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.1, "maxStepMs": 0.4, "totalStageMs": 2.2, "initialRelationLabelCount": 19, "yieldingRouteCount": 2, "pathBoundsBuildCount": 21, "pathBoundsPointVisits": 861, "candidateEvaluations": 320, "occupiedLabelChecks": 7520, "otherNodeChecks": 2880, "edgePathPointChecks": 35465, "yieldingRoutePointChecks": 1968 },
+        "feedback": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0, "maxStepMs": 0.8, "totalStageMs": 2.3, "initialRelationLabelCount": 19, "yieldingRouteCount": 1, "pathBoundsBuildCount": 20, "pathBoundsPointVisits": 820, "candidateEvaluations": 320, "occupiedLabelChecks": 7520, "otherNodeChecks": 2880, "edgePathPointChecks": 34973, "yieldingRoutePointChecks": 1312 }
+      },
+      "cooperative": { "status": "cancelled", "completedUnits": 1, "cancelDeliveryMs": 1, "partialProductResultExposed": false }
+    }
+  ],
+  "conclusion": "Exact Node-label output and diagnostic trace equivalence held for both first and feedback passes in all five browser controls. Initialization stayed below 0.4ms and every observed Node unit stayed below both the preferred 16ms reference and the 50ms diagnostic ceiling. This is Node-label execution evidence, not a Product-wide verification SLA."
+}

@@ -1,0 +1,136 @@
+{
+  "contract": "INITIAL-LAYOUT-EXECUTION-ARCHITECTURE-DECISION-v1",
+  "diagnosticOnly": true,
+  "evidence": {
+    "rebaselineCases": 21,
+    "deterministicPlacementCases": 21,
+    "placementMedianRangeMs": [
+      0.02109999999993306,
+      0.18040000000019063
+    ],
+    "presentationMedianRangeMs": [
+      4.136899999999969,
+      241.07150000000001
+    ],
+    "canonicalPresentationMedianRangeMs": [
+      20.68209999999999,
+      37.48670000000001
+    ],
+    "densePresentationMedianRangeMs": [
+      144.8197,
+      241.07150000000001
+    ],
+    "placementOverlapCases": 5,
+    "presentationCrossingCases": 16,
+    "denseRouteCrossings": [
+      {
+        "id": "dense/k7-7",
+        "crossings": 186,
+        "routeLabelHits": 22
+      },
+      {
+        "id": "dense/k6-8",
+        "crossings": 191,
+        "routeLabelHits": 9
+      },
+      {
+        "id": "dense/k8-8",
+        "crossings": 301,
+        "routeLabelHits": 35
+      },
+      {
+        "id": "dense/k5-9",
+        "crossings": 162,
+        "routeLabelHits": 16
+      },
+      {
+        "id": "dense/k7-7-minus-one",
+        "crossings": 190,
+        "routeLabelHits": 18
+      }
+    ],
+    "selfLoop": {
+      "correctedSingleLoopFalseNegatives": 30,
+      "strategiesPassingOnlyLocalRetainedGate": 10,
+      "strategiesEvaluated": 84,
+      "fullDomainEvaluatedGroups": 8,
+      "fullDomainSkippedGroups": 4
+    },
+    "parallel": {
+      "caseCount": 17,
+      "authority": {
+        "routing": "Product-owned deriveBoundedAutomaticPresentation",
+        "relationLabels": "Product-owned final Relation-label placement",
+        "endpointPlan": "existing bounded endpoint-plan evaluator",
+        "structuralPlacement": "fixed input geometry / counterfactual only"
+      },
+      "conclusion": "spacing-only retune does not close lane/label/outer-route/obstacle tradeoffs; group-level allocation remains diagnostic"
+    }
+  },
+  "startupContract": {
+    "inputAuthority": "stored/authored coordinates remain authoritative; coordinate-less input uses current deterministic derived placement",
+    "placement": "fixed small deterministic computation with whole-result fallback; no Product-authoritative quality search at startup",
+    "baselinePresentation": "one bounded current Product routing/label/viewport derivation sufficient to make the graph inspectable",
+    "readiness": "interaction-ready only after one internally consistent baseline presentation snapshot is committed",
+    "degradation": "dense graphs may return lower quality, but must not start an unbounded candidate search or silently change authority",
+    "runtimeRequirement": "placement should remain within a small fixed budget; complete graph-ready latency needs a separately measured browser/main-thread budget"
+  },
+  "qualityPhaseContract": {
+    "trigger": "explicit user operation only",
+    "inputSnapshot": "Dataset identity/version, current session positions, stored-coordinate authority, manual route/label/Self-loop overrides, and presentation inputs",
+    "ownership": "proposes Node geometry and coarse spatial/angular capacity only",
+    "verification": "calls existing ordinary routing, Parallel/Incident, Self-loop, Relation-label, Node-label, endpoint-plan, and viewport authorities iteratively",
+    "execution": "budgeted asynchronous/cooperatively chunked job; Web Worker is an implementation option, not an adopted requirement",
+    "cancellation": "generation token plus cooperative cancellation; stale or input-invalidated results are discarded without mutating session state",
+    "preview": "candidate remains separate from current session positions until explicit acceptance",
+    "accept": "replaces session positions, marks adopted Entity coordinates and coordinatesDirty, preserves explicit Save Coordinates",
+    "rejectOrRevert": "restores the pre-operation session snapshot; automatic Dataset persistence is prohibited",
+    "manualConflict": "manual geometry/presentation edits during a run cancel or invalidate that run; manual route/label/Self-loop authority is retained in verification",
+    "repeatability": "same input snapshot, algorithm version, and budget policy must produce the same result"
+  },
+  "options": [
+    {
+      "id": "A",
+      "name": "Single Initial Placement / single startup path",
+      "startupBoundedness": "strong for current placement, incomplete for quality-complete presentation",
+      "qualityCeiling": "weak: expensive coupled verification must remain in startup and tested bounded compression loses quality/recall",
+      "coordinateCompatibility": "simple, but every stronger search delays first interaction",
+      "mainThreadRisk": "high if Product-authoritative candidate evaluation is expanded at startup",
+      "evidence": "current placement is fast; dense route/label residuals and failed structural/Self-loop compression oppose a quality-complete single path",
+      "disposition": "HOLD AS QUALITY-COMPLETE ARCHITECTURE; RETAIN AS FAST BASELINE"
+    },
+    {
+      "id": "B",
+      "name": "Fast Initial Placement + explicit High-quality Auto Layout",
+      "startupBoundedness": "strong: retains current deterministic startup baseline",
+      "qualityCeiling": "potentially higher: explicit budget permits more Product-authoritative proposal/verification cycles",
+      "coordinateCompatibility": "compatible with current explicit Auto Layout and Save Coordinates separation if preview/accept/revert is added",
+      "mainThreadRisk": "manageable only with bounded asynchronous or cooperative execution and cancellation",
+      "evidence": "runtime separation, existing explicit operation boundary, and downstream coupling support the split; production quality solver is not established",
+      "disposition": "PROVISIONALLY ADOPT EXECUTION SPLIT / QUALITY SOLVER HOLD"
+    },
+    {
+      "id": "C",
+      "name": "Adaptive Initial Placement Cascade",
+      "startupBoundedness": "uncertain and input-dependent",
+      "qualityCeiling": "not shown to exceed explicit quality operation",
+      "coordinateCompatibility": "adds hidden policy and expectation complexity at startup",
+      "mainThreadRisk": "risk of variable latency and state-space growth",
+      "evidence": "no new evidence reactivates the hypothesis",
+      "disposition": "INACTIVE / INSUFFICIENT EVIDENCE"
+    }
+  ],
+  "decision": {
+    "executionArchitecture": "B: Fast Initial Placement + explicit High-quality Auto Layout",
+    "executionDecisionStrength": "PROVISIONALLY ADOPT",
+    "qualitySolverReadiness": "HOLD / NOT ESTABLISHED",
+    "productIntegration": "HOLD; no provider/default or behavior change",
+    "adaptiveCascade": "INACTIVE",
+    "rationale": [
+      "current placement is deterministic and negligible compared with Product presentation cost",
+      "quality-complete startup would internalize expensive globally coupled routing/label/endpoint evaluation",
+      "existing Product already has an explicit Auto Layout and explicit Save Coordinates boundary",
+      "no tested quality solver safely closes dense, Parallel/label, or Self-loop residuals"
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-AUTHORITATIVE-VERIFICATION-SCALING-ENVELOPE-v1",
+  "generatedAt": "2026-09-14T10:02:22.200Z",
+  "browser": "Microsoft Edge 152",
+  "diagnosticOnly": true,
+  "campaign": {
+    "bounded": true,
+    "families": 6,
+    "levels": 3,
+    "cases": 18,
+    "diagnosticsOffPrimary": true,
+    "diagnosticsOnTraceSample": true,
+    "sourceStepLimitMs": 250,
+    "cooperativeLimitMs": 3000,
+    "familiesMeasured": ["sparse", "dense", "parallel", "label-heavy", "self-loop", "mixed"],
+    "sizeProgression": "small/medium/large; declared maxima only; no unlimited benchmark"
+  },
+  "exact": {
+    "cases": 18,
+    "semanticEquivalent": 18,
+    "schedulerTraceEquivalent": 18,
+    "feedbackApplied": true
+  },
+  "supportedEnvelope": {
+    "maxNodes": 24,
+    "maxEdges": 80,
+    "maxParallelBundle": 12,
+    "maxSelfLoops": 16,
+    "maxRepresentativeLabelChars": 360,
+    "maxTotalAuthoritativeComputeMs": 503.8,
+    "maxDiagnosticsOffTurnMs": 21.3,
+    "maxDiagnosticsOffSourceStepMs": 21.3,
+    "maxDiagnosticsOffSchedulerGapMs": 0.1,
+    "maxDiagnosticsOffWorkUnitMs": 6.8,
+    "maxDiagnosticsOnTurnMs": 21.1,
+    "maxCooperativeOneUnitWallMs": 2916.8,
+    "maxCooperativeElapsedEightWallMs": 766.9,
+    "maxCooperativeOneUnitStepMs": 26.9,
+    "maxCooperativeElapsedEightStepMs": 27.1
+  },
+  "sourceScaling": {
+    "largestSourceStep": { "case": "dense-large", "phase": "initialize-first-node-label / initialize-feedback-node-label", "ms": 21.3 },
+    "preferred16msExceeded": ["dense-large"],
+    "diagnostic50msExceeded": [],
+    "largestAuthorityTotals": {
+      "route": { "case": "dense-large", "ms": 140.2 },
+      "relationLabel": { "case": "dense-large", "ms": 61.9 },
+      "nodeLabel": { "case": "dense-large", "ms": 16.7 }
+    },
+    "largestTotalCompute": { "case": "dense-large", "ms": 503.8 },
+    "largestGap": { "case": "dense-small", "ms": 0.1 },
+    "driver": "dense edge/path occupancy; the largest single transition was Node-label initialization, while aggregate compute was dominated by Route and Relation-label work"
+  },
+  "caseSummary": [
+    { "id": "sparse-small", "nodes": 8, "edges": 7, "offTurnMs": 2.6, "offSourceMs": 2.6, "offComputeMs": 17.4, "coop": null },
+    { "id": "dense-small", "nodes": 8, "edges": 24, "offTurnMs": 6.1, "offSourceMs": 6.1, "offComputeMs": 83.0, "coop": null },
+    { "id": "parallel-small", "nodes": 8, "edges": 10, "offTurnMs": 3.4, "offSourceMs": 3.4, "offComputeMs": 40.1, "coop": null },
+    { "id": "label-heavy-small", "nodes": 8, "edges": 8, "offTurnMs": 2.2, "offSourceMs": 2.2, "offComputeMs": 17.0, "coop": null },
+    { "id": "self-loop-small", "nodes": 8, "edges": 9, "offTurnMs": 2.3, "offSourceMs": 2.3, "offComputeMs": 20.9, "coop": null },
+    { "id": "mixed-small", "nodes": 10, "edges": 14, "offTurnMs": 4.3, "offSourceMs": 4.3, "offComputeMs": 59.2, "coop": null },
+    { "id": "sparse-medium", "nodes": 16, "edges": 15, "offTurnMs": 4.5, "offSourceMs": 4.5, "offComputeMs": 42.7, "coop": null },
+    { "id": "dense-medium", "nodes": 12, "edges": 48, "offTurnMs": 13.0, "offSourceMs": 13.0, "offComputeMs": 226.2, "coop": null },
+    { "id": "parallel-medium", "nodes": 12, "edges": 18, "offTurnMs": 5.1, "offSourceMs": 5.1, "offComputeMs": 94.3, "coop": null },
+    { "id": "label-heavy-medium", "nodes": 16, "edges": 16, "offTurnMs": 5.0, "offSourceMs": 5.0, "offComputeMs": 43.1, "coop": null },
+    { "id": "self-loop-medium", "nodes": 16, "edges": 23, "offTurnMs": 6.3, "offSourceMs": 6.3, "offComputeMs": 63.7, "coop": null },
+    { "id": "mixed-medium", "nodes": 16, "edges": 26, "offTurnMs": 6.4, "offSourceMs": 6.4, "offComputeMs": 137.1, "coop": null },
+    { "id": "sparse-large", "nodes": 24, "edges": 23, "offTurnMs": 7.9, "offSourceMs": 7.9, "offComputeMs": 77.1, "coop": { "oneUnitWallMs": 942.6, "elapsedEightWallMs": 119.3, "oneUnitMaxStepMs": 13.8, "elapsedEightMaxStepMs": 13.5 } },
+    { "id": "dense-large", "nodes": 16, "edges": 80, "offTurnMs": 21.3, "offSourceMs": 21.3, "offComputeMs": 503.8, "coop": { "oneUnitWallMs": 2916.8, "elapsedEightWallMs": 766.9, "oneUnitMaxStepMs": 26.9, "elapsedEightMaxStepMs": 27.1 } },
+    { "id": "parallel-large", "nodes": 16, "edges": 26, "offTurnMs": 7.0, "offSourceMs": 7.0, "offComputeMs": 161.4, "coop": { "oneUnitWallMs": 1052.1, "elapsedEightWallMs": 238.7, "oneUnitMaxStepMs": 12.8, "elapsedEightMaxStepMs": 14.6 } },
+    { "id": "label-heavy-large", "nodes": 24, "edges": 24, "offTurnMs": 6.5, "offSourceMs": 6.5, "offComputeMs": 81.9, "coop": { "oneUnitWallMs": 1053.3, "elapsedEightWallMs": 131.5, "oneUnitMaxStepMs": 14.5, "elapsedEightMaxStepMs": 12.8 } },
+    { "id": "self-loop-large", "nodes": 24, "edges": 39, "offTurnMs": 10.5, "offSourceMs": 10.5, "offComputeMs": 127.2, "coop": { "oneUnitWallMs": 1475.1, "elapsedEightWallMs": 203.3, "oneUnitMaxStepMs": 19.3, "elapsedEightMaxStepMs": 16.7 } },
+    { "id": "mixed-large", "nodes": 22, "edges": 38, "offTurnMs": 10.4, "offSourceMs": 10.4, "offComputeMs": 255.3, "coop": { "oneUnitWallMs": 1523.5, "elapsedEightWallMs": 381.9, "oneUnitMaxStepMs": 18.1, "elapsedEightMaxStepMs": 15.4 } }
+  ],
+  "disposition": {
+    "verificationScalingEnvelope": "ESTABLISHED_WITHIN_TESTED_BOUNDED_ENVELOPE",
+    "mainThread": "VIABLE_WITHIN_TESTED_ENVELOPE; DENSE-LARGE NODE-LABEL TRANSITION EXCEEDS PREFERRED 16MS",
+    "sourceStepBlocker": "NOT_IDENTIFIED_AT_50MS",
+    "phaseTransitionBlocker": "PREFERRED_16MS_EXCEEDED_BY_DENSE_LARGE_NODE_LABEL_INITIALIZATION",
+    "authorityPreservingMicroSplit": "NO_NEW_MICRO_SPLIT_JUSTIFIED",
+    "workerArchitectureStudy": "NOT_JUSTIFIED_BY_THIS_ENVELOPE",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "productionProvider": "NOT ESTABLISHED",
+    "adaptiveCascade": "INACTIVE",
+    "humanReview": "NOT READY",
+    "initialLayoutReleaseBlocker": "OPEN",
+    "unboundedGuarantee": "NOT_ESTABLISHED"
+  }
+}

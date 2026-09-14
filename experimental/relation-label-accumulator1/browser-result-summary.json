@@ -1,0 +1,58 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-AUTHORITATIVE-RELATION-LABEL-ACCUMULATOR-v1",
+  "diagnosticOnly": true,
+  "browser": "Edge 152",
+  "generatedAt": "2026-09-14T07:02:28.211Z",
+  "budgetTargetsMs": {
+    "preferredInteractiveSlice": 16,
+    "diagnosticCeiling": 50
+  },
+  "cases": [
+    {
+      "id": "canonical-lighthouse-en",
+      "edges": 14,
+      "passes": {
+        "first": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.6, "maxStepMs": 6.1, "totalStageMs": 19.8, "overBudgetSteps": [], "candidateEvaluations": 630, "occupiedLabelChecks": 4095, "edgePathPointChecks": 60803, "pathBroadPhaseRejects": 6707 },
+        "feedback": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.4, "maxStepMs": 2.9, "totalStageMs": 6.4, "overBudgetSteps": [], "candidateEvaluations": 630, "occupiedLabelChecks": 4095, "edgePathPointChecks": 58671, "pathBroadPhaseRejects": 6759 }
+      },
+      "cooperative": { "status": "cancelled", "completedUnits": 4, "cancelDeliveryMs": 4.8, "partialProductResultExposed": false }
+    },
+    {
+      "id": "dense-k7-7",
+      "edges": 49,
+      "passes": {
+        "first": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 1, "maxStepMs": 7.2, "totalStageMs": 128.3, "overBudgetSteps": [], "candidateEvaluations": 2205, "occupiedLabelChecks": 52920, "edgePathPointChecks": 1424750, "pathBroadPhaseRejects": 71090 },
+        "feedback": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.9, "maxStepMs": 21, "totalStageMs": 79.3, "overBudgetSteps": [], "candidateEvaluations": 2205, "occupiedLabelChecks": 52920, "edgePathPointChecks": 1524913, "pathBroadPhaseRejects": 68647 }
+      },
+      "cooperative": { "status": "cancelled", "completedUnits": 1, "cancelDeliveryMs": 7.5, "partialProductResultExposed": false }
+    },
+    {
+      "id": "parallel-pressure",
+      "edges": 16,
+      "passes": {
+        "first": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.4, "maxStepMs": 2.2, "totalStageMs": 10.2, "overBudgetSteps": [], "candidateEvaluations": 720, "occupiedLabelChecks": 5400, "edgePathPointChecks": 172856, "pathBroadPhaseRejects": 6584 },
+        "feedback": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.3, "maxStepMs": 2, "totalStageMs": 8.8, "overBudgetSteps": [], "candidateEvaluations": 720, "occupiedLabelChecks": 5400, "edgePathPointChecks": 183803, "pathBroadPhaseRejects": 6317 }
+      },
+      "cooperative": { "status": "cancelled", "completedUnits": 1, "cancelDeliveryMs": 14.9, "partialProductResultExposed": false }
+    },
+    {
+      "id": "long-label-pressure",
+      "edges": 10,
+      "passes": {
+        "first": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.5, "maxStepMs": 2.2, "totalStageMs": 5.2, "overBudgetSteps": [], "candidateEvaluations": 450, "occupiedLabelChecks": 2025, "edgePathPointChecks": 14596, "pathBroadPhaseRejects": 3694 },
+        "feedback": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.5, "maxStepMs": 3, "totalStageMs": 3.5, "overBudgetSteps": [], "candidateEvaluations": 450, "occupiedLabelChecks": 2025, "edgePathPointChecks": 12833, "pathBroadPhaseRejects": 3737 }
+      },
+      "cooperative": { "status": "cancelled", "completedUnits": 1, "cancelDeliveryMs": 15.3, "partialProductResultExposed": false }
+    },
+    {
+      "id": "self-loop-pressure",
+      "edges": 19,
+      "passes": {
+        "first": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.3, "maxStepMs": 3.1, "totalStageMs": 8.9, "overBudgetSteps": [], "candidateEvaluations": 855, "occupiedLabelChecks": 7695, "edgePathPointChecks": 64657, "pathBroadPhaseRejects": 13813 },
+        "feedback": { "semanticEquivalent": true, "traceEquivalent": true, "initializeMs": 0.3, "maxStepMs": 2.3, "totalStageMs": 7.8, "overBudgetSteps": [], "candidateEvaluations": 855, "occupiedLabelChecks": 7695, "edgePathPointChecks": 62484, "pathBroadPhaseRejects": 13866 }
+      },
+      "cooperative": { "status": "cancelled", "completedUnits": 1, "cancelDeliveryMs": 14.8, "partialProductResultExposed": false }
+    }
+  ],
+  "conclusion": "Exact Relation-label output and diagnostic trace equivalence held for both first and feedback passes in all five browser controls. Initialization stayed below 1ms and every observed unit stayed below the 50ms diagnostic ceiling, but dense feedback reached 21ms and therefore does not uniformly meet the preferred 16ms slice."
+}

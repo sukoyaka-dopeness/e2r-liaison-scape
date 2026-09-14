@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LiaisonScape Browser Execution Budget Study</title>
+    <style>
+      :root { font-family: system-ui, sans-serif; color: #17212b; background: #f4f7fa; }
+      body { margin: 0; padding: 24px; }
+      main { max-width: 1200px; margin: 0 auto; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #fff; border: 1px solid #cbd5df; border-radius: 8px; padding: 16px; }
+      button { font: inherit; padding: 8px 12px; }
+      .status { padding: 10px; background: #e9f2ff; border-radius: 6px; }
+      .warning { background: #fff4d6; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>LiaisonScape Browser Execution Budget Study 1</h1>
+      <p class="status" id="status">Preparing source-faithful browser workload…</p>
+      <button id="run" type="button">Run browser budget study</button>
+      <pre id="results">No run yet.</pre>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

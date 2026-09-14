@@ -1,0 +1,132 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-AUTHORITATIVE-HISTORICAL-LONG-SLICE-REPRODUCTION-v1",
+  "generatedAt": "2026-09-14T09:40:48.328Z",
+  "browser": "Microsoft Edge 152",
+  "diagnosticOnly": true,
+  "measurement": "same-run scheduler-turn and source-step attribution; one-unit baseline policy; diagnostics off/on; first/repeat runs; three page reload cycles",
+  "campaign": {
+    "reloadCycles": 3,
+    "controls": 5,
+    "attributionRuns": 60,
+    "conditions": [
+      "diagnostics-off/first",
+      "diagnostics-off/repeat",
+      "diagnostics-on/first",
+      "diagnostics-on/repeat"
+    ],
+    "historicalSlicesMs": [49.7, 53.4, 83.9],
+    "outlierThresholdsMs": { "preferredSlice": 16, "hardHistoricalSlice": 50 }
+  },
+  "equivalence": {
+    "semanticChecks": 60,
+    "semanticPasses": 60,
+    "diagnosticsOnTraceChecks": 30,
+    "diagnosticsOnTracePasses": 30,
+    "semanticEquivalent": true,
+    "diagnosticsOnTraceEquivalent": true
+  },
+  "aggregate": {
+    "maxTurnMs": 16.2,
+    "maxSourceStepSumMs": 16.2,
+    "maxSchedulerGapMs": 0.1,
+    "maxWorkUnitMs": 5.1,
+    "maxPhaseTransitionMs": 16.2,
+    "authorityMaxMs": {
+      "Route": 5.1,
+      "Relation-label": 1.8,
+      "Node-label": 16.2,
+      "orchestration": 7.1
+    },
+    "outlierTurnsAt16ms": 1,
+    "outlierTurnsAt50ms": 0
+  },
+  "controls": [
+    {
+      "id": "canonical-lighthouse-en",
+      "category": "canonical",
+      "nodes": 10,
+      "edges": 14,
+      "maxTurnMs": { "diagnosticsOff": 4.2, "diagnosticsOn": 4.1 },
+      "maxSourceStepSumMs": { "diagnosticsOff": 4.2, "diagnosticsOn": 4.1 },
+      "maxSchedulerGapMs": 0.1,
+      "maxWorkUnitMs": { "diagnosticsOff": 2.5, "diagnosticsOn": 2.5 },
+      "maxPhaseTransitionMs": { "diagnosticsOff": 4.2, "diagnosticsOn": 4.1 }
+    },
+    {
+      "id": "dense-k7-7",
+      "category": "dense",
+      "nodes": 14,
+      "edges": 49,
+      "maxTurnMs": { "diagnosticsOff": 13.1, "diagnosticsOn": 16.2 },
+      "maxSourceStepSumMs": { "diagnosticsOff": 13.1, "diagnosticsOn": 16.2 },
+      "maxSchedulerGapMs": 0.1,
+      "maxWorkUnitMs": { "diagnosticsOff": 3.2, "diagnosticsOn": 5.1 },
+      "maxPhaseTransitionMs": { "diagnosticsOff": 13.1, "diagnosticsOn": 16.2 },
+      "outlier": {
+        "classification": "B",
+        "condition": "diagnostics-on/first",
+        "turnId": 149,
+        "elapsedMs": 16.2,
+        "sourceStepElapsedMs": 16.2,
+        "schedulerGapMs": 0,
+        "phase": "initialize-first-node-label",
+        "kind": "phase-transition",
+        "authority": "orchestration"
+      }
+    },
+    {
+      "id": "parallel-pressure",
+      "category": "parallel",
+      "nodes": 8,
+      "edges": 16,
+      "maxTurnMs": { "diagnosticsOff": 4.7, "diagnosticsOn": 4.6 },
+      "maxSourceStepSumMs": { "diagnosticsOff": 4.7, "diagnosticsOn": 4.6 },
+      "maxSchedulerGapMs": 0.1,
+      "maxWorkUnitMs": { "diagnosticsOff": 4.4, "diagnosticsOn": 4.6 },
+      "maxPhaseTransitionMs": { "diagnosticsOff": 4.7, "diagnosticsOn": 4.5 }
+    },
+    {
+      "id": "long-label-pressure",
+      "category": "label-heavy",
+      "nodes": 10,
+      "edges": 10,
+      "maxTurnMs": { "diagnosticsOff": 3.2, "diagnosticsOn": 3.2 },
+      "maxSourceStepSumMs": { "diagnosticsOff": 3.2, "diagnosticsOn": 3.2 },
+      "maxSchedulerGapMs": 0.1,
+      "maxWorkUnitMs": { "diagnosticsOff": 1.2, "diagnosticsOn": 1.7 },
+      "maxPhaseTransitionMs": { "diagnosticsOff": 3.2, "diagnosticsOn": 3.2 }
+    },
+    {
+      "id": "self-loop-pressure",
+      "category": "self-loop-heavy",
+      "nodes": 10,
+      "edges": 19,
+      "maxTurnMs": { "diagnosticsOff": 5.9, "diagnosticsOn": 6.3 },
+      "maxSourceStepSumMs": { "diagnosticsOff": 5.9, "diagnosticsOn": 6.3 },
+      "maxSchedulerGapMs": 0.1,
+      "maxWorkUnitMs": { "diagnosticsOff": 2.3, "diagnosticsOn": 3.5 },
+      "maxPhaseTransitionMs": { "diagnosticsOff": 5.9, "diagnosticsOn": 6.3 }
+    }
+  ],
+  "historicalOutlierAttribution": {
+    "reproducedWithinBoundedCampaign": false,
+    "classification": "E",
+    "meaning": "mixed/unknown because the historical artifact had no same-run source-step identity, diagnostics mode, or scheduler-gap fields",
+    "currentCampaignInterpretation": "no authoritative work-unit outlier at 16ms or 50ms; one 16.2ms phase-transition observation; no 50ms observation"
+  },
+  "disposition": {
+    "historicalLongSlice": "NOT_REPRODUCED_WITHIN_BOUNDED_CAMPAIGN",
+    "sameRunAttribution": "ESTABLISHED_FOR_CURRENT_CAMPAIGN_ONLY",
+    "authoritativeWorkUnitOutlier": "NOT_OBSERVED",
+    "phaseTransitionOutlier": "ONE_16_2MS_NODE_LABEL_INITIALIZATION_TRANSITION",
+    "diagnosticInstrumentationOutlier": "NOT_ISOLATED_AS_SOLE_CAUSE",
+    "schedulerEventLoopGapOutlier": "NOT_OBSERVED",
+    "authorityPreservingMicroSplit": "NOT_JUSTIFIED",
+    "productWideVerificationBudget": "NOT_ESTABLISHED",
+    "humanReview": "NOT_READY",
+    "productIntegration": "HOLD",
+    "productionProvider": "NOT ESTABLISHED",
+    "adaptiveCascade": "INACTIVE",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-AUTHORITATIVE-ROUTE-SELECTION-ACCUMULATOR-v1",
+  "diagnosticOnly": true,
+  "browser": "Edge 152",
+  "generatedAt": "2026-09-14T06:44:14.752Z",
+  "budgetTargetsMs": {
+    "preferredInteractiveSlice": 16,
+    "hardObservedSlice": 50
+  },
+  "cases": [
+    {
+      "id": "canonical-lighthouse-en",
+      "nodes": 10,
+      "edges": 14,
+      "status": "completed",
+      "semanticEquivalent": true,
+      "orderedEdgeCount": 14,
+      "acceptedPrefixLength": 14,
+      "initializeMs": 0,
+      "initializeOverBudget": false,
+      "maxStepMs": 3.1,
+      "overBudgetSteps": [],
+      "cooperative": {
+        "status": "cancelled",
+        "completedUnits": 6,
+        "cancelDeliveryMs": 3,
+        "elapsedMs": 12.2,
+        "partialProductResultExposed": false
+      }
+    },
+    {
+      "id": "dense-k7-7",
+      "nodes": 14,
+      "edges": 49,
+      "status": "completed",
+      "semanticEquivalent": true,
+      "orderedEdgeCount": 49,
+      "acceptedPrefixLength": 49,
+      "initializeMs": 0,
+      "initializeOverBudget": false,
+      "maxStepMs": 3.5,
+      "overBudgetSteps": [],
+      "cooperative": {
+        "status": "cancelled",
+        "completedUnits": 1,
+        "cancelDeliveryMs": 1,
+        "elapsedMs": 9.9,
+        "partialProductResultExposed": false
+      }
+    },
+    {
+      "id": "parallel-pressure",
+      "nodes": 8,
+      "edges": 16,
+      "status": "completed",
+      "semanticEquivalent": true,
+      "orderedEdgeCount": 16,
+      "acceptedPrefixLength": 16,
+      "initializeMs": 0.2,
+      "initializeOverBudget": false,
+      "maxStepMs": 4.9,
+      "overBudgetSteps": [],
+      "cooperative": {
+        "status": "cancelled",
+        "completedUnits": 1,
+        "cancelDeliveryMs": 2.6,
+        "elapsedMs": 11.9,
+        "partialProductResultExposed": false
+      }
+    },
+    {
+      "id": "long-label-pressure",
+      "nodes": 10,
+      "edges": 10,
+      "status": "completed",
+      "semanticEquivalent": true,
+      "orderedEdgeCount": 10,
+      "acceptedPrefixLength": 10,
+      "initializeMs": 0,
+      "initializeOverBudget": false,
+      "maxStepMs": 0.7,
+      "overBudgetSteps": [],
+      "cooperative": {
+        "status": "cancelled",
+        "completedUnits": 1,
+        "cancelDeliveryMs": 1.4,
+        "elapsedMs": 10.5,
+        "partialProductResultExposed": false
+      }
+    },
+    {
+      "id": "self-loop-pressure",
+      "nodes": 10,
+      "edges": 19,
+      "status": "completed",
+      "semanticEquivalent": true,
+      "orderedEdgeCount": 19,
+      "acceptedPrefixLength": 19,
+      "initializeMs": 0,
+      "initializeOverBudget": false,
+      "maxStepMs": 1.1,
+      "overBudgetSteps": [],
+      "cooperative": {
+        "status": "cancelled",
+        "completedUnits": 1,
+        "cancelDeliveryMs": 0,
+        "elapsedMs": 9.2,
+        "partialProductResultExposed": false
+      }
+    }
+  ],
+  "conclusion": "All observed route-selection units stayed below the preferred 16ms slice and the 50ms diagnostic ceiling; exact synchronous equivalence held for all five cases. This is route-level evidence, not a Product verification SLA."
+}

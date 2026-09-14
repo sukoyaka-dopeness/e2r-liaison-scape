@@ -1,0 +1,83 @@
+{
+  "contract": "LIAISONSCAPE-EXPLICIT-HIGH-QUALITY-AUTO-LAYOUT-BROWSER-EXECUTION-BUDGET-STUDY-v1",
+  "generatedAt": "2026-09-14T06:06:52.271Z",
+  "diagnosticOnly": true,
+  "browser": {
+    "userAgentFamily": "Edge 152",
+    "hardwareConcurrency": 16,
+    "crossOriginIsolated": false,
+    "performanceMemory": "not assumed",
+    "longTaskObserverSupported": true,
+    "observedLongTaskMaxMs": 19662
+  },
+  "sourceBoundary": {
+    "proposal": "solveAutoLayout / deterministic fake candidate generation",
+    "productVerification": "deriveBoundedAutomaticPresentation on current source",
+    "preview": "one additional current Product presentation derivation",
+    "worker": "proposal transport and pure-work simulation only; Product verification remains main-thread"
+  },
+  "cases": [
+    {
+      "id": "canonical-lighthouse-en",
+      "category": "canonical",
+      "nodes": 10,
+      "edges": 14,
+      "syncTotalMs": { "candidate1": 999.5, "candidate2": 2038.9, "candidate3": 3131.4 },
+      "cooperative": { "candidateCount": 3, "completedCandidates": 1, "cancelled": true, "cancelDeliveryMs": 1042.4, "maxSliceMs": 1017.2 },
+      "hybrid": { "candidateCount": 3, "totalMs": 1695.4, "maxMainThreadSliceMs": 568, "verificationRangeMs": [490.7, 568], "messageRangeMs": [25.6, 45.1], "payloadBytesRange": [3962, 3969] },
+      "previewMs": 504.2
+    },
+    {
+      "id": "dense-k7-7",
+      "category": "dense",
+      "nodes": 14,
+      "edges": 49,
+      "syncTotalMs": { "candidate1": 5562.5, "candidate2": 11420.1 },
+      "cooperative": { "candidateCount": 2, "completedCandidates": 2, "cancelled": false, "cancelDeliveryMs": null, "maxSliceMs": 4798.8 },
+      "hybrid": { "candidateCount": 2, "totalMs": 4095.8, "maxMainThreadSliceMs": 2151.3, "verificationRangeMs": [1664.5, 2151.3], "messageRangeMs": [90, 184.2], "payloadBytesRange": [9324, 9345] },
+      "previewMs": 2766.5
+    },
+    {
+      "id": "parallel-pressure",
+      "category": "parallel",
+      "nodes": 8,
+      "edges": 16,
+      "syncTotalMs": { "candidate1": 2065, "candidate2": 4169.5, "candidate3": 6470.4 },
+      "cooperative": { "candidateCount": 3, "completedCandidates": 1, "cancelled": true, "cancelDeliveryMs": 2225.8, "maxSliceMs": 2218.6 },
+      "hybrid": { "candidateCount": 3, "totalMs": 2950, "maxMainThreadSliceMs": 968.9, "verificationRangeMs": [896.7, 968.9], "messageRangeMs": [26, 50.3], "payloadBytesRange": [3899, 3901] },
+      "previewMs": 900.6
+    },
+    {
+      "id": "long-label-pressure",
+      "category": "label-heavy",
+      "nodes": 10,
+      "edges": 10,
+      "syncTotalMs": { "candidate1": 401.5, "candidate2": 1182.9, "candidate3": 1308.8 },
+      "cooperative": { "candidateCount": 3, "completedCandidates": 1, "cancelled": true, "cancelDeliveryMs": 494.2, "maxSliceMs": 489.2 },
+      "hybrid": { "candidateCount": 3, "totalMs": 818.1, "maxMainThreadSliceMs": 264.4, "verificationRangeMs": [189.6, 264.4], "messageRangeMs": [18.5, 91.6], "payloadBytesRange": [4196, 4200] },
+      "previewMs": 161.4
+    },
+    {
+      "id": "self-loop-pressure",
+      "category": "self-loop-heavy",
+      "nodes": 10,
+      "edges": 19,
+      "syncTotalMs": { "candidate1": 988.3, "candidate2": 2149.5, "candidate3": 3347.4 },
+      "cooperative": { "candidateCount": 3, "completedCandidates": 2, "cancelled": true, "cancelDeliveryMs": 2172.3, "maxSliceMs": 1110.2 },
+      "hybrid": { "candidateCount": 3, "totalMs": 1408.2, "maxMainThreadSliceMs": 494.5, "verificationRangeMs": [351.7, 494.5], "messageRangeMs": [15.2, 49.1], "payloadBytesRange": [5268, 5269] },
+      "previewMs": 326.6
+    }
+  ],
+  "workerCancellation": { "requested": true, "messageReceived": false, "terminateCallLatencyMs": 0.2 },
+  "lifecycleBrowserEvidence": {
+    "cancellationCompletion": { "status": "cancelled", "reason": "cancel-requested" },
+    "oldGenerationOutcome": { "status": "stale", "reason": "old-operation-result" },
+    "newerOperationRemainsActive": true
+  },
+  "status": {
+    "executionArchitecture": "B: PROVISIONALLY ADOPT",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "humanReview": "NOT READY"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-AUTHORITATIVE-VERIFICATION-LONG-UNIT-ATTRIBUTION-v1",
+  "generatedAt": "2026-09-14T09:08:35.508Z",
+  "browser": "Microsoft Edge 152",
+  "diagnosticOnly": true,
+  "measurement": "one-unit scheduler; diagnostics off/on; first/repeat runs after page reload; source steps are state.steps, not whole-pass timers",
+  "controls": [
+    { "id": "canonical-lighthouse-en", "category": "canonical", "offMaxWorkUnitMs": 1.5, "offMaxPhaseTransitionMs": 1.1, "offMaxTurnMs": 1.5, "onMaxWorkUnitMs": 1.7, "onMaxPhaseTransitionMs": 1.0, "onMaxTurnMs": 1.7 },
+    { "id": "dense-k7-7", "category": "dense", "offMaxWorkUnitMs": 2.1, "offMaxPhaseTransitionMs": 3.5, "offMaxTurnMs": 3.5, "onMaxWorkUnitMs": 3.2, "onMaxPhaseTransitionMs": 4.4, "onMaxTurnMs": 4.4 },
+    { "id": "parallel-pressure", "category": "parallel", "offMaxWorkUnitMs": 2.6, "offMaxPhaseTransitionMs": 1.0, "offMaxTurnMs": 2.6, "onMaxWorkUnitMs": 2.6, "onMaxPhaseTransitionMs": 1.0, "onMaxTurnMs": 2.6 },
+    { "id": "long-label-pressure", "category": "label-heavy", "offMaxWorkUnitMs": 1.0, "offMaxPhaseTransitionMs": 1.2, "offMaxTurnMs": 1.2, "onMaxWorkUnitMs": 1.5, "onMaxPhaseTransitionMs": 0.9, "onMaxTurnMs": 1.5 },
+    { "id": "self-loop-pressure", "category": "self-loop-heavy", "offMaxWorkUnitMs": 1.3, "offMaxPhaseTransitionMs": 1.2, "offMaxTurnMs": 1.3, "onMaxWorkUnitMs": 2.0, "onMaxPhaseTransitionMs": 3.2, "onMaxTurnMs": 3.2 }
+  ],
+  "aggregate": {
+    "diagnosticsOff": { "maxWorkUnitMs": 2.6, "maxPhaseTransitionMs": 3.5, "maxTurnMs": 3.5, "totalTurnComputeMsRange": [11.4, 150.6] },
+    "diagnosticsOn": { "maxWorkUnitMs": 3.2, "maxPhaseTransitionMs": 4.4, "maxTurnMs": 4.4, "totalTurnComputeMsRange": [16.6, 204.7] },
+    "dominantWorkUnitPhases": ["first-route", "feedback-route"],
+    "dominantLongTransitionPhases": ["initialize-first-node-label", "initialize-feedback-node-label", "prepare-feedback"]
+  },
+  "semanticEquivalent": "true for every control and every attribution run",
+  "historicalOutliers": {
+    "scheduledSlicesMs": [53.4, 83.9],
+    "latestDenseCooperativeMaxSchedulerStepMs": 49.7,
+    "interpretation": "retained historical evidence; the old artifact did not record source-step attribution, so exact retroactive mapping is unavailable"
+  },
+  "disposition": {
+    "authoritativeLongUnitObservedOnThisRun": "NO",
+    "diagnosticsOrPhaseTransitionContributionObserved": "YES",
+    "authorityPreservingMicroSplit": "NOT_JUSTIFIED_BY_CURRENT_ATTRIBUTION",
+    "productWideVerificationBudget": "NOT_ESTABLISHED",
+    "hard50msCeiling": "NOT_ESTABLISHED_PRODUCT_WIDE",
+    "humanReview": "NOT_READY",
+    "productIntegration": "HOLD",
+    "productionProvider": "NOT ESTABLISHED",
+    "adaptiveCascade": "INACTIVE",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}

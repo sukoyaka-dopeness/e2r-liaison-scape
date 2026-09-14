@@ -198,33 +198,36 @@ export type DerivedAutomaticRoute = RoutingGraphEdge & Pick<
   directRecoveryObstacleId?: string;
 };
 
-/** Pure Product-owned automatic route derivation. App state arrives as snapshots. */
-export function deriveAutomaticRoutes({
-  graph,
-  positions,
-  edgeCurveOffsets,
-  selfLoopOverrides,
-  provisionalNodeLabels,
-  continuityNodeLabels,
-  previousContinuityNodeLabels,
-  previousAutomaticRoutes,
-  draggedNodeId,
-  activeDraggedNodeId,
-  preserveSafeIncidentPreviousRoute = false,
-  routeDecisionSink,
-  routeTraceSink,
-  candidateCache,
-  geometryCache,
-  parallelBundleSpacing,
-  parallelBundleMode = "bundle",
-  profiler,
-  routeDecisionPass = "first",
-  replayPrefix,
-  replayPrefixSink,
-}: AutomaticRoutingInput): DerivedAutomaticRoute[] {
-  const occupiedPaths: Array<Array<Point>> = [];
-  const occupiedPathIds: string[] = [];
-  const overlapCounts = new Map<string, number>();
+export type AutomaticRouteSelectionAccumulator = {
+  input: AutomaticRoutingInput;
+  orderedEdges: readonly RoutingGraphEdge[];
+  nextIndex: number;
+  occupiedPaths: Array<Array<Point>>;
+  occupiedPathIds: string[];
+  overlapCounts: Map<string, number>;
+  nodeMap: Map<string, GraphNode>;
+  parallelBundleLabelWidths: Map<string, number>;
+  routeLabelRects: LabelRect[];
+  continuityLabelRects: LabelRect[];
+  routedById: Map<string, Omit<DerivedAutomaticRoute, keyof RoutingGraphEdge>>;
+  done: boolean;
+};
+
+function compareRoutingPriority(left: RoutingGraphEdge, right: RoutingGraphEdge) {
+  return left.sourceId.localeCompare(right.sourceId)
+    || left.targetId.localeCompare(right.targetId)
+    || left.id.localeCompare(right.id);
+}
+
+/** Initializes the immutable route plan and the ordered mutable route state. */
+export function initializeAutomaticRouteSelection(input: AutomaticRoutingInput): AutomaticRouteSelectionAccumulator {
+  const normalizedInput = {
+    ...input,
+    preserveSafeIncidentPreviousRoute: input.preserveSafeIncidentPreviousRoute ?? false,
+    parallelBundleMode: input.parallelBundleMode ?? "bundle",
+    routeDecisionPass: input.routeDecisionPass ?? "first",
+  };
+  const { graph, positions, edgeCurveOffsets, continuityNodeLabels, provisionalNodeLabels } = normalizedInput;
   const nodeMap = new Map(graph.nodes.map((node) => [node.id, node]));
   const parallelBundleLabelWidths = new Map<string, number>();
   for (const edge of graph.edges) {
@@ -234,17 +237,10 @@ export function deriveAutomaticRoutes({
   }
   // During active drag, use the labels that were actually displayed in the
   // preceding presentation for stationary Nodes, plus the current label for
-  // the dragged Node. This avoids scoring a route against a provisional
-  // endpoint-label position that the bounded feedback pass immediately
-  // replaces. Idle/final presentations leave this undefined and retain the
-  // original provisional-label input.
+  // the dragged Node. Idle/final presentations leave this undefined and retain
+  // the original provisional-label input.
   const routeLabelRects = [...(continuityNodeLabels ?? provisionalNodeLabels)];
-  const continuityLabelRects = continuityNodeLabels ?? routeLabelRects;
-  const routedById = new Map<string, Omit<DerivedAutomaticRoute, keyof RoutingGraphEdge>>();
-  const compareRoutingPriority = (left: RoutingGraphEdge, right: RoutingGraphEdge) =>
-    left.sourceId.localeCompare(right.sourceId)
-    || left.targetId.localeCompare(right.targetId)
-    || left.id.localeCompare(right.id);
+  const continuityLabelRects = [...(continuityNodeLabels ?? routeLabelRects)];
   const fixedEdges = graph.edges.filter((edge) => {
     const sourceNode = nodeMap.get(edge.sourceId)!;
     const targetNode = nodeMap.get(edge.targetId)!;
@@ -257,10 +253,14 @@ export function deriveAutomaticRoutes({
   const automaticOrdinaryEdges = graph.edges.filter((edge) => !fixedEdges.some(({ id }) => id === edge.id))
     .sort(compareRoutingPriority);
   const orderedEdges = [...fixedEdges, ...automaticOrdinaryEdges];
+  const occupiedPaths: Array<Array<Point>> = [];
+  const occupiedPathIds: string[] = [];
+  const overlapCounts = new Map<string, number>();
+  const routedById = new Map<string, Omit<DerivedAutomaticRoute, keyof RoutingGraphEdge>>();
   const replayedEdgeIds = new Set<string>();
   for (const [processingIndex, edge] of orderedEdges.entries()) {
-    if (replayPrefix?.edgeIds[processingIndex] !== edge.id) break;
-    const replayedRoute = replayPrefix.routes.get(edge.id);
+    if (normalizedInput.replayPrefix?.edgeIds[processingIndex] !== edge.id) break;
+    const replayedRoute = normalizedInput.replayPrefix.routes.get(edge.id);
     const source = positions[edge.sourceId] ?? nodeMap.get(edge.sourceId)!;
     const target = positions[edge.targetId] ?? nodeMap.get(edge.targetId)!;
     const endpointGeometryMatches = replayedRoute?.sourcePosition?.x === source.x
@@ -277,9 +277,44 @@ export function deriveAutomaticRoutes({
     routedById.set(edge.id, replayedRoute);
     replayedEdgeIds.add(edge.id);
   }
-  replayPrefixSink?.([...replayedEdgeIds]);
-  for (const [processingIndex, edge] of orderedEdges.entries()) {
-    if (replayedEdgeIds.has(edge.id)) continue;
+  normalizedInput.replayPrefixSink?.([...replayedEdgeIds]);
+  return {
+    input: normalizedInput,
+    orderedEdges,
+    nextIndex: replayedEdgeIds.size,
+    occupiedPaths,
+    occupiedPathIds,
+    overlapCounts,
+    nodeMap,
+    parallelBundleLabelWidths,
+    routeLabelRects,
+    continuityLabelRects,
+    routedById,
+    done: replayedEdgeIds.size >= orderedEdges.length,
+  };
+}
+
+/** Processes exactly one canonical ordered route edge and returns its result. */
+export function stepAutomaticRouteSelection(state: AutomaticRouteSelectionAccumulator): { done: boolean; edgeId?: string; route?: DerivedAutomaticRoute } {
+  if (state.done) return { done: true };
+  const { input, orderedEdges, nodeMap } = state;
+  const { graph, positions, edgeCurveOffsets, selfLoopOverrides, draggedNodeId, activeDraggedNodeId, previousAutomaticRoutes, previousContinuityNodeLabels, routeDecisionSink, routeTraceSink, candidateCache, geometryCache, profiler } = input;
+  const preserveSafeIncidentPreviousRoute = input.preserveSafeIncidentPreviousRoute ?? false;
+  const parallelBundleSpacing = input.parallelBundleSpacing;
+  const parallelBundleMode = input.parallelBundleMode ?? "bundle";
+  const routeDecisionPass = input.routeDecisionPass ?? "first";
+  const occupiedPaths = state.occupiedPaths;
+  const occupiedPathIds = state.occupiedPathIds;
+  const overlapCounts = state.overlapCounts;
+  const parallelBundleLabelWidths = state.parallelBundleLabelWidths;
+  const routeLabelRects = state.routeLabelRects;
+  const continuityLabelRects = state.continuityLabelRects;
+  const processingIndex = state.nextIndex;
+  const edge = orderedEdges[processingIndex];
+  if (!edge) {
+    state.done = true;
+    return { done: true };
+  }
     const canonicalPhysicalSideSign = edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1;
     const sourceNode = nodeMap.get(edge.sourceId)!;
     const targetNode = nodeMap.get(edge.targetId)!;
@@ -296,7 +331,7 @@ export function deriveAutomaticRoutes({
     if (isOverlappingPair) overlapCounts.set(overlapKey, overlapIndex + 1);
     const isIncident = edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId;
     const routeLabelsForEdge = activeDraggedNodeId !== undefined && isIncident
-      ? routeLabelRects.filter((_, index) => {
+      ? state.routeLabelRects.filter((_, index) => {
         const nodeId = graph.nodes[index]?.id;
         return nodeId !== edge.sourceId && nodeId !== edge.targetId;
       })
@@ -545,11 +580,11 @@ export function deriveAutomaticRoutes({
       && obstacleComparison?.equivalent === true
       && occupiedPathComparison?.equivalent === true;
     const occupiedPathMaintenanceStartedAt = performance.now();
-    occupiedPaths.push(selectedRoute.samples);
-    occupiedPathIds.push(edge.id);
+    state.occupiedPaths.push(selectedRoute.samples);
+    state.occupiedPathIds.push(edge.id);
     if (passProfile) passProfile.occupiedPathMaintenanceMs += performance.now() - occupiedPathMaintenanceStartedAt;
     if (passProfile) passProfile.routeDecisions += 1;
-    routedById.set(edge.id, {
+    const derivedRoute = {
       sourcePosition: { x: source.x, y: source.y },
       targetPosition: { x: target.x, y: target.y },
       path: selectedRoute.path,
@@ -558,9 +593,23 @@ export function deriveAutomaticRoutes({
       controlPoint: selectedRoute.controlPoint,
       parallelSolverEligible,
       directRecoveryObstacleId,
-    });
-  }
-  return graph.edges.map((edge) => ({ ...edge, ...routedById.get(edge.id)! }));
+    };
+    state.routedById.set(edge.id, derivedRoute);
+    state.nextIndex += 1;
+    state.done = state.nextIndex >= orderedEdges.length;
+    return { done: state.done, edgeId: edge.id, route: { ...edge, ...derivedRoute } };
+}
+
+export function completeAutomaticRouteSelection(state: AutomaticRouteSelectionAccumulator): DerivedAutomaticRoute[] {
+  if (!state.done) throw new Error("route selection cannot be completed before all ordered edges are processed");
+  return state.input.graph.edges.map((edge) => ({ ...edge, ...state.routedById.get(edge.id)! }));
+}
+
+/** Pure Product-owned automatic route derivation. App state arrives as snapshots. */
+export function deriveAutomaticRoutes(input: AutomaticRoutingInput): DerivedAutomaticRoute[] {
+  const state = initializeAutomaticRouteSelection(input);
+  while (!state.done) stepAutomaticRouteSelection(state);
+  return completeAutomaticRouteSelection(state);
 }
 
 export type AutomaticRelationLabelInput = {
@@ -573,6 +622,17 @@ export type AutomaticRelationLabelInput = {
   pass?: AutomaticRouteDecision["pass"];
   /** Diagnostic-only item trace; omitted by normal Product callers. */
   placementTraceSink?: (trace: AutomaticRelationLabelTrace) => void;
+};
+
+export type AutomaticRelationLabelAccumulator = {
+  input: AutomaticRelationLabelInput;
+  orderedEdges: readonly DerivedAutomaticRoute[];
+  nextIndex: number;
+  occupiedLabels: LabelRect[];
+  result: Map<string, LabelRect>;
+  nodePoints: Point[];
+  routeBounds: Array<PointBounds | null>;
+  done: boolean;
 };
 
 export type AutomaticNodeLabelInput = {
@@ -590,138 +650,218 @@ export type AutomaticNodeLabelInput = {
   placementTraceSink?: (trace: AutomaticNodeLabelTrace) => void;
 };
 
-/** Pure Product-owned automatic Relation-label orchestration. App state arrives as snapshots. */
-export function deriveAutomaticRelationLabels({
-  routedEdges,
-  nodes,
-  previousPlacements,
-  manualAnchors,
-  draggedNodeId,
-  profile,
-  pass = "first",
-  placementTraceSink,
-}: AutomaticRelationLabelInput): Map<string, LabelRect> {
-  const occupiedLabels: LabelRect[] = [];
-  const result = new Map<string, LabelRect>();
-  const nodePoints = [...nodes];
+export type AutomaticNodeLabelAccumulator = {
+  input: AutomaticNodeLabelInput;
+  orderedNodes: readonly GraphNode[];
+  nextIndex: number;
+  initialRelationLabels: readonly LabelRect[];
+  occupiedLabels: LabelRect[];
+  acceptedNodeLabels: LabelRect[];
+  result: Map<string, LabelRect>;
+  positions: Readonly<Record<string, Point>>;
+  edgePaths: Point[][];
+  edgePathBounds: Array<PointBounds | null>;
+  yieldingRouteBounds: Array<PointBounds | null>;
+  done: boolean;
+};
+
+/** Initializes the immutable Relation-label inputs and ordered mutable prefix state. */
+export function initializeAutomaticRelationLabelPlacement(input: AutomaticRelationLabelInput): AutomaticRelationLabelAccumulator {
+  const normalizedInput = { ...input, pass: input.pass ?? "first" };
+  const orderedEdges = [...normalizedInput.routedEdges];
+  const nodePoints = [...normalizedInput.nodes];
   const boundsStartedAt = performance.now();
-  const routeBounds = routedEdges.map(({ samples }) => pointBounds(samples));
-  if (profile) {
-    profile.pathBoundsPrecomputationMs += performance.now() - boundsStartedAt;
-    profile.pathBoundsBuildCount += routedEdges.length;
-    profile.pathBoundsPointVisits += routedEdges.reduce((total, edge) => total + edge.samples.length, 0);
+  const routeBounds = orderedEdges.map(({ samples }) => pointBounds(samples));
+  if (normalizedInput.profile) {
+    normalizedInput.profile.pathBoundsPrecomputationMs += performance.now() - boundsStartedAt;
+    normalizedInput.profile.pathBoundsBuildCount += orderedEdges.length;
+    normalizedInput.profile.pathBoundsPointVisits += orderedEdges.reduce((total, edge) => total + edge.samples.length, 0);
   }
-  for (const [processingIndex, edge] of routedEdges.entries()) {
-    if (!edge.label) continue;
-    const otherEdgePaths = routedEdges.filter(({ id }) => id !== edge.id).map(({ samples }) => samples);
-    const otherEdgePathBounds = routedEdges
-      .map((otherEdge, index) => otherEdge.id === edge.id ? undefined : routeBounds[index] ?? null)
-      .filter((bounds): bounds is PointBounds | null => bounds !== undefined);
-    const relationMovesWithDraggedNode = draggedNodeId !== undefined
-      && (edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId);
-    const occupiedRelationLabelPrefixFingerprint = placementTraceSink ? JSON.stringify(occupiedLabels) : "";
-    const routeFingerprint = placementTraceSink ? JSON.stringify({ path: edge.path, samples: edge.samples, labelPoint: edge.labelPoint, controlPoint: edge.controlPoint }) : "";
-    const inputFingerprint = placementTraceSink ? JSON.stringify({ route: routeFingerprint, label: edge.label, occupiedLabels, nodes: nodePoints, otherEdgePaths, previousPlacement: relationMovesWithDraggedNode ? undefined : previousPlacements.get(edge.id), manualAnchor: manualAnchors.get(edge.id) }) : "";
-    let placementTrace: LabelPlacementTrace | undefined;
-    const automaticPlacement = placeEdgeLabel(
-      edge.samples,
-      edge.label,
-      occupiedLabels,
-      nodePoints,
-      otherEdgePaths,
-      relationMovesWithDraggedNode ? undefined : previousPlacements.get(edge.id),
-      profile,
-      placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
-      otherEdgePathBounds,
-    );
-    const manualAnchor = manualAnchors.get(edge.id);
-    if (manualAnchor && profile) profile.manualAnchorReconstructions += 1;
-    const placement = manualAnchor
-      ? { ...automaticPlacement, ...reconstructManualRelationLabelTarget(edge.samples, manualAnchor) }
-      : automaticPlacement;
-    placementTraceSink?.({
-      pass,
-      relationId: edge.id,
-      processingIndex,
-      routeFingerprint,
-      inputFingerprint,
-      occupiedRelationLabelPrefixFingerprint,
-      candidateFingerprint: placementTrace?.candidateFingerprint ?? "",
-      selectedPlacementFingerprint: JSON.stringify(placement),
-    });
-    occupiedLabels.push(placement);
-    result.set(edge.id, placement);
+  return {
+    input: normalizedInput,
+    orderedEdges,
+    nextIndex: 0,
+    occupiedLabels: [],
+    result: new Map(),
+    nodePoints,
+    routeBounds,
+    done: orderedEdges.length === 0,
+  };
+}
+
+/** Processes exactly one ordered routed edge, including an empty-label no-op. */
+export function stepAutomaticRelationLabelPlacement(state: AutomaticRelationLabelAccumulator): { done: boolean; relationId?: string; placement?: LabelRect; skipped?: boolean } {
+  if (state.done) return { done: true };
+  const edge = state.orderedEdges[state.nextIndex];
+  if (!edge) {
+    state.done = true;
+    return { done: true };
   }
+  const processingIndex = state.nextIndex;
+  state.nextIndex += 1;
+  if (!edge.label) {
+    state.done = state.nextIndex >= state.orderedEdges.length;
+    return { done: state.done, relationId: edge.id, skipped: true };
+  }
+  const { previousPlacements, manualAnchors, draggedNodeId, profile, placementTraceSink } = state.input;
+  const otherEdgePaths = state.orderedEdges.filter(({ id }) => id !== edge.id).map(({ samples }) => samples);
+  const otherEdgePathBounds = state.orderedEdges
+    .map((otherEdge, index) => otherEdge.id === edge.id ? undefined : state.routeBounds[index] ?? null)
+    .filter((bounds): bounds is PointBounds | null => bounds !== undefined);
+  const relationMovesWithDraggedNode = draggedNodeId !== undefined
+    && (edge.sourceId === draggedNodeId || edge.targetId === draggedNodeId);
+  const occupiedRelationLabelPrefixFingerprint = placementTraceSink ? JSON.stringify(state.occupiedLabels) : "";
+  const routeFingerprint = placementTraceSink ? JSON.stringify({ path: edge.path, samples: edge.samples, labelPoint: edge.labelPoint, controlPoint: edge.controlPoint }) : "";
+  const inputFingerprint = placementTraceSink ? JSON.stringify({ route: routeFingerprint, label: edge.label, occupiedLabels: state.occupiedLabels, nodes: state.nodePoints, otherEdgePaths, previousPlacement: relationMovesWithDraggedNode ? undefined : previousPlacements.get(edge.id), manualAnchor: manualAnchors.get(edge.id) }) : "";
+  let placementTrace: LabelPlacementTrace | undefined;
+  const automaticPlacement = placeEdgeLabel(
+    edge.samples,
+    edge.label,
+    state.occupiedLabels,
+    state.nodePoints,
+    otherEdgePaths,
+    relationMovesWithDraggedNode ? undefined : previousPlacements.get(edge.id),
+    profile,
+    placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
+    otherEdgePathBounds,
+  );
+  const manualAnchor = manualAnchors.get(edge.id);
+  if (manualAnchor && profile) profile.manualAnchorReconstructions += 1;
+  const placement = manualAnchor
+    ? { ...automaticPlacement, ...reconstructManualRelationLabelTarget(edge.samples, manualAnchor) }
+    : automaticPlacement;
+  placementTraceSink?.({
+    pass: state.input.pass ?? "first",
+    relationId: edge.id,
+    processingIndex,
+    routeFingerprint,
+    inputFingerprint,
+    occupiedRelationLabelPrefixFingerprint,
+    candidateFingerprint: placementTrace?.candidateFingerprint ?? "",
+    selectedPlacementFingerprint: JSON.stringify(placement),
+  });
+  state.occupiedLabels.push(placement);
+  state.result.set(edge.id, placement);
+  state.done = state.nextIndex >= state.orderedEdges.length;
+  return { done: state.done, relationId: edge.id, placement };
+}
+
+export function completeAutomaticRelationLabelPlacement(state: AutomaticRelationLabelAccumulator): Map<string, LabelRect> {
+  if (!state.done) throw new Error("Relation-label placement cannot be completed before all routed edges are processed");
+  const result = new Map(state.result);
+  const finite = (value: LabelRect) => [value.x, value.y, value.width, value.height, value.directionX, value.directionY].every(Number.isFinite);
+  if ([...result.values()].some((value) => !finite(value))) throw new Error("Relation-label placement contains non-finite geometry");
+  return result;
+}
+
+/** Pure Product-owned automatic Relation-label orchestration. App state arrives as snapshots. */
+export function deriveAutomaticRelationLabels(input: AutomaticRelationLabelInput): Map<string, LabelRect> {
+  const state = initializeAutomaticRelationLabelPlacement(input);
+  while (!state.done) stepAutomaticRelationLabelPlacement(state);
+  return completeAutomaticRelationLabelPlacement(state);
+}
+
+/** Initializes the immutable Node-label inputs and ordered mutable prefix state. */
+export function initializeAutomaticNodeLabelPlacement(input: AutomaticNodeLabelInput): AutomaticNodeLabelAccumulator {
+  const normalizedInput = { ...input, yieldingRoutes: input.yieldingRoutes ?? [], pass: input.pass ?? "first" };
+  const orderedNodes = [...normalizedInput.nodes];
+  const positions = { ...normalizedInput.positions };
+  const initialRelationLabels = Array.from(normalizedInput.occupiedRelationLabels.values());
+  const occupiedLabels = [...initialRelationLabels];
+  const edgePaths = normalizedInput.routedEdges.map(({ samples }) => samples).filter(({ length }) => length > 0);
+  const boundsStartedAt = performance.now();
+  const edgePathBounds = edgePaths.map((path) => pointBounds(path));
+  const yieldingRouteBounds = normalizedInput.yieldingRoutes.map((route) => pointBounds(route.samples));
+  if (normalizedInput.profile) {
+    normalizedInput.profile.pathBoundsPrecomputationMs += performance.now() - boundsStartedAt;
+    normalizedInput.profile.pathBoundsBuildCount += edgePaths.length + normalizedInput.yieldingRoutes.length;
+    normalizedInput.profile.pathBoundsPointVisits += edgePaths.reduce((total, path) => total + path.length, 0)
+      + normalizedInput.yieldingRoutes.reduce((total, route) => total + route.samples.length, 0);
+  }
+  return {
+    input: normalizedInput,
+    orderedNodes,
+    nextIndex: 0,
+    initialRelationLabels,
+    occupiedLabels,
+    acceptedNodeLabels: [],
+    result: new Map(),
+    positions,
+    edgePaths,
+    edgePathBounds,
+    yieldingRouteBounds,
+    done: orderedNodes.length === 0,
+  };
+}
+
+/** Processes exactly one input-order Node-label decision. */
+export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumulator): { done: boolean; nodeId?: string; placement?: LabelRect } {
+  if (state.done) return { done: true };
+  const node = state.orderedNodes[state.nextIndex];
+  if (!node) {
+    state.done = true;
+    return { done: true };
+  }
+  const processingIndex = state.nextIndex;
+  state.nextIndex += 1;
+  const { previousPlacements, manualOffsets, activelyDraggedNodeId, profile, placementTraceSink } = state.input;
+  const position = state.positions[node.id] ?? node;
+  const otherNodes = state.orderedNodes.filter(({ id }) => id !== node.id).map((other) => state.positions[other.id] ?? other);
+  const occupiedLabelPrefixFingerprint = placementTraceSink ? JSON.stringify(state.occupiedLabels) : "";
+  const routeSetFingerprint = placementTraceSink ? JSON.stringify(state.edgePaths) : "";
+  const yieldingRouteFingerprint = placementTraceSink ? JSON.stringify(state.input.yieldingRoutes) : "";
+  const inputFingerprint = placementTraceSink ? JSON.stringify({ node: { x: position.x, y: position.y }, name: node.label, description: node.description, occupiedLabels: state.occupiedLabels, otherNodes, edgePaths: state.edgePaths, previousPlacement: activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id), yieldingRoutes: state.input.yieldingRoutes, manualOffset: manualOffsets.get(node.id) }) : "";
+  let placementTrace: LabelPlacementTrace | undefined;
+  const automaticPlacement = placeNodeLabel(
+    position,
+    node.label,
+    node.description,
+    state.occupiedLabels,
+    otherNodes,
+    state.edgePaths,
+    activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id),
+    state.input.yieldingRoutes,
+    profile,
+    placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
+    state.edgePathBounds,
+    state.yieldingRouteBounds,
+  );
+  const manualOffset = manualOffsets.get(node.id);
+  const placement = manualOffset
+    ? { ...automaticPlacement, x: position.x + manualOffset.x, y: position.y + manualOffset.y }
+    : automaticPlacement;
+  placementTraceSink?.({
+    pass: state.input.pass ?? "first",
+    nodeId: node.id,
+    processingIndex,
+    inputFingerprint,
+    positionFingerprint: JSON.stringify(position),
+    occupiedLabelPrefixFingerprint,
+    routeSetFingerprint,
+    yieldingRouteFingerprint,
+    candidateFingerprint: placementTrace?.candidateFingerprint ?? "",
+    selectedPlacementFingerprint: JSON.stringify(placement),
+  });
+  state.occupiedLabels.push(placement);
+  state.acceptedNodeLabels.push(placement);
+  state.result.set(node.id, placement);
+  state.done = state.nextIndex >= state.orderedNodes.length;
+  return { done: state.done, nodeId: node.id, placement };
+}
+
+export function completeAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumulator): Map<string, LabelRect> {
+  if (!state.done) throw new Error("Node-label placement cannot be completed before all Nodes are processed");
+  const result = new Map(state.result);
+  const finite = (value: LabelRect) => [value.x, value.y, value.width, value.height, value.directionX, value.directionY].every(Number.isFinite);
+  if ([...result.values()].some((value) => !finite(value))) throw new Error("Node-label placement contains non-finite geometry");
   return result;
 }
 
 /** Pure Product-owned automatic Node-label orchestration. App state arrives as snapshots. */
-export function deriveAutomaticNodeLabels({
-  nodes,
-  positions,
-  routedEdges,
-  occupiedRelationLabels,
-  previousPlacements,
-  manualOffsets,
-  activelyDraggedNodeId,
-  yieldingRoutes = [],
-  profile,
-  pass = "first",
-  placementTraceSink,
-}: AutomaticNodeLabelInput): Map<string, LabelRect> {
-  const occupiedLabels: LabelRect[] = Array.from(occupiedRelationLabels.values());
-  const result = new Map<string, LabelRect>();
-  const edgePaths = routedEdges.map(({ samples }) => samples).filter(({ length }) => length > 0);
-  const boundsStartedAt = performance.now();
-  const edgePathBounds = edgePaths.map((path) => pointBounds(path));
-  const yieldingRouteBounds = yieldingRoutes.map((route) => pointBounds(route.samples));
-  if (profile) {
-    profile.pathBoundsPrecomputationMs += performance.now() - boundsStartedAt;
-    profile.pathBoundsBuildCount += edgePaths.length + yieldingRoutes.length;
-    profile.pathBoundsPointVisits += edgePaths.reduce((total, path) => total + path.length, 0)
-      + yieldingRoutes.reduce((total, route) => total + route.samples.length, 0);
-  }
-  for (const [processingIndex, node] of nodes.entries()) {
-    const position = positions[node.id] ?? node;
-    const occupiedLabelPrefixFingerprint = placementTraceSink ? JSON.stringify(occupiedLabels) : "";
-    const routeSetFingerprint = placementTraceSink ? JSON.stringify(edgePaths) : "";
-    const yieldingRouteFingerprint = placementTraceSink ? JSON.stringify(yieldingRoutes) : "";
-    const inputFingerprint = placementTraceSink ? JSON.stringify({ node: { x: position.x, y: position.y }, name: node.label, description: node.description, occupiedLabels, otherNodes: nodes.filter(({ id }) => id !== node.id).map((other) => positions[other.id] ?? other), edgePaths, previousPlacement: activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id), yieldingRoutes, manualOffset: manualOffsets.get(node.id) }) : "";
-    let placementTrace: LabelPlacementTrace | undefined;
-    const automaticPlacement = placeNodeLabel(
-      position,
-      node.label,
-      node.description,
-      occupiedLabels,
-      nodes.filter(({ id }) => id !== node.id).map((other) => positions[other.id] ?? other),
-      edgePaths,
-      activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id),
-      yieldingRoutes,
-      profile,
-      placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
-      edgePathBounds,
-      yieldingRouteBounds,
-    );
-    const manualOffset = manualOffsets.get(node.id);
-    const placement = manualOffset
-      ? { ...automaticPlacement, x: position.x + manualOffset.x, y: position.y + manualOffset.y }
-      : automaticPlacement;
-    placementTraceSink?.({
-      pass,
-      nodeId: node.id,
-      processingIndex,
-      inputFingerprint,
-      positionFingerprint: JSON.stringify(position),
-      occupiedLabelPrefixFingerprint,
-      routeSetFingerprint,
-      yieldingRouteFingerprint,
-      candidateFingerprint: placementTrace?.candidateFingerprint ?? "",
-      selectedPlacementFingerprint: JSON.stringify(placement),
-    });
-    occupiedLabels.push(placement);
-    result.set(node.id, placement);
-  }
-  return result;
+export function deriveAutomaticNodeLabels(input: AutomaticNodeLabelInput): Map<string, LabelRect> {
+  const state = initializeAutomaticNodeLabelPlacement(input);
+  while (!state.done) stepAutomaticNodeLabelPlacement(state);
+  return completeAutomaticNodeLabelPlacement(state);
 }
 
 export type BoundedAutomaticPresentationInput = {
@@ -777,6 +917,74 @@ export type BoundedAutomaticPresentation = {
   feedbackApplied: boolean;
 };
 
+export type AutomaticPresentationVerificationPhase =
+  | "label-free-route"
+  | "initialize-first-route"
+  | "first-route"
+  | "initialize-first-relation-label"
+  | "first-relation-label"
+  | "initialize-first-node-label"
+  | "first-node-label"
+  | "prepare-feedback"
+  | "initialize-feedback-route"
+  | "feedback-route"
+  | "initialize-feedback-relation-label"
+  | "feedback-relation-label"
+  | "initialize-feedback-node-label"
+  | "feedback-node-label"
+  | "finalize"
+  | "completed";
+
+export type AutomaticPresentationVerificationStatus =
+  | "running"
+  | "completed"
+  | "cancelled"
+  | "budget-exhausted"
+  | "verification-failed";
+
+export type AutomaticPresentationVerificationStep = Readonly<{
+  phase: AutomaticPresentationVerificationPhase;
+  kind: "work-unit" | "phase-transition" | "finalize";
+  elapsedMs: number;
+  completedWorkUnits: number;
+  completedPhaseTransitions: number;
+}>;
+
+export type AutomaticPresentationVerificationAccumulator = {
+  input: BoundedAutomaticPresentationInput;
+  nodes: Point[];
+  phase: AutomaticPresentationVerificationPhase;
+  status: AutomaticPresentationVerificationStatus;
+  cancelRequested: boolean;
+  initializationMs: number;
+  scheduledStepCount: number;
+  completedWorkUnits: number;
+  completedPhaseTransitions: number;
+  steps: AutomaticPresentationVerificationStep[];
+  labelFreeRoute: AutomaticRouteSelectionAccumulator | null;
+  firstRoute: AutomaticRouteSelectionAccumulator | null;
+  firstRelationLabel: AutomaticRelationLabelAccumulator | null;
+  firstNodeLabel: AutomaticNodeLabelAccumulator | null;
+  firstRelationLabels: Map<string, LabelRect> | null;
+  firstNodeLabels: Map<string, LabelRect> | null;
+  feedbackRoute: AutomaticRouteSelectionAccumulator | null;
+  feedbackRelationLabel: AutomaticRelationLabelAccumulator | null;
+  feedbackNodeLabel: AutomaticNodeLabelAccumulator | null;
+  feedbackRelationLabels: Map<string, LabelRect> | null;
+  feedbackNodeLabels: Map<string, LabelRect> | null;
+  labelFreeSnapshot: ReturnType<typeof createRouteSelectionSnapshot> | null;
+  firstSnapshot: PresentationPassSnapshot | null;
+  feedbackSnapshot: PresentationPassSnapshot | null;
+  firstYieldingRoutes: RouteYieldPath[];
+  feedbackYieldingRoutes: RouteYieldPath[];
+  feedbackApplied: boolean;
+  result: BoundedAutomaticPresentation | null;
+  failureReason?: string;
+  passStartedAt: Record<"label-free" | "first" | "feedback", number | null>;
+  relationLabelStartedAt: Record<"first" | "feedback", number | null>;
+  nodeLabelStartedAt: Record<"first" | "feedback", number | null>;
+};
+
 function labelGeometryMoved(left: LabelRect | undefined, right: LabelRect | undefined): boolean {
   if (!left || !right) return left !== right;
   return Math.abs(left.x - right.x) > 0.5
@@ -799,6 +1007,487 @@ function routeDeviation(left: readonly Point[], right: readonly Point[]): number
     point.x - right[index]!.x,
     point.y - right[index]!.y,
   ), 0) / sampleCount;
+}
+
+/** Derives the immutable route geometry that Node-label placement must yield to. */
+export function deriveYieldingRoutesForPresentation(
+  labelFreeRoutes: readonly DerivedAutomaticRoute[],
+  routes: readonly DerivedAutomaticRoute[],
+): RouteYieldPath[] {
+  const labelFreeById = new Map(labelFreeRoutes.map((route) => [route.id, route]));
+  return routes.flatMap((route) => {
+    const labelFreeRoute = labelFreeById.get(route.id);
+    if (!labelFreeRoute || compareRouteGeometry(route.samples, labelFreeRoute.samples).equivalent) return [];
+    const deviation = routeDeviation(route.samples, labelFreeRoute.samples);
+    return deviation >= 12 ? [{ samples: labelFreeRoute.samples, deviation }] : [];
+  });
+}
+
+function verificationRouteInput(
+  state: AutomaticPresentationVerificationAccumulator,
+  provisionalNodeLabels: readonly LabelRect[],
+  pass: AutomaticRouteDecision["pass"],
+): AutomaticRoutingInput {
+  const input = state.input;
+  return {
+    graph: input.graph,
+    positions: input.positions,
+    edgeCurveOffsets: input.edgeCurveOffsets,
+    selfLoopOverrides: input.selfLoopOverrides,
+    provisionalNodeLabels,
+    continuityNodeLabels: pass === "label-free" ? undefined : input.continuityNodeLabels,
+    previousContinuityNodeLabels: pass === "label-free" ? undefined : input.previousContinuityNodeLabels,
+    previousAutomaticRoutes: pass === "label-free" ? undefined : input.previousAutomaticRoutes,
+    draggedNodeId: pass === "label-free" ? undefined : input.draggedNodeId,
+    activeDraggedNodeId: pass === "label-free" ? undefined : input.activeDraggedNodeId,
+    preserveSafeIncidentPreviousRoute: pass === "label-free" ? undefined : input.preserveSafeIncidentPreviousRoute,
+    routeDecisionSink: input.routeDecisionSink,
+    routeTraceSink: input.routeTraceSink,
+    candidateCache: input.candidateCache,
+    geometryCache: input.geometryCache,
+    parallelBundleSpacing: input.parallelBundleSpacing,
+    parallelBundleMode: input.parallelBundleMode ?? "bundle",
+    profiler: input.profiler,
+    routeDecisionPass: pass,
+    replayPrefix: pass === "first" ? input.replayPrefix : undefined,
+    replayPrefixSink: pass === "first" ? input.replayPrefixSink : undefined,
+  };
+}
+
+function verificationRelationLabelInput(
+  state: AutomaticPresentationVerificationAccumulator,
+  routedEdges: readonly DerivedAutomaticRoute[],
+  pass: "first" | "feedback",
+): AutomaticRelationLabelInput {
+  const input = state.input;
+  return {
+    routedEdges,
+    nodes: state.nodes,
+    previousPlacements: input.previousRelationLabelPlacements,
+    manualAnchors: input.manualRelationLabelAnchors,
+    draggedNodeId: input.draggedNodeId,
+    profile: input.profiler?.passes[pass].relationLabel,
+    pass,
+    placementTraceSink: input.relationLabelTraceSink,
+  };
+}
+
+function verificationNodeLabelInput(
+  state: AutomaticPresentationVerificationAccumulator,
+  routedEdges: readonly DerivedAutomaticRoute[],
+  relationLabels: ReadonlyMap<string, LabelRect>,
+  yieldingRoutes: readonly RouteYieldPath[],
+  pass: "first" | "feedback",
+): AutomaticNodeLabelInput {
+  const input = state.input;
+  return {
+    nodes: input.graph.nodes,
+    positions: input.positions,
+    routedEdges,
+    occupiedRelationLabels: relationLabels,
+    previousPlacements: input.previousNodeLabelPlacements,
+    manualOffsets: input.manualNodeLabelOffsets,
+    activelyDraggedNodeId: input.activelyDraggedNodeId,
+    yieldingRoutes,
+    profile: input.profiler?.passes[pass].nodeLabel,
+    pass,
+    placementTraceSink: input.nodeLabelTraceSink,
+  };
+}
+
+function reportVerificationDependency(
+  state: AutomaticPresentationVerificationAccumulator,
+  stage: PresentationDependencyTrace["stage"],
+  pass: PresentationDependencyTrace["pass"],
+  input: unknown,
+  output: unknown,
+) {
+  state.input.presentationDependencySink?.({
+    stage,
+    pass,
+    input: dependencyFingerprint(input),
+    output: dependencyFingerprint(output),
+  });
+}
+
+function firstFinalRouteLabels(state: AutomaticPresentationVerificationAccumulator): LabelRect[] {
+  if (!state.firstSnapshot) return [];
+  return state.input.graph.nodes
+    .map((node, index) => state.firstSnapshot!.nodeLabel.labels.get(node.id) ?? state.input.provisionalNodeLabels[index])
+    .filter((label): label is LabelRect => label !== undefined);
+}
+
+function closePassTiming(state: AutomaticPresentationVerificationAccumulator, pass: "label-free" | "first" | "feedback") {
+  const startedAt = state.passStartedAt[pass];
+  if (startedAt !== null && state.input.profiler) state.input.profiler.passes[pass].elapsedMs += performance.now() - startedAt;
+  state.passStartedAt[pass] = null;
+}
+
+function closeRelationLabelTiming(state: AutomaticPresentationVerificationAccumulator, pass: "first" | "feedback") {
+  const startedAt = state.relationLabelStartedAt[pass];
+  if (startedAt !== null && state.input.profiler) state.input.profiler.passes[pass].relationLabelMs += performance.now() - startedAt;
+  state.relationLabelStartedAt[pass] = null;
+}
+
+function closeNodeLabelTiming(state: AutomaticPresentationVerificationAccumulator, pass: "first" | "feedback") {
+  const startedAt = state.nodeLabelStartedAt[pass];
+  if (startedAt !== null && state.input.profiler) state.input.profiler.passes[pass].nodeLabelMs += performance.now() - startedAt;
+  state.nodeLabelStartedAt[pass] = null;
+}
+
+function finishPresentationPass(
+  state: AutomaticPresentationVerificationAccumulator,
+  pass: "first" | "feedback",
+  routedEdges: readonly DerivedAutomaticRoute[],
+  relationLabels: ReadonlyMap<string, LabelRect>,
+  nodeLabels: ReadonlyMap<string, LabelRect>,
+  yieldingRoutes: readonly RouteYieldPath[],
+) {
+  const snapshot = createPresentationPassSnapshot(
+    createRouteSelectionSnapshot(pass, routedEdges),
+    relationLabels,
+    nodeLabels,
+    yieldingRoutes,
+  );
+  if (pass === "first") state.firstSnapshot = snapshot;
+  else state.feedbackSnapshot = snapshot;
+  state.input.presentationPassSink?.(snapshot);
+  closeNodeLabelTiming(state, pass);
+  closePassTiming(state, pass);
+}
+
+/** Initializes the complete Product-authoritative verification dependency graph. */
+export function initializeAutomaticPresentationVerification(
+  input: BoundedAutomaticPresentationInput,
+): AutomaticPresentationVerificationAccumulator {
+  const startedAt = performance.now();
+  const state: AutomaticPresentationVerificationAccumulator = {
+    input,
+    nodes: input.graph.nodes.map((node) => input.positions[node.id] ?? node),
+    phase: "label-free-route",
+    status: "running",
+    cancelRequested: false,
+    initializationMs: 0,
+    scheduledStepCount: 0,
+    completedWorkUnits: 0,
+    completedPhaseTransitions: 0,
+    steps: [],
+    labelFreeRoute: null,
+    firstRoute: null,
+    firstRelationLabel: null,
+    firstNodeLabel: null,
+    firstRelationLabels: null,
+    firstNodeLabels: null,
+    feedbackRoute: null,
+    feedbackRelationLabel: null,
+    feedbackNodeLabel: null,
+    feedbackRelationLabels: null,
+    feedbackNodeLabels: null,
+    labelFreeSnapshot: null,
+    firstSnapshot: null,
+    feedbackSnapshot: null,
+    firstYieldingRoutes: [],
+    feedbackYieldingRoutes: [],
+    feedbackApplied: false,
+    result: null,
+    passStartedAt: { "label-free": startedAt, first: null, feedback: null },
+    relationLabelStartedAt: { first: null, feedback: null },
+    nodeLabelStartedAt: { first: null, feedback: null },
+  };
+  state.labelFreeRoute = initializeAutomaticRouteSelection(verificationRouteInput(state, [], "label-free"));
+  state.initializationMs = performance.now() - startedAt;
+  return state;
+}
+
+/** Requests cancellation at the next complete work-unit boundary. */
+export function requestAutomaticPresentationVerificationCancellation(
+  state: AutomaticPresentationVerificationAccumulator,
+): AutomaticPresentationVerificationAccumulator {
+  if (state.status === "running") state.cancelRequested = true;
+  return state;
+}
+
+/** Advances exactly one route/label unit, phase transition, or finalization unit. */
+export function stepAutomaticPresentationVerification(
+  state: AutomaticPresentationVerificationAccumulator,
+): AutomaticPresentationVerificationAccumulator {
+  if (state.status !== "running") return state;
+  if (state.cancelRequested) {
+    state.status = "cancelled";
+    return state;
+  }
+  const phase = state.phase;
+  const startedAt = performance.now();
+  let kind: AutomaticPresentationVerificationStep["kind"] = "phase-transition";
+  try {
+    switch (phase) {
+      case "label-free-route": {
+        kind = "work-unit";
+        const step = stepAutomaticRouteSelection(state.labelFreeRoute!);
+        state.completedWorkUnits += 1;
+        if (step.done) {
+          const routes = completeAutomaticRouteSelection(state.labelFreeRoute!);
+          state.labelFreeSnapshot = createRouteSelectionSnapshot("label-free", routes);
+          reportVerificationDependency(state, "route-selection", "label-free", {
+            graph: state.input.graph,
+            positions: state.input.positions,
+            edgeCurveOffsets: state.input.edgeCurveOffsets,
+            selfLoopOverrides: state.input.selfLoopOverrides,
+            provisionalNodeLabels: [],
+            parallelBundleSpacing: state.input.parallelBundleSpacing,
+            parallelBundleMode: state.input.parallelBundleMode ?? "bundle",
+            routeDecisionPass: "label-free",
+          }, { routes: state.labelFreeSnapshot.routes });
+          closePassTiming(state, "label-free");
+          state.phase = "initialize-first-route";
+        }
+        break;
+      }
+      case "initialize-first-route":
+        state.passStartedAt.first = performance.now();
+        state.firstRoute = initializeAutomaticRouteSelection(verificationRouteInput(state, state.input.provisionalNodeLabels, "first"));
+        state.phase = "first-route";
+        break;
+      case "first-route": {
+        kind = "work-unit";
+        const step = stepAutomaticRouteSelection(state.firstRoute!);
+        state.completedWorkUnits += 1;
+        if (step.done) {
+          const routes = completeAutomaticRouteSelection(state.firstRoute!);
+          const snapshot = createRouteSelectionSnapshot("first", routes);
+          reportVerificationDependency(state, "route-selection", "first", {
+            graph: state.input.graph,
+            positions: state.input.positions,
+            edgeCurveOffsets: state.input.edgeCurveOffsets,
+            selfLoopOverrides: state.input.selfLoopOverrides,
+            provisionalNodeLabels: state.input.provisionalNodeLabels,
+            continuityNodeLabels: state.input.continuityNodeLabels,
+            previousContinuityNodeLabels: state.input.previousContinuityNodeLabels,
+            previousAutomaticRoutes: state.input.previousAutomaticRoutes,
+            draggedNodeId: state.input.draggedNodeId,
+            activeDraggedNodeId: state.input.activeDraggedNodeId,
+            preserveSafeIncidentPreviousRoute: state.input.preserveSafeIncidentPreviousRoute,
+            parallelBundleSpacing: state.input.parallelBundleSpacing,
+            parallelBundleMode: state.input.parallelBundleMode ?? "bundle",
+            routeDecisionPass: "first",
+            replayPrefix: state.input.replayPrefix,
+          }, { routes: snapshot.routes });
+          state.phase = "initialize-first-relation-label";
+        }
+        break;
+      }
+      case "initialize-first-relation-label":
+        state.relationLabelStartedAt.first = performance.now();
+        state.firstRelationLabel = initializeAutomaticRelationLabelPlacement(verificationRelationLabelInput(state, completeAutomaticRouteSelection(state.firstRoute!), "first"));
+        state.phase = "first-relation-label";
+        break;
+      case "first-relation-label": {
+        kind = "work-unit";
+        const step = stepAutomaticRelationLabelPlacement(state.firstRelationLabel!);
+        state.completedWorkUnits += 1;
+        if (step.done) {
+          const labels = completeAutomaticRelationLabelPlacement(state.firstRelationLabel!);
+          reportVerificationDependency(state, "relation-label", "first", {
+            pass: "first",
+            routedEdges: completeAutomaticRouteSelection(state.firstRoute!),
+            nodes: state.nodes,
+            previousPlacements: state.input.previousRelationLabelPlacements,
+            manualAnchors: state.input.manualRelationLabelAnchors,
+            draggedNodeId: state.input.draggedNodeId,
+          }, { labels });
+          closeRelationLabelTiming(state, "first");
+          state.phase = "initialize-first-node-label";
+          state.firstRelationLabels = labels;
+        }
+        break;
+      }
+      case "initialize-first-node-label":
+        state.firstYieldingRoutes = deriveYieldingRoutesForPresentation(state.labelFreeSnapshot!.routes, completeAutomaticRouteSelection(state.firstRoute!));
+        state.nodeLabelStartedAt.first = performance.now();
+        state.firstNodeLabel = initializeAutomaticNodeLabelPlacement(verificationNodeLabelInput(state, completeAutomaticRouteSelection(state.firstRoute!), state.firstRelationLabels!, state.firstYieldingRoutes, "first"));
+        state.phase = "first-node-label";
+        break;
+      case "first-node-label": {
+        kind = "work-unit";
+        const step = stepAutomaticNodeLabelPlacement(state.firstNodeLabel!);
+        state.completedWorkUnits += 1;
+        if (step.done) {
+          const labels = completeAutomaticNodeLabelPlacement(state.firstNodeLabel!);
+          reportVerificationDependency(state, "node-label", "first", {
+            pass: "first",
+            nodes: state.input.graph.nodes,
+            positions: state.input.positions,
+            routedEdges: completeAutomaticRouteSelection(state.firstRoute!),
+            occupiedRelationLabels: state.firstRelationLabels,
+            previousPlacements: state.input.previousNodeLabelPlacements,
+            manualOffsets: state.input.manualNodeLabelOffsets,
+            activelyDraggedNodeId: state.input.activelyDraggedNodeId,
+            yieldingRoutes: state.firstYieldingRoutes,
+          }, { labels, yieldingRoutes: state.firstYieldingRoutes });
+          finishPresentationPass(state, "first", completeAutomaticRouteSelection(state.firstRoute!), state.firstRelationLabels!, labels, state.firstYieldingRoutes);
+          state.firstNodeLabels = labels;
+          state.phase = "prepare-feedback";
+        }
+        break;
+      }
+      case "prepare-feedback": {
+        const finalRouteLabels = firstFinalRouteLabels(state);
+        const feedbackInput: FeedbackStageInput = createFeedbackStageInput(
+          state.labelFreeSnapshot!,
+          state.firstSnapshot!,
+          finalRouteLabels,
+          state.input.feedbackEnabled !== false
+            && finalRouteLabels.length === state.input.graph.nodes.length
+            && finalRouteLabels.some((label, index) => labelGeometryMoved(state.input.provisionalNodeLabels[index], label)),
+        );
+        state.feedbackApplied = feedbackInput.shouldRun;
+        reportVerificationDependency(state, "feedback", "feedback", feedbackInput, { shouldRun: feedbackInput.shouldRun });
+        state.phase = feedbackInput.shouldRun ? "initialize-feedback-route" : "finalize";
+        break;
+      }
+      case "initialize-feedback-route": {
+        state.passStartedAt.feedback = performance.now();
+        state.feedbackRoute = initializeAutomaticRouteSelection(verificationRouteInput(state, firstFinalRouteLabels(state), "feedback"));
+        state.phase = "feedback-route";
+        break;
+      }
+      case "feedback-route": {
+        kind = "work-unit";
+        const step = stepAutomaticRouteSelection(state.feedbackRoute!);
+        state.completedWorkUnits += 1;
+        if (step.done) {
+          const routes = completeAutomaticRouteSelection(state.feedbackRoute!);
+          const snapshot = createRouteSelectionSnapshot("feedback", routes);
+          reportVerificationDependency(state, "route-selection", "feedback", {
+            graph: state.input.graph,
+            positions: state.input.positions,
+            edgeCurveOffsets: state.input.edgeCurveOffsets,
+            selfLoopOverrides: state.input.selfLoopOverrides,
+            provisionalNodeLabels: firstFinalRouteLabels(state),
+            continuityNodeLabels: state.input.continuityNodeLabels,
+            previousContinuityNodeLabels: state.input.previousContinuityNodeLabels,
+            previousAutomaticRoutes: state.input.previousAutomaticRoutes,
+            draggedNodeId: state.input.draggedNodeId,
+            activeDraggedNodeId: state.input.activeDraggedNodeId,
+            preserveSafeIncidentPreviousRoute: state.input.preserveSafeIncidentPreviousRoute,
+            parallelBundleSpacing: state.input.parallelBundleSpacing,
+            parallelBundleMode: state.input.parallelBundleMode ?? "bundle",
+            routeDecisionPass: "feedback",
+            replayPrefix: undefined,
+          }, { routes: snapshot.routes });
+          state.phase = "initialize-feedback-relation-label";
+        }
+        break;
+      }
+      case "initialize-feedback-relation-label":
+        state.relationLabelStartedAt.feedback = performance.now();
+        state.feedbackRelationLabel = initializeAutomaticRelationLabelPlacement(verificationRelationLabelInput(state, completeAutomaticRouteSelection(state.feedbackRoute!), "feedback"));
+        state.phase = "feedback-relation-label";
+        break;
+      case "feedback-relation-label": {
+        kind = "work-unit";
+        const step = stepAutomaticRelationLabelPlacement(state.feedbackRelationLabel!);
+        state.completedWorkUnits += 1;
+        if (step.done) {
+          const labels = completeAutomaticRelationLabelPlacement(state.feedbackRelationLabel!);
+          reportVerificationDependency(state, "relation-label", "feedback", {
+            pass: "feedback",
+            routedEdges: completeAutomaticRouteSelection(state.feedbackRoute!),
+            nodes: state.nodes,
+            previousPlacements: state.input.previousRelationLabelPlacements,
+            manualAnchors: state.input.manualRelationLabelAnchors,
+            draggedNodeId: state.input.draggedNodeId,
+          }, { labels });
+          closeRelationLabelTiming(state, "feedback");
+          state.feedbackRelationLabels = labels;
+          state.phase = "initialize-feedback-node-label";
+        }
+        break;
+      }
+      case "initialize-feedback-node-label":
+        state.feedbackYieldingRoutes = deriveYieldingRoutesForPresentation(state.labelFreeSnapshot!.routes, completeAutomaticRouteSelection(state.feedbackRoute!));
+        state.nodeLabelStartedAt.feedback = performance.now();
+        state.feedbackNodeLabel = initializeAutomaticNodeLabelPlacement(verificationNodeLabelInput(state, completeAutomaticRouteSelection(state.feedbackRoute!), state.feedbackRelationLabels!, state.feedbackYieldingRoutes, "feedback"));
+        state.phase = "feedback-node-label";
+        break;
+      case "feedback-node-label": {
+        kind = "work-unit";
+        const step = stepAutomaticNodeLabelPlacement(state.feedbackNodeLabel!);
+        state.completedWorkUnits += 1;
+        if (step.done) {
+          const labels = completeAutomaticNodeLabelPlacement(state.feedbackNodeLabel!);
+          reportVerificationDependency(state, "node-label", "feedback", {
+            pass: "feedback",
+            nodes: state.input.graph.nodes,
+            positions: state.input.positions,
+            routedEdges: completeAutomaticRouteSelection(state.feedbackRoute!),
+            occupiedRelationLabels: state.feedbackRelationLabels,
+            previousPlacements: state.input.previousNodeLabelPlacements,
+            manualOffsets: state.input.manualNodeLabelOffsets,
+            activelyDraggedNodeId: state.input.activelyDraggedNodeId,
+            yieldingRoutes: state.feedbackYieldingRoutes,
+          }, { labels, yieldingRoutes: state.feedbackYieldingRoutes });
+          finishPresentationPass(state, "feedback", completeAutomaticRouteSelection(state.feedbackRoute!), state.feedbackRelationLabels!, labels, state.feedbackYieldingRoutes);
+          state.feedbackNodeLabels = labels;
+          state.phase = "finalize";
+        }
+        break;
+      }
+      case "finalize": {
+        kind = "finalize";
+        const snapshot = state.feedbackSnapshot ?? state.firstSnapshot;
+        if (!snapshot) throw new Error("presentation verification has no completed pass");
+        state.result = {
+          routedEdges: [...snapshot.route.routes],
+          relationLabels: new Map(snapshot.relationLabel.labels),
+          nodeLabels: new Map(snapshot.nodeLabel.labels),
+          feedbackApplied: state.feedbackApplied,
+        };
+        state.status = "completed";
+        state.phase = "completed";
+        break;
+      }
+      case "completed":
+        return state;
+    }
+  } catch (error) {
+    state.status = "verification-failed";
+    state.failureReason = error instanceof Error ? error.message : String(error);
+    state.result = null;
+  }
+  state.scheduledStepCount += 1;
+  const elapsedMs = performance.now() - startedAt;
+  if (kind === "work-unit") state.completedWorkUnits += 0;
+  else state.completedPhaseTransitions += 1;
+  state.steps.push({
+    phase,
+    kind,
+    elapsedMs,
+    completedWorkUnits: state.completedWorkUnits,
+    completedPhaseTransitions: state.completedPhaseTransitions,
+  });
+  return state;
+}
+
+/** Drains the verification accumulator without publishing an incomplete result. */
+export function completeAutomaticPresentationVerification(
+  state: AutomaticPresentationVerificationAccumulator,
+): BoundedAutomaticPresentation {
+  if (state.status !== "completed" || !state.result) {
+    throw new Error(`presentation verification is not complete: ${state.status}`);
+  }
+  return state.result;
+}
+
+export function runAutomaticPresentationVerification(
+  input: BoundedAutomaticPresentationInput,
+  options: { maxSteps?: number } = {},
+): AutomaticPresentationVerificationAccumulator {
+  const state = initializeAutomaticPresentationVerification(input);
+  const maxSteps = options.maxSteps ?? Number.POSITIVE_INFINITY;
+  while (state.status === "running" && state.scheduledStepCount < maxSteps) stepAutomaticPresentationVerification(state);
+  if (state.status === "running") state.status = "budget-exhausted";
+  return state;
 }
 
 /**
@@ -927,13 +1616,7 @@ export function deriveBoundedAutomaticPresentation({
       parallelBundleMode,
     }));
     reportDependency("route-selection", routeDecisionPass, routeStageInput, { routes: routeSnapshot.routes });
-    const routeById = new Map(labelFreeSnapshot.routes.map((route) => [route.id, route]));
-    const yieldingRoutes: RouteYieldPath[] = routeSnapshot.routes.flatMap((route) => {
-      const labelFreeRoute = routeById.get(route.id);
-      if (!labelFreeRoute || compareRouteGeometry(route.samples, labelFreeRoute.samples).equivalent) return [];
-      const deviation = routeDeviation(route.samples, labelFreeRoute.samples);
-      return deviation >= 12 ? [{ samples: labelFreeRoute.samples, deviation }] : [];
-    });
+    const yieldingRoutes = deriveYieldingRoutesForPresentation(labelFreeSnapshot.routes, routeSnapshot.routes);
     const relationLabelStartedAt = performance.now();
     const relationLabelStageInput = {
       pass: routeDecisionPass,

@@ -1,0 +1,143 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-AUTHORITATIVE-FULL-VERIFICATION-RESUMABLE-v1",
+  "generatedAt": "2026-09-14T07:56:32.177Z",
+  "browser": "Microsoft Edge 152",
+  "diagnosticOnly": true,
+  "runs": [
+    {
+      "id": "run-1-pre-cooperative-completion",
+      "source": "real-browser-full-state-machine",
+      "observations": {
+        "maxWorkUnitMs": { "canonical": 20.8, "dense": 37.1, "parallel": 37.7, "longLabel": 83.9, "selfLoop": 24.8 },
+        "maxScheduledSliceMs": { "canonical": 20.8, "dense": 53.4, "parallel": 37.8, "longLabel": 83.9, "selfLoop": 24.8 },
+        "totalVerificationMs": { "canonical": 306.9, "dense": 2596.5, "parallel": 598.8, "longLabel": 373.9, "selfLoop": 449.0 },
+        "allCasesSemanticAndTraceEquivalent": true,
+        "allCasesCompleted": true,
+        "allCancellationProbesNoPartialResult": true
+      }
+    },
+    {
+      "id": "run-2-pre-cooperative-completion",
+      "source": "real-browser-full-state-machine",
+      "observations": {
+        "maxWorkUnitMs": { "canonical": 19.0, "dense": 28.0, "parallel": 48.1, "longLabel": 21.6, "selfLoop": 10.4 },
+        "maxScheduledSliceMs": { "canonical": 19.0, "dense": 32.8, "parallel": 48.1, "longLabel": 21.6, "selfLoop": 18.4 },
+        "totalVerificationMs": { "canonical": 331.3, "dense": 1712.0, "parallel": 690.3, "longLabel": 188.8, "selfLoop": 357.6 },
+        "allCasesSemanticAndTraceEquivalent": true,
+        "allCasesCompleted": true,
+        "allCancellationProbesNoPartialResult": true
+      }
+    },
+    {
+      "id": "run-3-cooperative-completion",
+      "source": "real-browser-full-state-machine",
+      "cases": [
+        {
+          "id": "canonical-lighthouse-en",
+          "category": "canonical",
+          "nodes": 10,
+          "edges": 14,
+          "status": "completed",
+          "semanticEquivalent": true,
+          "traceEquivalent": true,
+          "maxWorkUnitMs": 28.0,
+          "maxScheduledSliceMs": 28.0,
+          "totalVerificationMs": 486.9,
+          "scheduledStepCount": 98,
+          "completedWorkUnits": 90,
+          "completedPhaseTransitions": 8,
+          "partialResultExposed": false,
+          "cooperativeCancel": { "status": "cancelled", "completedWorkUnits": 1, "completedPhaseTransitions": 0, "maxSchedulerStepMs": 1.8, "schedulerWorkMs": 1.8, "schedulerOverheadMs": 22.7, "cancelDeliveryMs": 5.0, "elapsedMs": 24.5, "partialProductResultExposed": false },
+          "cooperativeComplete": { "status": "completed", "completedWorkUnits": 90, "completedPhaseTransitions": 8, "maxSchedulerStepMs": 28.4, "schedulerWorkMs": 441.3, "schedulerOverheadMs": 1041.0, "elapsedMs": 1482.3, "partialProductResultExposed": false }
+        },
+        {
+          "id": "dense-k7-7",
+          "category": "dense",
+          "nodes": 14,
+          "edges": 49,
+          "status": "completed",
+          "semanticEquivalent": true,
+          "traceEquivalent": true,
+          "maxWorkUnitMs": 34.0,
+          "maxScheduledSliceMs": 40.7,
+          "totalVerificationMs": 2496.9,
+          "scheduledStepCount": 281,
+          "completedWorkUnits": 273,
+          "completedPhaseTransitions": 8,
+          "partialResultExposed": false,
+          "cooperativeCancel": { "status": "cancelled", "completedWorkUnits": 1, "completedPhaseTransitions": 0, "maxSchedulerStepMs": 2.6, "schedulerWorkMs": 2.6, "schedulerOverheadMs": 32.8, "cancelDeliveryMs": 17.6, "elapsedMs": 35.4, "partialProductResultExposed": false },
+          "cooperativeComplete": { "status": "completed", "completedWorkUnits": 273, "completedPhaseTransitions": 8, "maxSchedulerStepMs": 49.7, "schedulerWorkMs": 2373.3, "schedulerOverheadMs": 3229.6, "elapsedMs": 5602.9, "partialProductResultExposed": false }
+        },
+        {
+          "id": "parallel-pressure",
+          "category": "parallel",
+          "nodes": 8,
+          "edges": 16,
+          "status": "completed",
+          "semanticEquivalent": true,
+          "traceEquivalent": true,
+          "maxWorkUnitMs": 15.3,
+          "maxScheduledSliceMs": 15.3,
+          "totalVerificationMs": 412.2,
+          "scheduledStepCount": 104,
+          "completedWorkUnits": 96,
+          "completedPhaseTransitions": 8,
+          "partialResultExposed": false,
+          "cooperativeCancel": { "status": "cancelled", "completedWorkUnits": 1, "completedPhaseTransitions": 0, "maxSchedulerStepMs": 0.4, "schedulerWorkMs": 0.4, "schedulerOverheadMs": 26.5, "cancelDeliveryMs": 14.8, "elapsedMs": 26.9, "partialProductResultExposed": false },
+          "cooperativeComplete": { "status": "completed", "completedWorkUnits": 96, "completedPhaseTransitions": 8, "maxSchedulerStepMs": 37.2, "schedulerWorkMs": 636.6, "schedulerOverheadMs": 1282.2, "elapsedMs": 1918.8, "partialProductResultExposed": false }
+        },
+        {
+          "id": "long-label-pressure",
+          "category": "label-heavy",
+          "nodes": 10,
+          "edges": 10,
+          "status": "completed",
+          "semanticEquivalent": true,
+          "traceEquivalent": true,
+          "maxWorkUnitMs": 5.2,
+          "maxScheduledSliceMs": 5.2,
+          "totalVerificationMs": 121.9,
+          "scheduledStepCount": 78,
+          "completedWorkUnits": 70,
+          "completedPhaseTransitions": 8,
+          "partialResultExposed": false,
+          "cooperativeCancel": { "status": "cancelled", "completedWorkUnits": 1, "completedPhaseTransitions": 0, "maxSchedulerStepMs": 3.7, "schedulerWorkMs": 3.7, "schedulerOverheadMs": 20.9, "cancelDeliveryMs": 11.2, "elapsedMs": 24.6, "partialProductResultExposed": false },
+          "cooperativeComplete": { "status": "completed", "completedWorkUnits": 70, "completedPhaseTransitions": 8, "maxSchedulerStepMs": 12.2, "schedulerWorkMs": 233.1, "schedulerOverheadMs": 987.9, "elapsedMs": 1221.0, "partialProductResultExposed": false }
+        },
+        {
+          "id": "self-loop-pressure",
+          "category": "self-loop-heavy",
+          "nodes": 10,
+          "edges": 19,
+          "status": "completed",
+          "semanticEquivalent": true,
+          "traceEquivalent": true,
+          "maxWorkUnitMs": 11.0,
+          "maxScheduledSliceMs": 11.0,
+          "totalVerificationMs": 288.4,
+          "scheduledStepCount": 123,
+          "completedWorkUnits": 115,
+          "completedPhaseTransitions": 8,
+          "partialResultExposed": false,
+          "cooperativeCancel": { "status": "cancelled", "completedWorkUnits": 1, "completedPhaseTransitions": 0, "maxSchedulerStepMs": 4.8, "schedulerWorkMs": 4.8, "schedulerOverheadMs": 25.0, "cancelDeliveryMs": 11.4, "elapsedMs": 29.8, "partialProductResultExposed": false },
+          "cooperativeComplete": { "status": "completed", "completedWorkUnits": 115, "completedPhaseTransitions": 8, "maxSchedulerStepMs": 23.3, "schedulerWorkMs": 473.4, "schedulerOverheadMs": 1497.2, "elapsedMs": 1970.6, "partialProductResultExposed": false }
+        }
+      ]
+    }
+  ],
+  "disposition": {
+    "resumableSeam": "ESTABLISHED",
+    "exactEquivalence": "ESTABLISHED",
+    "cancellationFailClosed": "ESTABLISHED",
+    "preferred16msSlice": "NOT_UNIFORM",
+    "diagnostic50msCeiling": "NOT_ESTABLISHED_PRODUCT_WIDE",
+    "productWideBudget": "NOT_ESTABLISHED",
+    "reason": "Earlier browser runs observed scheduled slices above 50ms and the latest dense cooperative completion reached 49.7ms per scheduler step with 3.23s scheduler overhead and 5.60s elapsed wall time.",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "productionProvider": "NOT ESTABLISHED",
+    "adaptiveCascade": "INACTIVE",
+    "humanReview": "NOT READY",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}

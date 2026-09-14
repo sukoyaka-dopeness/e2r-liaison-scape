@@ -1,0 +1,65 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-AUTHORITATIVE-SCHEDULER-POLICY-STUDY-v1",
+  "generatedAt": "2026-09-14T08:17:57.544Z",
+  "browser": "Microsoft Edge 152",
+  "diagnosticOnly": true,
+  "controls": [
+    "canonical-lighthouse-en",
+    "dense-k7-7",
+    "parallel-pressure",
+    "long-label-pressure",
+    "self-loop-pressure"
+  ],
+  "policies": {
+    "one-unit": {
+      "kind": "work-count",
+      "maxUnitsPerTurn": 1,
+      "run1": { "exactAll": true, "allCompleted": true, "noPartialCancellation": true, "runtimeMaxTurnMs": 3.0, "runtimeComputeMs": [12.3, 149.6], "runtimeTurns": [78, 281], "instrumentedMaxTurnMs": 4.1, "maxPhaseTransitionMs": 4.1, "instrumentationDeltaMs": [10.7, 60.1], "completeMaxSchedulerStepMs": 8.2, "completeMaxElapsedMs": 1657.3, "completeMaxOverheadMs": 1348.8, "cancelMaxWorkUnits": 1, "cancelMaxDeliveryMs": 3.1, "cancelMaxElapsedMs": 12.1 },
+      "run2": { "exactAll": true, "allCompleted": true, "noPartialCancellation": true, "runtimeMaxTurnMs": 3.0, "runtimeComputeMs": [11.6, 150.3], "runtimeTurns": [78, 281], "instrumentedMaxTurnMs": 4.1, "maxPhaseTransitionMs": 4.1, "instrumentationDeltaMs": [7.4, 55.6], "completeMaxSchedulerStepMs": 10.6, "completeMaxElapsedMs": 1660.6, "completeMaxOverheadMs": 1333.9, "cancelMaxWorkUnits": 1, "cancelMaxDeliveryMs": 4.5, "cancelMaxElapsedMs": 13.5 }
+    },
+    "fixed-two": {
+      "kind": "work-count",
+      "maxUnitsPerTurn": 2,
+      "run1": { "exactAll": true, "allCompleted": true, "noPartialCancellation": true, "runtimeMaxTurnMs": 4.0, "runtimeComputeMs": [11.2, 155.6], "runtimeTurns": [39, 141], "instrumentedMaxTurnMs": 5.7, "maxPhaseTransitionMs": 4.2, "instrumentationDeltaMs": [7.6, 48.3], "completeMaxSchedulerStepMs": 7.5, "completeMaxElapsedMs": 945.9, "completeMaxOverheadMs": 679.4, "cancelMaxWorkUnits": 2, "cancelMaxDeliveryMs": 2.1, "cancelMaxElapsedMs": 10.8 },
+      "run2": { "exactAll": true, "allCompleted": true, "noPartialCancellation": true, "runtimeMaxTurnMs": 3.4, "runtimeComputeMs": [12.4, 151.7], "runtimeTurns": [39, 141], "instrumentedMaxTurnMs": 5.6, "maxPhaseTransitionMs": 4.0, "instrumentationDeltaMs": [6.3, 56.4], "completeMaxSchedulerStepMs": 6.3, "completeMaxElapsedMs": 879.8, "completeMaxOverheadMs": 670.8, "cancelMaxWorkUnits": 2, "cancelMaxDeliveryMs": 2.1, "cancelMaxElapsedMs": 10.9 }
+    },
+    "elapsed-eight-ms": {
+      "kind": "soft-elapsed-quota",
+      "quotaMs": 8,
+      "run1": { "exactAll": true, "allCompleted": true, "noPartialCancellation": true, "runtimeMaxTurnMs": 10.2, "runtimeComputeMs": [11.5, 185.0], "runtimeTurns": [2, 22], "instrumentedMaxTurnMs": 9.6, "maxPhaseTransitionMs": 3.9, "instrumentationDeltaMs": [7.2, 20.5], "completeMaxSchedulerStepMs": 9.4, "completeMaxElapsedMs": 231.5, "completeMaxOverheadMs": 87.0, "cancelMaxWorkUnits": 46, "cancelMaxDeliveryMs": 5.0, "cancelMaxElapsedMs": 18.6 },
+      "run2": { "exactAll": true, "allCompleted": true, "noPartialCancellation": true, "runtimeMaxTurnMs": 11.0, "runtimeComputeMs": [11.6, 150.1], "runtimeTurns": [2, 18], "instrumentedMaxTurnMs": 9.1, "maxPhaseTransitionMs": 4.3, "instrumentationDeltaMs": [9.3, 60.5], "completeMaxSchedulerStepMs": 9.0, "completeMaxElapsedMs": 232.3, "completeMaxOverheadMs": 86.5, "cancelMaxWorkUnits": 45, "cancelMaxDeliveryMs": 5.6, "cancelMaxElapsedMs": 18.3 }
+    },
+    "hybrid-eight-ms-two-units": {
+      "kind": "soft-elapsed-quota-plus-work-cap",
+      "quotaMs": 8,
+      "maxUnitsPerTurn": 2,
+      "run1": { "exactAll": true, "allCompleted": true, "noPartialCancellation": true, "runtimeMaxTurnMs": 3.8, "runtimeComputeMs": [11.4, 148.1], "runtimeTurns": [39, 141], "instrumentedMaxTurnMs": 5.6, "maxPhaseTransitionMs": 4.7, "instrumentationDeltaMs": [5.2, 49.7], "completeMaxSchedulerStepMs": 7.1, "completeMaxElapsedMs": 930.4, "completeMaxOverheadMs": 668.9, "cancelMaxWorkUnits": 2, "cancelMaxDeliveryMs": 4.0, "cancelMaxElapsedMs": 12.1 },
+      "run2": { "exactAll": true, "allCompleted": true, "noPartialCancellation": true, "runtimeMaxTurnMs": 3.5, "runtimeComputeMs": [11.5, 145.4], "runtimeTurns": [39, 141], "instrumentedMaxTurnMs": 5.7, "maxPhaseTransitionMs": 4.3, "instrumentationDeltaMs": [4.5, 49.1], "completeMaxSchedulerStepMs": 6.0, "completeMaxElapsedMs": 863.8, "completeMaxOverheadMs": 663.7, "cancelMaxWorkUnits": 2, "cancelMaxDeliveryMs": 4.0, "cancelMaxElapsedMs": 12.1 }
+    }
+  },
+  "previousFullVerificationEvidence": {
+    "firstRunScheduledSliceOutliersMs": [53.4, 83.9],
+    "latestDenseCooperativeMaxSchedulerStepMs": 49.7,
+    "latestDenseCooperativeElapsedMs": 5602.9,
+    "latestDenseSchedulerOverheadMs": 3229.6
+  },
+  "disposition": {
+    "exactPolicyEquivalence": "ESTABLISHED_ON_FIVE_CONTROLS",
+    "softQuotaPolicy": "ELAPSED_EIGHT_MS_IS_PROMISING_DIAGNOSTIC_POLICY",
+    "turnReduction": "ESTABLISHED_ON_OBSERVED_RUNS",
+    "wallAndOverheadReduction": "ESTABLISHED_ON_OBSERVED_RUNS",
+    "cancellationFailClosed": "ESTABLISHED",
+    "preferred16msSlice": "NOT_PRODUCT_WIDE",
+    "hard50msCeiling": "NOT_ESTABLISHED_PRODUCT_WIDE",
+    "productWideVerificationBudget": "NOT_ESTABLISHED",
+    "mainThreadProductionCandidate": "NOT_ESTABLISHED",
+    "workerArchitecture": "NOT_DECIDED",
+    "reason": "The tested soft quota improves current observed wall/overhead, but it can overshoot its quota and cannot bound an individual current work unit; prior browser runs remain above 50ms.",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "productionProvider": "NOT ESTABLISHED",
+    "adaptiveCascade": "INACTIVE",
+    "humanReview": "NOT READY",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}

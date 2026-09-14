@@ -1,0 +1,55 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-AUTHORITATIVE-VERIFICATION-INTERRUPTIBILITY-v1",
+  "generatedAt": "2026-09-14T06:29:29.863Z",
+  "diagnosticOnly": true,
+  "executionModel": "coarse stage state machine; each current source whole-pass call is measured as one non-interruptible step",
+  "cases": [
+    {
+      "id": "canonical-lighthouse-en",
+      "status": "completed",
+      "stageCount": 8,
+      "maxStageMs": 86.8,
+      "overBudgetStages": ["label-free-route", "first-route", "feedback-route"],
+      "stagesMs": {"label-free-route": 79.5, "first-route": 86.8, "first-relation-label": 17.9, "first-node-label": 37.1, "feedback-route": 71.7, "feedback-relation-label": 10.5, "feedback-node-label": 32.4},
+      "cooperative": {"status": "cancelled", "completedStages": 1, "cancelDeliveryMs": 3.6, "elapsedMs": 123.2, "partialResultExposed": false}
+    },
+    {
+      "id": "dense-k7-7",
+      "status": "completed",
+      "stageCount": 8,
+      "maxStageMs": 485.1,
+      "overBudgetStages": ["label-free-route", "first-route", "first-relation-label", "first-node-label", "feedback-route", "feedback-relation-label", "feedback-node-label"],
+      "stagesMs": {"label-free-route": 337.5, "first-route": 434, "first-relation-label": 103.1, "first-node-label": 119.4, "feedback-route": 485.1, "feedback-relation-label": 72, "feedback-node-label": 63.7},
+      "cooperative": {"status": "cancelled", "completedStages": 2, "cancelDeliveryMs": 2.4, "elapsedMs": 729.4, "partialResultExposed": false}
+    },
+    {
+      "id": "parallel-pressure",
+      "status": "completed",
+      "stageCount": 8,
+      "maxStageMs": 144.2,
+      "overBudgetStages": ["label-free-route", "first-route", "feedback-route"],
+      "stagesMs": {"label-free-route": 95.8, "first-route": 119.1, "first-relation-label": 16.7, "first-node-label": 19.2, "feedback-route": 144.2, "feedback-relation-label": 10.3, "feedback-node-label": 18.9},
+      "cooperative": {"status": "cancelled", "completedStages": 1, "cancelDeliveryMs": 10.6, "elapsedMs": 195.4, "partialResultExposed": false}
+    },
+    {
+      "id": "long-label-pressure",
+      "status": "completed",
+      "stageCount": 8,
+      "maxStageMs": 43.7,
+      "overBudgetStages": [],
+      "stagesMs": {"label-free-route": 3.6, "first-route": 26.7, "first-relation-label": 2.9, "first-node-label": 24.4, "feedback-route": 43.7, "feedback-relation-label": 5.6, "feedback-node-label": 21.2},
+      "cooperative": {"status": "cancelled", "completedStages": 1, "cancelDeliveryMs": 15.4, "elapsedMs": 106, "partialResultExposed": false}
+    },
+    {
+      "id": "self-loop-pressure",
+      "status": "completed",
+      "stageCount": 8,
+      "maxStageMs": 123,
+      "overBudgetStages": ["label-free-route", "first-route", "feedback-route"],
+      "stagesMs": {"label-free-route": 84.7, "first-route": 123, "first-relation-label": 19.1, "first-node-label": 23.2, "feedback-route": 66.3, "feedback-relation-label": 13.4, "feedback-node-label": 14.1},
+      "cooperative": {"status": "cancelled", "completedStages": 1, "cancelDeliveryMs": 15.8, "elapsedMs": 63.7, "partialResultExposed": false}
+    }
+  ],
+  "budgetPolicyProbe": {"targetMs": 16, "diagnosticFailureThresholdMs": 50, "allMeasuredStagesRemainWholePass": true},
+  "status": {"classification": "PARTIAL INTERRUPTIBILITY ONLY", "qualitySolver": "HOLD / NOT ESTABLISHED", "productIntegration": "HOLD", "humanReview": "NOT READY"}
+}

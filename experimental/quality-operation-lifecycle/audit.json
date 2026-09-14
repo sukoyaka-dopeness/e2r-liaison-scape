@@ -1,0 +1,299 @@
+{
+  "contractId": "EXPLICIT-HIGH-QUALITY-AUTO-LAYOUT-OPERATION-LIFECYCLE-v1",
+  "diagnosticOnly": true,
+  "productionIntegration": "HOLD",
+  "qualitySolver": "HOLD / NOT ESTABLISHED",
+  "humanReview": "NOT READY",
+  "focusedTestCount": 18,
+  "lifecycleContract": {
+    "statuses": [
+      "idle",
+      "running",
+      "cancel-requested",
+      "candidate-ready",
+      "previewing",
+      "accepted",
+      "rejected",
+      "cancelled",
+      "stale",
+      "failed"
+    ],
+    "invalidatingReasons": [
+      "node-move",
+      "manual-relation-route",
+      "manual-self-loop",
+      "manual-relation-label",
+      "manual-node-label",
+      "dataset-mutation",
+      "dataset-replacement",
+      "coordinate-load",
+      "coordinate-reset",
+      "another-auto-layout",
+      "coordinates-saved",
+      "locale-change"
+    ],
+    "revertInvalidatingReasons": [
+      "node-move",
+      "another-auto-layout",
+      "dataset-replacement",
+      "dataset-mutation",
+      "coordinate-load",
+      "coordinate-reset",
+      "coordinates-saved"
+    ],
+    "candidateOwnership": "candidate-only-until-explicit-accept",
+    "persistence": "accept-and-revert-return-session plans; they never mutate Dataset or persist automatically",
+    "authority": "proposal owns Node geometry only; Product routing, endpoint-plan, labels, Self-loop, and viewport remain external authorities",
+    "execution": "job envelope is independent of sync, cooperative async, or Worker transport"
+  },
+  "scenarios": {
+    "start": {
+      "status": "running",
+      "sessionMutation": false,
+      "datasetMutation": false
+    },
+    "candidate": {
+      "status": "candidate-ready",
+      "sessionMutation": false,
+      "datasetMutation": false
+    },
+    "preview": {
+      "status": "previewing",
+      "currentSessionMutation": false,
+      "presentationAuthority": "Product-derived preview only"
+    },
+    "accept": {
+      "status": "accepted",
+      "commit": {
+        "kind": "accept-quality-layout",
+        "operationId": 1,
+        "positions": {
+          "a": {
+            "x": 20,
+            "y": 30
+          },
+          "b": {
+            "x": 220,
+            "y": 30
+          }
+        },
+        "adoptedEntityIds": [
+          "a",
+          "b"
+        ],
+        "coordinateOwnership": {
+          "a": "adopted",
+          "b": "adopted"
+        },
+        "coordinatesDirty": true,
+        "persistDataset": false,
+        "preserveManualAuthorities": true,
+        "acceptedSnapshot": {
+          "datasetIdentity": "dataset-1",
+          "datasetRevision": 4,
+          "graphFingerprint": "graph-a",
+          "sessionPositions": {
+            "a": {
+              "x": 20,
+              "y": 30
+            },
+            "b": {
+              "x": 220,
+              "y": 30
+            }
+          },
+          "storedCoordinateFingerprint": "stored-a",
+          "coordinatesDirty": true,
+          "adoptedCoordinateFingerprint": "quality-operation:1",
+          "coordinateOwnership": {
+            "a": "adopted",
+            "b": "adopted"
+          },
+          "manualRelationRouteFingerprint": "routes-a",
+          "manualSelfLoopFingerprint": "loops-a",
+          "manualRelationLabelFingerprint": "relation-labels-a",
+          "manualNodeLabelFingerprint": "node-labels-a",
+          "locale": "en",
+          "algorithmVersion": "quality-contract-fake-v1",
+          "budgetPolicy": {
+            "maxIterations": 10,
+            "maxMs": 100
+          },
+          "viewportFingerprint": "viewport-a",
+          "readOnlySelectionFingerprint": "selection-a"
+        }
+      }
+    },
+    "revert": {
+      "status": "revert-plan",
+      "plan": {
+        "kind": "revert-quality-layout",
+        "operationId": 1,
+        "positions": {
+          "a": {
+            "x": 0,
+            "y": 0
+          },
+          "b": {
+            "x": 200,
+            "y": 0
+          }
+        },
+        "coordinatesDirty": false,
+        "coordinateOwnership": {
+          "a": "stored",
+          "b": "derived"
+        },
+        "adoptedEntityIds": [],
+        "persistDataset": false,
+        "preserveManualAuthorities": true
+      }
+    },
+    "presentationEditRevert": {
+      "status": "allowed"
+    },
+    "cancellationRace": {
+      "afterRequest": "cancel-requested",
+      "afterLateCompletion": {
+        "operationId": 1,
+        "status": "cancelled",
+        "reason": "cancel-requested"
+      }
+    },
+    "oldResultAfterNewOperation": {
+      "activeOperationId": 2,
+      "oldResultOutcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "old-operation-result"
+      }
+    }
+  },
+  "invalidationMatrix": [
+    {
+      "reason": "node-move",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "node-move"
+      }
+    },
+    {
+      "reason": "manual-relation-route",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "manual-relation-route"
+      }
+    },
+    {
+      "reason": "manual-self-loop",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "manual-self-loop"
+      }
+    },
+    {
+      "reason": "manual-relation-label",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "manual-relation-label"
+      }
+    },
+    {
+      "reason": "manual-node-label",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "manual-node-label"
+      }
+    },
+    {
+      "reason": "dataset-mutation",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "dataset-mutation"
+      }
+    },
+    {
+      "reason": "dataset-replacement",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "dataset-replacement"
+      }
+    },
+    {
+      "reason": "coordinate-load",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "coordinate-load"
+      }
+    },
+    {
+      "reason": "coordinate-reset",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "coordinate-reset"
+      }
+    },
+    {
+      "reason": "another-auto-layout",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "another-auto-layout"
+      }
+    },
+    {
+      "reason": "coordinates-saved",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "coordinates-saved"
+      }
+    },
+    {
+      "reason": "locale-change",
+      "activeAfterChange": null,
+      "outcome": {
+        "operationId": 1,
+        "status": "stale",
+        "reason": "locale-change"
+      }
+    }
+  ],
+  "explicitNonInvalidatingInputs": [
+    "viewport-change (clears only a derived preview)",
+    "read-only-selection"
+  ],
+  "determinism": {
+    "sameSnapshotAlgorithmVersionBudget": "same snapshot identity and job envelope contract",
+    "transport": [
+      "synchronous fake",
+      "cooperative async",
+      "Worker-shaped envelope"
+    ]
+  },
+  "identitySeparation": {
+    "activeJob": "full semantic identity, including presentation inputs",
+    "coordinateRevert": "Dataset/graph/coordinate-session/ownership identity; excludes manual presentation inputs and locale",
+    "manualPresentationEditAfterAccept": "revert remains valid"
+  }
+}
