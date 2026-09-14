@@ -395,7 +395,7 @@ const fullCostBounded = full.maxExtraEvaluations <= 12 && full.reductionRate >= 
 let classification;
 if (fullClosed && fullCostBounded) classification = "A. BOUNDARY CLASS COMPLETION ESTABLISHED WITH ACCEPTABLE COST";
 else if (fullClosed) classification = "B. QUALITY CLOSED / COST ENVELOPE TOO HIGH";
-else if (cappedClosed !== null) classification = "C. CAPPED COMPLETION PROMISING BUT NOT CLOSED";
+  else if (cappedClosed !== null) classification = "C. CAPPED COMPLETION ESTABLISHED / FULL COMPLETION OR GENERALIZATION OPEN";
 else if (policies["full-boundary"].aggregate.boundaryTriggeredOperations > 0) classification = "D. BOUNDARY CLASS TRIGGER INSUFFICIENT";
 else classification = "E. MULTI-STAGE SELECTOR ARCHITECTURE NOT JUSTIFIED";
 const artifact = {

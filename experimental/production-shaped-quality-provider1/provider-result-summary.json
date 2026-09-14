@@ -1,0 +1,2984 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCTION-SHAPED-QUALITY-PROVIDER-EXECUTION-v1",
+  "diagnosticOnly": true,
+  "sourceBoundary": "The seam owns proposal execution only. Existing candidate families are retained; current Product-authoritative verification and final selection remain the authority. No App.tsx, Product default, Dataset, persistence, routing, labels, endpoint-plan, Parallel / Incident, Self-loop, or viewport integration is performed.",
+  "candidateSource": {
+    "selectedComposition": [
+      "structural-native-v3",
+      "frontier-adaptive-12"
+    ],
+    "reason": "full boundary completion was the only tested policy that closed both old and independent controls; no individual family is adopted as a production solver",
+    "generationSource": "existing bounded-screening candidate families",
+    "generationWallMs": 92437.83290000001,
+    "generationEvaluationCoupling": "existing diagnostic candidate harness remains coupled internally; provider seam does not relabel this as pure generation latency"
+  },
+  "execution": {
+    "phases": [
+      "candidate-generation",
+      "cheap-screen",
+      "product-verification",
+      "final-selection"
+    ],
+    "normalK": 4,
+    "boundaryCompletion": "full outside-member completion",
+    "transport": [
+      "synchronous",
+      "cooperative main-thread",
+      "Worker-shaped envelope"
+    ],
+    "authority": "candidate geometry is proposal-only; current Product presentation remains authoritative for verification and selection"
+  },
+  "aggregate": {
+    "operationCount": 34,
+    "completed": 34,
+    "failClosed": 0,
+    "providerProductEvaluations": 182,
+    "candidateGenerationPhaseMs": 8.582700000013574,
+    "cheapScreenPhaseMs": 14.757499999919673,
+    "verificationPhaseMs": 58430.15559999982,
+    "selectionPhaseMs": 1.703599999906146
+  },
+  "results": [
+    {
+      "fixture": "lighthouse-en",
+      "fixtureFamily": "canonical-mixed-self-loop",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "archive": {
+              "x": -242.85907469679805,
+              "y": -100.43052317185794
+            },
+            "authority": {
+              "x": -150.09516263897083,
+              "y": 262.9305231718578
+            },
+            "beacon": {
+              "x": 0,
+              "y": 325
+            },
+            "clara": {
+              "x": 242.8590746967981,
+              "y": -100.43052317185787
+            },
+            "daniel": {
+              "x": 150.0951626389708,
+              "y": -262.9305231718578
+            },
+            "elias": {
+              "x": 3.127223076394133e-14,
+              "y": -325
+            },
+            "lighthouse": {
+              "x": -242.8590746967981,
+              "y": 100.43052317185783
+            },
+            "maya": {
+              "x": 150.09516263897078,
+              "y": 262.9305231718579
+            },
+            "sofia": {
+              "x": -150.09516263897075,
+              "y": -262.9305231718579
+            },
+            "thomas": {
+              "x": 242.85907469679805,
+              "y": 100.43052317185791
+            }
+          },
+          "family": "joint-constrained-crossing-ring-rotated-balanced",
+          "fingerprint": "1da623b37cd48030",
+          "product": {
+            "score": 54214.108564991235,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.43137254901960786
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.4995000000053551,
+        "cheap-screen": 0.3657999999995809,
+        "product-verification": 777.3213000000105,
+        "final-selection": 0.16529999999329448
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "lighthouse-en",
+      "fixtureFamily": "canonical-mixed-self-loop",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "sofia": {
+              "x": 316.5262810152095,
+              "y": 0
+            },
+            "archive": {
+              "x": 502.57576095893273,
+              "y": 46.500877313542105
+            },
+            "clara": {
+              "x": 617.5606631533955,
+              "y": 168.24175462708422
+            },
+            "lighthouse": {
+              "x": 617.5606631533955,
+              "y": 318.72175462708424
+            },
+            "authority": {
+              "x": 502.57576095893273,
+              "y": 440.46263194062635
+            },
+            "beacon": {
+              "x": 316.5262810152095,
+              "y": 486.96350925416846
+            },
+            "maya": {
+              "x": 130.47680107148636,
+              "y": 440.46263194062635
+            },
+            "thomas": {
+              "x": 15.491898877023573,
+              "y": 318.72175462708424
+            },
+            "daniel": {
+              "x": 15.491898877023516,
+              "y": 168.24175462708425
+            },
+            "elias": {
+              "x": 130.4768010714863,
+              "y": 46.500877313542105
+            }
+          },
+          "family": "structural-adaptive-frontier-9-circular-order",
+          "fingerprint": "778480610c1b34f8",
+          "product": {
+            "score": 71619.2327215565,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.5590206879888203
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.22569999999541324,
+        "cheap-screen": 0.1371999999973923,
+        "product-verification": 827.6896000000124,
+        "final-selection": 0.05920000000332948
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "lighthouse-en",
+      "fixtureFamily": "canonical-mixed-self-loop",
+      "arm": "structural-native-discrete",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "archive": {
+              "x": -51,
+              "y": -136
+            },
+            "authority": {
+              "x": 289,
+              "y": -136
+            },
+            "beacon": {
+              "x": 289,
+              "y": 34
+            },
+            "clara": {
+              "x": -51,
+              "y": 34
+            },
+            "daniel": {
+              "x": -221,
+              "y": 204
+            },
+            "elias": {
+              "x": -221,
+              "y": 34
+            },
+            "lighthouse": {
+              "x": 119,
+              "y": -136
+            },
+            "maya": {
+              "x": 119,
+              "y": 34
+            },
+            "sofia": {
+              "x": -221,
+              "y": -136
+            },
+            "thomas": {
+              "x": -51,
+              "y": 204
+            }
+          },
+          "family": "discrete-crossing-ring-wide",
+          "fingerprint": "24453e010b6f75f2",
+          "product": {
+            "score": 113478.3156810277,
+            "crossings": 0,
+            "labelRouteHits": 1,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7623762376237624
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.1972000000096159,
+        "cheap-screen": 0.18519999999261927,
+        "product-verification": 862.162799999991,
+        "final-selection": 0.054700000007869676
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "lighthouse-ja",
+      "fixtureFamily": "canonical-mixed-self-loop-label",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "archive": {
+              "x": -242.85907469679805,
+              "y": -100.43052317185794
+            },
+            "authority": {
+              "x": -150.09516263897083,
+              "y": 262.9305231718578
+            },
+            "beacon": {
+              "x": 0,
+              "y": 325
+            },
+            "clara": {
+              "x": 242.8590746967981,
+              "y": -100.43052317185787
+            },
+            "daniel": {
+              "x": 150.0951626389708,
+              "y": -262.9305231718578
+            },
+            "elias": {
+              "x": 3.127223076394133e-14,
+              "y": -325
+            },
+            "lighthouse": {
+              "x": -242.8590746967981,
+              "y": 100.43052317185783
+            },
+            "maya": {
+              "x": 150.09516263897078,
+              "y": 262.9305231718579
+            },
+            "sofia": {
+              "x": -150.09516263897075,
+              "y": -262.9305231718579
+            },
+            "thomas": {
+              "x": 242.85907469679805,
+              "y": 100.43052317185791
+            }
+          },
+          "family": "joint-constrained-crossing-ring-rotated-balanced",
+          "fingerprint": "1da623b37cd48030",
+          "product": {
+            "score": 35543.46971355261,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.43137254901960786
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.19319999999424908,
+        "cheap-screen": 0.1584000000002561,
+        "product-verification": 792.7104000000108,
+        "final-selection": 0.045700000002398156
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "lighthouse-ja",
+      "fixtureFamily": "canonical-mixed-self-loop-label",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "sofia": {
+              "x": 316.5262810152095,
+              "y": 0
+            },
+            "archive": {
+              "x": 502.57576095893273,
+              "y": 46.500877313542105
+            },
+            "clara": {
+              "x": 617.5606631533955,
+              "y": 168.24175462708422
+            },
+            "lighthouse": {
+              "x": 617.5606631533955,
+              "y": 318.72175462708424
+            },
+            "authority": {
+              "x": 502.57576095893273,
+              "y": 440.46263194062635
+            },
+            "beacon": {
+              "x": 316.5262810152095,
+              "y": 486.96350925416846
+            },
+            "maya": {
+              "x": 130.47680107148636,
+              "y": 440.46263194062635
+            },
+            "thomas": {
+              "x": 15.491898877023573,
+              "y": 318.72175462708424
+            },
+            "daniel": {
+              "x": 15.491898877023516,
+              "y": 168.24175462708425
+            },
+            "elias": {
+              "x": 130.4768010714863,
+              "y": 46.500877313542105
+            }
+          },
+          "family": "structural-adaptive-frontier-9-circular-order",
+          "fingerprint": "778480610c1b34f8",
+          "product": {
+            "score": 37435.43357568874,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.5590206879888203
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.1926999999996042,
+        "cheap-screen": 0.12049999998998828,
+        "product-verification": 792.2895999999746,
+        "final-selection": 0.055099999997764826
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "apollo-en",
+      "fixtureFamily": "canonical-mixed",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "aldrin": {
+              "x": 189.12407797507544,
+              "y": -313.8356477652804
+            },
+            "armstrong": {
+              "x": 44.64719276786808,
+              "y": -325
+            },
+            "collins": {
+              "x": 231.43300552976874,
+              "y": 174.96366293943868
+            },
+            "columbia": {
+              "x": -24.869329355461367,
+              "y": 109.56220510592662
+            },
+            "eagle": {
+              "x": -65.44050669581672,
+              "y": -179.55619965091415
+            },
+            "hornet": {
+              "x": -146.73047878007824,
+              "y": 325
+            },
+            "moon": {
+              "x": -253.0696803388534,
+              "y": -308.05996288020367
+            },
+            "nasa": {
+              "x": 253.0696803388534,
+              "y": -118.49758863024945
+            },
+            "saturn-v": {
+              "x": 131.9081168008192,
+              "y": 69.60823110748068
+            }
+          },
+          "family": "joint-constrained-ordered-stress-balanced",
+          "fingerprint": "026efb6f7e1fe4d7",
+          "product": {
+            "score": 128486.95677014107,
+            "crossings": 1,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.43137254901960786
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.1750999999931082,
+        "cheap-screen": 0.10920000000623986,
+        "product-verification": 720.4669999999896,
+        "final-selection": 0.042899999985820614
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "apollo-en",
+      "fixtureFamily": "canonical-mixed",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "collins": {
+              "x": 392,
+              "y": 164
+            },
+            "moon": {
+              "x": 588,
+              "y": 0
+            },
+            "hornet": {
+              "x": 196,
+              "y": 0
+            },
+            "saturn-v": {
+              "x": 0,
+              "y": 164
+            },
+            "armstrong": {
+              "x": 392,
+              "y": 328
+            },
+            "columbia": {
+              "x": 392,
+              "y": 0
+            },
+            "eagle": {
+              "x": 588,
+              "y": 328
+            },
+            "aldrin": {
+              "x": 196,
+              "y": 328
+            },
+            "nasa": {
+              "x": 0,
+              "y": 328
+            }
+          },
+          "family": "structural-adaptive-frontier-4-grid-structural",
+          "fingerprint": "ae88d34422a44f68",
+          "product": {
+            "score": 15352.904997202026,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7857142857142857
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.18039999999746215,
+        "cheap-screen": 6.531399999992573,
+        "product-verification": 720.1848999999929,
+        "final-selection": 0.04340000000956934
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "apollo-en",
+      "fixtureFamily": "canonical-mixed",
+      "arm": "structural-native-discrete",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "aldrin": {
+              "x": -56.66666666666667,
+              "y": 56.666666666666664
+            },
+            "armstrong": {
+              "x": -226.66666666666666,
+              "y": 56.666666666666664
+            },
+            "collins": {
+              "x": 283.3333333333333,
+              "y": 56.666666666666664
+            },
+            "columbia": {
+              "x": 113.33333333333333,
+              "y": -113.33333333333334
+            },
+            "eagle": {
+              "x": -56.66666666666667,
+              "y": -113.33333333333334
+            },
+            "hornet": {
+              "x": 283.3333333333333,
+              "y": -113.33333333333334
+            },
+            "moon": {
+              "x": -226.66666666666666,
+              "y": -113.33333333333334
+            },
+            "nasa": {
+              "x": -226.66666666666666,
+              "y": 226.66666666666666
+            },
+            "saturn-v": {
+              "x": 113.33333333333333,
+              "y": 56.666666666666664
+            }
+          },
+          "family": "discrete-ordered-stress-rotated-wide",
+          "fingerprint": "024f29cc2d4b01db",
+          "product": {
+            "score": 91446.49800191577,
+            "crossings": 0,
+            "labelRouteHits": 2,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7623762376237624
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.46180000000458676,
+        "cheap-screen": 0.1493999999947846,
+        "product-verification": 746.1547000000282,
+        "final-selection": 0.043399999995017424
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "apollo-ja",
+      "fixtureFamily": "canonical-label-sensitive",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "aldrin": {
+              "x": -230.35912338781483,
+              "y": 210.91415783838397
+            },
+            "armstrong": {
+              "x": -238.6610349458803,
+              "y": 66.2086532742671
+            },
+            "collins": {
+              "x": 129.13346652965188,
+              "y": 276.01844030334973
+            },
+            "columbia": {
+              "x": 80.18095076076247,
+              "y": -29.481203740600616
+            },
+            "eagle": {
+              "x": -131.40468274694118,
+              "y": -77.57607305015004
+            },
+            "hornet": {
+              "x": 237.84487517436972,
+              "y": -173.94080387300062
+            },
+            "moon": {
+              "x": -225.44764128450157,
+              "y": -300
+            },
+            "nasa": {
+              "x": -86.72013592684768,
+              "y": 300
+            },
+            "saturn-v": {
+              "x": 49.851676888035755,
+              "y": 154.70220767480708
+            }
+          },
+          "family": "joint-constrained-ordered-stress-rotated-wide",
+          "fingerprint": "7a2635f65e85d480",
+          "product": {
+            "score": 116154.82788394882,
+            "crossings": 1,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.463855421686747
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.1595999999990454,
+        "cheap-screen": 0.094600000011269,
+        "product-verification": 709.1489000000001,
+        "final-selection": 0.05019999999785796
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "apollo-ja",
+      "fixtureFamily": "canonical-label-sensitive",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "collins": {
+              "x": 392,
+              "y": 164
+            },
+            "moon": {
+              "x": 588,
+              "y": 0
+            },
+            "hornet": {
+              "x": 196,
+              "y": 0
+            },
+            "saturn-v": {
+              "x": 0,
+              "y": 164
+            },
+            "armstrong": {
+              "x": 392,
+              "y": 328
+            },
+            "columbia": {
+              "x": 392,
+              "y": 0
+            },
+            "eagle": {
+              "x": 588,
+              "y": 328
+            },
+            "aldrin": {
+              "x": 196,
+              "y": 328
+            },
+            "nasa": {
+              "x": 0,
+              "y": 328
+            }
+          },
+          "family": "structural-adaptive-frontier-4-grid-structural",
+          "fingerprint": "ae88d34422a44f68",
+          "product": {
+            "score": 1627.4728984365925,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7857142857142857
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.14880000000994187,
+        "cheap-screen": 0.09940000000642613,
+        "product-verification": 699.8064999999915,
+        "final-selection": 0.04649999999674037
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "titanic-en",
+      "fixtureFamily": "canonical-mixed-parallel",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "andrews": {
+              "x": 72.74733194170938,
+              "y": -300
+            },
+            "bride": {
+              "x": -238.46424420490322,
+              "y": -109.61230652289974
+            },
+            "californian": {
+              "x": 213.35830190128442,
+              "y": 172.19682892220544
+            },
+            "carpathia": {
+              "x": 256.40539280341494,
+              "y": 33.91334833110321
+            },
+            "fleet": {
+              "x": 236.74665903946953,
+              "y": -109.66081874131787
+            },
+            "harland-wolff": {
+              "x": 209.30942804983746,
+              "y": -252.01260687826814
+            },
+            "ismay": {
+              "x": 0.25688919059529747,
+              "y": 299.98925806684053
+            },
+            "molly-brown": {
+              "x": -72.07369096641432,
+              "y": -300
+            },
+            "phillips": {
+              "x": -208.58821646155684,
+              "y": -251.31939257744946
+            },
+            "rostron": {
+              "x": 145.07918709772844,
+              "y": 300
+            },
+            "smith": {
+              "x": -256.83947461878057,
+              "y": 34.14050220956711
+            },
+            "titanic": {
+              "x": -213.30494799400356,
+              "y": 172.34867059911466
+            },
+            "white-star-line": {
+              "x": -144.63261577838034,
+              "y": 300
+            }
+          },
+          "family": "joint-constrained-crossing-ring-rotated-wide",
+          "fingerprint": "fdb09b9366d15a7b",
+          "product": {
+            "score": 2097.02562664518,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.463855421686747
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.13479999999981374,
+        "cheap-screen": 0.10979999999108259,
+        "product-verification": 856.0737999999983,
+        "final-selection": 0.04949999999371357
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "titanic-en",
+      "fixtureFamily": "canonical-mixed-parallel",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "fleet": {
+              "x": 408.7154106321713,
+              "y": 0
+            },
+            "andrews": {
+              "x": 598.6549327243254,
+              "y": 36.012221161991704
+            },
+            "ismay": {
+              "x": 745.081599324549,
+              "y": 135.79891877406658
+            },
+            "white-star-line": {
+              "x": 814.4508257473578,
+              "y": 276.5001629733679
+            },
+            "molly-brown": {
+              "x": 790.8709582090905,
+              "y": 425.88299434764303
+            },
+            "phillips": {
+              "x": 679.7438601945548,
+              "y": 549.7256064873205
+            },
+            "smith": {
+              "x": 506.52741063217127,
+              "y": 619.6571494164668
+            },
+            "rostron": {
+              "x": 310.9034106321714,
+              "y": 619.6571494164668
+            },
+            "carpathia": {
+              "x": 137.6869610697878,
+              "y": 549.7256064873206
+            },
+            "bride": {
+              "x": 26.559863055252094,
+              "y": 425.88299434764315
+            },
+            "harland-wolff": {
+              "x": 2.9799955169847294,
+              "y": 276.50016297336776
+            },
+            "titanic": {
+              "x": 72.3492219397935,
+              "y": 135.79891877406686
+            },
+            "californian": {
+              "x": 218.77588854001735,
+              "y": 36.01222116199165
+            }
+          },
+          "family": "structural-adaptive-frontier-11-circular-order",
+          "fingerprint": "7573ab9c97c20245",
+          "product": {
+            "score": 1801.4687318732488,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.45051821700817773
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.26380000000062864,
+        "cheap-screen": 0.12519999999494758,
+        "product-verification": 796.8786000000109,
+        "final-selection": 0.04320000000006985
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "titanic-ja",
+      "fixtureFamily": "canonical-label-sensitive-parallel",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "andrews": {
+              "x": 72.74733194170938,
+              "y": -300
+            },
+            "bride": {
+              "x": -238.46424420490322,
+              "y": -109.61230652289974
+            },
+            "californian": {
+              "x": 213.35830190128442,
+              "y": 172.19682892220544
+            },
+            "carpathia": {
+              "x": 256.40539280341494,
+              "y": 33.91334833110321
+            },
+            "fleet": {
+              "x": 236.74665903946953,
+              "y": -109.66081874131787
+            },
+            "harland-wolff": {
+              "x": 209.30942804983746,
+              "y": -252.01260687826814
+            },
+            "ismay": {
+              "x": 0.25688919059529747,
+              "y": 299.98925806684053
+            },
+            "molly-brown": {
+              "x": -72.07369096641432,
+              "y": -300
+            },
+            "phillips": {
+              "x": -208.58821646155684,
+              "y": -251.31939257744946
+            },
+            "rostron": {
+              "x": 145.07918709772844,
+              "y": 300
+            },
+            "smith": {
+              "x": -256.83947461878057,
+              "y": 34.14050220956711
+            },
+            "titanic": {
+              "x": -213.30494799400356,
+              "y": 172.34867059911466
+            },
+            "white-star-line": {
+              "x": -144.63261577838034,
+              "y": 300
+            }
+          },
+          "family": "joint-constrained-crossing-ring-rotated-wide",
+          "fingerprint": "fdb09b9366d15a7b",
+          "product": {
+            "score": 2097.381278544558,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.463855421686747
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.13300000000162981,
+        "cheap-screen": 0.11470000000554137,
+        "product-verification": 789.9712999999902,
+        "final-selection": 0.04479999998875428
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "titanic-ja",
+      "fixtureFamily": "canonical-label-sensitive-parallel",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "fleet": {
+              "x": 408.7154106321713,
+              "y": 0
+            },
+            "andrews": {
+              "x": 598.6549327243254,
+              "y": 36.012221161991704
+            },
+            "ismay": {
+              "x": 745.081599324549,
+              "y": 135.79891877406658
+            },
+            "white-star-line": {
+              "x": 814.4508257473578,
+              "y": 276.5001629733679
+            },
+            "molly-brown": {
+              "x": 790.8709582090905,
+              "y": 425.88299434764303
+            },
+            "phillips": {
+              "x": 679.7438601945548,
+              "y": 549.7256064873205
+            },
+            "smith": {
+              "x": 506.52741063217127,
+              "y": 619.6571494164668
+            },
+            "rostron": {
+              "x": 310.9034106321714,
+              "y": 619.6571494164668
+            },
+            "carpathia": {
+              "x": 137.6869610697878,
+              "y": 549.7256064873206
+            },
+            "bride": {
+              "x": 26.559863055252094,
+              "y": 425.88299434764315
+            },
+            "harland-wolff": {
+              "x": 2.9799955169847294,
+              "y": 276.50016297336776
+            },
+            "titanic": {
+              "x": 72.3492219397935,
+              "y": 135.79891877406686
+            },
+            "californian": {
+              "x": 218.77588854001735,
+              "y": 36.01222116199165
+            }
+          },
+          "family": "structural-adaptive-frontier-11-circular-order",
+          "fingerprint": "7573ab9c97c20245",
+          "product": {
+            "score": 1796.639032802739,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.45051821700817773
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.1809999999968568,
+        "cheap-screen": 0.10869999999704305,
+        "product-verification": 774.1983999999939,
+        "final-selection": 0.04069999999774154
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "dense-k7-7",
+      "fixtureFamily": "dense",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-1": {
+              "x": -248.9548405165541,
+              "y": -0.00011777405306611392
+            },
+            "left-2": {
+              "x": -151.51601932318025,
+              "y": -261.33947590792997
+            },
+            "left-3": {
+              "x": 253.09687780838786,
+              "y": 144.97392421965387
+            },
+            "left-4": {
+              "x": 71.25283449548925,
+              "y": -325
+            },
+            "left-5": {
+              "x": 71.25304790233164,
+              "y": 325
+            },
+            "left-6": {
+              "x": -151.98326859484308,
+              "y": 261.6411088395549
+            },
+            "left-7": {
+              "x": 253.56775475009061,
+              "y": -145.11376455009574
+            },
+            "right-1": {
+              "x": -116.28891601140037,
+              "y": -72.77747332145982
+            },
+            "right-2": {
+              "x": -116.67209701020084,
+              "y": 72.02420024867183
+            },
+            "right-3": {
+              "x": 155.67933378421125,
+              "y": 0.3527326203908583
+            },
+            "right-4": {
+              "x": 108.83035867388861,
+              "y": -136.66015163874235
+            },
+            "right-5": {
+              "x": -27.0698190001179,
+              "y": -186.9397847913969
+            },
+            "right-6": {
+              "x": 108.31750079885452,
+              "y": 137.2721085076812
+            },
+            "right-7": {
+              "x": -27.942977334049235,
+              "y": 186.56723591380148
+            }
+          },
+          "family": "joint-constrained-ordered-stress-balanced",
+          "fingerprint": "66e66856eade57d4",
+          "product": {
+            "score": 23268028.088544987,
+            "crossings": 205,
+            "labelRouteHits": 16,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.43137254901960786
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.13030000000435393,
+        "cheap-screen": 0.10280000000784639,
+        "product-verification": 1698.2563999999984,
+        "final-selection": 0.042499999995925464
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "dense-k7-7",
+      "fixtureFamily": "dense",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-2": {
+              "x": 588,
+              "y": 328
+            },
+            "right-1": {
+              "x": 392,
+              "y": 0
+            },
+            "left-5": {
+              "x": 196,
+              "y": 0
+            },
+            "left-3": {
+              "x": 0,
+              "y": 0
+            },
+            "right-2": {
+              "x": 392,
+              "y": 164
+            },
+            "left-1": {
+              "x": 196,
+              "y": 164
+            },
+            "left-7": {
+              "x": 588,
+              "y": 164
+            },
+            "left-4": {
+              "x": 784,
+              "y": 328
+            },
+            "right-7": {
+              "x": 392,
+              "y": 328
+            },
+            "right-4": {
+              "x": 588,
+              "y": 0
+            },
+            "right-3": {
+              "x": 784,
+              "y": 0
+            },
+            "left-6": {
+              "x": 0,
+              "y": 164
+            },
+            "right-6": {
+              "x": 0,
+              "y": 328
+            },
+            "right-5": {
+              "x": 196,
+              "y": 328
+            }
+          },
+          "family": "structural-adaptive-frontier-22-grid-structural",
+          "fingerprint": "3da600551f3b56b5",
+          "product": {
+            "score": 14486653.112270225,
+            "crossings": 129,
+            "labelRouteHits": 8,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7169811320754716
+          },
+          "finalistCount": 10,
+          "boundaryClassCount": 2,
+          "workUnits": 14
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.4334999999991851,
+        "cheap-screen": 0.3712999999988824,
+        "product-verification": 3819.6296999999904,
+        "final-selection": 0.04310000000987202
+      },
+      "verifiedProductEvaluations": 10,
+      "failClosed": false
+    },
+    {
+      "fixture": "dense-k6-8",
+      "fixtureFamily": "dense-rectangular",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-1": {
+              "x": -46.81786809800675,
+              "y": 147.43522527607655
+            },
+            "left-2": {
+              "x": -62.8117755485716,
+              "y": -141.68264865401434
+            },
+            "left-3": {
+              "x": 76.6772371464186,
+              "y": 222.92005865361682
+            },
+            "left-4": {
+              "x": 65.90864012833785,
+              "y": -207.93015025184653
+            },
+            "left-5": {
+              "x": -26.091943035213227,
+              "y": 325
+            },
+            "left-6": {
+              "x": -19.42179713549093,
+              "y": -325
+            },
+            "right-1": {
+              "x": 85.4305047241083,
+              "y": -42.358002279477
+            },
+            "right-2": {
+              "x": -52.18467330955698,
+              "y": 2.87243119218772
+            },
+            "right-3": {
+              "x": 179.39593760866526,
+              "y": 67.89105889563629
+            },
+            "right-4": {
+              "x": -182.68275019398854,
+              "y": -60.040379928450555
+            },
+            "right-5": {
+              "x": 254.22643536918153,
+              "y": -56.088353155500776
+            },
+            "right-6": {
+              "x": -259.140343370676,
+              "y": 62.94869901602246
+            },
+            "right-7": {
+              "x": 375,
+              "y": 23.90847139719622
+            },
+            "right-8": {
+              "x": -375,
+              "y": -24.00596565388832
+            }
+          },
+          "family": "joint-constrained-twin-spokes-balanced",
+          "fingerprint": "9c8d8d1684b45547",
+          "product": {
+            "score": 10849887.343700998,
+            "crossings": 92,
+            "labelRouteHits": 11,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.43137254901960786
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.1591000000044005,
+        "cheap-screen": 0.11449999999604188,
+        "product-verification": 1625.7737999999954,
+        "final-selection": 0.04080000000249129
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "dense-k6-8",
+      "fixtureFamily": "dense-rectangular",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "right-7": {
+              "x": 392,
+              "y": 0
+            },
+            "left-1": {
+              "x": 588,
+              "y": 0
+            },
+            "left-2": {
+              "x": 784,
+              "y": 0
+            },
+            "right-2": {
+              "x": 784,
+              "y": 164
+            },
+            "left-6": {
+              "x": 196,
+              "y": 164
+            },
+            "right-5": {
+              "x": 392,
+              "y": 328
+            },
+            "right-8": {
+              "x": 588,
+              "y": 328
+            },
+            "left-3": {
+              "x": 0,
+              "y": 328
+            },
+            "right-4": {
+              "x": 784,
+              "y": 328
+            },
+            "left-4": {
+              "x": 196,
+              "y": 328
+            },
+            "right-1": {
+              "x": 0,
+              "y": 0
+            },
+            "right-3": {
+              "x": 392,
+              "y": 164
+            },
+            "left-5": {
+              "x": 588,
+              "y": 164
+            },
+            "right-6": {
+              "x": 196,
+              "y": 0
+            }
+          },
+          "family": "structural-adaptive-frontier-11-grid-structural",
+          "fingerprint": "1145e217ff21902b",
+          "product": {
+            "score": 13621643.754204758,
+            "crossings": 123,
+            "labelRouteHits": 4,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7169811320754716
+          },
+          "finalistCount": 12,
+          "boundaryClassCount": 1,
+          "workUnits": 16
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.36020000001008157,
+        "cheap-screen": 0.38679999999294523,
+        "product-verification": 4542.149300000005,
+        "final-selection": 0.04239999999117572
+      },
+      "verifiedProductEvaluations": 12,
+      "failClosed": false
+    },
+    {
+      "fixture": "dense-k8-8",
+      "fixtureFamily": "dense-large",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-1": {
+              "x": 117.17411182172769,
+              "y": -300
+            },
+            "left-2": {
+              "x": -124.8193940946418,
+              "y": -300
+            },
+            "left-3": {
+              "x": 112.96532776925297,
+              "y": 300
+            },
+            "left-4": {
+              "x": -244.4470457307452,
+              "y": 134.1271691859714
+            },
+            "left-5": {
+              "x": -243.19353199759126,
+              "y": -137.62466112674267
+            },
+            "left-6": {
+              "x": 260.84470647020356,
+              "y": 121.63829778718619
+            },
+            "left-7": {
+              "x": -127.31595207560981,
+              "y": 300
+            },
+            "left-8": {
+              "x": 257.8108991079187,
+              "y": -123.49729448140111
+            },
+            "right-1": {
+              "x": 113.37277767652665,
+              "y": -135.42627774555865
+            },
+            "right-2": {
+              "x": -3.8673146138285412,
+              "y": -220.27995829299596
+            },
+            "right-3": {
+              "x": 118.02743195215233,
+              "y": 146.21123538390006
+            },
+            "right-4": {
+              "x": -90.81886645722756,
+              "y": 100.66724920272522
+            },
+            "right-5": {
+              "x": -193.32969474681843,
+              "y": -1.502789887313658
+            },
+            "right-6": {
+              "x": -94.36820199034159,
+              "y": -107.33753647281307
+            },
+            "right-7": {
+              "x": 149.20014390144397,
+              "y": 4.817928605029873
+            },
+            "right-8": {
+              "x": -7.2353919419577615,
+              "y": 218.98624178914676
+            }
+          },
+          "family": "joint-constrained-ordered-stress-rotated-wide",
+          "fingerprint": "4d2cac3f9c654540",
+          "product": {
+            "score": 44697218.48092448,
+            "crossings": 383,
+            "labelRouteHits": 26,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.463855421686747
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.28969999999389984,
+        "cheap-screen": 0.11669999999867287,
+        "product-verification": 2263.0200999999943,
+        "final-selection": 0.045400000002700835
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "dense-k8-8",
+      "fixtureFamily": "dense-large",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-3": {
+              "x": 0,
+              "y": 0
+            },
+            "right-2": {
+              "x": 784,
+              "y": 164
+            },
+            "right-3": {
+              "x": 0,
+              "y": 328
+            },
+            "right-8": {
+              "x": 0,
+              "y": 492
+            },
+            "right-7": {
+              "x": 196,
+              "y": 328
+            },
+            "left-8": {
+              "x": 392,
+              "y": 328
+            },
+            "left-6": {
+              "x": 784,
+              "y": 328
+            },
+            "left-1": {
+              "x": 588,
+              "y": 328
+            },
+            "left-4": {
+              "x": 0,
+              "y": 164
+            },
+            "right-5": {
+              "x": 196,
+              "y": 492
+            },
+            "left-2": {
+              "x": 784,
+              "y": 492
+            },
+            "right-4": {
+              "x": 588,
+              "y": 164
+            },
+            "right-1": {
+              "x": 392,
+              "y": 164
+            },
+            "left-5": {
+              "x": 196,
+              "y": 164
+            },
+            "left-7": {
+              "x": 196,
+              "y": 0
+            },
+            "right-6": {
+              "x": 784,
+              "y": 0
+            }
+          },
+          "family": "structural-adaptive-frontier-1-grid-structural",
+          "fingerprint": "19106aea68828fdc",
+          "product": {
+            "score": 25791794.251659963,
+            "crossings": 229,
+            "labelRouteHits": 16,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.5539568345323741
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.2510000000038417,
+        "cheap-screen": 0.31339999999909196,
+        "product-verification": 2249.9246999999887,
+        "final-selection": 0.04709999999613501
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "dense-k5-9",
+      "fixtureFamily": "dense-imbalanced",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-1": {
+              "x": -59.29208004389088,
+              "y": 59.46717903611019
+            },
+            "left-2": {
+              "x": -107.1923455243216,
+              "y": -185.59559411123263
+            },
+            "left-3": {
+              "x": 9.735992722458855,
+              "y": 186.67208755829762
+            },
+            "left-4": {
+              "x": -18.498673651223392,
+              "y": -300
+            },
+            "left-5": {
+              "x": -80.50397453947686,
+              "y": 300
+            },
+            "right-1": {
+              "x": -10.988204251845595,
+              "y": -77.22848301666693
+            },
+            "right-2": {
+              "x": -155.38843987740253,
+              "y": -48.85159544578968
+            },
+            "right-3": {
+              "x": 127.15010415689233,
+              "y": -33.60574696039505
+            },
+            "right-4": {
+              "x": -261.37312585365396,
+              "y": -147.64841942514906
+            },
+            "right-5": {
+              "x": 243.5463494834436,
+              "y": -119.87192551369252
+            },
+            "right-6": {
+              "x": -324.77406632626236,
+              "y": -17.4543229529518
+            },
+            "right-7": {
+              "x": 336.15892031206477,
+              "y": -8.502136834280114
+            },
+            "right-8": {
+              "x": -450,
+              "y": -90.23298034135418
+            },
+            "right-9": {
+              "x": 450,
+              "y": -98.02696615336123
+            }
+          },
+          "family": "joint-constrained-twin-spokes-wide",
+          "fingerprint": "43ab152b7417999c",
+          "product": {
+            "score": 8745848.53400621,
+            "crossings": 76,
+            "labelRouteHits": 9,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.463855421686747
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.18839999999909196,
+        "cheap-screen": 0.33609999998589046,
+        "product-verification": 1586.1731999999756,
+        "final-selection": 0.046399999991990626
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "dense-k5-9",
+      "fixtureFamily": "dense-imbalanced",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "right-9": {
+              "x": 392,
+              "y": 328
+            },
+            "right-3": {
+              "x": 392,
+              "y": 0
+            },
+            "left-3": {
+              "x": 196,
+              "y": 164
+            },
+            "left-4": {
+              "x": 0,
+              "y": 328
+            },
+            "right-1": {
+              "x": 0,
+              "y": 164
+            },
+            "right-5": {
+              "x": 196,
+              "y": 0
+            },
+            "right-8": {
+              "x": 0,
+              "y": 0
+            },
+            "left-5": {
+              "x": 588,
+              "y": 0
+            },
+            "left-1": {
+              "x": 196,
+              "y": 328
+            },
+            "right-2": {
+              "x": 588,
+              "y": 328
+            },
+            "right-4": {
+              "x": 392,
+              "y": 164
+            },
+            "left-2": {
+              "x": 784,
+              "y": 0
+            },
+            "right-6": {
+              "x": 588,
+              "y": 164
+            },
+            "right-7": {
+              "x": 784,
+              "y": 328
+            }
+          },
+          "family": "structural-adaptive-frontier-17-grid-structural",
+          "fingerprint": "288ab3739cc0fcd6",
+          "product": {
+            "score": 11566647.811372582,
+            "crossings": 104,
+            "labelRouteHits": 7,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7169811320754716
+          },
+          "finalistCount": 12,
+          "boundaryClassCount": 1,
+          "workUnits": 16
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.6747999999934109,
+        "cheap-screen": 1.256999999997788,
+        "product-verification": 4332.659500000038,
+        "final-selection": 0.044800000003306195
+      },
+      "verifiedProductEvaluations": 12,
+      "failClosed": false
+    },
+    {
+      "fixture": "dense-k7-7-minus-one",
+      "fixtureFamily": "dense-perturbed",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-1": {
+              "x": 5.9972092521653995,
+              "y": 191.93269432367825
+            },
+            "left-2": {
+              "x": 86.10903517651904,
+              "y": -60.55353982963566
+            },
+            "left-3": {
+              "x": -84.72497703687607,
+              "y": -6.742192560964569
+            },
+            "left-4": {
+              "x": 223.94253258093508,
+              "y": 0
+            },
+            "left-5": {
+              "x": -229.5291154756808,
+              "y": -0.21308556469852014
+            },
+            "left-6": {
+              "x": 368.91968245516915,
+              "y": 0
+            },
+            "left-7": {
+              "x": -374.50630364346426,
+              "y": 0.030376236265490374
+            },
+            "right-1": {
+              "x": -125.8367751140889,
+              "y": 132.02471160209618
+            },
+            "right-2": {
+              "x": 101.85933800934376,
+              "y": 83.4282354686615
+            },
+            "right-3": {
+              "x": -37.96910488293693,
+              "y": -143.8795233708934
+            },
+            "right-4": {
+              "x": 165.12242689575496,
+              "y": 213.89463537159367
+            },
+            "right-5": {
+              "x": -167.59057107418042,
+              "y": -208.83638431822618
+            },
+            "right-6": {
+              "x": 258.3035682039572,
+              "y": 325
+            },
+            "right-7": {
+              "x": -255.35714285714292,
+              "y": -325
+            }
+          },
+          "family": "joint-constrained-twin-spokes-balanced",
+          "fingerprint": "a7b4abbd9cd77ba3",
+          "product": {
+            "score": 11690836.099349204,
+            "crossings": 101,
+            "labelRouteHits": 9,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.43137254901960786
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.16870000000926666,
+        "cheap-screen": 0.12169999998877756,
+        "product-verification": 1623.077999999994,
+        "final-selection": 0.047200000000884756
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "dense-k7-7-minus-one",
+      "fixtureFamily": "dense-perturbed",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "right-6": {
+              "x": 784,
+              "y": 328
+            },
+            "left-1": {
+              "x": 0,
+              "y": 328
+            },
+            "left-7": {
+              "x": 392,
+              "y": 164
+            },
+            "left-3": {
+              "x": 392,
+              "y": 328
+            },
+            "right-4": {
+              "x": 0,
+              "y": 0
+            },
+            "right-7": {
+              "x": 196,
+              "y": 0
+            },
+            "right-2": {
+              "x": 392,
+              "y": 0
+            },
+            "left-5": {
+              "x": 588,
+              "y": 0
+            },
+            "right-1": {
+              "x": 784,
+              "y": 164
+            },
+            "right-3": {
+              "x": 588,
+              "y": 328
+            },
+            "left-6": {
+              "x": 588,
+              "y": 164
+            },
+            "left-4": {
+              "x": 784,
+              "y": 0
+            },
+            "left-2": {
+              "x": 196,
+              "y": 328
+            },
+            "right-5": {
+              "x": 196,
+              "y": 164
+            }
+          },
+          "family": "structural-adaptive-frontier-1-grid-structural",
+          "fingerprint": "49953bcc1c7bea10",
+          "product": {
+            "score": 15456660.799316837,
+            "crossings": 137,
+            "labelRouteHits": 9,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7169811320754716
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.21110000000044238,
+        "cheap-screen": 0.10499999999592546,
+        "product-verification": 1597.545900000012,
+        "final-selection": 0.04030000000784639
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "apollo-spacing-control",
+      "fixtureFamily": "dense-product-control",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "aldrin": {
+              "x": 189.12407797507544,
+              "y": -313.8356477652804
+            },
+            "armstrong": {
+              "x": 44.64719276786808,
+              "y": -325
+            },
+            "collins": {
+              "x": 231.43300552976874,
+              "y": 174.96366293943868
+            },
+            "columbia": {
+              "x": -24.869329355461367,
+              "y": 109.56220510592662
+            },
+            "eagle": {
+              "x": -65.44050669581672,
+              "y": -179.55619965091415
+            },
+            "hornet": {
+              "x": -146.73047878007824,
+              "y": 325
+            },
+            "moon": {
+              "x": -253.0696803388534,
+              "y": -308.05996288020367
+            },
+            "nasa": {
+              "x": 253.0696803388534,
+              "y": -118.49758863024945
+            },
+            "saturn-v": {
+              "x": 131.9081168008192,
+              "y": 69.60823110748068
+            }
+          },
+          "family": "joint-constrained-ordered-stress-balanced",
+          "fingerprint": "026efb6f7e1fe4d7",
+          "product": {
+            "score": 128486.95677014107,
+            "crossings": 1,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.43137254901960786
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.22990000000572763,
+        "cheap-screen": 0.12930000000051223,
+        "product-verification": 722.9874999999738,
+        "final-selection": 0.034599999999045394
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "apollo-spacing-control",
+      "fixtureFamily": "dense-product-control",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "collins": {
+              "x": 392,
+              "y": 164
+            },
+            "moon": {
+              "x": 588,
+              "y": 0
+            },
+            "hornet": {
+              "x": 196,
+              "y": 0
+            },
+            "saturn-v": {
+              "x": 0,
+              "y": 164
+            },
+            "armstrong": {
+              "x": 392,
+              "y": 328
+            },
+            "columbia": {
+              "x": 392,
+              "y": 0
+            },
+            "eagle": {
+              "x": 588,
+              "y": 328
+            },
+            "aldrin": {
+              "x": 196,
+              "y": 328
+            },
+            "nasa": {
+              "x": 0,
+              "y": 328
+            }
+          },
+          "family": "structural-adaptive-frontier-4-grid-structural",
+          "fingerprint": "ae88d34422a44f68",
+          "product": {
+            "score": 15352.904997202026,
+            "crossings": 0,
+            "labelRouteHits": 0,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7857142857142857
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.15369999999529682,
+        "cheap-screen": 0.10329999998793937,
+        "product-verification": 737.2840999999753,
+        "final-selection": 0.035400000007939525
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "independent-k6-7",
+      "fixtureFamily": "independent-dense-near-threshold",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-1": {
+              "x": -80.83770495759049,
+              "y": 143.22982619280302
+            },
+            "left-2": {
+              "x": -113.4932171782813,
+              "y": -144.4178284693339
+            },
+            "left-3": {
+              "x": 34.469887920229404,
+              "y": 230.67184174621696
+            },
+            "left-4": {
+              "x": 17.140107904429996,
+              "y": -206.8137973911521
+            },
+            "left-5": {
+              "x": -75.44296610165357,
+              "y": 325
+            },
+            "left-6": {
+              "x": -66.64163539367506,
+              "y": -325
+            },
+            "right-1": {
+              "x": 37.25812222116834,
+              "y": -42.223010571459746
+            },
+            "right-2": {
+              "x": -101.2395700900257,
+              "y": 0.015700763413696184
+            },
+            "right-3": {
+              "x": 132.06463090766377,
+              "y": 67.28665985809997
+            },
+            "right-4": {
+              "x": -239.51899196348907,
+              "y": -42.97058298131254
+            },
+            "right-5": {
+              "x": 228.39477638903338,
+              "y": -40.837532621105744
+            },
+            "right-6": {
+              "x": -370.2124627110483,
+              "y": 19.5608230156145
+            },
+            "right-7": {
+              "x": 363.9055072867734,
+              "y": 10.43974060872897
+            }
+          },
+          "family": "joint-constrained-twin-spokes-balanced",
+          "fingerprint": "f29c3002cdbe6776",
+          "product": {
+            "score": 7389370.381546791,
+            "crossings": 64,
+            "labelRouteHits": 7,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.43137254901960786
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.19939999999769498,
+        "cheap-screen": 0.3476000000082422,
+        "product-verification": 1531.706699999966,
+        "final-selection": 0.04149999999208376
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "independent-k6-7",
+      "fixtureFamily": "independent-dense-near-threshold",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "right-1": {
+              "x": 392,
+              "y": 164
+            },
+            "right-7": {
+              "x": 0,
+              "y": 0
+            },
+            "left-3": {
+              "x": 0,
+              "y": 328
+            },
+            "left-5": {
+              "x": 784,
+              "y": 0
+            },
+            "right-3": {
+              "x": 588,
+              "y": 328
+            },
+            "right-6": {
+              "x": 784,
+              "y": 328
+            },
+            "left-4": {
+              "x": 588,
+              "y": 0
+            },
+            "left-1": {
+              "x": 196,
+              "y": 164
+            },
+            "left-6": {
+              "x": 196,
+              "y": 328
+            },
+            "right-2": {
+              "x": 392,
+              "y": 0
+            },
+            "left-2": {
+              "x": 588,
+              "y": 164
+            },
+            "right-4": {
+              "x": 392,
+              "y": 328
+            },
+            "right-5": {
+              "x": 196,
+              "y": 0
+            }
+          },
+          "family": "structural-adaptive-frontier-17-grid-structural",
+          "fingerprint": "e88a542c09adec35",
+          "product": {
+            "score": 9156643.754204758,
+            "crossings": 84,
+            "labelRouteHits": 1,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7169811320754716
+          },
+          "finalistCount": 12,
+          "boundaryClassCount": 1,
+          "workUnits": 16
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.5046999999904074,
+        "cheap-screen": 0.9064999999827705,
+        "product-verification": 3992.7527999999875,
+        "final-selection": 0.042599999986123294
+      },
+      "verifiedProductEvaluations": 12,
+      "failClosed": false
+    },
+    {
+      "fixture": "independent-k7-6",
+      "fixtureFamily": "independent-dense-transpose",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-1": {
+              "x": 28.97146901990681,
+              "y": -63.031746752465374
+            },
+            "left-2": {
+              "x": -95.39022697360645,
+              "y": 11.13061223476044
+            },
+            "left-3": {
+              "x": 109.80730831619638,
+              "y": 57.1265231463646
+            },
+            "left-4": {
+              "x": -232.79425584369343,
+              "y": -34.61232479908667
+            },
+            "left-5": {
+              "x": 226.2091058057884,
+              "y": -29.019641787128634
+            },
+            "left-6": {
+              "x": -369.63149738573753,
+              "y": 13.019349604121114
+            },
+            "left-7": {
+              "x": 366.21994025295584,
+              "y": 8.279684048988019
+            },
+            "right-1": {
+              "x": -106.55329175257295,
+              "y": 155.3908461355375
+            },
+            "right-2": {
+              "x": -110.5647892512544,
+              "y": -132.89360644792043
+            },
+            "right-3": {
+              "x": 25.16734005685342,
+              "y": 215.59439887889786
+            },
+            "right-4": {
+              "x": 13.677190993019652,
+              "y": -207.34404691063258
+            },
+            "right-5": {
+              "x": -69.78372346347031,
+              "y": 325
+            },
+            "right-6": {
+              "x": -70.83537375946823,
+              "y": -325
+            }
+          },
+          "family": "joint-constrained-twin-spokes-balanced",
+          "fingerprint": "68f58a895db771a9",
+          "product": {
+            "score": 8069139.812891853,
+            "crossings": 69,
+            "labelRouteHits": 12,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.43137254901960786
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.1665999999968335,
+        "cheap-screen": 0.1070999999938067,
+        "product-verification": 1451.7092999999586,
+        "final-selection": 0.03969999999389984
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "independent-k7-6",
+      "fixtureFamily": "independent-dense-transpose",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-2": {
+              "x": 0,
+              "y": 328
+            },
+            "right-3": {
+              "x": 0,
+              "y": 0
+            },
+            "right-5": {
+              "x": 196,
+              "y": 0
+            },
+            "right-6": {
+              "x": 784,
+              "y": 328
+            },
+            "right-1": {
+              "x": 196,
+              "y": 164
+            },
+            "left-3": {
+              "x": 392,
+              "y": 0
+            },
+            "left-6": {
+              "x": 784,
+              "y": 0
+            },
+            "left-1": {
+              "x": 588,
+              "y": 0
+            },
+            "right-2": {
+              "x": 588,
+              "y": 328
+            },
+            "left-7": {
+              "x": 392,
+              "y": 328
+            },
+            "left-4": {
+              "x": 392,
+              "y": 164
+            },
+            "left-5": {
+              "x": 196,
+              "y": 328
+            },
+            "right-4": {
+              "x": 588,
+              "y": 164
+            }
+          },
+          "family": "structural-adaptive-frontier-14-grid-structural",
+          "fingerprint": "07b87eb44f590ece",
+          "product": {
+            "score": 9206653.526663877,
+            "crossings": 85,
+            "labelRouteHits": 5,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7169811320754716
+          },
+          "finalistCount": 12,
+          "boundaryClassCount": 1,
+          "workUnits": 16
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.41049999999813735,
+        "cheap-screen": 0.3908999999985099,
+        "product-verification": 3949.1168999999936,
+        "final-selection": 0.1197999999858439
+      },
+      "verifiedProductEvaluations": 12,
+      "failClosed": false
+    },
+    {
+      "fixture": "independent-k8-7",
+      "fixtureFamily": "independent-dense-wide",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-1": {
+              "x": 222.1290379385039,
+              "y": 239.96827908163039
+            },
+            "left-2": {
+              "x": -221.7018413392896,
+              "y": -239.59099108276718
+            },
+            "left-3": {
+              "x": 104.8377824675687,
+              "y": 325
+            },
+            "left-4": {
+              "x": -290.10939035587944,
+              "y": 40.18955361559585
+            },
+            "left-5": {
+              "x": 290.05476210482607,
+              "y": -40.0677896151701
+            },
+            "left-6": {
+              "x": -271.65711724932925,
+              "y": -103.61538290840497
+            },
+            "left-7": {
+              "x": -104.61419743027494,
+              "y": -325
+            },
+            "left-8": {
+              "x": 271.5121474218691,
+              "y": 103.72560110774464
+            },
+            "right-1": {
+              "x": -0.5803930235277067,
+              "y": -1.3111455836689694
+            },
+            "right-2": {
+              "x": -53.93549268326579,
+              "y": 133.4827266001759
+            },
+            "right-3": {
+              "x": 51.302760339566795,
+              "y": -286.62068320547803
+            },
+            "right-4": {
+              "x": -176.54247150798395,
+              "y": 210.85314020310858
+            },
+            "right-5": {
+              "x": -57.91194188619308,
+              "y": 294.0087345686845
+            },
+            "right-6": {
+              "x": 178.27694336913424,
+              "y": -216.86968457315118
+            },
+            "right-7": {
+              "x": 60.01383562707092,
+              "y": -133.0296532878613
+            }
+          },
+          "family": "joint-constrained-ordered-stress-rotated-balanced",
+          "fingerprint": "f9b0ab692828b53e",
+          "product": {
+            "score": 30393350.343548167,
+            "crossings": 270,
+            "labelRouteHits": 9,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.43137254901960786
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.16449999998440035,
+        "cheap-screen": 0.1130000000121072,
+        "product-verification": 1909.0362000000023,
+        "final-selection": 0.043199999985517934
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "independent-k8-7",
+      "fixtureFamily": "independent-dense-wide",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-3": {
+              "x": 784,
+              "y": 0
+            },
+            "left-8": {
+              "x": 392,
+              "y": 328
+            },
+            "left-5": {
+              "x": 392,
+              "y": 0
+            },
+            "right-2": {
+              "x": 588,
+              "y": 164
+            },
+            "right-4": {
+              "x": 196,
+              "y": 0
+            },
+            "right-3": {
+              "x": 392,
+              "y": 164
+            },
+            "right-7": {
+              "x": 588,
+              "y": 328
+            },
+            "left-6": {
+              "x": 0,
+              "y": 164
+            },
+            "right-6": {
+              "x": 0,
+              "y": 0
+            },
+            "left-2": {
+              "x": 196,
+              "y": 328
+            },
+            "left-4": {
+              "x": 784,
+              "y": 164
+            },
+            "left-7": {
+              "x": 0,
+              "y": 328
+            },
+            "right-1": {
+              "x": 196,
+              "y": 164
+            },
+            "left-1": {
+              "x": 588,
+              "y": 0
+            },
+            "right-5": {
+              "x": 784,
+              "y": 328
+            }
+          },
+          "family": "structural-adaptive-frontier-5-grid-structural",
+          "fingerprint": "b979782aa722e9d9",
+          "product": {
+            "score": 23726653.526663877,
+            "crossings": 211,
+            "labelRouteHits": 9,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7169811320754716
+          },
+          "finalistCount": 12,
+          "boundaryClassCount": 1,
+          "workUnits": 16
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.32039999999688007,
+        "cheap-screen": 0.39650000000256114,
+        "product-verification": 5226.0298000000475,
+        "final-selection": 0.044999999983701855
+      },
+      "verifiedProductEvaluations": 12,
+      "failClosed": false
+    },
+    {
+      "fixture": "independent-k5-8-minus-one",
+      "fixtureFamily": "independent-edge-perturbation",
+      "arm": "structural-native-v3",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-1": {
+              "x": -58.59879080525309,
+              "y": 208.8889022963428
+            },
+            "left-2": {
+              "x": 34.28921428475184,
+              "y": 97.81717863197274
+            },
+            "left-3": {
+              "x": -103.67242294427527,
+              "y": -156.52882116233263
+            },
+            "left-4": {
+              "x": 104.16454530441327,
+              "y": 224.7958613986937
+            },
+            "left-5": {
+              "x": -239.60151773743038,
+              "y": -215.56263314073286
+            },
+            "right-1": {
+              "x": -167.8222490376793,
+              "y": 113.87320099255518
+            },
+            "right-2": {
+              "x": 23.340509529613097,
+              "y": -46.65453380402469
+            },
+            "right-3": {
+              "x": -175.41259399385655,
+              "y": -30.849106325507602
+            },
+            "right-4": {
+              "x": 160.08348213750574,
+              "y": 1.4463608206256144
+            },
+            "right-5": {
+              "x": -308.89157497855285,
+              "y": 25.556910534592838
+            },
+            "right-6": {
+              "x": 305.0376011057401,
+              "y": -0.08728185848662279
+            },
+            "right-7": {
+              "x": -450,
+              "y": -7.425320139278776
+            },
+            "right-8": {
+              "x": 450,
+              "y": 0.004131893533674093
+            }
+          },
+          "family": "joint-constrained-twin-spokes-wide",
+          "fingerprint": "9f462fbec24d5727",
+          "product": {
+            "score": 7707926.756430912,
+            "crossings": 66,
+            "labelRouteHits": 9,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.6106767375480838
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.16470000002300367,
+        "cheap-screen": 0.5304999999934807,
+        "product-verification": 1364.7325999999593,
+        "final-selection": 0.03990000000339933
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    },
+    {
+      "fixture": "independent-k5-8-minus-one",
+      "fixtureFamily": "independent-edge-perturbation",
+      "arm": "frontier-adaptive-12",
+      "outcome": {
+        "operationId": 1,
+        "status": "completed",
+        "reason": "verified-selection-complete",
+        "result": {
+          "positions": {
+            "left-1": {
+              "x": 588,
+              "y": 164
+            },
+            "right-5": {
+              "x": 588,
+              "y": 0
+            },
+            "right-7": {
+              "x": 196,
+              "y": 164
+            },
+            "left-5": {
+              "x": 0,
+              "y": 0
+            },
+            "left-3": {
+              "x": 784,
+              "y": 328
+            },
+            "right-3": {
+              "x": 392,
+              "y": 0
+            },
+            "right-8": {
+              "x": 196,
+              "y": 328
+            },
+            "right-2": {
+              "x": 784,
+              "y": 0
+            },
+            "right-4": {
+              "x": 392,
+              "y": 328
+            },
+            "right-1": {
+              "x": 0,
+              "y": 328
+            },
+            "left-4": {
+              "x": 588,
+              "y": 328
+            },
+            "left-2": {
+              "x": 196,
+              "y": 0
+            },
+            "right-6": {
+              "x": 392,
+              "y": 164
+            }
+          },
+          "family": "structural-adaptive-frontier-1-grid-structural",
+          "fingerprint": "be89f5cf9697c592",
+          "product": {
+            "score": 8716653.112270225,
+            "crossings": 79,
+            "labelRouteHits": 6,
+            "labelOverlap": 0,
+            "overlapPairs": 0,
+            "fitScale": 0.7169811320754716
+          },
+          "finalistCount": 4,
+          "boundaryClassCount": 0,
+          "workUnits": 8
+        }
+      },
+      "phaseMs": {
+        "candidate-generation": 0.25489999999990687,
+        "cheap-screen": 0.09799999999813735,
+        "product-verification": 1341.5312999999733,
+        "final-selection": 0.037299999996321276
+      },
+      "verifiedProductEvaluations": 4,
+      "failClosed": false
+    }
+  ],
+  "semanticEquivalence": {
+    "operationCount": 34,
+    "exactMatches": 34,
+    "allMatch": true,
+    "samples": [
+      {
+        "fixture": "lighthouse-en",
+        "arm": "structural-native-v3",
+        "providerStatus": "completed",
+        "providerFingerprint": "1da623b37cd48030",
+        "fixedFingerprint": "1da623b37cd48030",
+        "equal": true
+      },
+      {
+        "fixture": "lighthouse-en",
+        "arm": "frontier-adaptive-12",
+        "providerStatus": "completed",
+        "providerFingerprint": "778480610c1b34f8",
+        "fixedFingerprint": "778480610c1b34f8",
+        "equal": true
+      },
+      {
+        "fixture": "lighthouse-en",
+        "arm": "structural-native-discrete",
+        "providerStatus": "completed",
+        "providerFingerprint": "24453e010b6f75f2",
+        "fixedFingerprint": "24453e010b6f75f2",
+        "equal": true
+      },
+      {
+        "fixture": "dense-k7-7",
+        "arm": "structural-native-v3",
+        "providerStatus": "completed",
+        "providerFingerprint": "66e66856eade57d4",
+        "fixedFingerprint": "66e66856eade57d4",
+        "equal": true
+      },
+      {
+        "fixture": "dense-k7-7",
+        "arm": "frontier-adaptive-12",
+        "providerStatus": "completed",
+        "providerFingerprint": "3da600551f3b56b5",
+        "fixedFingerprint": "3da600551f3b56b5",
+        "equal": true
+      },
+      {
+        "fixture": "independent-k6-7",
+        "arm": "structural-native-v3",
+        "providerStatus": "completed",
+        "providerFingerprint": "f29c3002cdbe6776",
+        "fixedFingerprint": "f29c3002cdbe6776",
+        "equal": true
+      },
+      {
+        "fixture": "independent-k6-7",
+        "arm": "frontier-adaptive-12",
+        "providerStatus": "completed",
+        "providerFingerprint": "e88a542c09adec35",
+        "fixedFingerprint": "e88a542c09adec35",
+        "equal": true
+      }
+    ]
+  },
+  "cancellation": {
+    "status": "cancelled",
+    "resultExposed": false
+  },
+  "budgetExhaustion": {
+    "status": "budget-exhausted",
+    "resultExposed": false
+  },
+  "browserCampaign": "see browser-result-summary.json; browser campaign measures the same phase contract with current source Product verification and is not Product visual acceptance",
+  "disposition": {
+    "providerExecution": "PRODUCTION-SHAPED SEAM DIAGNOSTICALLY ESTABLISHED",
+    "browserCost": "MEASURED / MAIN-THREAD SLICE OPEN",
+    "mainThreadViability": "WORKER OR FURTHER EXECUTION STUDY REQUIRED FOR DENSE QUALITY WORK",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productionProvider": "NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "actualProductVisualEvaluation": "NOT READY",
+    "humanReview": "NOT READY",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}

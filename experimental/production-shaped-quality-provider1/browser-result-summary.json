@@ -1,0 +1,21 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCTION-SHAPED-QUALITY-PROVIDER-EXECUTION-v1",
+  "diagnosticOnly": true,
+  "runDate": "2026-09-14",
+  "browser": {
+    "family": "Edge",
+    "hardwareConcurrency": 16,
+    "longTaskObserverSupported": true,
+    "longTasksMs": [218, 186, 168, 164, 251, 185, 168, 164, 215, 180, 171, 164, 54, 52, 50, 54, 52, 50, 51]
+  },
+  "sourceBoundary": "Current source Product presentation authority through deriveBoundedAutomaticPresentation; candidate generation is a deterministic current-source adapter for execution measurement only and is not a new solver family or Product acceptance.",
+  "cases": [
+    { "id": "canonical", "category": "canonical", "nodes": 8, "edges": 10, "status": "completed", "finalistCount": 8, "turns": 12, "elapsedMs": 243, "maxSchedulerTurnMs": 36.5, "maxMainThreadSliceMs": 36.5, "phaseMs": { "candidate-generation": 1.1, "cheap-screen": 5.6, "product-verification": 195.9, "final-selection": 0.1 }, "eventLoop": { "maxIntervalGapMs": 64, "maxRafGapMs": 16.8 } },
+    { "id": "dense", "category": "dense", "nodes": 14, "edges": 49, "status": "completed", "finalistCount": 12, "turns": 16, "elapsedMs": 2317.7, "maxSchedulerTurnMs": 251.6, "maxMainThreadSliceMs": 251.6, "phaseMs": { "candidate-generation": 2.1, "cheap-screen": 0.3, "product-verification": 2239.4, "final-selection": 0 }, "eventLoop": { "maxIntervalGapMs": 255.8, "maxRafGapMs": 233.2 } },
+    { "id": "label", "category": "label-heavy", "nodes": 10, "edges": 20, "status": "completed", "finalistCount": 8, "turns": 12, "elapsedMs": 475.4, "maxSchedulerTurnMs": 54.9, "maxMainThreadSliceMs": 54.9, "phaseMs": { "candidate-generation": 0.5, "cheap-screen": 0.1, "product-verification": 415.9, "final-selection": 0 }, "eventLoop": { "maxIntervalGapMs": 62.1, "maxRafGapMs": 49.9 } }
+  ],
+  "determinism": { "repeatedCanonicalResultEqual": true, "firstFingerprint": "canonical-n0:164.909,166.909|canonical-n1:320.411,165.615|canonical-n2:636.319,168.909|canonical-n3:782.821,167.615|canonical-n4:277.173,280.485|canonical-n5:168.539,319.352|canonical-n6:739.583,277.485|canonical-n7:630.950,321.352", "secondFingerprint": "canonical-n0:164.909,166.909|canonical-n1:320.411,165.615|canonical-n2:636.319,168.909|canonical-n3:782.821,167.615|canonical-n4:277.173,280.485|canonical-n5:168.539,319.352|canonical-n6:739.583,277.485|canonical-n7:630.950,321.352" },
+  "cancellation": { "status": "cancelled", "resultExposed": false },
+  "budgetExhaustion": { "status": "budget-exhausted", "resultExposed": false },
+  "disposition": { "providerExecution": "DIAGNOSTICALLY ESTABLISHED", "browserCost": "MEASURED / MAIN-THREAD SLICE OPEN", "mainThreadViability": "WORKER OR FURTHER EXECUTION STUDY REQUIRED FOR DENSE QUALITY WORK", "qualitySolver": "HOLD / NOT ESTABLISHED", "productionProvider": "NOT ESTABLISHED", "productIntegration": "HOLD", "actualProductVisualEvaluation": "NOT READY", "humanReview": "NOT READY", "initialLayoutReleaseBlocker": "OPEN" }
+}
