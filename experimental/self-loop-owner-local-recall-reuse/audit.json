@@ -1,0 +1,1712 @@
+{
+  "contract": "SELF-LOOP-OWNER-LOCAL-FINALIST-RECALL-DEPENDENCY-REUSE-v1",
+  "diagnosticOnly": true,
+  "authority": {
+    "groundTruth": "current Product-authoritative render, final Relation-label placement, final Node-label placement, viewport guard, and ordinary-route churn",
+    "selfLoop": "Product-owned routeGraphEdge self-loop branch",
+    "noAuthorityTransfer": "Structural Placement, ordinary routing, final labels, endpoint plan, and Parallel / Incident architecture remain unchanged"
+  },
+  "referenceBoundary": {
+    "singleLoop": "all 72 angle/radius candidates for each loop are evaluated authoritatively",
+    "ownerGroup": "all 6^loop-count combinations retained by the current per-loop cheap screen are evaluated authoritatively",
+    "excluded": "full 72^loop-count owner-group Cartesian product; it is recorded but not silently treated as ground truth"
+  },
+  "recallDefinitions": {
+    "feasiblePlanRecall": "authoritative feasible plans captured by the current retained finalist set",
+    "bestAuthoritativePlanRecall": "authoritative rank-1 plan captured by the retained finalist set using the existing deterministic comparison",
+    "paretoFrontRecall": "authoritative non-dominated plans captured across feasibility, failure count, viewport, churn, clearance, and label-overlap dimensions",
+    "topNAuthoritativeQualityRecall": "authoritative top-24 plans captured by the retained finalist set",
+    "falseNegative": "authoritative feasible or recall-target plan omitted from the current cheap-screen finalist set"
+  },
+  "dependencyReuseDefinition": "A diagnostic owner-local projection reuses baseline ordinary routes, non-owner Self-loop routes, unaffected Relation labels, and non-owner Node labels, while replacing only owner-loop outputs and the owner Node label; eligibility requires exact equality with the full authoritative result.",
+  "method": {
+    "cases": "same 12 Lighthouse/Titanic EN/JA plus isolated, symmetric, perturbed, and four-loop fan-out controls",
+    "unchangedContract": {
+      "ordinaryClearancePx": 8,
+      "peerLoopClearancePx": 8,
+      "labelClearancePx": 4,
+      "viewportMargin": 12,
+      "ordinaryChurn": "candidate must not exceed current baseline churn"
+    },
+    "currentScreen": "per-loop top-6 retained candidates followed by owner-local Cartesian screen and top-24 authoritative finalists",
+    "fullReference": "all retained owner-local combinations are authoritatively evaluated; all single-loop domain candidates are authoritatively evaluated"
+  },
+  "results": [
+    {
+      "name": "canonical-lighthouse",
+      "locale": "en",
+      "ownerId": "beacon",
+      "graph": {
+        "nodes": 10,
+        "edges": 16,
+        "loops": 4,
+        "ordinary": 12
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict",
+          "ordinary-corridor-conflict",
+          "peer-loop-conflict"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "beacon-self-monitor",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 1201.56,
+            "cheapScreenMs": 195.52,
+            "authoritativeEvaluationMs": 1005.01
+          }
+        },
+        {
+          "edgeId": "beacon-self-calibrate",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 0.6667,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 1084.41,
+            "cheapScreenMs": 168.59,
+            "authoritativeEvaluationMs": 914.88
+          }
+        },
+        {
+          "edgeId": "lighthouse-capacity-self-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": false,
+          "topNAuthoritativeQualityRecall": 0.6667,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 1081.79,
+            "cheapScreenMs": 168.34,
+            "authoritativeEvaluationMs": 912.49
+          }
+        },
+        {
+          "edgeId": "lighthouse-capacity-self-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 0.1667,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 1052.73,
+            "cheapScreenMs": 172.66,
+            "authoritativeEvaluationMs": 879.32
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "beacon",
+          "loopCount": 4,
+          "fullRetainedProductCount": 1296,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 0,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 1296,
+            "feasiblePlanCount": 0,
+            "feasiblePlanRecall": null,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 94,
+            "paretoFrontRecall": 0.0532,
+            "topNAuthoritativeQualityRecall": 1,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 0,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 0,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 1296,
+            "eligibleCount": 0,
+            "eligibleRate": 0,
+            "ordinaryRoutesUnchangedCount": 576,
+            "unaffectedRelationLabelsUnchangedCount": 0,
+            "unaffectedNodeLabelsUnchangedCount": 200,
+            "semanticMismatchCount": 1296
+          },
+          "runtime": {
+            "totalMs": 19809.1,
+            "cheapScreenMs": 3762.97,
+            "authoritativeEvaluationMs": 14777.55,
+            "dependencyReuseProjectionMs": 347.23
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 26873856
+      }
+    },
+    {
+      "name": "canonical-lighthouse",
+      "locale": "ja",
+      "ownerId": "beacon",
+      "graph": {
+        "nodes": 10,
+        "edges": 16,
+        "loops": 4,
+        "ordinary": 12
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict",
+          "ordinary-corridor-conflict",
+          "peer-loop-conflict"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "beacon-self-monitor",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 1072.74,
+            "cheapScreenMs": 168.58,
+            "authoritativeEvaluationMs": 903.57
+          }
+        },
+        {
+          "edgeId": "beacon-self-calibrate",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 0.6667,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 1049.95,
+            "cheapScreenMs": 176.57,
+            "authoritativeEvaluationMs": 872.67
+          }
+        },
+        {
+          "edgeId": "lighthouse-capacity-self-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": false,
+          "topNAuthoritativeQualityRecall": 0.6667,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 1118.54,
+            "cheapScreenMs": 185.06,
+            "authoritativeEvaluationMs": 932.89
+          }
+        },
+        {
+          "edgeId": "lighthouse-capacity-self-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": false,
+          "topNAuthoritativeQualityRecall": 0.1667,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 1067.23,
+            "cheapScreenMs": 179.48,
+            "authoritativeEvaluationMs": 887.12
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "beacon",
+          "loopCount": 4,
+          "fullRetainedProductCount": 1296,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 0,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 1296,
+            "feasiblePlanCount": 0,
+            "feasiblePlanRecall": null,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 106,
+            "paretoFrontRecall": 0.0472,
+            "topNAuthoritativeQualityRecall": 1,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 0,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 0,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 1296,
+            "eligibleCount": 0,
+            "eligibleRate": 0,
+            "ordinaryRoutesUnchangedCount": 468,
+            "unaffectedRelationLabelsUnchangedCount": 0,
+            "unaffectedNodeLabelsUnchangedCount": 366,
+            "semanticMismatchCount": 1296
+          },
+          "runtime": {
+            "totalMs": 19807.19,
+            "cheapScreenMs": 3911.8,
+            "authoritativeEvaluationMs": 14567.35,
+            "dependencyReuseProjectionMs": 380.47
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 26873856
+      }
+    },
+    {
+      "name": "canonical-titanic",
+      "locale": "en",
+      "ownerId": "titanic",
+      "graph": {
+        "nodes": 13,
+        "edges": 14,
+        "loops": 2,
+        "ordinary": 12
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict",
+          "ordinary-corridor-conflict",
+          "peer-loop-conflict",
+          "viewport-capacity-shortage"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "titanic-capacity-self-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 892.52,
+            "cheapScreenMs": 76.02,
+            "authoritativeEvaluationMs": 816.06
+          }
+        },
+        {
+          "edgeId": "titanic-capacity-self-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 0.8333,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 877.28,
+            "cheapScreenMs": 76.84,
+            "authoritativeEvaluationMs": 799.98
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "titanic",
+          "loopCount": 2,
+          "fullRetainedProductCount": 36,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 0,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 36,
+            "feasiblePlanCount": 0,
+            "feasiblePlanRecall": null,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 12,
+            "paretoFrontRecall": 0.75,
+            "topNAuthoritativeQualityRecall": 0.9167,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 0,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 0,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 36,
+            "eligibleCount": 0,
+            "eligibleRate": 0,
+            "ordinaryRoutesUnchangedCount": 30,
+            "unaffectedRelationLabelsUnchangedCount": 0,
+            "unaffectedNodeLabelsUnchangedCount": 0,
+            "semanticMismatchCount": 36
+          },
+          "runtime": {
+            "totalMs": 596.99,
+            "cheapScreenMs": 183.93,
+            "authoritativeEvaluationMs": 402.62,
+            "dependencyReuseProjectionMs": 9.24
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 5184
+      }
+    },
+    {
+      "name": "canonical-titanic",
+      "locale": "ja",
+      "ownerId": "titanic",
+      "graph": {
+        "nodes": 13,
+        "edges": 14,
+        "loops": 2,
+        "ordinary": 12
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict",
+          "ordinary-corridor-conflict",
+          "peer-loop-conflict",
+          "viewport-capacity-shortage"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "titanic-capacity-self-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 0.8333,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 916.37,
+            "cheapScreenMs": 77.04,
+            "authoritativeEvaluationMs": 838.9
+          }
+        },
+        {
+          "edgeId": "titanic-capacity-self-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 0.8333,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 853.19,
+            "cheapScreenMs": 75.72,
+            "authoritativeEvaluationMs": 777.08
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "titanic",
+          "loopCount": 2,
+          "fullRetainedProductCount": 36,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 0,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 36,
+            "feasiblePlanCount": 0,
+            "feasiblePlanRecall": null,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 17,
+            "paretoFrontRecall": 0.5882,
+            "topNAuthoritativeQualityRecall": 0.9167,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 0,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 0,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 36,
+            "eligibleCount": 0,
+            "eligibleRate": 0,
+            "ordinaryRoutesUnchangedCount": 25,
+            "unaffectedRelationLabelsUnchangedCount": 0,
+            "unaffectedNodeLabelsUnchangedCount": 0,
+            "semanticMismatchCount": 36
+          },
+          "runtime": {
+            "totalMs": 595.64,
+            "cheapScreenMs": 201.48,
+            "authoritativeEvaluationMs": 383.26,
+            "dependencyReuseProjectionMs": 9.5
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 5184
+      }
+    },
+    {
+      "name": "synthetic-isolated",
+      "locale": "en",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 1,
+        "edges": 2,
+        "loops": 2,
+        "ordinary": 0
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "loop-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 34,
+          "feasiblePlanCount": 1,
+          "feasiblePlanRecall": 0,
+          "bestAuthoritativePlanRecall": false,
+          "topNAuthoritativeQualityRecall": 0,
+          "falseConfidenceCount": 33,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 1,
+          "falseNegativeFeasiblePlans": [
+            {
+              "key": "loop-1:-2.79252680:52",
+              "failures": [
+                "feasible"
+              ]
+            }
+          ],
+          "displayedFalseNegativeExampleCount": 1,
+          "runtime": {
+            "totalMs": 31.46,
+            "cheapScreenMs": 6.54,
+            "authoritativeEvaluationMs": 24.28
+          }
+        },
+        {
+          "edgeId": "loop-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 36,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 36,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 34.55,
+            "cheapScreenMs": 6.46,
+            "authoritativeEvaluationMs": 27.44
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "fullRetainedProductCount": 36,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 36,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 36,
+            "feasiblePlanCount": 2,
+            "feasiblePlanRecall": 1,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 9,
+            "paretoFrontRecall": 0.8889,
+            "topNAuthoritativeQualityRecall": 1,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 34,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 34,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 36,
+            "eligibleCount": 36,
+            "eligibleRate": 1,
+            "ordinaryRoutesUnchangedCount": 36,
+            "unaffectedRelationLabelsUnchangedCount": 36,
+            "unaffectedNodeLabelsUnchangedCount": 36,
+            "semanticMismatchCount": 0
+          },
+          "runtime": {
+            "totalMs": 29.32,
+            "cheapScreenMs": 18.2,
+            "authoritativeEvaluationMs": 8.43,
+            "dependencyReuseProjectionMs": 1.43
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 5184
+      }
+    },
+    {
+      "name": "synthetic-symmetric",
+      "locale": "en",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 6,
+        "loops": 2,
+        "ordinary": 4
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict",
+          "ordinary-corridor-conflict"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "loop-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 206.97,
+            "cheapScreenMs": 30.35,
+            "authoritativeEvaluationMs": 175.75
+          }
+        },
+        {
+          "edgeId": "loop-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 10,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 10,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 188.62,
+            "cheapScreenMs": 26.06,
+            "authoritativeEvaluationMs": 162.18
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "fullRetainedProductCount": 36,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 36,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 36,
+            "feasiblePlanCount": 0,
+            "feasiblePlanRecall": null,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 9,
+            "paretoFrontRecall": 0.7778,
+            "topNAuthoritativeQualityRecall": 1,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 36,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 36,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 36,
+            "eligibleCount": 24,
+            "eligibleRate": 0.6667,
+            "ordinaryRoutesUnchangedCount": 36,
+            "unaffectedRelationLabelsUnchangedCount": 36,
+            "unaffectedNodeLabelsUnchangedCount": 24,
+            "semanticMismatchCount": 12
+          },
+          "runtime": {
+            "totalMs": 144.04,
+            "cheapScreenMs": 65.47,
+            "authoritativeEvaluationMs": 73.89,
+            "dependencyReuseProjectionMs": 3.66
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 5184
+      }
+    },
+    {
+      "name": "synthetic-perturbed",
+      "locale": "en",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 5,
+        "loops": 2,
+        "ordinary": 3
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict",
+          "ordinary-corridor-conflict"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "loop-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 155.56,
+            "cheapScreenMs": 21.38,
+            "authoritativeEvaluationMs": 133.81
+          }
+        },
+        {
+          "edgeId": "loop-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 150.74,
+            "cheapScreenMs": 21.58,
+            "authoritativeEvaluationMs": 128.77
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "fullRetainedProductCount": 36,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 0,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 36,
+            "feasiblePlanCount": 0,
+            "feasiblePlanRecall": null,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 13,
+            "paretoFrontRecall": 0.4615,
+            "topNAuthoritativeQualityRecall": 1,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 0,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 0,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 36,
+            "eligibleCount": 0,
+            "eligibleRate": 0,
+            "ordinaryRoutesUnchangedCount": 36,
+            "unaffectedRelationLabelsUnchangedCount": 6,
+            "unaffectedNodeLabelsUnchangedCount": 0,
+            "semanticMismatchCount": 36
+          },
+          "runtime": {
+            "totalMs": 117.38,
+            "cheapScreenMs": 52.79,
+            "authoritativeEvaluationMs": 60.7,
+            "dependencyReuseProjectionMs": 2.94
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 5184
+      }
+    },
+    {
+      "name": "synthetic-fanout",
+      "locale": "en",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 8,
+        "loops": 4,
+        "ordinary": 4
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict",
+          "ordinary-corridor-conflict",
+          "peer-loop-conflict"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "loop-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 335.62,
+            "cheapScreenMs": 68.54,
+            "authoritativeEvaluationMs": 266.6
+          }
+        },
+        {
+          "edgeId": "loop-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": false,
+          "topNAuthoritativeQualityRecall": 0.3333,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 332.97,
+            "cheapScreenMs": 69.07,
+            "authoritativeEvaluationMs": 263.42
+          }
+        },
+        {
+          "edgeId": "loop-3",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": false,
+          "topNAuthoritativeQualityRecall": 0,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 334.19,
+            "cheapScreenMs": 70.53,
+            "authoritativeEvaluationMs": 263.19
+          }
+        },
+        {
+          "edgeId": "loop-4",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 0.6667,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 342.38,
+            "cheapScreenMs": 69.89,
+            "authoritativeEvaluationMs": 271.92
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 4,
+          "fullRetainedProductCount": 1296,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 0,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 1296,
+            "feasiblePlanCount": 0,
+            "feasiblePlanRecall": null,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 99,
+            "paretoFrontRecall": 0.0202,
+            "topNAuthoritativeQualityRecall": 1,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 0,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 0,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 1296,
+            "eligibleCount": 0,
+            "eligibleRate": 0,
+            "ordinaryRoutesUnchangedCount": 864,
+            "unaffectedRelationLabelsUnchangedCount": 0,
+            "unaffectedNodeLabelsUnchangedCount": 966,
+            "semanticMismatchCount": 1296
+          },
+          "runtime": {
+            "totalMs": 6799.17,
+            "cheapScreenMs": 1545.67,
+            "authoritativeEvaluationMs": 4064.05,
+            "dependencyReuseProjectionMs": 168.78
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 26873856
+      }
+    },
+    {
+      "name": "synthetic-isolated",
+      "locale": "ja",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 1,
+        "edges": 2,
+        "loops": 2,
+        "ordinary": 0
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "loop-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 34,
+          "feasiblePlanCount": 20,
+          "feasiblePlanRecall": 0.1,
+          "bestAuthoritativePlanRecall": false,
+          "topNAuthoritativeQualityRecall": 0,
+          "falseConfidenceCount": 14,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 18,
+          "falseNegativeFeasiblePlans": [
+            {
+              "key": "loop-1:-1.22173048:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-1.39626340:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-1.57079633:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-1.74532925:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-1.91986218:38",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-1.91986218:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-2.09439510:38",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-2.09439510:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-2.26892803:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-2.44346095:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-2.61799388:38",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-1:-2.61799388:52",
+              "failures": [
+                "feasible"
+              ]
+            }
+          ],
+          "displayedFalseNegativeExampleCount": 12,
+          "runtime": {
+            "totalMs": 29.95,
+            "cheapScreenMs": 6.5,
+            "authoritativeEvaluationMs": 22.96
+          }
+        },
+        {
+          "edgeId": "loop-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 36,
+          "feasiblePlanCount": 11,
+          "feasiblePlanRecall": 0,
+          "bestAuthoritativePlanRecall": false,
+          "topNAuthoritativeQualityRecall": 0,
+          "falseConfidenceCount": 25,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 11,
+          "falseNegativeFeasiblePlans": [
+            {
+              "key": "loop-2:0.69813170:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-2:0.87266463:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-2:1.04719755:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-2:1.22173048:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-2:1.39626340:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-2:1.57079633:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-2:1.74532925:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-2:1.91986218:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-2:2.09439510:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-2:2.26892803:52",
+              "failures": [
+                "feasible"
+              ]
+            },
+            {
+              "key": "loop-2:2.44346095:52",
+              "failures": [
+                "feasible"
+              ]
+            }
+          ],
+          "displayedFalseNegativeExampleCount": 11,
+          "runtime": {
+            "totalMs": 28.86,
+            "cheapScreenMs": 5.73,
+            "authoritativeEvaluationMs": 22.65
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "fullRetainedProductCount": 36,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 36,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 36,
+            "feasiblePlanCount": 15,
+            "feasiblePlanRecall": 0.4667,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 7,
+            "paretoFrontRecall": 0.8571,
+            "topNAuthoritativeQualityRecall": 0.6667,
+            "falseNegativeCount": 8,
+            "displayedFalseNegativeExampleCount": 8,
+            "falseNegatives": [
+              {
+                "key": "loop-1:-4.01425728:38|loop-2:0.17453293:52",
+                "failures": [
+                  "feasible"
+                ]
+              },
+              {
+                "key": "loop-1:-4.01425728:38|loop-2:0.34906585:52",
+                "failures": [
+                  "feasible"
+                ]
+              },
+              {
+                "key": "loop-1:-4.01425728:52|loop-2:-0.00000000:38",
+                "failures": [
+                  "feasible"
+                ]
+              },
+              {
+                "key": "loop-1:-4.01425728:52|loop-2:0.17453293:38",
+                "failures": [
+                  "feasible"
+                ]
+              },
+              {
+                "key": "loop-1:-4.01425728:52|loop-2:0.17453293:52",
+                "failures": [
+                  "feasible"
+                ]
+              },
+              {
+                "key": "loop-1:-4.01425728:52|loop-2:0.34906585:38",
+                "failures": [
+                  "feasible"
+                ]
+              },
+              {
+                "key": "loop-1:-4.01425728:52|loop-2:0.34906585:52",
+                "failures": [
+                  "feasible"
+                ]
+              },
+              {
+                "key": "loop-1:-4.01425728:52|loop-2:0.52359878:38",
+                "failures": [
+                  "feasible"
+                ]
+              }
+            ],
+            "screenFalseConfidenceCount": 21,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 21,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 36,
+            "eligibleCount": 36,
+            "eligibleRate": 1,
+            "ordinaryRoutesUnchangedCount": 36,
+            "unaffectedRelationLabelsUnchangedCount": 36,
+            "unaffectedNodeLabelsUnchangedCount": 36,
+            "semanticMismatchCount": 0
+          },
+          "runtime": {
+            "totalMs": 23.92,
+            "cheapScreenMs": 15.5,
+            "authoritativeEvaluationMs": 6.34,
+            "dependencyReuseProjectionMs": 1.4
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 5184
+      }
+    },
+    {
+      "name": "synthetic-symmetric",
+      "locale": "ja",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 6,
+        "loops": 2,
+        "ordinary": 4
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict",
+          "ordinary-corridor-conflict"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "loop-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 184.51,
+            "cheapScreenMs": 26.08,
+            "authoritativeEvaluationMs": 158.04
+          }
+        },
+        {
+          "edgeId": "loop-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 10,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 10,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 191.22,
+            "cheapScreenMs": 26.35,
+            "authoritativeEvaluationMs": 164.5
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "fullRetainedProductCount": 36,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 36,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 36,
+            "feasiblePlanCount": 0,
+            "feasiblePlanRecall": null,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 9,
+            "paretoFrontRecall": 0.7778,
+            "topNAuthoritativeQualityRecall": 1,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 36,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 36,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 36,
+            "eligibleCount": 8,
+            "eligibleRate": 0.2222,
+            "ordinaryRoutesUnchangedCount": 36,
+            "unaffectedRelationLabelsUnchangedCount": 12,
+            "unaffectedNodeLabelsUnchangedCount": 24,
+            "semanticMismatchCount": 28
+          },
+          "runtime": {
+            "totalMs": 145.66,
+            "cheapScreenMs": 68.22,
+            "authoritativeEvaluationMs": 73.2,
+            "dependencyReuseProjectionMs": 2.99
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 5184
+      }
+    },
+    {
+      "name": "synthetic-perturbed",
+      "locale": "ja",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 5,
+        "loops": 2,
+        "ordinary": 3
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict",
+          "ordinary-corridor-conflict"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "loop-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 151.9,
+            "cheapScreenMs": 20.16,
+            "authoritativeEvaluationMs": 131.37
+          }
+        },
+        {
+          "edgeId": "loop-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 152.01,
+            "cheapScreenMs": 21.63,
+            "authoritativeEvaluationMs": 129.94
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "fullRetainedProductCount": 36,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 0,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 36,
+            "feasiblePlanCount": 0,
+            "feasiblePlanRecall": null,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 21,
+            "paretoFrontRecall": 0.619,
+            "topNAuthoritativeQualityRecall": 1,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 0,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 0,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 36,
+            "eligibleCount": 0,
+            "eligibleRate": 0,
+            "ordinaryRoutesUnchangedCount": 36,
+            "unaffectedRelationLabelsUnchangedCount": 12,
+            "unaffectedNodeLabelsUnchangedCount": 0,
+            "semanticMismatchCount": 36
+          },
+          "runtime": {
+            "totalMs": 133.19,
+            "cheapScreenMs": 62.81,
+            "authoritativeEvaluationMs": 65.83,
+            "dependencyReuseProjectionMs": 3.23
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 5184
+      }
+    },
+    {
+      "name": "synthetic-fanout",
+      "locale": "ja",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 8,
+        "loops": 4,
+        "ordinary": 4
+      },
+      "baseline": {
+        "failures": [
+          "label-envelope-conflict",
+          "ordinary-corridor-conflict",
+          "peer-loop-conflict"
+        ],
+        "ordinaryRouteChurn": 0
+      },
+      "singleLoop": [
+        {
+          "edgeId": "loop-1",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 1,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 355.75,
+            "cheapScreenMs": 71.94,
+            "authoritativeEvaluationMs": 283.13
+          }
+        },
+        {
+          "edgeId": "loop-2",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": false,
+          "topNAuthoritativeQualityRecall": 0,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 339.5,
+            "cheapScreenMs": 71.62,
+            "authoritativeEvaluationMs": 266.69
+          }
+        },
+        {
+          "edgeId": "loop-3",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": false,
+          "topNAuthoritativeQualityRecall": 0,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 337.83,
+            "cheapScreenMs": 70.22,
+            "authoritativeEvaluationMs": 267.09
+          }
+        },
+        {
+          "edgeId": "loop-4",
+          "candidateCount": 72,
+          "retainedCandidateCount": 6,
+          "authoritativeEvaluationCount": 72,
+          "screenFeasibleCandidateCount": 0,
+          "feasiblePlanCount": 0,
+          "feasiblePlanRecall": null,
+          "bestAuthoritativePlanRecall": true,
+          "topNAuthoritativeQualityRecall": 0.6667,
+          "falseConfidenceCount": 0,
+          "falseRejectionCount": 0,
+          "falseNegativeFeasiblePlanCount": 0,
+          "falseNegativeFeasiblePlans": [],
+          "displayedFalseNegativeExampleCount": 0,
+          "runtime": {
+            "totalMs": 345.29,
+            "cheapScreenMs": 72.85,
+            "authoritativeEvaluationMs": 271.98
+          }
+        }
+      ],
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 4,
+          "fullRetainedProductCount": 1296,
+          "retainedPerLoopCount": 6,
+          "currentAuthoritativeFinalistCount": 24,
+          "screenFeasibleCombinationCount": 0,
+          "recall": {
+            "screenedFinalistCount": 24,
+            "authoritativeCandidateCount": 1296,
+            "feasiblePlanCount": 0,
+            "feasiblePlanRecall": null,
+            "bestAuthoritativePlanRecall": true,
+            "paretoPlanCount": 88,
+            "paretoFrontRecall": 0.0114,
+            "topNAuthoritativeQualityRecall": 0.9583,
+            "falseNegativeCount": 0,
+            "displayedFalseNegativeExampleCount": 0,
+            "falseNegatives": [],
+            "screenFalseConfidenceCount": 0,
+            "screenFalseRejectionCount": 0
+          },
+          "screenFalseConfidenceCount": 0,
+          "screenFalseRejectionCount": 0,
+          "dependencyReuse": {
+            "evaluatedCount": 1296,
+            "eligibleCount": 0,
+            "eligibleRate": 0,
+            "ordinaryRoutesUnchangedCount": 864,
+            "unaffectedRelationLabelsUnchangedCount": 0,
+            "unaffectedNodeLabelsUnchangedCount": 119,
+            "semanticMismatchCount": 1296
+          },
+          "runtime": {
+            "totalMs": 6700.01,
+            "cheapScreenMs": 1527.35,
+            "authoritativeEvaluationMs": 4055.05,
+            "dependencyReuseProjectionMs": 179.41
+          }
+        }
+      ],
+      "fullGroupReference": {
+        "boundary": "all 6^loop-count retained combinations are Product-authoritatively evaluated; the 72^loop-count full candidate-domain product is not evaluated",
+        "maxFullCandidateDomainProduct": 26873856
+      }
+    }
+  ],
+  "summary": {
+    "resultCount": 12,
+    "singleLoopReferenceCount": 32,
+    "groupReferenceCount": 12,
+    "groupAuthoritativeReferenceProductCount": 5472,
+    "groupDependencyReuseEligibleCount": 104,
+    "groupDependencyReuseEvaluatedCount": 5472,
+    "groupFalseNegativeCount": 8,
+    "singleLoopFalseNegativeCount": 30
+  }
+}

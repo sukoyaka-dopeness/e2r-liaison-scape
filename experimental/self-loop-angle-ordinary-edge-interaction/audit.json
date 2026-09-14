@@ -1,0 +1,1687 @@
+{
+  "contract": "SELF-LOOP-ANGLE-ORDINARY-EDGE-INTERACTION-v1",
+  "diagnosticOnly": true,
+  "authority": {
+    "selfLoop": "Product-owned routeGraphEdge self-loop branch",
+    "ordinaryRouting": "Product-owned deriveAutomaticRoutes / routeGraphEdge",
+    "relationLabels": "Product-owned deriveAutomaticRelationLabels",
+    "structuralPlacement": "fixed positions or production seed only; no placement mutation"
+  },
+  "currentRule": {
+    "angularStepDegrees": 10,
+    "angularCandidateCount": 36,
+    "nodeInfluenceRadius": 60,
+    "preferredOrientationWeight": 0.05,
+    "radiusFormula": "38 + floor(parallelIndex / 3) * 14",
+    "candidateInputs": [
+      "other Node pressure",
+      "preferred orientation"
+    ],
+    "excludedInputs": [
+      "ordinary occupied paths",
+      "Relation labels",
+      "Node labels",
+      "peer Self-loop paths",
+      "viewport bounds"
+    ]
+  },
+  "method": {
+    "canonical": "Lighthouse and Titanic EN/JA with two added Self-loops on the highest-degree Entity; stored Dataset content unchanged",
+    "synthetic": "isolated, symmetric, perturbed, four-loop fanout; EN/JA long-label variants",
+    "controls": [
+      "ordinary-first route order with current self-loop selector",
+      "36 manual-angle diagnostic enumeration at the current radius",
+      "exact repeated Product pipeline"
+    ],
+    "metrics": [
+      "angle/radius",
+      "foreign Node clearance",
+      "ordinary path clearance",
+      "peer-loop clearance",
+      "incident angular gap",
+      "Relation-label route/foreign-route/ownership metrics",
+      "owner Node-label clearance",
+      "ordinary-route churn",
+      "determinism",
+      "route bounds / viewport seed fit"
+    ]
+  },
+  "results": [
+    {
+      "name": "canonical-lighthouse",
+      "locale": "en",
+      "graph": {
+        "nodes": 10,
+        "edges": 16,
+        "loops": 4,
+        "ordinary": 12
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -20.48,
+        "maxX": 487.97,
+        "minY": -3.69,
+        "maxY": 425.46
+      },
+      "fit": {
+        "scale": 1,
+        "pan": {
+          "x": 236.6771719653433,
+          "y": 161.3853925246762
+        }
+      },
+      "loops": [
+        {
+          "id": "beacon-self-monitor",
+          "label": "self-monitors",
+          "orientationDeg": 40,
+          "preferredDeltaDeg": 10,
+          "radius": 38,
+          "foreignNodeClearance": 29.09,
+          "ordinaryPathClearance": 25.64,
+          "peerLoopClearance": 19.8,
+          "incidentAngularGapDeg": 73.04,
+          "labelToOwnRoute": 0,
+          "labelToOrdinaryRoute": 81.67,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 32.84,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "beacon-self-calibrate",
+          "label": "self-calibrates",
+          "orientationDeg": -110,
+          "preferredDeltaDeg": 20,
+          "radius": 38,
+          "foreignNodeClearance": 32.71,
+          "ordinaryPathClearance": 1.58,
+          "peerLoopClearance": 1.81,
+          "incidentAngularGapDeg": 61.34,
+          "labelToOwnRoute": 36.52,
+          "labelToOrdinaryRoute": 0,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 57.8,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "lighthouse-self-1",
+          "label": "self monitors the long restoration relationship",
+          "orientationDeg": 150,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 46.03,
+          "ordinaryPathClearance": 60.8,
+          "peerLoopClearance": 2.09,
+          "incidentAngularGapDeg": 161.34,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 114.34,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 0,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "lighthouse-self-2",
+          "label": "self calibrates the long restoration relationship",
+          "orientationDeg": -120,
+          "preferredDeltaDeg": 30,
+          "radius": 52,
+          "foreignNodeClearance": 13.84,
+          "ordinaryPathClearance": 0.86,
+          "peerLoopClearance": 1.81,
+          "incidentAngularGapDeg": 71.34,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 30.97,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 46.76,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "beacon-self-monitor",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 40,
+            "score": 0.01,
+            "ordinaryClearance": 25.64,
+            "labelClearance": 81.67,
+            "nodeLabelClearance": 32.84,
+            "nodeClearance": 61.09
+          },
+          "best": {
+            "orientationDeg": 30,
+            "score": 0,
+            "ordinaryClearance": 18.22,
+            "labelClearance": 74.41,
+            "nodeLabelClearance": 42.07,
+            "nodeClearance": 51.92
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "beacon-self-calibrate",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -110,
+            "score": 16441.54,
+            "ordinaryClearance": 1.58,
+            "labelClearance": 0,
+            "nodeLabelClearance": 57.8,
+            "nodeClearance": 64.71
+          },
+          "best": {
+            "orientationDeg": -150,
+            "score": 0.05,
+            "ordinaryClearance": 14.1,
+            "labelClearance": 57.88,
+            "nodeLabelClearance": 21.34,
+            "nodeClearance": 51.38
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "lighthouse-self-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 150,
+            "score": 5400,
+            "ordinaryClearance": 60.8,
+            "labelClearance": 98.37,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 78.03
+          },
+          "best": {
+            "orientationDeg": 200,
+            "score": 0.04,
+            "ordinaryClearance": 23.44,
+            "labelClearance": 69.44,
+            "nodeLabelClearance": 12.77,
+            "nodeClearance": 50.17
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "lighthouse-self-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -120,
+            "score": 11114.07,
+            "ordinaryClearance": 0.86,
+            "labelClearance": 16.76,
+            "nodeLabelClearance": 46.76,
+            "nodeClearance": 45.84
+          },
+          "best": {
+            "orientationDeg": 30,
+            "score": 0.1,
+            "ordinaryClearance": 17.43,
+            "labelClearance": 96.71,
+            "nodeLabelClearance": 40.78,
+            "nodeClearance": 40.82
+          },
+          "bestIsDifferent": true
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 6,
+      "control": {
+        "ownerId": "beacon",
+        "placement": "production-seed"
+      }
+    },
+    {
+      "name": "canonical-lighthouse",
+      "locale": "ja",
+      "graph": {
+        "nodes": 10,
+        "edges": 16,
+        "loops": 4,
+        "ordinary": 12
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -12.65,
+        "maxX": 487.97,
+        "minY": -11,
+        "maxY": 400.39
+      },
+      "fit": {
+        "scale": 1,
+        "pan": {
+          "x": 236.6771719653433,
+          "y": 161.3853925246762
+        }
+      },
+      "loops": [
+        {
+          "id": "beacon-self-monitor",
+          "label": "自己監視する",
+          "orientationDeg": 40,
+          "preferredDeltaDeg": 10,
+          "radius": 38,
+          "foreignNodeClearance": 29.09,
+          "ordinaryPathClearance": 25.64,
+          "peerLoopClearance": 19.8,
+          "incidentAngularGapDeg": 73.04,
+          "labelToOwnRoute": 0,
+          "labelToOrdinaryRoute": 79.37,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 215.68,
+          "ownerNodeLabelClearance": 0,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "beacon-self-calibrate",
+          "label": "自己調整する",
+          "orientationDeg": -110,
+          "preferredDeltaDeg": 20,
+          "radius": 38,
+          "foreignNodeClearance": 32.71,
+          "ordinaryPathClearance": 1.58,
+          "peerLoopClearance": 1.81,
+          "incidentAngularGapDeg": 61.34,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": 4.04,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 66.61,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "lighthouse-self-1",
+          "label": "自己関係を確認する長い日本語ラベル",
+          "orientationDeg": 150,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 46.03,
+          "ordinaryPathClearance": 60.8,
+          "peerLoopClearance": 2.09,
+          "incidentAngularGapDeg": 161.34,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": 91.41,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 52.87,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "lighthouse-self-2",
+          "label": "自己関係を調整する長い日本語ラベル",
+          "orientationDeg": -120,
+          "preferredDeltaDeg": 30,
+          "radius": 52,
+          "foreignNodeClearance": 13.84,
+          "ordinaryPathClearance": 0.86,
+          "peerLoopClearance": 1.81,
+          "incidentAngularGapDeg": 71.34,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": 19.99,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 75.53,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "beacon-self-monitor",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 40,
+            "score": 5400.01,
+            "ordinaryClearance": 25.64,
+            "labelClearance": 79.37,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 61.09
+          },
+          "best": {
+            "orientationDeg": 100,
+            "score": 0.06,
+            "ordinaryClearance": 69.15,
+            "labelClearance": 100.83,
+            "nodeLabelClearance": 8.57,
+            "nodeClearance": 117.15
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "beacon-self-calibrate",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -110,
+            "score": 11041.54,
+            "ordinaryClearance": 1.58,
+            "labelClearance": 5.75,
+            "nodeLabelClearance": 66.61,
+            "nodeClearance": 64.71
+          },
+          "best": {
+            "orientationDeg": -150,
+            "score": 0.05,
+            "ordinaryClearance": 19.2,
+            "labelClearance": 69.09,
+            "nodeLabelClearance": 82.91,
+            "nodeClearance": 51.38
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "lighthouse-self-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 150,
+            "score": 0,
+            "ordinaryClearance": 60.8,
+            "labelClearance": 98.37,
+            "nodeLabelClearance": 52.87,
+            "nodeClearance": 78.03
+          },
+          "best": {
+            "orientationDeg": 150,
+            "score": 0,
+            "ordinaryClearance": 60.8,
+            "labelClearance": 98.37,
+            "nodeLabelClearance": 52.87,
+            "nodeClearance": 78.03
+          },
+          "bestIsDifferent": false
+        },
+        {
+          "id": "lighthouse-self-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -120,
+            "score": 11114.07,
+            "ordinaryClearance": 0.86,
+            "labelClearance": 7.05,
+            "nodeLabelClearance": 75.53,
+            "nodeClearance": 45.84
+          },
+          "best": {
+            "orientationDeg": -180,
+            "score": 0.08,
+            "ordinaryClearance": 34.07,
+            "labelClearance": 87.14,
+            "nodeLabelClearance": 85.28,
+            "nodeClearance": 27.33
+          },
+          "bestIsDifferent": true
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 7,
+      "control": {
+        "ownerId": "beacon",
+        "placement": "production-seed"
+      }
+    },
+    {
+      "name": "canonical-titanic",
+      "locale": "en",
+      "graph": {
+        "nodes": 13,
+        "edges": 14,
+        "loops": 2,
+        "ordinary": 12
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -3.32,
+        "maxX": 791.58,
+        "minY": 2.46,
+        "maxY": 487.74
+      },
+      "fit": {
+        "scale": 0.8156196518843327,
+        "pan": {
+          "x": 70.03791811319532,
+          "y": 61.08827181805094
+        }
+      },
+      "loops": [
+        {
+          "id": "titanic-self-1",
+          "label": "self monitors the long restoration relationship",
+          "orientationDeg": -90,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 57.43,
+          "ordinaryPathClearance": 1.81,
+          "peerLoopClearance": 1.15,
+          "incidentAngularGapDeg": 36.02,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 0,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 0,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "titanic-self-2",
+          "label": "self calibrates the long restoration relationship",
+          "orientationDeg": -10,
+          "preferredDeltaDeg": 40,
+          "radius": 38,
+          "foreignNodeClearance": 27.54,
+          "ordinaryPathClearance": 0.31,
+          "peerLoopClearance": 1.15,
+          "incidentAngularGapDeg": 5.84,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": 0,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 48.56,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "titanic-self-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -90,
+            "score": 21818.87,
+            "ordinaryClearance": 1.81,
+            "labelClearance": 0,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 89.43
+          },
+          "best": {
+            "orientationDeg": 70,
+            "score": 0.14,
+            "ordinaryClearance": 14.85,
+            "labelClearance": 7.01,
+            "nodeLabelClearance": 91.38,
+            "nodeClearance": 43.62
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "titanic-self-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -10,
+            "score": 16568.79,
+            "ordinaryClearance": 0.31,
+            "labelClearance": 0,
+            "nodeLabelClearance": 48.56,
+            "nodeClearance": 59.54
+          },
+          "best": {
+            "orientationDeg": 70,
+            "score": 0.03,
+            "ordinaryClearance": 14.85,
+            "labelClearance": 7.01,
+            "nodeLabelClearance": 91.38,
+            "nodeClearance": 43.62
+          },
+          "bestIsDifferent": true
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 6,
+      "control": {
+        "ownerId": "titanic",
+        "placement": "production-seed"
+      }
+    },
+    {
+      "name": "canonical-titanic",
+      "locale": "ja",
+      "graph": {
+        "nodes": 13,
+        "edges": 14,
+        "loops": 2,
+        "ordinary": 12
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -3.32,
+        "maxX": 791.58,
+        "minY": 2.46,
+        "maxY": 487.74
+      },
+      "fit": {
+        "scale": 0.8156196518843327,
+        "pan": {
+          "x": 70.03791811319532,
+          "y": 61.08827181805094
+        }
+      },
+      "loops": [
+        {
+          "id": "titanic-self-1",
+          "label": "自己関係を確認する長い日本語ラベル",
+          "orientationDeg": -90,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 57.43,
+          "ordinaryPathClearance": 0.91,
+          "peerLoopClearance": 1.15,
+          "incidentAngularGapDeg": 36.02,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": 0,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 87.99,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "titanic-self-2",
+          "label": "自己関係を調整する長い日本語ラベル",
+          "orientationDeg": -10,
+          "preferredDeltaDeg": 40,
+          "radius": 38,
+          "foreignNodeClearance": 27.54,
+          "ordinaryPathClearance": 0.31,
+          "peerLoopClearance": 1.15,
+          "incidentAngularGapDeg": 5.84,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 0,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 15.61,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "titanic-self-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -90,
+            "score": 16508.56,
+            "ordinaryClearance": 0.91,
+            "labelClearance": 0,
+            "nodeLabelClearance": 87.99,
+            "nodeClearance": 89.43
+          },
+          "best": {
+            "orientationDeg": 70,
+            "score": 5400.14,
+            "ordinaryClearance": 14.85,
+            "labelClearance": 20.91,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 43.62
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "titanic-self-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -10,
+            "score": 16264.78,
+            "ordinaryClearance": 0.31,
+            "labelClearance": 3.04,
+            "nodeLabelClearance": 15.61,
+            "nodeClearance": 59.54
+          },
+          "best": {
+            "orientationDeg": 70,
+            "score": 5400.03,
+            "ordinaryClearance": 14.85,
+            "labelClearance": 20.91,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 43.62
+          },
+          "bestIsDifferent": true
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 7,
+      "control": {
+        "ownerId": "titanic",
+        "placement": "production-seed"
+      }
+    },
+    {
+      "name": "synthetic-isolated",
+      "locale": "en",
+      "graph": {
+        "nodes": 1,
+        "edges": 2,
+        "loops": 2,
+        "ordinary": 0
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -37.98,
+        "maxX": 84.18,
+        "minY": -91.64,
+        "maxY": 88.58
+      },
+      "fit": {
+        "scale": 1,
+        "pan": {
+          "x": 480,
+          "y": 320
+        }
+      },
+      "loops": [
+        {
+          "id": "loop-1",
+          "label": "self relation with a deliberately long English label",
+          "orientationDeg": -90,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": null,
+          "ordinaryPathClearance": null,
+          "peerLoopClearance": 33.02,
+          "incidentAngularGapDeg": 180,
+          "labelToOwnRoute": 0,
+          "labelToOrdinaryRoute": null,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 41.63,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-2",
+          "label": "self relation calibrates another long label",
+          "orientationDeg": 30,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": null,
+          "ordinaryPathClearance": null,
+          "peerLoopClearance": 28.03,
+          "incidentAngularGapDeg": 180,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": null,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 56.99,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "loop-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -90,
+            "score": 0,
+            "ordinaryClearance": null,
+            "labelClearance": null,
+            "nodeLabelClearance": 41.63,
+            "nodeClearance": null
+          },
+          "best": {
+            "orientationDeg": -90,
+            "score": 0,
+            "ordinaryClearance": null,
+            "labelClearance": null,
+            "nodeLabelClearance": 41.63,
+            "nodeClearance": null
+          },
+          "bestIsDifferent": false
+        },
+        {
+          "id": "loop-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 30,
+            "score": 0,
+            "ordinaryClearance": null,
+            "labelClearance": null,
+            "nodeLabelClearance": 56.99,
+            "nodeClearance": null
+          },
+          "best": {
+            "orientationDeg": 30,
+            "score": 0,
+            "ordinaryClearance": null,
+            "labelClearance": null,
+            "nodeLabelClearance": 56.99,
+            "nodeClearance": null
+          },
+          "bestIsDifferent": false
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 0,
+      "control": {
+        "placement": "explicit-control"
+      }
+    },
+    {
+      "name": "synthetic-symmetric",
+      "locale": "en",
+      "graph": {
+        "nodes": 5,
+        "edges": 6,
+        "loops": 2,
+        "ordinary": 4
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -180,
+        "maxX": 180,
+        "minY": -180,
+        "maxY": 180
+      },
+      "fit": {
+        "scale": 1,
+        "pan": {
+          "x": 480,
+          "y": 320
+        }
+      },
+      "loops": [
+        {
+          "id": "loop-1",
+          "label": "self relation with a deliberately long English label",
+          "orientationDeg": -90,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 56.36,
+          "ordinaryPathClearance": 17.1,
+          "peerLoopClearance": 33.02,
+          "incidentAngularGapDeg": 0,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 28.11,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 0,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-2",
+          "label": "self relation calibrates another long label",
+          "orientationDeg": 30,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 66.45,
+          "ordinaryPathClearance": 1.86,
+          "peerLoopClearance": 28.03,
+          "incidentAngularGapDeg": 30,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 58.66,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 78.29,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "loop-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -90,
+            "score": 5400,
+            "ordinaryClearance": 17.1,
+            "labelClearance": 23.74,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 88.36
+          },
+          "best": {
+            "orientationDeg": 60,
+            "score": 0.13,
+            "ordinaryClearance": 15.63,
+            "labelClearance": 29.84,
+            "nodeLabelClearance": 88.26,
+            "nodeClearance": 98.45
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "loop-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 30,
+            "score": 11014,
+            "ordinaryClearance": 1.86,
+            "labelClearance": 39.81,
+            "nodeLabelClearance": 78.29,
+            "nodeClearance": 98.45
+          },
+          "best": {
+            "orientationDeg": 60,
+            "score": 0.03,
+            "ordinaryClearance": 15.63,
+            "labelClearance": 29.84,
+            "nodeLabelClearance": 88.26,
+            "nodeClearance": 98.45
+          },
+          "bestIsDifferent": true
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 2,
+      "control": {
+        "placement": "explicit-control"
+      }
+    },
+    {
+      "name": "synthetic-perturbed",
+      "locale": "en",
+      "graph": {
+        "nodes": 5,
+        "edges": 5,
+        "loops": 2,
+        "ordinary": 3
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -123.68,
+        "maxX": 220,
+        "minY": -170,
+        "maxY": 190
+      },
+      "fit": {
+        "scale": 1,
+        "pan": {
+          "x": 380,
+          "y": 310
+        }
+      },
+      "loops": [
+        {
+          "id": "loop-1",
+          "label": "self relation with a deliberately long English label",
+          "orientationDeg": -160,
+          "preferredDeltaDeg": 70,
+          "radius": 38,
+          "foreignNodeClearance": 26.54,
+          "ordinaryPathClearance": 2.04,
+          "peerLoopClearance": 59.49,
+          "incidentAngularGapDeg": 76.71,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 45.94,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 0,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-2",
+          "label": "self relation calibrates another long label",
+          "orientationDeg": 30,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 57.59,
+          "ordinaryPathClearance": 1.78,
+          "peerLoopClearance": 58.71,
+          "incidentAngularGapDeg": 22.23,
+          "labelToOwnRoute": 0,
+          "labelToOrdinaryRoute": 26.07,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 61.09,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "loop-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -160,
+            "score": 16396.43,
+            "ordinaryClearance": 2.04,
+            "labelClearance": 45.94,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 58.54
+          },
+          "best": {
+            "orientationDeg": 70,
+            "score": 0.14,
+            "ordinaryClearance": 18.9,
+            "labelClearance": 34.29,
+            "nodeLabelClearance": 32.72,
+            "nodeClearance": 106.79
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "loop-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 30,
+            "score": 11021.83,
+            "ordinaryClearance": 1.78,
+            "labelClearance": 26.07,
+            "nodeLabelClearance": 61.09,
+            "nodeClearance": 89.59
+          },
+          "best": {
+            "orientationDeg": 70,
+            "score": 0.03,
+            "ordinaryClearance": 18.9,
+            "labelClearance": 34.29,
+            "nodeLabelClearance": 32.72,
+            "nodeClearance": 106.79
+          },
+          "bestIsDifferent": true
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 1,
+      "control": {
+        "placement": "explicit-control"
+      }
+    },
+    {
+      "name": "synthetic-fanout",
+      "locale": "en",
+      "graph": {
+        "nodes": 5,
+        "edges": 8,
+        "loops": 4,
+        "ordinary": 4
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -170,
+        "maxX": 220,
+        "minY": -170,
+        "maxY": 190
+      },
+      "fit": {
+        "scale": 1,
+        "pan": {
+          "x": 455,
+          "y": 310
+        }
+      },
+      "loops": [
+        {
+          "id": "loop-1",
+          "label": "self relation with a deliberately long English label",
+          "orientationDeg": -90,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 46.36,
+          "ordinaryPathClearance": 16.28,
+          "peerLoopClearance": 0.94,
+          "incidentAngularGapDeg": 0,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": 16.38,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 62.48,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-2",
+          "label": "self relation calibrates another long label",
+          "orientationDeg": 30,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 99.77,
+          "ordinaryPathClearance": 1.63,
+          "peerLoopClearance": 27.89,
+          "incidentAngularGapDeg": 23.77,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": 37.79,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 0,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-3",
+          "label": "third self relation",
+          "orientationDeg": 150,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 55.63,
+          "ordinaryPathClearance": 1.37,
+          "peerLoopClearance": 9.33,
+          "incidentAngularGapDeg": 14.23,
+          "labelToOwnRoute": 0,
+          "labelToOrdinaryRoute": 0,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 51.15,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-4",
+          "label": "fourth self relation",
+          "orientationDeg": -110,
+          "preferredDeltaDeg": 20,
+          "radius": 52,
+          "foreignNodeClearance": 22.57,
+          "ordinaryPathClearance": 32.27,
+          "peerLoopClearance": 0.94,
+          "incidentAngularGapDeg": 20,
+          "labelToOwnRoute": 0,
+          "labelToOrdinaryRoute": 20.87,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 75.63,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "loop-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -90,
+            "score": 0,
+            "ordinaryClearance": 16.28,
+            "labelClearance": 15.7,
+            "nodeLabelClearance": 62.48,
+            "nodeClearance": 78.36
+          },
+          "best": {
+            "orientationDeg": -90,
+            "score": 0,
+            "ordinaryClearance": 16.28,
+            "labelClearance": 15.7,
+            "nodeLabelClearance": 62.48,
+            "nodeClearance": 78.36
+          },
+          "bestIsDifferent": false
+        },
+        {
+          "id": "loop-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 30,
+            "score": 16436.59,
+            "ordinaryClearance": 1.63,
+            "labelClearance": 17.91,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 131.77
+          },
+          "best": {
+            "orientationDeg": 100,
+            "score": 0.06,
+            "ordinaryClearance": 12.56,
+            "labelClearance": 8.61,
+            "nodeLabelClearance": 6.85,
+            "nodeClearance": 99.41
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "loop-3",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 150,
+            "score": 11063.22,
+            "ordinaryClearance": 1.37,
+            "labelClearance": 25.83,
+            "nodeLabelClearance": 51.15,
+            "nodeClearance": 87.63
+          },
+          "best": {
+            "orientationDeg": 100,
+            "score": 0.04,
+            "ordinaryClearance": 12.56,
+            "labelClearance": 22.09,
+            "nodeLabelClearance": 6.85,
+            "nodeClearance": 99.41
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "loop-4",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -110,
+            "score": 0.02,
+            "ordinaryClearance": 32.27,
+            "labelClearance": 56.57,
+            "nodeLabelClearance": 75.63,
+            "nodeClearance": 54.57
+          },
+          "best": {
+            "orientationDeg": -90,
+            "score": 0,
+            "ordinaryClearance": 13.71,
+            "labelClearance": 8.87,
+            "nodeLabelClearance": 66.81,
+            "nodeClearance": 46.01
+          },
+          "bestIsDifferent": true
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 2,
+      "control": {
+        "placement": "explicit-control"
+      }
+    },
+    {
+      "name": "synthetic-isolated",
+      "locale": "ja",
+      "graph": {
+        "nodes": 1,
+        "edges": 2,
+        "loops": 2,
+        "ordinary": 0
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -37.98,
+        "maxX": 84.18,
+        "minY": -91.64,
+        "maxY": 88.58
+      },
+      "fit": {
+        "scale": 1,
+        "pan": {
+          "x": 480,
+          "y": 320
+        }
+      },
+      "loops": [
+        {
+          "id": "loop-1",
+          "label": "自己関係を確認する長い日本語ラベル",
+          "orientationDeg": -90,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": null,
+          "ordinaryPathClearance": null,
+          "peerLoopClearance": 33.02,
+          "incidentAngularGapDeg": 180,
+          "labelToOwnRoute": 0,
+          "labelToOrdinaryRoute": null,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 45.69,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-2",
+          "label": "自己関係の状態を同期する日本語ラベル",
+          "orientationDeg": 30,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": null,
+          "ordinaryPathClearance": null,
+          "peerLoopClearance": 28.03,
+          "incidentAngularGapDeg": 180,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": null,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 57.63,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "loop-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -90,
+            "score": 0,
+            "ordinaryClearance": null,
+            "labelClearance": null,
+            "nodeLabelClearance": 45.69,
+            "nodeClearance": null
+          },
+          "best": {
+            "orientationDeg": -90,
+            "score": 0,
+            "ordinaryClearance": null,
+            "labelClearance": null,
+            "nodeLabelClearance": 45.69,
+            "nodeClearance": null
+          },
+          "bestIsDifferent": false
+        },
+        {
+          "id": "loop-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 30,
+            "score": 0,
+            "ordinaryClearance": null,
+            "labelClearance": null,
+            "nodeLabelClearance": 57.63,
+            "nodeClearance": null
+          },
+          "best": {
+            "orientationDeg": 30,
+            "score": 0,
+            "ordinaryClearance": null,
+            "labelClearance": null,
+            "nodeLabelClearance": 57.63,
+            "nodeClearance": null
+          },
+          "bestIsDifferent": false
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 0,
+      "control": {
+        "placement": "explicit-control"
+      }
+    },
+    {
+      "name": "synthetic-symmetric",
+      "locale": "ja",
+      "graph": {
+        "nodes": 5,
+        "edges": 6,
+        "loops": 2,
+        "ordinary": 4
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -180,
+        "maxX": 180,
+        "minY": -180,
+        "maxY": 180
+      },
+      "fit": {
+        "scale": 1,
+        "pan": {
+          "x": 480,
+          "y": 320
+        }
+      },
+      "loops": [
+        {
+          "id": "loop-1",
+          "label": "自己関係を確認する長い日本語ラベル",
+          "orientationDeg": -90,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 56.36,
+          "ordinaryPathClearance": 17.1,
+          "peerLoopClearance": 33.02,
+          "incidentAngularGapDeg": 0,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 41,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 0,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-2",
+          "label": "自己関係の状態を同期する日本語ラベル",
+          "orientationDeg": 30,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 66.45,
+          "ordinaryPathClearance": 1.86,
+          "peerLoopClearance": 28.03,
+          "incidentAngularGapDeg": 30,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": 48.04,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 85.78,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "loop-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -90,
+            "score": 5400,
+            "ordinaryClearance": 17.1,
+            "labelClearance": 11.15,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 88.36
+          },
+          "best": {
+            "orientationDeg": 60,
+            "score": 0.13,
+            "ordinaryClearance": 15.63,
+            "labelClearance": 40.62,
+            "nodeLabelClearance": 74.4,
+            "nodeClearance": 98.45
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "loop-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 30,
+            "score": 11014,
+            "ordinaryClearance": 1.86,
+            "labelClearance": 48.04,
+            "nodeLabelClearance": 85.78,
+            "nodeClearance": 98.45
+          },
+          "best": {
+            "orientationDeg": 60,
+            "score": 0.03,
+            "ordinaryClearance": 15.63,
+            "labelClearance": 37.97,
+            "nodeLabelClearance": 74.4,
+            "nodeClearance": 98.45
+          },
+          "bestIsDifferent": true
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 2,
+      "control": {
+        "placement": "explicit-control"
+      }
+    },
+    {
+      "name": "synthetic-perturbed",
+      "locale": "ja",
+      "graph": {
+        "nodes": 5,
+        "edges": 5,
+        "loops": 2,
+        "ordinary": 3
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -123.68,
+        "maxX": 220,
+        "minY": -170,
+        "maxY": 190
+      },
+      "fit": {
+        "scale": 1,
+        "pan": {
+          "x": 380,
+          "y": 310
+        }
+      },
+      "loops": [
+        {
+          "id": "loop-1",
+          "label": "自己関係を確認する長い日本語ラベル",
+          "orientationDeg": -160,
+          "preferredDeltaDeg": 70,
+          "radius": 38,
+          "foreignNodeClearance": 26.54,
+          "ordinaryPathClearance": 2.04,
+          "peerLoopClearance": 59.49,
+          "incidentAngularGapDeg": 76.71,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 45.95,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 0,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-2",
+          "label": "自己関係の状態を同期する日本語ラベル",
+          "orientationDeg": 30,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 57.59,
+          "ordinaryPathClearance": 1.78,
+          "peerLoopClearance": 58.71,
+          "incidentAngularGapDeg": 22.23,
+          "labelToOwnRoute": 0,
+          "labelToOrdinaryRoute": 32.42,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 64.3,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "loop-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -160,
+            "score": 16396.43,
+            "ordinaryClearance": 2.04,
+            "labelClearance": 45.95,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 58.54
+          },
+          "best": {
+            "orientationDeg": 70,
+            "score": 0.14,
+            "ordinaryClearance": 18.9,
+            "labelClearance": 45.65,
+            "nodeLabelClearance": 38.45,
+            "nodeClearance": 106.79
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "loop-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 30,
+            "score": 11021.83,
+            "ordinaryClearance": 1.78,
+            "labelClearance": 32.42,
+            "nodeLabelClearance": 64.3,
+            "nodeClearance": 89.59
+          },
+          "best": {
+            "orientationDeg": 70,
+            "score": 0.03,
+            "ordinaryClearance": 18.9,
+            "labelClearance": 42.89,
+            "nodeLabelClearance": 38.45,
+            "nodeClearance": 106.79
+          },
+          "bestIsDifferent": true
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 1,
+      "control": {
+        "placement": "explicit-control"
+      }
+    },
+    {
+      "name": "synthetic-fanout",
+      "locale": "ja",
+      "graph": {
+        "nodes": 5,
+        "edges": 8,
+        "loops": 4,
+        "ordinary": 4
+      },
+      "deterministic": true,
+      "routeBounds": {
+        "minX": -170,
+        "maxX": 220,
+        "minY": -170,
+        "maxY": 190
+      },
+      "fit": {
+        "scale": 1,
+        "pan": {
+          "x": 455,
+          "y": 310
+        }
+      },
+      "loops": [
+        {
+          "id": "loop-1",
+          "label": "自己関係を確認する長い日本語ラベル",
+          "orientationDeg": -90,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 46.36,
+          "ordinaryPathClearance": 16.28,
+          "peerLoopClearance": 0.94,
+          "incidentAngularGapDeg": 0,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 40.61,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 63.68,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-2",
+          "label": "自己関係の状態を同期する日本語ラベル",
+          "orientationDeg": 30,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 99.77,
+          "ordinaryPathClearance": 1.63,
+          "peerLoopClearance": 27.89,
+          "incidentAngularGapDeg": 23.77,
+          "labelToOwnRoute": 24,
+          "labelToOrdinaryRoute": 49.12,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 0,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-3",
+          "label": "third self relation",
+          "orientationDeg": 150,
+          "preferredDeltaDeg": 0,
+          "radius": 38,
+          "foreignNodeClearance": 55.63,
+          "ordinaryPathClearance": 1.37,
+          "peerLoopClearance": 9.33,
+          "incidentAngularGapDeg": 14.23,
+          "labelToOwnRoute": 40,
+          "labelToOrdinaryRoute": 0,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 50.65,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        },
+        {
+          "id": "loop-4",
+          "label": "fourth self relation",
+          "orientationDeg": -110,
+          "preferredDeltaDeg": 20,
+          "radius": 52,
+          "foreignNodeClearance": 22.57,
+          "ordinaryPathClearance": 32.27,
+          "peerLoopClearance": 0.94,
+          "incidentAngularGapDeg": 20,
+          "labelToOwnRoute": 0,
+          "labelToOrdinaryRoute": 20.87,
+          "labelOwnershipMargin": null,
+          "labelNodeOverlap": 0,
+          "ownerNodeLabelClearance": 76.77,
+          "ordinaryFirstSameGeometry": true,
+          "routeSamples": 41
+        }
+      ],
+      "angleProbes": [
+        {
+          "id": "loop-1",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -90,
+            "score": 0,
+            "ordinaryClearance": 16.28,
+            "labelClearance": 5.27,
+            "nodeLabelClearance": 63.68,
+            "nodeClearance": 78.36
+          },
+          "best": {
+            "orientationDeg": -90,
+            "score": 0,
+            "ordinaryClearance": 16.28,
+            "labelClearance": 5.27,
+            "nodeLabelClearance": 63.68,
+            "nodeClearance": 78.36
+          },
+          "bestIsDifferent": false
+        },
+        {
+          "id": "loop-2",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 30,
+            "score": 16436.59,
+            "ordinaryClearance": 1.63,
+            "labelClearance": 25.58,
+            "nodeLabelClearance": 0,
+            "nodeClearance": 131.77
+          },
+          "best": {
+            "orientationDeg": 100,
+            "score": 0.06,
+            "ordinaryClearance": 12.56,
+            "labelClearance": 12.58,
+            "nodeLabelClearance": 6.35,
+            "nodeClearance": 99.41
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "loop-3",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": 150,
+            "score": 11063.22,
+            "ordinaryClearance": 1.37,
+            "labelClearance": 25.83,
+            "nodeLabelClearance": 50.65,
+            "nodeClearance": 87.63
+          },
+          "best": {
+            "orientationDeg": 100,
+            "score": 0.04,
+            "ordinaryClearance": 12.56,
+            "labelClearance": 22.09,
+            "nodeLabelClearance": 6.35,
+            "nodeClearance": 99.41
+          },
+          "bestIsDifferent": true
+        },
+        {
+          "id": "loop-4",
+          "candidateCount": 36,
+          "current": {
+            "orientationDeg": -110,
+            "score": 0.02,
+            "ordinaryClearance": 32.27,
+            "labelClearance": 56.57,
+            "nodeLabelClearance": 76.77,
+            "nodeClearance": 54.57
+          },
+          "best": {
+            "orientationDeg": -90,
+            "score": 0,
+            "ordinaryClearance": 13.71,
+            "labelClearance": 8.87,
+            "nodeLabelClearance": 68.01,
+            "nodeClearance": 46.01
+          },
+          "bestIsDifferent": true
+        }
+      ],
+      "ordinaryRouteChurnFromLoops": 2,
+      "control": {
+        "placement": "explicit-control"
+      }
+    }
+  ]
+}

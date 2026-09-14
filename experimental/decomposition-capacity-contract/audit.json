@@ -1,0 +1,1625 @@
+[
+  {
+    "name": "canonical:lighthouse-restoration-demo/en",
+    "graph": {
+      "nodes": 10,
+      "edges": 14
+    },
+    "decomposition": {
+      "componentCount": 3,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 6,
+          "edges": 5,
+          "nodeIds": [
+            "archive",
+            "authority",
+            "clara",
+            "elias",
+            "lighthouse",
+            "sofia"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 27,
+            "stateCapHits": 0,
+            "totalStates": 165
+          }
+        },
+        {
+          "id": "component-2",
+          "nodes": 5,
+          "edges": 6,
+          "nodeIds": [
+            "beacon",
+            "clara",
+            "lighthouse",
+            "maya",
+            "thomas"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 13,
+            "stateCapHits": 0,
+            "totalStates": 118
+          }
+        },
+        {
+          "id": "component-3",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "clara",
+            "daniel"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        }
+      ],
+      "hasGlobalCore": false,
+      "topologySignal": "local-order-plus-boundary-contract"
+    },
+    "capacityContract": {
+      "boundaryCount": 2,
+      "globalBottleneckCount": 1,
+      "contracts": [
+        {
+          "nodeId": "clara",
+          "componentCount": 3,
+          "relationCount": 6,
+          "requiredAngularSpanDeg": 48,
+          "labelDemandPx": 560,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 2,
+              "labelDemandPx": 216,
+              "relationIds": [
+                "clara-lighthouse",
+                "elias-clara"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 3,
+              "labelDemandPx": 216,
+              "relationIds": [
+                "clara-maya",
+                "clara-thomas-mentors",
+                "clara-thomas-supervises"
+              ]
+            },
+            {
+              "componentId": "component-3",
+              "relationCount": 1,
+              "labelDemandPx": 128,
+              "relationIds": [
+                "daniel-clara"
+              ]
+            }
+          ],
+          "classification": "global-bottleneck"
+        },
+        {
+          "nodeId": "lighthouse",
+          "componentCount": 2,
+          "relationCount": 3,
+          "requiredAngularSpanDeg": 24,
+          "labelDemandPx": 368,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 2,
+              "labelDemandPx": 248,
+              "relationIds": [
+                "authority-lighthouse",
+                "clara-lighthouse"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 1,
+              "labelDemandPx": 120,
+              "relationIds": [
+                "beacon-lighthouse-installed-in"
+              ]
+            }
+          ],
+          "classification": "shared-endpoint"
+        }
+      ],
+      "status": "global-coupling-remains"
+    },
+    "boundedness": {
+      "maxLocalStates": 27,
+      "stateCapHits": 0,
+      "localSearchProduct": 1755,
+      "finalistCombinationUpperBound": 1728,
+      "finalistBounded": true
+    }
+  },
+  {
+    "name": "canonical:lighthouse-restoration-demo/ja",
+    "graph": {
+      "nodes": 10,
+      "edges": 14
+    },
+    "decomposition": {
+      "componentCount": 3,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 6,
+          "edges": 5,
+          "nodeIds": [
+            "archive",
+            "authority",
+            "clara",
+            "elias",
+            "lighthouse",
+            "sofia"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 27,
+            "stateCapHits": 0,
+            "totalStates": 165
+          }
+        },
+        {
+          "id": "component-2",
+          "nodes": 5,
+          "edges": 6,
+          "nodeIds": [
+            "beacon",
+            "clara",
+            "lighthouse",
+            "maya",
+            "thomas"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 13,
+            "stateCapHits": 0,
+            "totalStates": 118
+          }
+        },
+        {
+          "id": "component-3",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "clara",
+            "daniel"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        }
+      ],
+      "hasGlobalCore": false,
+      "topologySignal": "local-order-plus-boundary-contract"
+    },
+    "capacityContract": {
+      "boundaryCount": 2,
+      "globalBottleneckCount": 1,
+      "contracts": [
+        {
+          "nodeId": "clara",
+          "componentCount": 3,
+          "relationCount": 6,
+          "requiredAngularSpanDeg": 48,
+          "labelDemandPx": 208,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 2,
+              "labelDemandPx": 80,
+              "relationIds": [
+                "clara-lighthouse",
+                "elias-clara"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 3,
+              "labelDemandPx": 96,
+              "relationIds": [
+                "clara-maya",
+                "clara-thomas-mentors",
+                "clara-thomas-supervises"
+              ]
+            },
+            {
+              "componentId": "component-3",
+              "relationCount": 1,
+              "labelDemandPx": 32,
+              "relationIds": [
+                "daniel-clara"
+              ]
+            }
+          ],
+          "classification": "global-bottleneck"
+        },
+        {
+          "nodeId": "lighthouse",
+          "componentCount": 2,
+          "relationCount": 3,
+          "requiredAngularSpanDeg": 24,
+          "labelDemandPx": 136,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 2,
+              "labelDemandPx": 80,
+              "relationIds": [
+                "authority-lighthouse",
+                "clara-lighthouse"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 1,
+              "labelDemandPx": 56,
+              "relationIds": [
+                "beacon-lighthouse-installed-in"
+              ]
+            }
+          ],
+          "classification": "shared-endpoint"
+        }
+      ],
+      "status": "global-coupling-remains"
+    },
+    "boundedness": {
+      "maxLocalStates": 27,
+      "stateCapHits": 0,
+      "localSearchProduct": 1755,
+      "finalistCombinationUpperBound": 1728,
+      "finalistBounded": true
+    }
+  },
+  {
+    "name": "canonical:titanic-final-voyage/en",
+    "graph": {
+      "nodes": 13,
+      "edges": 12
+    },
+    "decomposition": {
+      "componentCount": 9,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 4,
+          "edges": 3,
+          "nodeIds": [
+            "andrews",
+            "ismay",
+            "titanic",
+            "white-star-line"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 11,
+            "stateCapHits": 0,
+            "totalStates": 99
+          }
+        },
+        {
+          "id": "component-2",
+          "nodes": 3,
+          "edges": 3,
+          "nodeIds": [
+            "carpathia",
+            "rostron",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 8,
+            "stateCapHits": 0,
+            "totalStates": 96
+          }
+        },
+        {
+          "id": "component-3",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "molly-brown",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-4",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "harland-wolff",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-5",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "smith",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-6",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "fleet",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-7",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "phillips",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-8",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "bride",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-9",
+          "nodes": 1,
+          "edges": 0,
+          "nodeIds": [
+            "californian"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 2,
+            "stateCapHits": 0,
+            "totalStates": 24
+          }
+        }
+      ],
+      "hasGlobalCore": false,
+      "topologySignal": "local-order-plus-boundary-contract"
+    },
+    "capacityContract": {
+      "boundaryCount": 1,
+      "globalBottleneckCount": 1,
+      "contracts": [
+        {
+          "nodeId": "titanic",
+          "componentCount": 8,
+          "relationCount": 10,
+          "requiredAngularSpanDeg": 80,
+          "labelDemandPx": 1160,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 2,
+              "labelDemandPx": 128,
+              "relationIds": [
+                "r1",
+                "r4"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 2,
+              "labelDemandPx": 376,
+              "relationIds": [
+                "r10",
+                "r11"
+              ]
+            },
+            {
+              "componentId": "component-3",
+              "relationCount": 1,
+              "labelDemandPx": 64,
+              "relationIds": [
+                "r12"
+              ]
+            },
+            {
+              "componentId": "component-4",
+              "relationCount": 1,
+              "labelDemandPx": 40,
+              "relationIds": [
+                "r2"
+              ]
+            },
+            {
+              "componentId": "component-5",
+              "relationCount": 1,
+              "labelDemandPx": 64,
+              "relationIds": [
+                "r3"
+              ]
+            },
+            {
+              "componentId": "component-6",
+              "relationCount": 1,
+              "labelDemandPx": 104,
+              "relationIds": [
+                "r6"
+              ]
+            },
+            {
+              "componentId": "component-7",
+              "relationCount": 1,
+              "labelDemandPx": 192,
+              "relationIds": [
+                "r7"
+              ]
+            },
+            {
+              "componentId": "component-8",
+              "relationCount": 1,
+              "labelDemandPx": 192,
+              "relationIds": [
+                "r8"
+              ]
+            }
+          ],
+          "classification": "global-bottleneck"
+        }
+      ],
+      "status": "global-coupling-remains"
+    },
+    "boundedness": {
+      "maxLocalStates": 11,
+      "stateCapHits": 0,
+      "localSearchProduct": 2750000,
+      "finalistCombinationUpperBound": 1000000000,
+      "finalistBounded": false
+    }
+  },
+  {
+    "name": "canonical:titanic-final-voyage/ja",
+    "graph": {
+      "nodes": 13,
+      "edges": 12
+    },
+    "decomposition": {
+      "componentCount": 9,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 4,
+          "edges": 3,
+          "nodeIds": [
+            "andrews",
+            "ismay",
+            "titanic",
+            "white-star-line"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 11,
+            "stateCapHits": 0,
+            "totalStates": 99
+          }
+        },
+        {
+          "id": "component-2",
+          "nodes": 3,
+          "edges": 3,
+          "nodeIds": [
+            "carpathia",
+            "rostron",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 8,
+            "stateCapHits": 0,
+            "totalStates": 96
+          }
+        },
+        {
+          "id": "component-3",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "molly-brown",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-4",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "harland-wolff",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-5",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "smith",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-6",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "fleet",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-7",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "phillips",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-8",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "bride",
+            "titanic"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-9",
+          "nodes": 1,
+          "edges": 0,
+          "nodeIds": [
+            "californian"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 2,
+            "stateCapHits": 0,
+            "totalStates": 24
+          }
+        }
+      ],
+      "hasGlobalCore": false,
+      "topologySignal": "local-order-plus-boundary-contract"
+    },
+    "capacityContract": {
+      "boundaryCount": 1,
+      "globalBottleneckCount": 1,
+      "contracts": [
+        {
+          "nodeId": "titanic",
+          "componentCount": 8,
+          "relationCount": 10,
+          "requiredAngularSpanDeg": 80,
+          "labelDemandPx": 472,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 2,
+              "labelDemandPx": 64,
+              "relationIds": [
+                "r1",
+                "r4"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 2,
+              "labelDemandPx": 136,
+              "relationIds": [
+                "r10",
+                "r11"
+              ]
+            },
+            {
+              "componentId": "component-3",
+              "relationCount": 1,
+              "labelDemandPx": 32,
+              "relationIds": [
+                "r12"
+              ]
+            },
+            {
+              "componentId": "component-4",
+              "relationCount": 1,
+              "labelDemandPx": 32,
+              "relationIds": [
+                "r2"
+              ]
+            },
+            {
+              "componentId": "component-5",
+              "relationCount": 1,
+              "labelDemandPx": 32,
+              "relationIds": [
+                "r3"
+              ]
+            },
+            {
+              "componentId": "component-6",
+              "relationCount": 1,
+              "labelDemandPx": 32,
+              "relationIds": [
+                "r6"
+              ]
+            },
+            {
+              "componentId": "component-7",
+              "relationCount": 1,
+              "labelDemandPx": 72,
+              "relationIds": [
+                "r7"
+              ]
+            },
+            {
+              "componentId": "component-8",
+              "relationCount": 1,
+              "labelDemandPx": 72,
+              "relationIds": [
+                "r8"
+              ]
+            }
+          ],
+          "classification": "global-bottleneck"
+        }
+      ],
+      "status": "global-coupling-remains"
+    },
+    "boundedness": {
+      "maxLocalStates": 11,
+      "stateCapHits": 0,
+      "localSearchProduct": 2750000,
+      "finalistCombinationUpperBound": 1000000000,
+      "finalistBounded": false
+    }
+  },
+  {
+    "name": "canonical:apollo-11-mission/en",
+    "graph": {
+      "nodes": 9,
+      "edges": 11
+    },
+    "decomposition": {
+      "componentCount": 2,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 7,
+          "edges": 8,
+          "nodeIds": [
+            "aldrin",
+            "armstrong",
+            "columbia",
+            "eagle",
+            "hornet",
+            "nasa",
+            "saturn-v"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 22,
+            "stateCapHits": 0,
+            "totalStates": 153
+          }
+        },
+        {
+          "id": "component-2",
+          "nodes": 5,
+          "edges": 3,
+          "nodeIds": [
+            "collins",
+            "columbia",
+            "eagle",
+            "moon",
+            "nasa"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 13,
+            "stateCapHits": 0,
+            "totalStates": 106
+          }
+        }
+      ],
+      "hasGlobalCore": false,
+      "topologySignal": "local-order-plus-boundary-contract"
+    },
+    "capacityContract": {
+      "boundaryCount": 3,
+      "globalBottleneckCount": 0,
+      "contracts": [
+        {
+          "nodeId": "columbia",
+          "componentCount": 2,
+          "relationCount": 4,
+          "requiredAngularSpanDeg": 32,
+          "labelDemandPx": 352,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 3,
+              "labelDemandPx": 288,
+              "relationIds": [
+                "entity-10",
+                "entity-11",
+                "entity-7"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 1,
+              "labelDemandPx": 64,
+              "relationIds": [
+                "entity-6"
+              ]
+            }
+          ],
+          "classification": "shared-endpoint"
+        },
+        {
+          "nodeId": "eagle",
+          "componentCount": 2,
+          "relationCount": 4,
+          "requiredAngularSpanDeg": 32,
+          "labelDemandPx": 272,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 3,
+              "labelDemandPx": 208,
+              "relationIds": [
+                "entity-4",
+                "entity-5",
+                "entity-7"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 1,
+              "labelDemandPx": 64,
+              "relationIds": [
+                "entity-9"
+              ]
+            }
+          ],
+          "classification": "shared-endpoint"
+        },
+        {
+          "nodeId": "nasa",
+          "componentCount": 2,
+          "relationCount": 4,
+          "requiredAngularSpanDeg": 32,
+          "labelDemandPx": 520,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 3,
+              "labelDemandPx": 368,
+              "relationIds": [
+                "entity-1",
+                "entity-2",
+                "entity-8"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 1,
+              "labelDemandPx": 152,
+              "relationIds": [
+                "entity-3"
+              ]
+            }
+          ],
+          "classification": "shared-endpoint"
+        }
+      ],
+      "status": "explicit-boundary-contract"
+    },
+    "boundedness": {
+      "maxLocalStates": 22,
+      "stateCapHits": 0,
+      "localSearchProduct": 286,
+      "finalistCombinationUpperBound": 144,
+      "finalistBounded": true
+    }
+  },
+  {
+    "name": "canonical:apollo-11-mission/ja",
+    "graph": {
+      "nodes": 9,
+      "edges": 11
+    },
+    "decomposition": {
+      "componentCount": 2,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 7,
+          "edges": 8,
+          "nodeIds": [
+            "aldrin",
+            "armstrong",
+            "columbia",
+            "eagle",
+            "hornet",
+            "nasa",
+            "saturn-v"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 22,
+            "stateCapHits": 0,
+            "totalStates": 153
+          }
+        },
+        {
+          "id": "component-2",
+          "nodes": 5,
+          "edges": 3,
+          "nodeIds": [
+            "collins",
+            "columbia",
+            "eagle",
+            "moon",
+            "nasa"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 13,
+            "stateCapHits": 0,
+            "totalStates": 106
+          }
+        }
+      ],
+      "hasGlobalCore": false,
+      "topologySignal": "local-order-plus-boundary-contract"
+    },
+    "capacityContract": {
+      "boundaryCount": 3,
+      "globalBottleneckCount": 0,
+      "contracts": [
+        {
+          "nodeId": "columbia",
+          "componentCount": 2,
+          "relationCount": 4,
+          "requiredAngularSpanDeg": 32,
+          "labelDemandPx": 192,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 3,
+              "labelDemandPx": 160,
+              "relationIds": [
+                "entity-10",
+                "entity-11",
+                "entity-7"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 1,
+              "labelDemandPx": 32,
+              "relationIds": [
+                "entity-6"
+              ]
+            }
+          ],
+          "classification": "shared-endpoint"
+        },
+        {
+          "nodeId": "eagle",
+          "componentCount": 2,
+          "relationCount": 4,
+          "requiredAngularSpanDeg": 32,
+          "labelDemandPx": 152,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 3,
+              "labelDemandPx": 120,
+              "relationIds": [
+                "entity-4",
+                "entity-5",
+                "entity-7"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 1,
+              "labelDemandPx": 32,
+              "relationIds": [
+                "entity-9"
+              ]
+            }
+          ],
+          "classification": "shared-endpoint"
+        },
+        {
+          "nodeId": "nasa",
+          "componentCount": 2,
+          "relationCount": 4,
+          "requiredAngularSpanDeg": 32,
+          "labelDemandPx": 272,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 3,
+              "labelDemandPx": 192,
+              "relationIds": [
+                "entity-1",
+                "entity-2",
+                "entity-8"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 1,
+              "labelDemandPx": 80,
+              "relationIds": [
+                "entity-3"
+              ]
+            }
+          ],
+          "classification": "shared-endpoint"
+        }
+      ],
+      "status": "explicit-boundary-contract"
+    },
+    "boundedness": {
+      "maxLocalStates": 22,
+      "stateCapHits": 0,
+      "localSearchProduct": 286,
+      "finalistCombinationUpperBound": 144,
+      "finalistBounded": true
+    }
+  },
+  {
+    "name": "dense:k7-7",
+    "graph": {
+      "nodes": 14,
+      "edges": 49
+    },
+    "decomposition": {
+      "componentCount": 1,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 14,
+          "edges": 49,
+          "nodeIds": [
+            "0",
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 0,
+            "maxStates": 25000,
+            "stateCapHits": 12,
+            "totalStates": 300000
+          }
+        }
+      ],
+      "hasGlobalCore": true,
+      "topologySignal": "global-core-retained"
+    },
+    "capacityContract": {
+      "boundaryCount": 0,
+      "globalBottleneckCount": 0,
+      "contracts": [],
+      "status": "no-cross-boundary-demand"
+    },
+    "boundedness": {
+      "maxLocalStates": 25000,
+      "stateCapHits": 12,
+      "localSearchProduct": 25000,
+      "finalistCombinationUpperBound": 1,
+      "finalistBounded": true
+    }
+  },
+  {
+    "name": "dense:k7-7-minus-one",
+    "graph": {
+      "nodes": 14,
+      "edges": 48
+    },
+    "decomposition": {
+      "componentCount": 1,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 14,
+          "edges": 48,
+          "nodeIds": [
+            "0",
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 0,
+            "maxStates": 25000,
+            "stateCapHits": 12,
+            "totalStates": 300000
+          }
+        }
+      ],
+      "hasGlobalCore": true,
+      "topologySignal": "global-core-retained"
+    },
+    "capacityContract": {
+      "boundaryCount": 0,
+      "globalBottleneckCount": 0,
+      "contracts": [],
+      "status": "no-cross-boundary-demand"
+    },
+    "boundedness": {
+      "maxLocalStates": 25000,
+      "stateCapHits": 12,
+      "localSearchProduct": 25000,
+      "finalistCombinationUpperBound": 1,
+      "finalistBounded": true
+    }
+  },
+  {
+    "name": "dense:k8-8",
+    "graph": {
+      "nodes": 16,
+      "edges": 64
+    },
+    "decomposition": {
+      "componentCount": 1,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 16,
+          "edges": 64,
+          "nodeIds": [
+            "0",
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 0,
+            "maxStates": 25000,
+            "stateCapHits": 12,
+            "totalStates": 300000
+          }
+        }
+      ],
+      "hasGlobalCore": true,
+      "topologySignal": "global-core-retained"
+    },
+    "capacityContract": {
+      "boundaryCount": 0,
+      "globalBottleneckCount": 0,
+      "contracts": [],
+      "status": "no-cross-boundary-demand"
+    },
+    "boundedness": {
+      "maxLocalStates": 25000,
+      "stateCapHits": 12,
+      "localSearchProduct": 25000,
+      "finalistCombinationUpperBound": 1,
+      "finalistBounded": true
+    }
+  },
+  {
+    "name": "symmetric:ring-12",
+    "graph": {
+      "nodes": 12,
+      "edges": 12
+    },
+    "decomposition": {
+      "componentCount": 1,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 12,
+          "edges": 12,
+          "nodeIds": [
+            "0",
+            "1",
+            "10",
+            "11",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 532,
+            "stateCapHits": 0,
+            "totalStates": 757
+          }
+        }
+      ],
+      "hasGlobalCore": true,
+      "topologySignal": "global-core-retained"
+    },
+    "capacityContract": {
+      "boundaryCount": 0,
+      "globalBottleneckCount": 0,
+      "contracts": [],
+      "status": "no-cross-boundary-demand"
+    },
+    "boundedness": {
+      "maxLocalStates": 532,
+      "stateCapHits": 0,
+      "localSearchProduct": 532,
+      "finalistCombinationUpperBound": 12,
+      "finalistBounded": true
+    }
+  },
+  {
+    "name": "decomposable:four-block-chain",
+    "graph": {
+      "nodes": 13,
+      "edges": 11
+    },
+    "decomposition": {
+      "componentCount": 9,
+      "components": [
+        {
+          "id": "component-1",
+          "nodes": 5,
+          "edges": 4,
+          "nodeIds": [
+            "0",
+            "10",
+            "3",
+            "6",
+            "9"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 13,
+            "stateCapHits": 0,
+            "totalStates": 106
+          }
+        },
+        {
+          "id": "component-7",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "0",
+            "1"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-8",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "0",
+            "2"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-9",
+          "nodes": 1,
+          "edges": 0,
+          "nodeIds": [
+            "12"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 2,
+            "stateCapHits": 0,
+            "totalStates": 24
+          }
+        },
+        {
+          "id": "component-5",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "3",
+            "4"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-6",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "3",
+            "5"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-3",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "6",
+            "7"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-4",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "6",
+            "8"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        },
+        {
+          "id": "component-2",
+          "nodes": 2,
+          "edges": 1,
+          "nodeIds": [
+            "11",
+            "9"
+          ],
+          "local": {
+            "families": 12,
+            "feasibleFamilies": 12,
+            "maxStates": 5,
+            "stateCapHits": 0,
+            "totalStates": 60
+          }
+        }
+      ],
+      "hasGlobalCore": false,
+      "topologySignal": "local-order-plus-boundary-contract"
+    },
+    "capacityContract": {
+      "boundaryCount": 4,
+      "globalBottleneckCount": 3,
+      "contracts": [
+        {
+          "nodeId": "0",
+          "componentCount": 3,
+          "relationCount": 3,
+          "requiredAngularSpanDeg": 24,
+          "labelDemandPx": 208,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 1,
+              "labelDemandPx": 48,
+              "relationIds": [
+                "bridge-0"
+              ]
+            },
+            {
+              "componentId": "component-7",
+              "relationCount": 1,
+              "labelDemandPx": 160,
+              "relationIds": [
+                "e-0-1"
+              ]
+            },
+            {
+              "componentId": "component-8",
+              "relationCount": 1,
+              "labelDemandPx": 0,
+              "relationIds": [
+                "e-0-2"
+              ]
+            }
+          ],
+          "classification": "global-bottleneck"
+        },
+        {
+          "nodeId": "3",
+          "componentCount": 3,
+          "relationCount": 4,
+          "requiredAngularSpanDeg": 32,
+          "labelDemandPx": 256,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 2,
+              "labelDemandPx": 96,
+              "relationIds": [
+                "bridge-0",
+                "bridge-1"
+              ]
+            },
+            {
+              "componentId": "component-5",
+              "relationCount": 1,
+              "labelDemandPx": 0,
+              "relationIds": [
+                "e-3-4"
+              ]
+            },
+            {
+              "componentId": "component-6",
+              "relationCount": 1,
+              "labelDemandPx": 160,
+              "relationIds": [
+                "e-3-5"
+              ]
+            }
+          ],
+          "classification": "global-bottleneck"
+        },
+        {
+          "nodeId": "6",
+          "componentCount": 3,
+          "relationCount": 4,
+          "requiredAngularSpanDeg": 32,
+          "labelDemandPx": 256,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 2,
+              "labelDemandPx": 96,
+              "relationIds": [
+                "bridge-1",
+                "bridge-2"
+              ]
+            },
+            {
+              "componentId": "component-3",
+              "relationCount": 1,
+              "labelDemandPx": 160,
+              "relationIds": [
+                "e-6-7"
+              ]
+            },
+            {
+              "componentId": "component-4",
+              "relationCount": 1,
+              "labelDemandPx": 0,
+              "relationIds": [
+                "e-6-8"
+              ]
+            }
+          ],
+          "classification": "global-bottleneck"
+        },
+        {
+          "nodeId": "9",
+          "componentCount": 2,
+          "relationCount": 3,
+          "requiredAngularSpanDeg": 24,
+          "labelDemandPx": 208,
+          "byComponent": [
+            {
+              "componentId": "component-1",
+              "relationCount": 2,
+              "labelDemandPx": 48,
+              "relationIds": [
+                "bridge-2",
+                "e-9-10"
+              ]
+            },
+            {
+              "componentId": "component-2",
+              "relationCount": 1,
+              "labelDemandPx": 160,
+              "relationIds": [
+                "e-9-11"
+              ]
+            }
+          ],
+          "classification": "shared-endpoint"
+        }
+      ],
+      "status": "global-coupling-remains"
+    },
+    "boundedness": {
+      "maxLocalStates": 13,
+      "stateCapHits": 0,
+      "localSearchProduct": 2031250,
+      "finalistCombinationUpperBound": 1000000000,
+      "finalistBounded": false
+    }
+  }
+]

@@ -1,0 +1,2413 @@
+{
+  "contract": "SELF-LOOP-OWNER-LOCAL-RECALL-AWARE-PRUNING-DEPENDENCY-FINGERPRINT-v1",
+  "diagnosticOnly": true,
+  "correction": {
+    "previousDisplayedSingleLoopFalseNegativeCount": 24,
+    "correctedSingleLoopFalseNegativeCount": 30,
+    "reason": "previous artifact stored only up to 12 displayed false-negative examples per loop and aggregated example-array length rather than total count",
+    "displayedExamplesRemainCapped": 12
+  },
+  "referenceBoundary": {
+    "retainedProduct": "all 6^loop-count current retained combinations are authoritative ground truth for pruning comparison",
+    "fullDomain": "72^loop-count full owner-group reference is evaluated only when it is <= 5,184; larger cases are explicitly not evaluated",
+    "singleLoop": "all 72 angle/radius candidates remain the single-loop reference"
+  },
+  "pruningStrategies": [
+    "current-top24",
+    "screen-pass-all",
+    "pairwise-hard-conflict-pruned",
+    "incremental-hard-screen-pruned",
+    "cheap-pareto-top24",
+    "failure-class-diverse-top24",
+    "orientation-radius-diverse-top24"
+  ],
+  "falseNegativeGate": "PASS only when all authoritative feasible plans, the best plan, the full authoritative Pareto front, and one representative of every failure class are retained within the stated reference boundary",
+  "dependencyFingerprint": "stage-specific routing, Relation-label, Node-label, viewport, and semantic-equivalence dependencies; no single opaque global cache key",
+  "results": [
+    {
+      "name": "canonical-lighthouse",
+      "locale": "en",
+      "ownerId": "beacon",
+      "graph": {
+        "nodes": 10,
+        "edges": 16,
+        "loops": 4
+      },
+      "groups": [
+        {
+          "ownerId": "beacon",
+          "loopCount": 4,
+          "retainedProductCount": 1296,
+          "fullDomainProductCount": 26873856,
+          "reference": {
+            "authoritativeEvaluationCount": 1296,
+            "feasiblePlanCount": 0,
+            "paretoPlanCount": 94
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 94,
+                "paretoFrontRecall": 0.0532,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 0.5
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 94,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 94,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 94,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 94,
+                "paretoFrontRecall": 0.0638,
+                "topNAuthoritativeQualityRecall": 0.4167,
+                "failureClassRecall": 0.5
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 94,
+                "paretoFrontRecall": 0.0426,
+                "topNAuthoritativeQualityRecall": 0.5,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 94,
+                "paretoFrontRecall": 0.0213,
+                "topNAuthoritativeQualityRecall": 0.25,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "not-evaluated-bounded-domain-too-large",
+            "candidateCount": 26873856,
+            "reason": "72^loop-count exceeds the 5,184 authoritative reference budget; retained-product reference remains the applicable boundary"
+          },
+          "pairwiseConflictCount": 216,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "canonical-lighthouse",
+      "locale": "ja",
+      "ownerId": "beacon",
+      "graph": {
+        "nodes": 10,
+        "edges": 16,
+        "loops": 4
+      },
+      "groups": [
+        {
+          "ownerId": "beacon",
+          "loopCount": 4,
+          "retainedProductCount": 1296,
+          "fullDomainProductCount": 26873856,
+          "reference": {
+            "authoritativeEvaluationCount": 1296,
+            "feasiblePlanCount": 0,
+            "paretoPlanCount": 106
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 106,
+                "paretoFrontRecall": 0.0472,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 0.5
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 106,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 106,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 106,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 9,
+              "prunedCandidateCount": 1287,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 106,
+                "paretoFrontRecall": 0.066,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 9,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 106,
+                "paretoFrontRecall": 0.0377,
+                "topNAuthoritativeQualityRecall": 0.5,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 106,
+                "paretoFrontRecall": 0.0189,
+                "topNAuthoritativeQualityRecall": 0.5,
+                "failureClassRecall": 0.5
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "not-evaluated-bounded-domain-too-large",
+            "candidateCount": 26873856,
+            "reason": "72^loop-count exceeds the 5,184 authoritative reference budget; retained-product reference remains the applicable boundary"
+          },
+          "pairwiseConflictCount": 216,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "canonical-titanic",
+      "locale": "en",
+      "ownerId": "titanic",
+      "graph": {
+        "nodes": 13,
+        "edges": 14,
+        "loops": 2
+      },
+      "groups": [
+        {
+          "ownerId": "titanic",
+          "loopCount": 2,
+          "retainedProductCount": 36,
+          "fullDomainProductCount": 5184,
+          "reference": {
+            "authoritativeEvaluationCount": 36,
+            "feasiblePlanCount": 0,
+            "paretoPlanCount": 12
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 12,
+                "paretoFrontRecall": 0.75,
+                "topNAuthoritativeQualityRecall": 0.9167,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 12,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 12,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 12,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 5,
+              "prunedCandidateCount": 31,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 12,
+                "paretoFrontRecall": 0.4167,
+                "topNAuthoritativeQualityRecall": 0.2083,
+                "failureClassRecall": 0.6667
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 5,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 12,
+                "paretoFrontRecall": 0.75,
+                "topNAuthoritativeQualityRecall": 0.9167,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 12,
+                "paretoFrontRecall": 0.5833,
+                "topNAuthoritativeQualityRecall": 0.75,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "evaluated",
+            "candidateCount": 5184,
+            "currentFinalistCount": 24,
+            "authoritativeEvaluationCount": 5184,
+            "feasiblePlanCount": 0,
+            "currentFinalistFeasibleRecall": null,
+            "currentFinalistBestRecall": false,
+            "paretoPlanCount": 469,
+            "currentFinalistParetoRecall": 0.0021,
+            "currentFinalistTopNRecall": 0,
+            "falseNegativeFeasiblePlanCount": 0,
+            "runtimeMs": 69607.99
+          },
+          "pairwiseConflictCount": 36,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "canonical-titanic",
+      "locale": "ja",
+      "ownerId": "titanic",
+      "graph": {
+        "nodes": 13,
+        "edges": 14,
+        "loops": 2
+      },
+      "groups": [
+        {
+          "ownerId": "titanic",
+          "loopCount": 2,
+          "retainedProductCount": 36,
+          "fullDomainProductCount": 5184,
+          "reference": {
+            "authoritativeEvaluationCount": 36,
+            "feasiblePlanCount": 0,
+            "paretoPlanCount": 17
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 17,
+                "paretoFrontRecall": 0.5882,
+                "topNAuthoritativeQualityRecall": 0.9167,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 17,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 17,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 17,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 3,
+              "prunedCandidateCount": 33,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 17,
+                "paretoFrontRecall": 0.1765,
+                "topNAuthoritativeQualityRecall": 0.125,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 3,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 17,
+                "paretoFrontRecall": 0.5882,
+                "topNAuthoritativeQualityRecall": 0.9167,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 17,
+                "paretoFrontRecall": 0.7647,
+                "topNAuthoritativeQualityRecall": 0.6667,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "evaluated",
+            "candidateCount": 5184,
+            "currentFinalistCount": 24,
+            "authoritativeEvaluationCount": 5184,
+            "feasiblePlanCount": 0,
+            "currentFinalistFeasibleRecall": null,
+            "currentFinalistBestRecall": false,
+            "paretoPlanCount": 417,
+            "currentFinalistParetoRecall": 0.012,
+            "currentFinalistTopNRecall": 0,
+            "falseNegativeFeasiblePlanCount": 0,
+            "runtimeMs": 70458.84
+          },
+          "pairwiseConflictCount": 36,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "synthetic-isolated",
+      "locale": "en",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 1,
+        "edges": 2,
+        "loops": 2
+      },
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "retainedProductCount": 36,
+          "fullDomainProductCount": 5184,
+          "reference": {
+            "authoritativeEvaluationCount": 36,
+            "feasiblePlanCount": 2,
+            "paretoPlanCount": 9
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 2,
+                "feasiblePlanRecall": 1,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.8889,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 24,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 36,
+              "prunedCandidateCount": 0,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 2,
+                "feasiblePlanRecall": 1,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 1,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": true,
+              "dependencyReuse": {
+                "evaluatedCount": 36,
+                "eligibleCount": 36,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 36,
+              "prunedCandidateCount": 0,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 2,
+                "feasiblePlanRecall": 1,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 1,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": true,
+              "dependencyReuse": {
+                "evaluatedCount": 36,
+                "eligibleCount": 36,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 36,
+              "prunedCandidateCount": 0,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 2,
+                "feasiblePlanRecall": 1,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 1,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": true,
+              "dependencyReuse": {
+                "evaluatedCount": 36,
+                "eligibleCount": 36,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 1,
+              "prunedCandidateCount": 35,
+              "falseNegativeFeasiblePlanCount": 2,
+              "recall": {
+                "feasiblePlanCount": 2,
+                "feasiblePlanRecall": 0,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.1111,
+                "topNAuthoritativeQualityRecall": 0.0417,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 1,
+                "eligibleCount": 1,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 2,
+                "feasiblePlanRecall": 1,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.8889,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 24,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 2,
+                "feasiblePlanRecall": 1,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.8889,
+                "topNAuthoritativeQualityRecall": 0.875,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 24,
+                "eligibleRate": 1
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "evaluated",
+            "candidateCount": 5184,
+            "currentFinalistCount": 24,
+            "authoritativeEvaluationCount": 5184,
+            "feasiblePlanCount": 394,
+            "currentFinalistFeasibleRecall": 0.0051,
+            "currentFinalistBestRecall": false,
+            "paretoPlanCount": 166,
+            "currentFinalistParetoRecall": 0,
+            "currentFinalistTopNRecall": 0,
+            "falseNegativeFeasiblePlanCount": 392,
+            "runtimeMs": 5782.92
+          },
+          "pairwiseConflictCount": 0,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "synthetic-symmetric",
+      "locale": "en",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 6,
+        "loops": 2
+      },
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "retainedProductCount": 36,
+          "fullDomainProductCount": 5184,
+          "reference": {
+            "authoritativeEvaluationCount": 36,
+            "feasiblePlanCount": 0,
+            "paretoPlanCount": 9
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.7778,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 12,
+                "eligibleRate": 0.5
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 36,
+              "prunedCandidateCount": 0,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 1,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": true,
+              "dependencyReuse": {
+                "evaluatedCount": 36,
+                "eligibleCount": 24,
+                "eligibleRate": 0.6667
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 36,
+              "prunedCandidateCount": 0,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 1,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": true,
+              "dependencyReuse": {
+                "evaluatedCount": 36,
+                "eligibleCount": 24,
+                "eligibleRate": 0.6667
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 4,
+              "prunedCandidateCount": 32,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.4444,
+                "topNAuthoritativeQualityRecall": 0.1667,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 4,
+                "eligibleCount": 2,
+                "eligibleRate": 0.5
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.7778,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 12,
+                "eligibleRate": 0.5
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.7778,
+                "topNAuthoritativeQualityRecall": 0.75,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 14,
+                "eligibleRate": 0.5833
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "evaluated",
+            "candidateCount": 5184,
+            "currentFinalistCount": 24,
+            "authoritativeEvaluationCount": 5184,
+            "feasiblePlanCount": 0,
+            "currentFinalistFeasibleRecall": null,
+            "currentFinalistBestRecall": false,
+            "paretoPlanCount": 508,
+            "currentFinalistParetoRecall": 0.0118,
+            "currentFinalistTopNRecall": 0.0833,
+            "falseNegativeFeasiblePlanCount": 0,
+            "runtimeMs": 19082.56
+          },
+          "pairwiseConflictCount": 0,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "synthetic-perturbed",
+      "locale": "en",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 5,
+        "loops": 2
+      },
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "retainedProductCount": 36,
+          "fullDomainProductCount": 5184,
+          "reference": {
+            "authoritativeEvaluationCount": 36,
+            "feasiblePlanCount": 0,
+            "paretoPlanCount": 13
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 13,
+                "paretoFrontRecall": 0.4615,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 13,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 13,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 13,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 4,
+              "prunedCandidateCount": 32,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 13,
+                "paretoFrontRecall": 0.2308,
+                "topNAuthoritativeQualityRecall": 0.0833,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 4,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 13,
+                "paretoFrontRecall": 0.4615,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 13,
+                "paretoFrontRecall": 0.6154,
+                "topNAuthoritativeQualityRecall": 0.9167,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "evaluated",
+            "candidateCount": 5184,
+            "currentFinalistCount": 24,
+            "authoritativeEvaluationCount": 5184,
+            "feasiblePlanCount": 0,
+            "currentFinalistFeasibleRecall": null,
+            "currentFinalistBestRecall": false,
+            "paretoPlanCount": 591,
+            "currentFinalistParetoRecall": 0,
+            "currentFinalistTopNRecall": 0,
+            "falseNegativeFeasiblePlanCount": 0,
+            "runtimeMs": 16596.36
+          },
+          "pairwiseConflictCount": 36,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "synthetic-fanout",
+      "locale": "en",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 8,
+        "loops": 4
+      },
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 4,
+          "retainedProductCount": 1296,
+          "fullDomainProductCount": 26873856,
+          "reference": {
+            "authoritativeEvaluationCount": 1296,
+            "feasiblePlanCount": 0,
+            "paretoPlanCount": 99
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 99,
+                "paretoFrontRecall": 0.0202,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 0.5
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 99,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 99,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 99,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 99,
+                "paretoFrontRecall": 0.0808,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 99,
+                "paretoFrontRecall": 0.0101,
+                "topNAuthoritativeQualityRecall": 0.5,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 99,
+                "paretoFrontRecall": 0.0202,
+                "topNAuthoritativeQualityRecall": 0.7917,
+                "failureClassRecall": 0.5
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "not-evaluated-bounded-domain-too-large",
+            "candidateCount": 26873856,
+            "reason": "72^loop-count exceeds the 5,184 authoritative reference budget; retained-product reference remains the applicable boundary"
+          },
+          "pairwiseConflictCount": 216,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "synthetic-isolated",
+      "locale": "ja",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 1,
+        "edges": 2,
+        "loops": 2
+      },
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "retainedProductCount": 36,
+          "fullDomainProductCount": 5184,
+          "reference": {
+            "authoritativeEvaluationCount": 36,
+            "feasiblePlanCount": 15,
+            "paretoPlanCount": 7
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 8,
+              "recall": {
+                "feasiblePlanCount": 15,
+                "feasiblePlanRecall": 0.4667,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 7,
+                "paretoFrontRecall": 0.8571,
+                "topNAuthoritativeQualityRecall": 0.6667,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 24,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 36,
+              "prunedCandidateCount": 0,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 15,
+                "feasiblePlanRecall": 1,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 7,
+                "paretoFrontRecall": 1,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": true,
+              "dependencyReuse": {
+                "evaluatedCount": 36,
+                "eligibleCount": 36,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 36,
+              "prunedCandidateCount": 0,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 15,
+                "feasiblePlanRecall": 1,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 7,
+                "paretoFrontRecall": 1,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": true,
+              "dependencyReuse": {
+                "evaluatedCount": 36,
+                "eligibleCount": 36,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 36,
+              "prunedCandidateCount": 0,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 15,
+                "feasiblePlanRecall": 1,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 7,
+                "paretoFrontRecall": 1,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": true,
+              "dependencyReuse": {
+                "evaluatedCount": 36,
+                "eligibleCount": 36,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 1,
+              "prunedCandidateCount": 35,
+              "falseNegativeFeasiblePlanCount": 15,
+              "recall": {
+                "feasiblePlanCount": 15,
+                "feasiblePlanRecall": 0,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 7,
+                "paretoFrontRecall": 0.1429,
+                "topNAuthoritativeQualityRecall": 0.0417,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 1,
+                "eligibleCount": 1,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 8,
+              "recall": {
+                "feasiblePlanCount": 15,
+                "feasiblePlanRecall": 0.4667,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 7,
+                "paretoFrontRecall": 0.8571,
+                "topNAuthoritativeQualityRecall": 0.6667,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 24,
+                "eligibleRate": 1
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 8,
+              "recall": {
+                "feasiblePlanCount": 15,
+                "feasiblePlanRecall": 0.4667,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 7,
+                "paretoFrontRecall": 0.8571,
+                "topNAuthoritativeQualityRecall": 0.6667,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 24,
+                "eligibleRate": 1
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "evaluated",
+            "candidateCount": 5184,
+            "currentFinalistCount": 24,
+            "authoritativeEvaluationCount": 5184,
+            "feasiblePlanCount": 1514,
+            "currentFinalistFeasibleRecall": 0.0046,
+            "currentFinalistBestRecall": false,
+            "paretoPlanCount": 148,
+            "currentFinalistParetoRecall": 0,
+            "currentFinalistTopNRecall": 0,
+            "falseNegativeFeasiblePlanCount": 1507,
+            "runtimeMs": 5140.11
+          },
+          "pairwiseConflictCount": 0,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "synthetic-symmetric",
+      "locale": "ja",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 6,
+        "loops": 2
+      },
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "retainedProductCount": 36,
+          "fullDomainProductCount": 5184,
+          "reference": {
+            "authoritativeEvaluationCount": 36,
+            "feasiblePlanCount": 0,
+            "paretoPlanCount": 9
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.7778,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 4,
+                "eligibleRate": 0.1667
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 36,
+              "prunedCandidateCount": 0,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 1,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": true,
+              "dependencyReuse": {
+                "evaluatedCount": 36,
+                "eligibleCount": 8,
+                "eligibleRate": 0.2222
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 36,
+              "prunedCandidateCount": 0,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 1,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": true,
+              "dependencyReuse": {
+                "evaluatedCount": 36,
+                "eligibleCount": 8,
+                "eligibleRate": 0.2222
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 4,
+              "prunedCandidateCount": 32,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.4444,
+                "topNAuthoritativeQualityRecall": 0.1667,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 4,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.7778,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 4,
+                "eligibleRate": 0.1667
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 9,
+                "paretoFrontRecall": 0.7778,
+                "topNAuthoritativeQualityRecall": 0.75,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 4,
+                "eligibleRate": 0.1667
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "evaluated",
+            "candidateCount": 5184,
+            "currentFinalistCount": 24,
+            "authoritativeEvaluationCount": 5184,
+            "feasiblePlanCount": 0,
+            "currentFinalistFeasibleRecall": null,
+            "currentFinalistBestRecall": false,
+            "paretoPlanCount": 517,
+            "currentFinalistParetoRecall": 0.0019,
+            "currentFinalistTopNRecall": 0.0833,
+            "falseNegativeFeasiblePlanCount": 0,
+            "runtimeMs": 19899.41
+          },
+          "pairwiseConflictCount": 0,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "synthetic-perturbed",
+      "locale": "ja",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 5,
+        "loops": 2
+      },
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 2,
+          "retainedProductCount": 36,
+          "fullDomainProductCount": 5184,
+          "reference": {
+            "authoritativeEvaluationCount": 36,
+            "feasiblePlanCount": 0,
+            "paretoPlanCount": 21
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 21,
+                "paretoFrontRecall": 0.619,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 21,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 21,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 36,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 21,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 4,
+              "prunedCandidateCount": 32,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 21,
+                "paretoFrontRecall": 0.1905,
+                "topNAuthoritativeQualityRecall": 0.0833,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 4,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 21,
+                "paretoFrontRecall": 0.619,
+                "topNAuthoritativeQualityRecall": 1,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 36,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 12,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 21,
+                "paretoFrontRecall": 0.7143,
+                "topNAuthoritativeQualityRecall": 0.9167,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "evaluated",
+            "candidateCount": 5184,
+            "currentFinalistCount": 24,
+            "authoritativeEvaluationCount": 5184,
+            "feasiblePlanCount": 0,
+            "currentFinalistFeasibleRecall": null,
+            "currentFinalistBestRecall": false,
+            "paretoPlanCount": 508,
+            "currentFinalistParetoRecall": 0,
+            "currentFinalistTopNRecall": 0,
+            "falseNegativeFeasiblePlanCount": 0,
+            "runtimeMs": 17512.43
+          },
+          "pairwiseConflictCount": 36,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    },
+    {
+      "name": "synthetic-fanout",
+      "locale": "ja",
+      "ownerId": "center",
+      "graph": {
+        "nodes": 5,
+        "edges": 8,
+        "loops": 4
+      },
+      "groups": [
+        {
+          "ownerId": "center",
+          "loopCount": 4,
+          "retainedProductCount": 1296,
+          "fullDomainProductCount": 26873856,
+          "reference": {
+            "authoritativeEvaluationCount": 1296,
+            "feasiblePlanCount": 0,
+            "paretoPlanCount": 88
+          },
+          "strategies": [
+            {
+              "strategy": "current-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 88,
+                "paretoFrontRecall": 0.0114,
+                "topNAuthoritativeQualityRecall": 0.9583,
+                "failureClassRecall": 0.5
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "screen-pass-all",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 88,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "pairwise-hard-conflict-pruned",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 88,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "incremental-hard-screen-pruned",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 0,
+              "prunedCandidateCount": 1296,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 88,
+                "paretoFrontRecall": 0,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 0,
+                "eligibleCount": 0,
+                "eligibleRate": null
+              }
+            },
+            {
+              "strategy": "cheap-pareto-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": false,
+                "paretoPlanCount": 88,
+                "paretoFrontRecall": 0.0795,
+                "topNAuthoritativeQualityRecall": 0,
+                "failureClassRecall": 0
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "failure-class-diverse-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 88,
+                "paretoFrontRecall": 0.0114,
+                "topNAuthoritativeQualityRecall": 0.5,
+                "failureClassRecall": 1
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            },
+            {
+              "strategy": "orientation-radius-diverse-top24",
+              "candidateCountBeforePruning": 1296,
+              "retainedCandidateCount": 24,
+              "prunedCandidateCount": 1272,
+              "falseNegativeFeasiblePlanCount": 0,
+              "recall": {
+                "feasiblePlanCount": 0,
+                "feasiblePlanRecall": null,
+                "bestAuthoritativePlanRecall": true,
+                "paretoPlanCount": 88,
+                "paretoFrontRecall": 0.0227,
+                "topNAuthoritativeQualityRecall": 0.7917,
+                "failureClassRecall": 0.5
+              },
+              "falseNegativeGatePass": false,
+              "dependencyReuse": {
+                "evaluatedCount": 24,
+                "eligibleCount": 0,
+                "eligibleRate": 0
+              }
+            }
+          ],
+          "fullDomainReference": {
+            "status": "not-evaluated-bounded-domain-too-large",
+            "candidateCount": 26873856,
+            "reason": "72^loop-count exceeds the 5,184 authoritative reference budget; retained-product reference remains the applicable boundary"
+          },
+          "pairwiseConflictCount": 216,
+          "fingerprint": {
+            "routing": "owner-local projection requires unchanged ordinary and non-owner Self-loop route geometry plus occupied-path arbitration semantics",
+            "relationLabels": "unaffected Relation-label geometry and obstacle ordering must remain equal",
+            "nodeLabels": "non-owner Node-label geometry and occupied Relation-label inputs must remain equal",
+            "viewport": "positions and fit inputs must remain equal",
+            "semanticGuard": "full routedEdges, Relation-label map, Node-label map, viewport result, feasibility class, and ordinary churn must match"
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "resultCount": 12,
+    "groupCount": 12,
+    "retainedReferenceAuthoritativeEvaluations": 5472,
+    "strategiesPassingFalseNegativeGate": 10,
+    "strategiesEvaluated": 84,
+    "fullDomainEvaluatedGroupCount": 8,
+    "fullDomainSkippedGroupCount": 4
+  }
+}
