@@ -10,7 +10,7 @@ const OPERATION_TIMEOUT_MS = 20_000;
 const budgets = [2, 3, 4, 6];
 const arms = ["direct-current", "structural-native-v3", "frontier-adaptive-12", "structural-native-discrete"];
 const discreteFixtureIds = new Set(["lighthouse-en", "apollo-en", "dense-k7-7"]);
-const fixtures = [
+const baseFixtures = [
   { id: "lighthouse-en", family: "canonical-mixed-self-loop", path: "../e2r-spec/examples/lighthouse-restoration-demo.en.e2r.json" },
   { id: "lighthouse-ja", family: "canonical-mixed-self-loop-label", path: "../e2r-spec/examples/lighthouse-restoration-demo.ja.e2r.json" },
   { id: "apollo-en", family: "canonical-mixed", path: "../e2r-spec/examples/apollo-11-mission.en.e2r.json" },
@@ -24,6 +24,8 @@ const fixtures = [
   { id: "dense-k7-7-minus-one", family: "dense-perturbed", path: "synthetic:k7-7-minus-one" },
   { id: "apollo-spacing-control", family: "dense-product-control", path: "experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-control.en.e2r.json" },
 ];
+const extraFixtures = process.env.E2R_SCREENING_EXTRA_FIXTURES ? JSON.parse(process.env.E2R_SCREENING_EXTRA_FIXTURES) : [];
+const fixtures = [...baseFixtures, ...extraFixtures];
 
 const weightProfiles = [
   { id: "balanced", crossing: 5, separation: 2, labelSpan: 2, corridor: 1.5, angular: 1, extent: 1, edge: 0.5 },

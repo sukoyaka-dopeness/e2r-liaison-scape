@@ -6,7 +6,9 @@ import path from "node:path";
 
 const root = process.cwd();
 const sourcePool = path.join(os.tmpdir(), "e2r-bounded-screening-candidate-pool.json");
-const outputDir = path.join(root, "experimental", "bounded-multi-stage-product-probe1");
+const outputDir = process.env.E2R_MULTI_STAGE_OUTPUT_DIR
+  ? path.resolve(root, process.env.E2R_MULTI_STAGE_OUTPUT_DIR)
+  : path.join(root, "experimental", "bounded-multi-stage-product-probe1");
 const probeBudgets = [0, 1, 2];
 const operationTimeoutMs = 20_000;
 const featureKeys = ["crossings", "separationDeficit", "labelSpanDeficit", "coarseCorridorPressure", "angularPressure", "extentDiagonal", "edgeSpread"];
@@ -53,6 +55,7 @@ function fixturePathById(pool) {
   return new Map(pool.fixtures.map((fixture) => [fixture.id, fixture.path]));
 }
 function ensureCandidatePool() {
+  if (process.env.E2R_MULTI_STAGE_CANDIDATE_POOL_FILE) return JSON.parse(fs.readFileSync(process.env.E2R_MULTI_STAGE_CANDIDATE_POOL_FILE, "utf8"));
   const run = spawnSync(process.execPath, ["tools/bounded-screening-finalist-recall1.mjs"], {
     cwd: root,
     encoding: "utf8",
@@ -112,6 +115,15 @@ function probeProduct(fixturePath, target) {
   const positionFile = path.join(os.tmpdir(), `e2r-product-probe-${process.pid}-${hash(target.positions)}.json`);
   fs.writeFileSync(positionFile, JSON.stringify({ family: target.family, positions: target.positions }));
   const startedAt = performance.now();
+  if (process.env.E2R_MULTI_STAGE_INJECT_PROBE_FAILURE === "1") return {
+    status: "failed",
+    family: target.family,
+    fingerprint: target.fingerprint,
+    candidateIndex: target.candidateIndex,
+    error: "injected Product-authoritative probe failure",
+    presentationMs: 0,
+    wallMs: Number((performance.now() - startedAt).toFixed(3)),
+  };
   const run = spawnSync(process.execPath, ["tools/generic-crossing-search.mjs", fixturePath], {
     cwd: root,
     encoding: "utf8",
@@ -294,6 +306,7 @@ for (const budget of probeBudgets) {
 const denseRows = oneProbe.results.filter((result) => result.fixture.startsWith("dense-"));
 const classification = oneProbe.aggregate.meaningfulFalseNegativeCount === 0
   && oneProbe.aggregate.ambiguityProbeEvaluations <= 6
+  && oneProbe.aggregate.failClosedOperations === 0
   && oneProbe.aggregate.deterministic
   ? "A. BOUNDED MULTI-STAGE SELECTOR ESTABLISHED"
   : oneProbe.aggregate.meaningfulFalseNegativeCount < zeroProbe.aggregate.meaningfulFalseNegativeCount
@@ -338,6 +351,11 @@ const artifact = {
   budgetResults,
   deterministic: { samePoolAndSelector: Object.values(budgetResults).every(({ aggregate: result }) => result.deterministic), repeatProbeCacheKey: true },
   cancellationAndFailure: "The existing Product verification seam is resumable and fail-closed; this selector does not expose an unverified candidate on probe budget exhaustion or Product probe failure. Lifecycle integration is intentionally not performed.",
+  failureSafety: {
+    classificationRequiresFailClosedOperationsZero: true,
+    injectedFailureMode: "E2R_MULTI_STAGE_INJECT_PROBE_FAILURE=1",
+    normalRunFailClosedOperations: oneProbe.aggregate.failClosedOperations,
+  },
   disposition: {
     classification,
     candidateGeneration: "existing families retained",

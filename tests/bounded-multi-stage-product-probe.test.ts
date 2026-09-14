@@ -11,6 +11,7 @@ test("one bounded Product probe closes the two prior dense meaningful misses", (
   assert.equal(summary.budgets[1].meaningfulFalseNegativeCount, 0);
   assert.equal(summary.budgets[1].top3AnyRecall, 1);
   assert.equal(summary.budgets[1].baselineImprovementRetention, 1);
+  assert.equal(summary.budgets[1].failClosedOperations, 0);
   assert.equal(summary.budgets[1].ambiguityProbeEvaluations, 3);
   assert.equal(summary.budgets[1].totalProductEvaluations, 107);
   assert.equal(summary.budgets[1].avoidedProductEvaluations, 204);
@@ -47,4 +48,5 @@ test("the multi-stage checkpoint stays diagnostic and preserves Product authorit
   assert.equal(summary.disposition.humanReview, "NOT READY");
   assert.equal(summary.disposition.initialLayoutReleaseBlocker, "OPEN");
   assert.equal(summary.deterministic.samePoolAndSelector, true);
+  assert.equal(summary.failureSafety.classificationRequiresFailClosedOperationsZero, true);
 });
