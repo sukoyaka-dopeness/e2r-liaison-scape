@@ -1,0 +1,54 @@
+{
+  "classification": "D. WORKER PRODUCT PARITY ESTABLISHED / VISUAL EVALUATION INCONCLUSIVE",
+  "authority": {
+    "presentation": "src/graph-presentation.ts",
+    "qualityMetric": "src/automatic-layout-quality.ts (forward extraction of the bounded HQ-layout research scorer)",
+    "comparator": "experimental/production-shaped-quality-provider1/contract.mjs",
+    "productUiHasHqCandidateMetric": false,
+    "previousWorkerMetric": "diagnostic-only substitution"
+  },
+  "browserCampaign": {
+    "cases": 3,
+    "verifiedCandidates": 28,
+    "presentationMismatches": 0,
+    "selectedMetricMismatches": 0,
+    "selectedFingerprintMismatches": 0,
+    "denseCheapEquivalentWitness": true,
+    "dense": {
+      "synchronousMaxMainThreadSliceMs": 5076.6,
+      "workerMaxMainThreadSliceMs": 26.8,
+      "workerWallMs": 30768.0,
+      "maxPayloadBytes": 10950,
+      "meanTransportOverheadMs": 57.375
+    },
+    "workerCancellation": {
+      "status": "cancelled",
+      "resultReceived": false,
+      "resultExposed": false,
+      "terminateCallLatencyMs": 6.7
+    }
+  },
+  "actualProduct": {
+    "inspected": true,
+    "surface": "current Japanese Lighthouse sample through the production App surface",
+    "candidateInjected": false,
+    "result": "INCONCLUSIVE",
+    "reason": "The production-shaped HQ provider has no App integration or preview hook, so the verified selected candidate cannot be rendered without crossing the checkpoint's integration boundary.",
+    "currentFastLayoutObservation": "The Product surface rendered successfully; central route/label congestion is visible, but it is not evidence about the unrendered HQ candidate."
+  },
+  "readiness": {
+    "productPresentationParity": "ESTABLISHED IN TESTED ENVELOPE",
+    "productMetricParity": "ESTABLISHED FOR THE PRODUCTION-SHAPED HQ RESEARCH AUTHORITY",
+    "finalSelectionParity": "ESTABLISHED IN TESTED ENVELOPE",
+    "workerExecution": "ESTABLISHED IN TESTED ENVELOPE",
+    "browserResponsiveness": "MATERIALLY IMPROVED",
+    "browserWallTime": "NOT ESTABLISHED",
+    "actualProductVisualEvaluation": "INCONCLUSIVE",
+    "visualQuality": "NOT READY",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productionProvider": "NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "humanReview": "NOT READY",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}

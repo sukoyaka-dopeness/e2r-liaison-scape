@@ -9,6 +9,7 @@ import { settleInitialPlacement, solveAutoLayout } from "../src/auto-layout.ts";
 import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence } from "../src/viewport.ts";
 import { INITIAL_ENTITY_CLEARANCE } from "../src/initial-entity-placement.ts";
+import { deriveAutomaticLayoutQualityMetrics } from "../src/automatic-layout-quality.ts";
 
 const fixturePath = process.argv[2] ?? "experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json";
 function syntheticBipartiteDataset(leftSize, rightSize, legacyIds = false) {
@@ -523,7 +524,8 @@ function derivePresentationMetrics(positions, { replayPrefix } = {}) {
     replayedPrefix: replayedPrefixTrace,
     passes: presentationPassTrace,
   } : undefined;
-  const result = { score, ...feasibility, extent, aspectRatio: extent[0] / Math.max(1, extent[1]), fitScale, screenSpace, routeMedian, routeMax, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossings: crossing.length, crossingDetails: crossing, labelRouteHits, labelNear20, labelOverlap, labelCorridorDeficit, labelCorridorConflictPairs, labelCorridorMinimumClearance: Number.isFinite(labelCorridorMinimumClearance) ? labelCorridorMinimumClearance : null, labelCorridorMaximumIntrusion, routeLabelCorridors, usableSpanPenalty, routeSupports, feedbackApplied: presentation.feedbackApplied, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
+  const authoritativeQuality = deriveAutomaticLayoutQualityMetrics({ nodes: graph.nodes, edges, positions, presentation, labelCorridorMargin });
+  const result = { ...authoritativeQuality, screenSpace, hopLengths: { minimum: hopLengths[0], median: hopLengths[Math.floor(hopLengths.length / 2)], maximum: Math.max(...hopLengths), shortHopCount }, crossingDetails: crossing, routeLabelCorridors, routeSupports, pressureNodeIds: [...pressureReasons.keys()].filter(Boolean).sort(compareId), pressureReasons: Object.fromEntries([...pressureReasons.entries()].filter(([id]) => id).sort(([left], [right]) => compareId(left, right))) };
   if (presentationTrace) Object.defineProperty(result, "presentationTrace", { value: presentationTrace, enumerable: false });
   Object.defineProperty(result, "presentationArtifacts", {
     value: { routedEdges: presentation.routedEdges, relationLabels: presentation.relationLabels, nodeLabels: presentation.nodeLabels },

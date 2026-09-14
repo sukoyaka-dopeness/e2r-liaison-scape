@@ -82,11 +82,12 @@ export function stepProductVerificationExecution(execution, dependencies, option
 
 export const productVerificationExecutionContract = Object.freeze({
   contract: "LIAISONSCAPE-PRODUCT-VERIFICATION-EXECUTION-ARCHITECTURE-v1",
-  selectedArchitecture: "main-thread-resumable-product-verification",
+  executorUnderComparison: "main-thread-resumable-product-verification",
   sourceUnit: "one current Product route, Relation-label, Node-label, phase-transition, or finalization step",
   scheduling: "one source unit per event-loop turn in the browser diagnostic",
   cancellation: "observed before the next source unit; no partial Product result is exposed",
   budgets: ["provider work units", "verification source steps", "wall time"],
   authority: "current Product accumulators and final Product metric selection remain authoritative",
-  worker: "deferred unless source-faithful main-thread resumability fails the measured responsiveness boundary",
+  checkpointSelectedArchitecture: "worker-product-verification-main-thread-selection",
+  worker: "selected as the responsiveness-isolation boundary; total completion latency remains open",
 });

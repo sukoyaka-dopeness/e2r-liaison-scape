@@ -14,7 +14,8 @@ function dependencies(fail = false) { return { generateCandidates: () => candida
 function drain(execution: any, deps = dependencies()) { for (let turn = 0; execution.providerState.active && turn < 100; turn += 1) stepProductVerificationExecution(execution, deps, { currentSnapshot: snapshot, normalK: 2, maxWorkUnits: 100 }); return execution; }
 
 test("architecture reuses source work units without moving Product authority", () => {
-  assert.equal(productVerificationExecutionContract.selectedArchitecture, "main-thread-resumable-product-verification");
+  assert.equal(productVerificationExecutionContract.executorUnderComparison, "main-thread-resumable-product-verification");
+  assert.equal(productVerificationExecutionContract.checkpointSelectedArchitecture, "worker-product-verification-main-thread-selection");
   assert.match(productVerificationExecutionContract.authority, /Product accumulators/);
   const result = drain(start());
   assert.equal(result.providerState.lastOutcome?.status, "completed");
