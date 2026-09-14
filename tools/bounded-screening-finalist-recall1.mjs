@@ -646,8 +646,13 @@ const artifact = {
     initialLayoutReleaseBlocker: "OPEN",
   },
 };
+const candidateExportPath = process.env.E2R_SCREENING_EXPORT_CANDIDATES;
+if (candidateExportPath) {
+  fs.mkdirSync(path.dirname(candidateExportPath), { recursive: true });
+  fs.writeFileSync(candidateExportPath, `${JSON.stringify({ contract: "LIAISONSCAPE-SCREENING-CANDIDATE-POOL-v1", fixtures, rows }, null, 2)}\n`);
+}
 fs.mkdirSync(outputDir, { recursive: true });
-fs.writeFileSync(path.join(outputDir, "benchmark-result-summary.json"), `${JSON.stringify(artifact, null, 2)}\n`);
+if (process.env.E2R_SCREENING_SKIP_ARTIFACT !== "1") fs.writeFileSync(path.join(outputDir, "benchmark-result-summary.json"), `${JSON.stringify(artifact, null, 2)}\n`);
 console.log(JSON.stringify({
   output: path.relative(root, path.join(outputDir, "benchmark-result-summary.json")),
   classification,

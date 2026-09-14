@@ -94,6 +94,8 @@ const parsedGlobalSpacingY = Number.parseFloat(process.env.E2R_GLOBAL_SPACING_Y 
 const globalSpacingY = Number.isFinite(parsedGlobalSpacingY) && parsedGlobalSpacingY > 0 ? parsedGlobalSpacingY : globalSpacingScale;
 const globalSpacingStage2Mode = process.env.E2R_GLOBAL_SPACING_STAGE2 === "off" ? "off" : "full";
 const globalPlacementAblation = process.env.E2R_GLOBAL_PLACEMENT_ABLATION ?? "off";
+const productProbePositionsFile = process.env.E2R_PRODUCT_PROBE_POSITIONS_FILE ?? null;
+const productProbeFamily = process.env.E2R_PRODUCT_PROBE_FAMILY ?? "product-authoritative-probe";
 const parsedParallelBundleSpacing = Number.parseFloat(process.env.E2R_PARALLEL_BUNDLE_SPACING ?? "0");
 const parallelBundleSpacing = Number.isFinite(parsedParallelBundleSpacing) && parsedParallelBundleSpacing > 0 ? parsedParallelBundleSpacing : 0;
 const parallelBundleMode = process.env.E2R_PARALLEL_BUNDLE_MODE === "pair" ? "pair" : "bundle";
@@ -1893,7 +1895,41 @@ function productionSimplificationSearch(mode) {
     },
   };
 }
+function productAuthoritativeProbeSearch() {
+  if (!productProbePositionsFile) return null;
+  const payload = JSON.parse(fs.readFileSync(productProbePositionsFile, "utf8"));
+  const positions = clonePositions(payload.positions ?? payload);
+  startProfileStage("product-authoritative-probe");
+  const metrics = presentationMetrics(positions);
+  finishProfileStage("product-authoritative-probe");
+  const candidate = {
+    family: payload.family ?? productProbeFamily,
+    structuralCrossings: straightCrossingsForPositions(positions),
+    positions,
+    metrics,
+    eligible: metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0,
+  };
+  return {
+    orderSearch: { mode: "PRODUCT_AUTHORITATIVE_PROBE", evaluated: 0, orders: [] },
+    gridSearch: { mode: "NOT_RUN", evaluated: 0, finalists: [] },
+    presentationRepair: { mode: "PRODUCT_AUTHORITATIVE_PROBE", evaluated: 1, seedsPerFinalist: 0, rounds: 0, finalists: [] },
+    postStructuralRelaxation: null,
+    candidates: [candidate],
+    presentationEvaluations: 1,
+    zeroCrossingStructural: candidate.structuralCrossings === 0 ? 1 : 0,
+    zeroCrossingPresentation: candidate.metrics.crossings === 0 ? 1 : 0,
+    minimumStructuralCrossings: candidate.structuralCrossings,
+    boundedFallbackCount: 0,
+    floatSelected: candidate,
+    roundedSelected: null,
+    finalCanonicalization: null,
+    selected: candidate,
+    probe: { family: candidate.family, source: "diagnostic positions file", authority: "current Product-authoritative presentation" },
+  };
+}
 function genericSearch() {
+  const probe = productAuthoritativeProbeSearch();
+  if (probe) return probe;
   const simplified = productionSimplificationSearch(globalPlacementAblation);
   if (simplified) return simplified;
   const ids = graph.nodes.map((node) => node.id).sort(compareId);
