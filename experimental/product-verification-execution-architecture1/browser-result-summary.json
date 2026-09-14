@@ -1,0 +1,51 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-VERIFICATION-EXECUTION-ARCHITECTURE-v1",
+  "diagnosticOnly": true,
+  "runDate": "2026-09-14",
+  "browser": "Microsoft Edge 152 / Windows 11",
+  "sourceCause": "The previous provider called deriveBoundedAutomaticPresentation synchronously once per finalist. Existing Product accumulators expose finer units, but dense geometry can still make one route or Node-label initialization unit long and load-sensitive.",
+  "architectures": [
+    "synchronous candidate verification",
+    "main-thread source-unit resumable verification",
+    "Worker Product verification with main-thread final selection"
+  ],
+  "selectedArchitecture": {
+    "id": "worker-product-verification-main-thread-selection",
+    "classification": "B. WORKER PRODUCT VERIFICATION ARCHITECTURE ESTABLISHED IN TESTED ENVELOPE",
+    "reason": "It preserves exact Product computation and provider selection while isolating geometry-dependent long source units from the UI thread."
+  },
+  "results": [
+    {
+      "id": "canonical",
+      "graph": { "nodes": 8, "edges": 10, "finalists": 8 },
+      "baseline": { "elapsedMs": 1312.8, "maxMainThreadSliceMs": 208.8, "maxIntervalGapMs": 348.1, "maxRafGapMs": 200.0 },
+      "mainThreadResumable": { "elapsedMs": 1519.5, "maxMainThreadSliceMs": 15.8, "maxIntervalGapMs": 26.7, "maxRafGapMs": 16.9, "sourceSteps": 592 },
+      "worker": { "elapsedMs": 2753.8, "maxMainThreadSliceMs": 2.3, "maxIntervalGapMs": 26.2, "maxRafGapMs": 17.2, "meanTransportOverheadMs": 45.512, "maxTransportOverheadMs": 58.2, "maxPayloadBytes": 4821 },
+      "exact": { "verifiedPresentationSignatures": true, "selectedFingerprint": true, "productMetrics": true }
+    },
+    {
+      "id": "dense",
+      "graph": { "nodes": 14, "edges": 49, "finalists": 12 },
+      "baseline": { "elapsedMs": 20019.9, "maxMainThreadSliceMs": 1893.4, "maxIntervalGapMs": 3567.5, "maxRafGapMs": 1883.3 },
+      "mainThreadResumable": { "elapsedMs": 21949.6, "maxMainThreadSliceMs": 47.9, "maxIntervalGapMs": 59.0, "maxRafGapMs": 33.6, "sourceSteps": 3372, "longestSourceKind": "initialize-feedback-node-label" },
+      "worker": { "elapsedMs": 27145.1, "maxMainThreadSliceMs": 14.6, "maxIntervalGapMs": 65.5, "maxRafGapMs": 49.9, "meanTransportOverheadMs": 59.025, "maxTransportOverheadMs": 82.8, "maxPayloadBytes": 10950 },
+      "exact": { "verifiedPresentationSignatures": true, "selectedFingerprint": true, "productMetrics": true },
+      "repeatEvidence": { "workerElapsedMs": 4358.1, "workerMaxMainThreadSliceMs": 1.6, "workerMaxIntervalGapMs": 21.4, "workerMaxRafGapMs": 17.0, "note": "Wall time was load-sensitive across runs; Worker isolation and exactness were stable." }
+    },
+    {
+      "id": "label",
+      "graph": { "nodes": 10, "edges": 20, "finalists": 8 },
+      "baseline": { "elapsedMs": 4799.1, "maxMainThreadSliceMs": 948.7, "maxIntervalGapMs": 1719.3, "maxRafGapMs": 933.1 },
+      "mainThreadResumable": { "elapsedMs": 4137.5, "maxMainThreadSliceMs": 20.6, "maxIntervalGapMs": 34.3, "maxRafGapMs": 17.0, "sourceSteps": 1024 },
+      "worker": { "elapsedMs": 7366.9, "maxMainThreadSliceMs": 4.1, "maxIntervalGapMs": 24.6, "maxRafGapMs": 17.0, "meanTransportOverheadMs": 64.9, "maxTransportOverheadMs": 88.5, "maxPayloadBytes": 7443 },
+      "exact": { "verifiedPresentationSignatures": true, "selectedFingerprint": true, "productMetrics": true }
+    }
+  ],
+  "cancellation": {
+    "mainThreadResumable": { "status": "cancelled", "resultExposed": false, "requestTimerDelayMs": 10.5, "cancelCompletionLatencyMs": 1.0, "maxMainThreadSliceMs": 31.9 },
+    "worker": { "status": "cancelled", "resultExposed": false, "resultReceived": false, "requestTimerDelayMs": 0.8, "terminateCallLatencyMs": 8.2 }
+  },
+  "failureSemantics": { "budgetExhaustion": "fail-closed", "verificationFailure": "fail-closed", "staleResult": "rejected by operation/generation/snapshot/candidate identity", "synchronousFallback": "forbidden for failed Worker jobs", "partialResultExposed": false },
+  "determinism": { "repeatedWorkerCanonicalFingerprintEqual": true, "repeatedWorkerCanonicalProductEqual": true },
+  "readiness": { "executionArchitecture": "ESTABLISHED IN TESTED ENVELOPE", "browserResponsiveness": "MATERIALLY IMPROVED / TOTAL WALL TIME LOAD-SENSITIVE", "productionProvider": "NOT ESTABLISHED", "productIntegration": "HOLD", "actualProductVisualEvaluation": "READY FOR NEXT CHECKPOINT", "humanReview": "NOT READY", "qualitySolver": "HOLD / NOT ESTABLISHED", "initialLayoutReleaseBlocker": "OPEN" }
+}
