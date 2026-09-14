@@ -126,9 +126,18 @@ function probeProduct(fixturePath, target) {
       E2R_GLOBAL_SPACING_STAGE2: "off",
     },
   });
-  if (run.status !== 0) throw new Error(`Product probe ${target.family}: ${run.stderr || run.error || `exit ${run.status}`}`);
+  if (run.error?.code === "ETIMEDOUT" || run.status !== 0) return {
+    status: "failed",
+    family: target.family,
+    fingerprint: target.fingerprint,
+    candidateIndex: target.candidateIndex,
+    error: run.error?.code === "ETIMEDOUT" ? "Product-authoritative probe budget exhausted" : (run.stderr || run.error?.message || `exit ${run.status}`),
+    presentationMs: 0,
+    wallMs: Number((performance.now() - startedAt).toFixed(3)),
+  };
   const output = JSON.parse(run.stdout);
   return {
+    status: "completed",
     family: target.family,
     fingerprint: target.fingerprint,
     candidateIndex: target.candidateIndex,
@@ -157,8 +166,38 @@ function operationEvaluation(row, budget, cache, fixturePaths, baselineByFixture
     evaluated.push(result);
     probes.push(result);
   }
-  const selected = evaluated.slice().sort(productComparator);
   const oracle = row.candidates.slice().sort(productComparator)[0];
+  const failed = evaluated.find((candidate) => candidate.status !== "completed");
+  if (failed) {
+    return {
+      fixture: row.fixture,
+      fixtureFamily: row.fixtureFamily,
+      arm: row.arm,
+      normalFinalistCount: normal.length,
+      probeCount: probes.length,
+      gate: { ...gate, outside: gate.outside.map(({ candidate, key }) => ({ family: candidate.family, fingerprint: candidate.fingerprint, candidateIndex: candidate.index, equivalenceKey: key })) },
+      probeTargets: targets.map(({ positions, ...target }) => target),
+      failClosed: true,
+      failure: { family: failed.family, error: failed.error ?? "Product probe did not complete" },
+      exactBest: false,
+      top3Hit: false,
+      meaningfulFalseNegative: false,
+      regret: 0,
+      relativeRegret: 0,
+      oracle: { family: oracle.family, fingerprint: oracle.fingerprint, product: oracle.product },
+      selectedBest: null,
+      selectedFingerprints: [],
+      oracleImprovesBaseline: false,
+      baselineImprovementRetained: false,
+      normalPresentationMs: sum(normal.map((candidate) => cache.get(`${row.fixture}|${candidate.fingerprint}`)?.presentationMs ?? 0)),
+      probePresentationMs: sum(probes.map((candidate) => candidate.presentationMs ?? 0)),
+      normalWallMs: sum(normal.map((candidate) => cache.get(`${row.fixture}|${candidate.fingerprint}`)?.wallMs ?? 0)),
+      probeWallMs: sum(probes.map((candidate) => candidate.wallMs ?? 0)),
+      deterministic: true,
+      baseline: baselineByFixture.get(row.fixture)?.candidates?.[0]?.product ?? null,
+    };
+  }
+  const selected = evaluated.slice().sort(productComparator);
   const selectedBest = selected[0];
   const top3 = row.candidates.slice().sort(productComparator).slice(0, 3);
   const baseline = baselineByFixture.get(row.fixture)?.candidates?.[0]?.product ?? null;
@@ -225,6 +264,7 @@ function aggregate(results) {
     normalWallMs: sum(results.map((result) => result.normalWallMs)),
     probeWallMs: sum(results.map((result) => result.probeWallMs)),
     deterministic: results.every((result) => result.deterministic),
+    failClosedOperations: results.filter((result) => result.failClosed).length,
   };
 }
 
