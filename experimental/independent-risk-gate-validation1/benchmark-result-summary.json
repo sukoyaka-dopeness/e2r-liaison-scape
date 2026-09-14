@@ -1,0 +1,703 @@
+{
+  "contract": "LIAISONSCAPE-INDEPENDENT-RISK-GATE-TARGET-STABILITY-v1",
+  "generatedAt": "2026-09-14T12:14:58.869Z",
+  "diagnosticOnly": true,
+  "sourceBoundary": "Existing candidate families and current Product metrics are retained. Order and target validation use the same candidate geometry set; independent controls are generated through the existing diagnostic candidate source. No Product authority is moved or approximated.",
+  "controls": {
+    "extraFixtures": [
+      {
+        "id": "independent-k6-7",
+        "family": "independent-dense-near-threshold",
+        "path": "synthetic:k6-7"
+      },
+      {
+        "id": "independent-k7-6",
+        "family": "independent-dense-transpose",
+        "path": "synthetic:k7-6"
+      },
+      {
+        "id": "independent-k8-7",
+        "family": "independent-dense-wide",
+        "path": "synthetic:k8-7"
+      },
+      {
+        "id": "independent-k5-8-minus-one",
+        "family": "independent-edge-perturbation",
+        "path": "synthetic:k5-8-minus-one"
+      }
+    ],
+    "oldOperationCount": 26,
+    "independentOperationCount": 8,
+    "independentGraphFamilies": [
+      "independent-dense-near-threshold",
+      "independent-dense-transpose",
+      "independent-dense-wide",
+      "independent-edge-perturbation"
+    ]
+  },
+  "classificationSafety": {
+    "predicateRequiresFailClosedZero": true,
+    "normalArtifactFailClosedOperations": 0,
+    "failureInjectionMode": "E2R_MULTI_STAGE_INJECT_PROBE_FAILURE=1",
+    "failureInjectionMustNotClassifyEstablished": true
+  },
+  "targetRules": {
+    "current": "lowest candidate-generation index outside the K=4 cheap-equivalence class",
+    "stable": "lexicographically lowest family + fingerprint outside the K=4 cheap-equivalence class; no Product metric input",
+    "productMetricLeakage": false
+  },
+  "original": {
+    "operationCount": 26,
+    "exactBestHits": 26,
+    "exactBestRecall": 1,
+    "top3AnyRecall": 1,
+    "meaningfulFalseNegativeCount": 0,
+    "baselineImprovementRetention": 1,
+    "maxRegret": 0,
+    "triggeredOperations": 3,
+    "probeEvaluations": 3,
+    "productEvaluations": 107
+  },
+  "listOrderOnly": {
+    "operationCount": 26,
+    "exactBestHits": 26,
+    "exactBestRecall": 1,
+    "top3AnyRecall": 1,
+    "meaningfulFalseNegativeCount": 0,
+    "baselineImprovementRetention": 1,
+    "maxRegret": 0,
+    "triggeredOperations": 3,
+    "probeEvaluations": 3,
+    "productEvaluations": 107
+  },
+  "generationIndexPerturbed": {
+    "operationCount": 26,
+    "exactBestHits": 24,
+    "exactBestRecall": 0.9230769230769231,
+    "top3AnyRecall": 1,
+    "meaningfulFalseNegativeCount": 2,
+    "baselineImprovementRetention": 1,
+    "maxRegret": 759990.7502570413,
+    "triggeredOperations": 3,
+    "probeEvaluations": 3,
+    "productEvaluations": 107
+  },
+  "stableOriginal": {
+    "operationCount": 26,
+    "exactBestHits": 24,
+    "exactBestRecall": 0.9230769230769231,
+    "top3AnyRecall": 1,
+    "meaningfulFalseNegativeCount": 2,
+    "baselineImprovementRetention": 1,
+    "maxRegret": 759990.7502570413,
+    "triggeredOperations": 3,
+    "probeEvaluations": 3,
+    "productEvaluations": 107
+  },
+  "stablePerturbed": {
+    "operationCount": 26,
+    "exactBestHits": 24,
+    "exactBestRecall": 0.9230769230769231,
+    "top3AnyRecall": 1,
+    "meaningfulFalseNegativeCount": 2,
+    "baselineImprovementRetention": 1,
+    "maxRegret": 759990.7502570413,
+    "triggeredOperations": 3,
+    "probeEvaluations": 3,
+    "productEvaluations": 107
+  },
+  "independentIndex": {
+    "operationCount": 8,
+    "exactBestHits": 6,
+    "exactBestRecall": 0.75,
+    "top3AnyRecall": 0.75,
+    "meaningfulFalseNegativeCount": 2,
+    "baselineImprovementRetention": 1,
+    "maxRegret": 1015000.7837078869,
+    "triggeredOperations": 1,
+    "probeEvaluations": 1,
+    "productEvaluations": 33
+  },
+  "independentStable": {
+    "operationCount": 8,
+    "exactBestHits": 6,
+    "exactBestRecall": 0.75,
+    "top3AnyRecall": 0.75,
+    "meaningfulFalseNegativeCount": 2,
+    "baselineImprovementRetention": 1,
+    "maxRegret": 1015000.7837078869,
+    "triggeredOperations": 1,
+    "probeEvaluations": 1,
+    "productEvaluations": 33
+  },
+  "orderDifferences": [
+    {
+      "fixture": "dense-k7-7",
+      "arm": "frontier-adaptive-12",
+      "listOnlyInvariant": true,
+      "generationIndexInvariant": false,
+      "originalTarget": {
+        "family": "structural-adaptive-frontier-22-grid-structural",
+        "fingerprint": "3da600551f3b56b5",
+        "candidateIndex": 0
+      },
+      "perturbedTarget": {
+        "family": "structural-adaptive-frontier-20-grid-structural",
+        "fingerprint": "abab1185d5aee847",
+        "candidateIndex": 11
+      },
+      "originalExactBest": true,
+      "perturbedExactBest": false
+    },
+    {
+      "fixture": "dense-k6-8",
+      "arm": "frontier-adaptive-12",
+      "listOnlyInvariant": true,
+      "generationIndexInvariant": false,
+      "originalTarget": {
+        "family": "structural-adaptive-frontier-10-grid-structural",
+        "fingerprint": "8f19a9fbb8e44d6b",
+        "candidateIndex": 1
+      },
+      "perturbedTarget": {
+        "family": "structural-adaptive-frontier-8-grid-structural",
+        "fingerprint": "26745dd986147129",
+        "candidateIndex": 6
+      },
+      "originalExactBest": true,
+      "perturbedExactBest": true
+    },
+    {
+      "fixture": "dense-k5-9",
+      "arm": "frontier-adaptive-12",
+      "listOnlyInvariant": true,
+      "generationIndexInvariant": false,
+      "originalTarget": {
+        "family": "structural-adaptive-frontier-17-grid-structural",
+        "fingerprint": "288ab3739cc0fcd6",
+        "candidateIndex": 0
+      },
+      "perturbedTarget": {
+        "family": "structural-adaptive-frontier-11-grid-structural",
+        "fingerprint": "2211b8192910ddd2",
+        "candidateIndex": 8
+      },
+      "originalExactBest": true,
+      "perturbedExactBest": false
+    }
+  ],
+  "oldDenseWitnesses": [
+    {
+      "fixture": "dense-k7-7",
+      "current": [
+        {
+          "arm": "structural-native-v3",
+          "target": null,
+          "exactBest": true,
+          "meaningfulFalseNegative": false
+        },
+        {
+          "arm": "frontier-adaptive-12",
+          "target": {
+            "family": "structural-adaptive-frontier-22-grid-structural",
+            "fingerprint": "3da600551f3b56b5",
+            "candidateIndex": 0
+          },
+          "exactBest": true,
+          "meaningfulFalseNegative": false
+        }
+      ],
+      "stable": [
+        {
+          "arm": "structural-native-v3",
+          "target": null,
+          "exactBest": true,
+          "meaningfulFalseNegative": false
+        },
+        {
+          "arm": "frontier-adaptive-12",
+          "target": {
+            "family": "structural-adaptive-frontier-12-grid-structural",
+            "fingerprint": "07f67e2b58b12fe6",
+            "candidateIndex": 9
+          },
+          "exactBest": false,
+          "meaningfulFalseNegative": true
+        }
+      ]
+    },
+    {
+      "fixture": "dense-k5-9",
+      "current": [
+        {
+          "arm": "structural-native-v3",
+          "target": null,
+          "exactBest": true,
+          "meaningfulFalseNegative": false
+        },
+        {
+          "arm": "frontier-adaptive-12",
+          "target": {
+            "family": "structural-adaptive-frontier-17-grid-structural",
+            "fingerprint": "288ab3739cc0fcd6",
+            "candidateIndex": 0
+          },
+          "exactBest": true,
+          "meaningfulFalseNegative": false
+        }
+      ],
+      "stable": [
+        {
+          "arm": "structural-native-v3",
+          "target": null,
+          "exactBest": true,
+          "meaningfulFalseNegative": false
+        },
+        {
+          "arm": "frontier-adaptive-12",
+          "target": {
+            "family": "structural-adaptive-frontier-11-grid-structural",
+            "fingerprint": "2211b8192910ddd2",
+            "candidateIndex": 11
+          },
+          "exactBest": false,
+          "meaningfulFalseNegative": true
+        }
+      ]
+    }
+  ],
+  "independentResults": [
+    {
+      "fixture": "independent-k6-7",
+      "fixtureFamily": "independent-dense-near-threshold",
+      "arm": "structural-native-v3",
+      "rule": "index",
+      "triggered": false,
+      "denseOccupancy": false,
+      "outsideCount": 0,
+      "equivalenceClassSizes": [],
+      "target": null,
+      "exactBest": true,
+      "top3Hit": true,
+      "regret": 0,
+      "meaningfulFalseNegative": false,
+      "baselineImprovementRetained": true,
+      "oracle": {
+        "family": "joint-constrained-twin-spokes-balanced",
+        "fingerprint": "f29c3002cdbe6776"
+      },
+      "selectedBest": {
+        "family": "joint-constrained-twin-spokes-balanced",
+        "fingerprint": "f29c3002cdbe6776"
+      },
+      "productEvaluations": 4,
+      "stable": {
+        "fixture": "independent-k6-7",
+        "fixtureFamily": "independent-dense-near-threshold",
+        "arm": "structural-native-v3",
+        "rule": "stable-family-fingerprint",
+        "triggered": false,
+        "denseOccupancy": false,
+        "outsideCount": 0,
+        "equivalenceClassSizes": [],
+        "target": null,
+        "exactBest": true,
+        "top3Hit": true,
+        "regret": 0,
+        "meaningfulFalseNegative": false,
+        "baselineImprovementRetained": true,
+        "oracle": {
+          "family": "joint-constrained-twin-spokes-balanced",
+          "fingerprint": "f29c3002cdbe6776"
+        },
+        "selectedBest": {
+          "family": "joint-constrained-twin-spokes-balanced",
+          "fingerprint": "f29c3002cdbe6776"
+        },
+        "productEvaluations": 4
+      }
+    },
+    {
+      "fixture": "independent-k6-7",
+      "fixtureFamily": "independent-dense-near-threshold",
+      "arm": "frontier-adaptive-12",
+      "rule": "index",
+      "triggered": false,
+      "denseOccupancy": false,
+      "outsideCount": 8,
+      "equivalenceClassSizes": [
+        12
+      ],
+      "target": null,
+      "exactBest": false,
+      "top3Hit": false,
+      "regret": 1015000.7837078869,
+      "meaningfulFalseNegative": true,
+      "baselineImprovementRetained": true,
+      "oracle": {
+        "family": "structural-adaptive-frontier-17-grid-structural",
+        "fingerprint": "e88a542c09adec35"
+      },
+      "selectedBest": {
+        "family": "structural-adaptive-frontier-12-grid-structural",
+        "fingerprint": "1d4ea016f36857d3"
+      },
+      "productEvaluations": 4,
+      "stable": {
+        "fixture": "independent-k6-7",
+        "fixtureFamily": "independent-dense-near-threshold",
+        "arm": "frontier-adaptive-12",
+        "rule": "stable-family-fingerprint",
+        "triggered": false,
+        "denseOccupancy": false,
+        "outsideCount": 8,
+        "equivalenceClassSizes": [
+          12
+        ],
+        "target": null,
+        "exactBest": false,
+        "top3Hit": false,
+        "regret": 1015000.7837078869,
+        "meaningfulFalseNegative": true,
+        "baselineImprovementRetained": true,
+        "oracle": {
+          "family": "structural-adaptive-frontier-17-grid-structural",
+          "fingerprint": "e88a542c09adec35"
+        },
+        "selectedBest": {
+          "family": "structural-adaptive-frontier-12-grid-structural",
+          "fingerprint": "1d4ea016f36857d3"
+        },
+        "productEvaluations": 4
+      }
+    },
+    {
+      "fixture": "independent-k7-6",
+      "fixtureFamily": "independent-dense-transpose",
+      "arm": "structural-native-v3",
+      "rule": "index",
+      "triggered": false,
+      "denseOccupancy": false,
+      "outsideCount": 0,
+      "equivalenceClassSizes": [],
+      "target": null,
+      "exactBest": true,
+      "top3Hit": true,
+      "regret": 0,
+      "meaningfulFalseNegative": false,
+      "baselineImprovementRetained": true,
+      "oracle": {
+        "family": "joint-constrained-twin-spokes-balanced",
+        "fingerprint": "68f58a895db771a9"
+      },
+      "selectedBest": {
+        "family": "joint-constrained-twin-spokes-balanced",
+        "fingerprint": "68f58a895db771a9"
+      },
+      "productEvaluations": 4,
+      "stable": {
+        "fixture": "independent-k7-6",
+        "fixtureFamily": "independent-dense-transpose",
+        "arm": "structural-native-v3",
+        "rule": "stable-family-fingerprint",
+        "triggered": false,
+        "denseOccupancy": false,
+        "outsideCount": 0,
+        "equivalenceClassSizes": [],
+        "target": null,
+        "exactBest": true,
+        "top3Hit": true,
+        "regret": 0,
+        "meaningfulFalseNegative": false,
+        "baselineImprovementRetained": true,
+        "oracle": {
+          "family": "joint-constrained-twin-spokes-balanced",
+          "fingerprint": "68f58a895db771a9"
+        },
+        "selectedBest": {
+          "family": "joint-constrained-twin-spokes-balanced",
+          "fingerprint": "68f58a895db771a9"
+        },
+        "productEvaluations": 4
+      }
+    },
+    {
+      "fixture": "independent-k7-6",
+      "fixtureFamily": "independent-dense-transpose",
+      "arm": "frontier-adaptive-12",
+      "rule": "index",
+      "triggered": false,
+      "denseOccupancy": false,
+      "outsideCount": 8,
+      "equivalenceClassSizes": [
+        12
+      ],
+      "target": null,
+      "exactBest": false,
+      "top3Hit": false,
+      "regret": 705000,
+      "meaningfulFalseNegative": true,
+      "baselineImprovementRetained": true,
+      "oracle": {
+        "family": "structural-adaptive-frontier-14-grid-structural",
+        "fingerprint": "07b87eb44f590ece"
+      },
+      "selectedBest": {
+        "family": "structural-adaptive-frontier-11-grid-structural",
+        "fingerprint": "b34b6f4c404a3762"
+      },
+      "productEvaluations": 4,
+      "stable": {
+        "fixture": "independent-k7-6",
+        "fixtureFamily": "independent-dense-transpose",
+        "arm": "frontier-adaptive-12",
+        "rule": "stable-family-fingerprint",
+        "triggered": false,
+        "denseOccupancy": false,
+        "outsideCount": 8,
+        "equivalenceClassSizes": [
+          12
+        ],
+        "target": null,
+        "exactBest": false,
+        "top3Hit": false,
+        "regret": 705000,
+        "meaningfulFalseNegative": true,
+        "baselineImprovementRetained": true,
+        "oracle": {
+          "family": "structural-adaptive-frontier-14-grid-structural",
+          "fingerprint": "07b87eb44f590ece"
+        },
+        "selectedBest": {
+          "family": "structural-adaptive-frontier-11-grid-structural",
+          "fingerprint": "b34b6f4c404a3762"
+        },
+        "productEvaluations": 4
+      }
+    },
+    {
+      "fixture": "independent-k8-7",
+      "fixtureFamily": "independent-dense-wide",
+      "arm": "structural-native-v3",
+      "rule": "index",
+      "triggered": false,
+      "denseOccupancy": true,
+      "outsideCount": 0,
+      "equivalenceClassSizes": [],
+      "target": null,
+      "exactBest": true,
+      "top3Hit": true,
+      "regret": 0,
+      "meaningfulFalseNegative": false,
+      "baselineImprovementRetained": true,
+      "oracle": {
+        "family": "joint-constrained-ordered-stress-rotated-balanced",
+        "fingerprint": "f9b0ab692828b53e"
+      },
+      "selectedBest": {
+        "family": "joint-constrained-ordered-stress-rotated-balanced",
+        "fingerprint": "f9b0ab692828b53e"
+      },
+      "productEvaluations": 4,
+      "stable": {
+        "fixture": "independent-k8-7",
+        "fixtureFamily": "independent-dense-wide",
+        "arm": "structural-native-v3",
+        "rule": "stable-family-fingerprint",
+        "triggered": false,
+        "denseOccupancy": true,
+        "outsideCount": 0,
+        "equivalenceClassSizes": [],
+        "target": null,
+        "exactBest": true,
+        "top3Hit": true,
+        "regret": 0,
+        "meaningfulFalseNegative": false,
+        "baselineImprovementRetained": true,
+        "oracle": {
+          "family": "joint-constrained-ordered-stress-rotated-balanced",
+          "fingerprint": "f9b0ab692828b53e"
+        },
+        "selectedBest": {
+          "family": "joint-constrained-ordered-stress-rotated-balanced",
+          "fingerprint": "f9b0ab692828b53e"
+        },
+        "productEvaluations": 4
+      }
+    },
+    {
+      "fixture": "independent-k8-7",
+      "fixtureFamily": "independent-dense-wide",
+      "arm": "frontier-adaptive-12",
+      "rule": "index",
+      "triggered": true,
+      "denseOccupancy": true,
+      "outsideCount": 8,
+      "equivalenceClassSizes": [
+        12
+      ],
+      "target": {
+        "family": "structural-adaptive-frontier-4-grid-structural",
+        "fingerprint": "b9260c8f861addc8",
+        "candidateIndex": 2
+      },
+      "exactBest": true,
+      "top3Hit": true,
+      "regret": 0,
+      "meaningfulFalseNegative": false,
+      "baselineImprovementRetained": true,
+      "oracle": {
+        "family": "structural-adaptive-frontier-5-grid-structural",
+        "fingerprint": "b979782aa722e9d9"
+      },
+      "selectedBest": {
+        "family": "structural-adaptive-frontier-5-grid-structural",
+        "fingerprint": "b979782aa722e9d9"
+      },
+      "productEvaluations": 5,
+      "stable": {
+        "fixture": "independent-k8-7",
+        "fixtureFamily": "independent-dense-wide",
+        "arm": "frontier-adaptive-12",
+        "rule": "stable-family-fingerprint",
+        "triggered": true,
+        "denseOccupancy": true,
+        "outsideCount": 8,
+        "equivalenceClassSizes": [
+          12
+        ],
+        "target": {
+          "family": "structural-adaptive-frontier-10-grid-structural",
+          "fingerprint": "b58c26390769c6ce",
+          "candidateIndex": 7
+        },
+        "exactBest": true,
+        "top3Hit": true,
+        "regret": 0,
+        "meaningfulFalseNegative": false,
+        "baselineImprovementRetained": true,
+        "oracle": {
+          "family": "structural-adaptive-frontier-5-grid-structural",
+          "fingerprint": "b979782aa722e9d9"
+        },
+        "selectedBest": {
+          "family": "structural-adaptive-frontier-5-grid-structural",
+          "fingerprint": "b979782aa722e9d9"
+        },
+        "productEvaluations": 5
+      }
+    },
+    {
+      "fixture": "independent-k5-8-minus-one",
+      "fixtureFamily": "independent-edge-perturbation",
+      "arm": "structural-native-v3",
+      "rule": "index",
+      "triggered": false,
+      "denseOccupancy": false,
+      "outsideCount": 0,
+      "equivalenceClassSizes": [],
+      "target": null,
+      "exactBest": true,
+      "top3Hit": true,
+      "regret": 0,
+      "meaningfulFalseNegative": false,
+      "baselineImprovementRetained": true,
+      "oracle": {
+        "family": "joint-constrained-twin-spokes-wide",
+        "fingerprint": "9f462fbec24d5727"
+      },
+      "selectedBest": {
+        "family": "joint-constrained-twin-spokes-wide",
+        "fingerprint": "9f462fbec24d5727"
+      },
+      "productEvaluations": 4,
+      "stable": {
+        "fixture": "independent-k5-8-minus-one",
+        "fixtureFamily": "independent-edge-perturbation",
+        "arm": "structural-native-v3",
+        "rule": "stable-family-fingerprint",
+        "triggered": false,
+        "denseOccupancy": false,
+        "outsideCount": 0,
+        "equivalenceClassSizes": [],
+        "target": null,
+        "exactBest": true,
+        "top3Hit": true,
+        "regret": 0,
+        "meaningfulFalseNegative": false,
+        "baselineImprovementRetained": true,
+        "oracle": {
+          "family": "joint-constrained-twin-spokes-wide",
+          "fingerprint": "9f462fbec24d5727"
+        },
+        "selectedBest": {
+          "family": "joint-constrained-twin-spokes-wide",
+          "fingerprint": "9f462fbec24d5727"
+        },
+        "productEvaluations": 4
+      }
+    },
+    {
+      "fixture": "independent-k5-8-minus-one",
+      "fixtureFamily": "independent-edge-perturbation",
+      "arm": "frontier-adaptive-12",
+      "rule": "index",
+      "triggered": false,
+      "denseOccupancy": false,
+      "outsideCount": 0,
+      "equivalenceClassSizes": [],
+      "target": null,
+      "exactBest": true,
+      "top3Hit": true,
+      "regret": 0,
+      "meaningfulFalseNegative": false,
+      "baselineImprovementRetained": true,
+      "oracle": {
+        "family": "structural-adaptive-frontier-1-grid-structural",
+        "fingerprint": "be89f5cf9697c592"
+      },
+      "selectedBest": {
+        "family": "structural-adaptive-frontier-1-grid-structural",
+        "fingerprint": "be89f5cf9697c592"
+      },
+      "productEvaluations": 4,
+      "stable": {
+        "fixture": "independent-k5-8-minus-one",
+        "fixtureFamily": "independent-edge-perturbation",
+        "arm": "frontier-adaptive-12",
+        "rule": "stable-family-fingerprint",
+        "triggered": false,
+        "denseOccupancy": false,
+        "outsideCount": 0,
+        "equivalenceClassSizes": [],
+        "target": null,
+        "exactBest": true,
+        "top3Hit": true,
+        "regret": 0,
+        "meaningfulFalseNegative": false,
+        "baselineImprovementRetained": true,
+        "oracle": {
+          "family": "structural-adaptive-frontier-1-grid-structural",
+          "fingerprint": "be89f5cf9697c592"
+        },
+        "selectedBest": {
+          "family": "structural-adaptive-frontier-1-grid-structural",
+          "fingerprint": "be89f5cf9697c592"
+        },
+        "productEvaluations": 4
+      }
+    }
+  ],
+  "disposition": {
+    "classification": "C. ORDER DEPENDENCY CONFIRMED / TARGET RULE NOT ESTABLISHED",
+    "riskGateReadiness": "OPEN",
+    "probeTargetReadiness": "NOT ESTABLISHED",
+    "multiStageSelector": "DIAGNOSTICALLY BOUNDED / TARGET OR GATE OPEN",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "productionProvider": "NOT ESTABLISHED",
+    "actualProductVisualEvaluation": "NOT READY",
+    "humanReview": "NOT READY",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}
