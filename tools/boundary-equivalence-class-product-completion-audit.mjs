@@ -1,0 +1,34 @@
+import fs from "node:fs";
+
+const summary = JSON.parse(fs.readFileSync("experimental/boundary-equivalence-class-product-completion1/benchmark-result-summary.json", "utf8"));
+const required = (condition, message) => { if (!condition) throw new Error(message); };
+const aggregate = (policy) => summary.policies[policy].aggregate;
+
+required(summary.contract === "LIAISONSCAPE-BOUNDARY-EQUIVALENCE-CLASS-PRODUCT-COMPLETION-v1", "wrong contract");
+required(summary.diagnosticOnly === true, "artifact must remain diagnostic-only");
+required(summary.architecture.stableCapPolicy.includes("no candidate-generation index"), "stable cap is not independent of generation index");
+required(summary.architecture.stableCapPolicy.includes("no Product metric"), "stable cap leaks Product metrics");
+required(summary.controls.operationCount === 34 && summary.controls.independentOperationCount === 8, "control operation count changed");
+required(aggregate("cheap-k4").meaningfulFalseNegativeCount === 4, "cheap baseline no longer exposes the boundary misses");
+required(aggregate("density-one-index").meaningfulFalseNegativeCount === 2, "previous density-gated policy unexpectedly changed");
+required(aggregate("full-boundary").exactBestHits === 34 && aggregate("full-boundary").meaningfulFalseNegativeCount === 0, "full boundary completion did not close the tested misses");
+required(aggregate("full-boundary").maxExtraEvaluations === 8 && aggregate("full-boundary").p95ExtraEvaluations === 8, "full completion cost envelope changed");
+required(aggregate("full-boundary").reductionRate > 0.5, "full completion lost its bounded reduction");
+required(summary.policies["full-boundary"].old.exactBestHits === 26 && summary.policies["full-boundary"].independent.exactBestHits === 8, "full completion did not close both control groups");
+required(aggregate("capped-boundary-2").meaningfulFalseNegativeCount === 4, "cap 2 result changed");
+required(aggregate("capped-boundary-4").meaningfulFalseNegativeCount === 2, "cap 4 result changed");
+required(aggregate("capped-boundary-6").meaningfulFalseNegativeCount === 1, "cap 6 unexpectedly closed the set");
+required(summary.orderAudit["density-one-index"].invariant === false, "index policy no longer exposes order dependence");
+for (const policy of ["full-boundary", "capped-boundary-2", "capped-boundary-4", "capped-boundary-6"]) required(summary.orderAudit[policy].invariant === true, `${policy} is not order-invariant`);
+required(summary.classVariance.length === 7, "boundary class variance inventory changed");
+required(Math.max(...summary.classVariance.map((entry) => entry.crossingRange)) >= 30, "Product variance witness disappeared");
+required(summary.failureSafety.classificationRequiresFailClosedZero === true && summary.failureSafety.normalFailClosedOperations === 0, "fail-closed classification safety changed");
+required(summary.disposition.classification === "A. BOUNDARY CLASS COMPLETION ESTABLISHED WITH ACCEPTABLE COST", "classification changed unexpectedly");
+required(summary.disposition.boundaryEquivalenceTrigger === "DIAGNOSTICALLY SUPPORTED", "boundary trigger readiness changed");
+required(summary.disposition.fullCompletion === "QUALITY CLOSED IN TESTED SET", "full completion disposition changed");
+required(summary.disposition.cappedCompletion === "NOT CLOSED", "capped completion disposition changed");
+required(summary.disposition.qualitySolver === "HOLD / NOT ESTABLISHED", "quality solver status changed");
+required(summary.disposition.productIntegration === "HOLD", "Product integration status changed");
+required(summary.disposition.humanReview === "NOT READY", "Human Review status changed");
+required(summary.disposition.initialLayoutReleaseBlocker === "OPEN", "release blocker changed");
+console.log("boundary equivalence-class Product completion audit: PASS");
