@@ -11,6 +11,7 @@ const canonicalFixtureFiles = {
   titanic: "titanic-final-voyage",
   "apollo-11": "apollo-11-mission",
   lighthouse: "lighthouse-restoration-demo",
+  "ashen-crown": "ashen-crown",
 };
 const ecr3Arms = new Set(["full-post", "adaptive-post", "global-placement3", "frontier-12"]);
 
@@ -60,7 +61,7 @@ export default defineConfig({
     name: "dev-only-canonical-acceptance-fixtures",
     configureServer(server) {
       server.middlewares.use(`/e2r-liaison-scape${ACCEPTANCE_FIXTURE_ENDPOINT}`, (request, response, next) => {
-        const match = /^\/(titanic|apollo-11|lighthouse)\.(en|ja)\.e2r\.json$/.exec(request.url ?? "");
+        const match = /^\/(titanic|apollo-11|lighthouse|ashen-crown)\.(en|ja)\.e2r\.json$/.exec(request.url ?? "");
         if (!match || request.method !== "GET") return next();
         const filePath = path.join(canonicalExamples, `${canonicalFixtureFiles[match[1]]}.${match[2]}.e2r.json`);
         if (!fs.existsSync(filePath)) { response.statusCode = 404; response.end("Not found"); return; }
