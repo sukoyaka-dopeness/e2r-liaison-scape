@@ -19,7 +19,7 @@ import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { readRelationArrowDisplay, readRelationLineStyle } from "./presentation-extension";
 import { getRelationArrowheadGeometries } from "./relation-arrow-presentation";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, ENTITY_ATTACHMENT_SHAPE, fitGraphView, getEntityAttachment, getNodeLabelTextGeometry, getRelationLabelTextGeometry, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, type LabelRect, type RelationLabelWrapPolicy, zoomScale } from "./viewport";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, ENTITY_ATTACHMENT_SHAPE, fitGraphView, getEntityAttachment, getNodeLabelTextGeometry, getRelationLabelTextGeometry, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, type LabelRect, type NodeLabelAngularEscapeInput, type RelationLabelWrapPolicy, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
@@ -65,9 +65,13 @@ type AppProps = {
   operationLocalPreview?: OperationLocalProductPreview;
   /** Development-only fixture input for the preview evidence harness. */
   diagnosticDataset?: Dataset;
+  /** Development-only per-Node angular occupancy input; normal Product callers omit it. */
+  nodeLabelAngularEscapeById?: Readonly<Record<string, NodeLabelAngularEscapeInput>>;
+  /** Development-only fixed-relation diagnostic switch. */
+  diagnosticFeedbackEnabled?: boolean;
 };
 
-export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, relationLabelNormalOffsets, relationLabelWrapPolicy, operationLocalPreview, diagnosticDataset }: AppProps = {}) {
+export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, relationLabelNormalOffsets, relationLabelWrapPolicy, operationLocalPreview, diagnosticDataset, nodeLabelAngularEscapeById, diagnosticFeedbackEnabled }: AppProps = {}) {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
     window.localStorage,
     window.navigator.language,
@@ -553,7 +557,9 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       activelyDraggedNodeId: dragRef.current?.kind === "node" ? dragRef.current.id : undefined,
       continuityNodeLabels,
       previousContinuityNodeLabels: activeNodeDrag ? previousNodeLabelPlacements.current : undefined,
-      feedbackEnabled: dragRef.current?.kind !== "node",
+      feedbackEnabled: import.meta.env.DEV && diagnosticFeedbackEnabled !== undefined
+        ? diagnosticFeedbackEnabled
+        : dragRef.current?.kind !== "node",
       routeDecisionSink: routeDecisions === null ? undefined : (decision) => routeDecisions.push(decision),
       profiler: presentationProfiler,
       parallelBundleSpacing: import.meta.env.DEV && parallelBundleVariant
@@ -563,6 +569,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       relationLabelStaggerById: import.meta.env.DEV ? relationLabelStaggerById : undefined,
       relationLabelNormalOffsets: import.meta.env.DEV ? relationLabelNormalOffsets : undefined,
       relationLabelWrapPolicy: import.meta.env.DEV ? relationLabelWrapPolicy : undefined,
+      nodeLabelAngularEscapeById: import.meta.env.DEV ? nodeLabelAngularEscapeById : undefined,
       parallelBundleMode: parallelBundlePolicy?.mode
         ?? (parallelBundleVariant === "pair-16" ? "pair" : parallelBundleVariant === "corridor-aware" ? "corridor" : "bundle"),
     });
@@ -598,7 +605,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       profiler: presentationProfiler,
     });
     return { ...result, derivationPhase, routeDecisions: routeDecisions ?? [] };
-  }, [edgeCurveOffsets, graph, manualLabelRevision, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, relationLabelWrapPolicy, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+  }, [diagnosticFeedbackEnabled, edgeCurveOffsets, graph, manualLabelRevision, nodeLabelAngularEscapeById, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, relationLabelWrapPolicy, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {

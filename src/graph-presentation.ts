@@ -2,7 +2,7 @@ import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
 import { createFeedbackStageInput, createPresentationPassSnapshot, createRouteSelectionSnapshot, type FeedbackStageInput, type PresentationPassSnapshot } from "./presentation-stage-contracts.ts";
 import { dependencyFingerprint, type PresentationDependencyTrace } from "./presentation-dependency.ts";
-import { compareRouteGeometry, getRelationLabelTextGeometry, placeEdgeLabel, placeNodeLabel, pointBounds, relationLabelDisplayWidth, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementCandidateDiagnostic, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type PointBounds, type RelationLabelWrapPolicy, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteGeometryCache, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, getRelationLabelTextGeometry, placeEdgeLabel, placeNodeLabel, pointBounds, relationLabelDisplayWidth, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementCandidateDiagnostic, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type NodeLabelAngularEscapeInput, type NodeLabelCandidateDiagnostic, type Point, type PointBounds, type RelationLabelWrapPolicy, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteGeometryCache, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -83,6 +83,14 @@ export type AutomaticNodeLabelTrace = {
   yieldingRouteFingerprint: string;
   candidateFingerprint: string;
   selectedPlacementFingerprint: string;
+};
+
+/** Development-only expanded Node-label candidate trace. */
+export type AutomaticNodeLabelCandidateTrace = {
+  pass: AutomaticRouteDecision["pass"];
+  nodeId: string;
+  processingIndex: number;
+  candidates: readonly NodeLabelCandidateDiagnostic[];
 };
 
 export type AutomaticPresentationPassProfile = {
@@ -665,10 +673,14 @@ export type AutomaticNodeLabelInput = {
   manualOffsets: ReadonlyMap<string, ManualNodeLabelOffset>;
   activelyDraggedNodeId?: string;
   yieldingRoutes?: readonly RouteYieldPath[];
+  /** Development-only per-Node angular occupancy input; normal Product callers omit it. */
+  nodeLabelAngularEscapeById?: Readonly<Record<string, NodeLabelAngularEscapeInput>>;
   profile?: LabelPlacementProfile;
   pass?: AutomaticRouteDecision["pass"];
   /** Diagnostic-only item trace; omitted by normal Product callers. */
   placementTraceSink?: (trace: AutomaticNodeLabelTrace) => void;
+  /** Development-only expanded candidate trace; omitted by normal Product callers. */
+  candidateTraceSink?: (trace: AutomaticNodeLabelCandidateTrace) => void;
 };
 
 export type AutomaticNodeLabelAccumulator = {
@@ -839,7 +851,7 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
   }
   const processingIndex = state.nextIndex;
   state.nextIndex += 1;
-  const { previousPlacements, manualOffsets, activelyDraggedNodeId, profile, placementTraceSink } = state.input;
+  const { previousPlacements, manualOffsets, activelyDraggedNodeId, nodeLabelAngularEscapeById, profile, placementTraceSink, candidateTraceSink } = state.input;
   const position = state.positions[node.id] ?? node;
   const otherNodes = state.orderedNodes.filter(({ id }) => id !== node.id).map((other) => state.positions[other.id] ?? other);
   const occupiedLabelPrefixFingerprint = placementTraceSink ? JSON.stringify(state.occupiedLabels) : "";
@@ -847,6 +859,7 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
   const yieldingRouteFingerprint = placementTraceSink ? JSON.stringify(state.input.yieldingRoutes) : "";
   const inputFingerprint = placementTraceSink ? JSON.stringify({ node: { x: position.x, y: position.y }, name: node.label, description: node.description, occupiedLabels: state.occupiedLabels, otherNodes, edgePaths: state.edgePaths, previousPlacement: activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id), yieldingRoutes: state.input.yieldingRoutes, manualOffset: manualOffsets.get(node.id) }) : "";
   let placementTrace: LabelPlacementTrace | undefined;
+  let candidateDiagnostics: readonly NodeLabelCandidateDiagnostic[] | undefined;
   const automaticPlacement = placeNodeLabel(
     position,
     node.label,
@@ -860,6 +873,8 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
     placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
     state.edgePathBounds,
     state.yieldingRouteBounds,
+    candidateTraceSink ? (candidates) => { candidateDiagnostics = candidates; } : undefined,
+    nodeLabelAngularEscapeById?.[node.id],
   );
   const manualOffset = manualOffsets.get(node.id);
   const placement = manualOffset
@@ -876,6 +891,12 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
     yieldingRouteFingerprint,
     candidateFingerprint: placementTrace?.candidateFingerprint ?? "",
     selectedPlacementFingerprint: JSON.stringify(placement),
+  });
+  candidateTraceSink?.({
+    pass: state.input.pass ?? "first",
+    nodeId: node.id,
+    processingIndex,
+    candidates: candidateDiagnostics ?? [],
   });
   state.occupiedLabels.push(placement);
   state.acceptedNodeLabels.push(placement);
@@ -927,6 +948,8 @@ export type BoundedAutomaticPresentationInput = {
   relationLabelCandidateTraceSink?: (trace: AutomaticRelationLabelCandidateTrace) => void;
   /** Diagnostic-only item trace; omitted by normal Product callers. */
   nodeLabelTraceSink?: (trace: AutomaticNodeLabelTrace) => void;
+  /** Development-only expanded candidate trace; omitted by normal Product callers. */
+  nodeLabelCandidateTraceSink?: (trace: AutomaticNodeLabelCandidateTrace) => void;
   /** Opt-in exact input/output dependency fingerprints; omitted by Product callers. */
   presentationDependencySink?: (trace: PresentationDependencyTrace) => void;
   /** Opt-in candidate-generation cache; arbitration remains uncached. */
@@ -943,6 +966,8 @@ export type BoundedAutomaticPresentationInput = {
   relationLabelNormalOffsets?: readonly number[];
   /** Development-only display-only automatic wrap policy; normal Product callers omit it. */
   relationLabelWrapPolicy?: RelationLabelWrapPolicy;
+  /** Development-only per-Node angular occupancy input; normal Product callers omit it. */
+  nodeLabelAngularEscapeById?: Readonly<Record<string, NodeLabelAngularEscapeInput>>;
   /** Development-only slot policy for parallel-group spacing. */
   parallelBundleMode?: "pair" | "bundle" | "corridor";
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
@@ -1142,6 +1167,8 @@ function verificationNodeLabelInput(
     profile: input.profiler?.passes[pass].nodeLabel,
     pass,
     placementTraceSink: input.nodeLabelTraceSink,
+    nodeLabelAngularEscapeById: input.nodeLabelAngularEscapeById,
+    candidateTraceSink: input.nodeLabelCandidateTraceSink,
   };
 }
 
@@ -1575,6 +1602,7 @@ export function deriveBoundedAutomaticPresentation({
   relationLabelTraceSink,
   relationLabelCandidateTraceSink,
   nodeLabelTraceSink,
+  nodeLabelCandidateTraceSink,
   presentationDependencySink,
   candidateCache,
   geometryCache,
@@ -1583,6 +1611,7 @@ export function deriveBoundedAutomaticPresentation({
   relationLabelStaggerById,
   relationLabelNormalOffsets,
   relationLabelWrapPolicy,
+  nodeLabelAngularEscapeById,
   parallelBundleMode = "bundle",
   profiler,
   replayPrefix,
@@ -1720,6 +1749,7 @@ export function deriveBoundedAutomaticPresentation({
       manualOffsets: manualNodeLabelOffsets,
       activelyDraggedNodeId,
       yieldingRoutes,
+      ...(nodeLabelAngularEscapeById === undefined ? {} : { nodeLabelAngularEscapeById }),
     };
     const nodeLabels = deriveAutomaticNodeLabels({
       nodes: graph.nodes,
@@ -1733,6 +1763,8 @@ export function deriveBoundedAutomaticPresentation({
       profile: passProfile?.nodeLabel,
       pass: routeDecisionPass,
       placementTraceSink: nodeLabelTraceSink,
+      candidateTraceSink: nodeLabelCandidateTraceSink,
+      ...(nodeLabelAngularEscapeById === undefined ? {} : { nodeLabelAngularEscapeById }),
     });
     reportDependency("node-label", routeDecisionPass, nodeLabelStageInput, { labels: nodeLabels, yieldingRoutes });
     if (passProfile) {

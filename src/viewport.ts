@@ -356,6 +356,31 @@ export type LabelRect = Point & { width: number; height: number; directionX: num
 export type RouteYieldPath = { samples: Point[]; deviation: number };
 export type NodeLabelVisualLine = { left: number; right: number; top: number; bottom: number };
 
+export type NodeLabelAngularEscapeInput = Readonly<{
+  incidentRouteAngles: readonly number[];
+  relationLabelAngles: readonly number[];
+  halfAngle?: number;
+  incidentWeight?: number;
+  relationLabelWeight?: number;
+}>;
+
+export type NodeLabelCandidateDiagnostic = Readonly<{
+  candidate: LabelRect;
+  angle: number;
+  distance: number;
+  cardinalPreference: number;
+  occupiedLabelOverlap: number;
+  otherNodePressure: number;
+  routeHardPressure: number;
+  routeHaloPressure: number;
+  yieldingRoutePressure: number;
+  movementCost: number;
+  incidentAngularPressure: number;
+  relationLabelAngularPressure: number;
+  score: number;
+  selected: boolean;
+}>;
+
 export type RelationLabelWrapPolicy = Readonly<{
   maxLines?: number;
   maxLineWidth?: number;
@@ -653,6 +678,21 @@ function placementMovementCost(candidate: LabelRect, previous: LabelRect | undef
   return Math.hypot(candidate.x - previous.x, candidate.y - previous.y) * 4;
 }
 
+function angularDistance(left: number, right: number): number {
+  const difference = Math.abs(left - right) % (Math.PI * 2);
+  return Math.min(difference, Math.PI * 2 - difference);
+}
+
+function angularOccupancyPressure(angle: number, occupiedAngles: readonly number[], halfAngle: number, weight: number): number {
+  if (occupiedAngles.length === 0 || weight <= 0) return 0;
+  return occupiedAngles.reduce((total, occupiedAngle) => {
+    const distance = angularDistance(angle, occupiedAngle);
+    if (distance >= halfAngle) return total;
+    const normalized = (halfAngle - distance) / halfAngle;
+    return total + weight * normalized ** 2;
+  }, 0);
+}
+
 function minimumNodeClearance(candidate: LabelRect, nodes: Point[]): number {
   if (nodes.length === 0) return Infinity;
   return Math.min(...nodes.map((node) => {
@@ -816,6 +856,8 @@ export function placeNodeLabel(
   traceSink?: (trace: LabelPlacementTrace) => void,
   providedEdgePathBounds?: readonly (PointBounds | null)[],
   providedYieldingRouteBounds?: readonly (PointBounds | null)[],
+  candidateTraceSink?: (candidates: readonly NodeLabelCandidateDiagnostic[]) => void,
+  angularEscape?: NodeLabelAngularEscapeInput,
 ): LabelRect {
   const startedAt = performance.now();
   const geometry = getNodeLabelTextGeometry(name, description);
@@ -860,16 +902,38 @@ export function placeNodeLabel(
     const modulo = index % 8;
     const cardinalDistanceSteps = Math.min(modulo, 8 - modulo);
     const cardinalPreferencePenalty = cardinalDistanceSteps * 0.5;
-    let score = index * 0.01 + cardinalPreferencePenalty;
+    const angularHalfAngle = angularEscape?.halfAngle ?? Math.PI / 5;
+    const incidentAngularPressure = angularOccupancyPressure(
+      angle,
+      angularEscape?.incidentRouteAngles ?? [],
+      angularHalfAngle,
+      angularEscape?.incidentWeight ?? 0,
+    );
+    const relationLabelAngularPressure = angularOccupancyPressure(
+      angle,
+      angularEscape?.relationLabelAngles ?? [],
+      angularHalfAngle,
+      angularEscape?.relationLabelWeight ?? 0,
+    );
+    let occupiedLabelOverlap = 0;
+    let otherNodePressure = 0;
+    let routeHardPressure = 0;
+    let routeHaloPressure = 0;
+    let yieldingRoutePressure = 0;
+    let score = index * 0.01 + cardinalPreferencePenalty + incidentAngularPressure + relationLabelAngularPressure;
 
     for (const occupied of occupiedLabels) {
       const overlapArea = rectOverlapArea(candidate, occupied);
+      occupiedLabelOverlap += overlapArea;
       if (overlapArea > 0) score += 10000 + overlapArea;
     }
     for (const otherNode of otherNodes) {
       const nearestX = Math.max(left, Math.min(otherNode.x, right));
       const nearestY = Math.max(top, Math.min(otherNode.y, bottom));
-      if (Math.hypot(otherNode.x - nearestX, otherNode.y - nearestY) < 36) score += 8000;
+      if (Math.hypot(otherNode.x - nearestX, otherNode.y - nearestY) < 36) {
+        otherNodePressure += 1;
+        score += 8000;
+      }
     }
     for (const [pathIndex, path] of edgePaths.entries()) {
       if (boundsMissRect(edgePathBounds[pathIndex] ?? null, candidate, NODE_LABEL_ROUTE_HARD_CLEARANCE + NODE_LABEL_ROUTE_HALO_WIDTH, NODE_LABEL_ROUTE_HARD_CLEARANCE + NODE_LABEL_ROUTE_HALO_WIDTH)) {
@@ -880,11 +944,14 @@ export function placeNodeLabel(
         if (profile) profile.edgePathPointChecks += 1;
         const routeDistance = pointToRectDistance(point, candidate);
         if (routeDistance <= NODE_LABEL_ROUTE_HARD_CLEARANCE) {
+          routeHardPressure += 1;
           score += 80;
         } else if (routeDistance < NODE_LABEL_ROUTE_HARD_CLEARANCE + NODE_LABEL_ROUTE_HALO_WIDTH) {
           const normalized = (NODE_LABEL_ROUTE_HARD_CLEARANCE + NODE_LABEL_ROUTE_HALO_WIDTH - routeDistance)
             / NODE_LABEL_ROUTE_HALO_WIDTH;
-          score += NODE_LABEL_ROUTE_HALO_WEIGHT * normalized ** 2;
+          const contribution = NODE_LABEL_ROUTE_HALO_WEIGHT * normalized ** 2;
+          routeHaloPressure += contribution;
+          score += contribution;
         }
       }
     }
@@ -896,13 +963,32 @@ export function placeNodeLabel(
       if (profile) profile.yieldingRoutePointChecks += yieldingRoute.samples.length;
       const routeDistance = minimumPathToLabelRectDistance(yieldingRoute.samples, candidate);
       if (routeDistance === 0) {
-        score += 1600 + Math.min(6400, yieldingRoute.deviation * 8);
+        const contribution = 1600 + Math.min(6400, yieldingRoute.deviation * 8);
+        yieldingRoutePressure += contribution;
+        score += contribution;
       } else if (routeDistance < NODE_LABEL_ROUTE_HALO_WIDTH) {
-        score += (NODE_LABEL_ROUTE_HALO_WIDTH - routeDistance) / NODE_LABEL_ROUTE_HALO_WIDTH
+        const contribution = (NODE_LABEL_ROUTE_HALO_WIDTH - routeDistance) / NODE_LABEL_ROUTE_HALO_WIDTH
           * (400 + Math.min(1600, yieldingRoute.deviation * 2));
+        yieldingRoutePressure += contribution;
+        score += contribution;
       }
     }
-    return { candidate, score: score + placementMovementCost(candidate, previousPlacement) };
+    const movementCost = placementMovementCost(candidate, previousPlacement);
+    return {
+      candidate,
+      angle,
+      distance,
+      cardinalPreference: cardinalPreferencePenalty,
+      occupiedLabelOverlap,
+      otherNodePressure,
+      routeHardPressure,
+      routeHaloPressure,
+      yieldingRoutePressure,
+      movementCost,
+      incidentAngularPressure,
+      relationLabelAngularPressure,
+      score: score + movementCost,
+    };
   });
   const selected = scoredCandidates.reduce((best, current) => current.score < best.score ? current : best).candidate;
   if (profile) profile.elapsedMs += performance.now() - startedAt;
@@ -910,6 +996,11 @@ export function placeNodeLabel(
     candidateFingerprint: JSON.stringify(scoredCandidates.map(({ candidate, score }) => ({ candidate, score }))),
     selectedFingerprint: JSON.stringify(selected),
   });
+  candidateTraceSink?.(scoredCandidates.map(({ candidate, ...diagnostic }) => ({
+    candidate,
+    ...diagnostic,
+    selected: candidate === selected,
+  })));
   return selected;
 }
 
