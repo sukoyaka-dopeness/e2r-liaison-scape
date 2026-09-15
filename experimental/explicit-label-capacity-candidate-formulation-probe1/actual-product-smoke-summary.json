@@ -1,0 +1,13 @@
+{
+  "contract": "LIAISONSCAPE-EXPLICIT-LABEL-CAPACITY-ACTUAL-PRODUCT-SMOKE-v1",
+  "surface": "actual App renderer through the development-only operation-local preview seam",
+  "formalAcceptance": false,
+  "cases": [
+    { "fixture": "canonical", "probe": 1, "fitPercent": 100, "result": "PASS CONTROL", "observation": "Clean and readable with no obvious regression." },
+    { "fixture": "dense", "probe": 3, "fitPercent": 38, "result": "IMPROVED / NOT ACCEPTABLE", "observation": "Substantially fewer collisions and clearer topology, but fitted text is too small and dense ownership remains difficult." },
+    { "fixture": "label", "probe": 1, "fitPercent": 53, "result": "IMPROVED / NOT ACCEPTABLE", "observation": "Node spacing and component structure improve, while long Japanese and English Relation labels remain dense and hard to associate." },
+    { "fixture": "parallel", "probe": 3, "fitPercent": 62, "result": "PASS CONTROL", "observation": "Parallel lanes and endpoint fan-out remain readable with no obvious new breakage." },
+    { "fixture": "self-loop", "probe": 2, "fitPercent": 97, "result": "PASS CONTROL / SMOKE ONLY", "observation": "The loop remains clear without an obvious collision; this is not Self-loop acceptance." }
+  ],
+  "humanReview": "NOT READY"
+}

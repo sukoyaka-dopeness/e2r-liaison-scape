@@ -1,0 +1,24 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+
+const artifact = JSON.parse(fs.readFileSync("experimental/explicit-label-capacity-candidate-formulation-probe1/result-summary.json", "utf8"));
+const smoke = JSON.parse(fs.readFileSync("experimental/explicit-label-capacity-candidate-formulation-probe1/actual-product-smoke-summary.json", "utf8"));
+assert.equal(artifact.classification, "B. LABEL-CAPACITY SIGNAL VALID / FORMULATION NEEDS REFINEMENT");
+assert.equal(artifact.variantCount, 3);
+assert.equal(artifact.globalScalingOnly, false);
+assert.equal(artifact.productionMetricMutation, false);
+assert.equal(artifact.productAuthoritiesChanged, false);
+assert.deepEqual(artifact.rows.map(({ fixture }) => fixture), ["canonical", "dense", "label", "parallel", "self-loop"]);
+for (const row of artifact.rows) assert.equal(row.probes.length, 3);
+const dense = artifact.rows.find(({ fixture }) => fixture === "dense");
+const label = artifact.rows.find(({ fixture }) => fixture === "label");
+assert.ok(dense.probeBest.visualRisk.totalLabelOverlapPairs < dense.currentSelected.visualRisk.totalLabelOverlapPairs);
+assert.ok(dense.probeBest.visualRisk.foreignRouteRelationLabelHits < dense.currentSelected.visualRisk.foreignRouteRelationLabelHits);
+assert.ok(dense.probeBest.visualRisk.fitScale < dense.currentSelected.visualRisk.fitScale);
+assert.equal(label.probeBest.visualRisk.totalLabelOverlapPairs, 0);
+assert.ok(label.probeBest.visualRisk.foreignRouteRelationLabelHits < label.currentSelected.visualRisk.foreignRouteRelationLabelHits);
+assert.ok(label.probeBest.capacityAudit.postFitMedianNearestDistance > label.currentSelected.capacityAudit.postFitMedianNearestDistance);
+assert.equal(smoke.formalAcceptance, false);
+assert.equal(smoke.cases.length, 5);
+assert.equal(smoke.humanReview, "NOT READY");
+console.log("explicit label-capacity candidate formulation probe 1 audit: PASS");
