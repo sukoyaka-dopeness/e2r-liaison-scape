@@ -5,6 +5,7 @@ import "../../../src/styles.css";
 import { acceptanceFixturePath } from "../../../src/acceptance-fixture-access.ts";
 import { fingerprintPreviewPositions } from "../../../src/operation-local-product-preview.ts";
 import artifact from "../../common-fixture-cross-lineage-comparison1/result-summary.json";
+import seededArtifact from "../../structural-seeded-capacity-refinement1/result-summary.json";
 
 type Point = { x: number; y: number };
 type ComparisonRow = {
@@ -20,13 +21,22 @@ type ComparisonRow = {
 const params = new URLSearchParams(location.search);
 const requested = params.get("candidate");
 const row = (artifact.rows as ComparisonRow[]).find(({ fixture }) => fixture === "lighthouse-en")!;
-const candidate = requested === "label-capacity"
+const seededRow = (seededArtifact.rows as Array<{ fixture: string; seeds: Array<{ source: { family: string }; seed: { positions: Record<string, Point> }; labelCapacity: { selected: { positions: Record<string, Point> } | null }; infiniteCanvas: { selected: { positions: Record<string, Point> } | null }; occupiedGeometry: { selected: { positions: Record<string, Point> } | null } }> }>).find(({ fixture }) => fixture === "lighthouse-en")!;
+const frontierSeed = seededRow.seeds.find(({ source }) => source.family.startsWith("structural-frontier"))!;
+const seededCandidate = requested === "frontier-seed"
+  ? frontierSeed.seed
+  : requested === "frontier-label"
+    ? frontierSeed.labelCapacity.selected ?? frontierSeed.seed
+    : requested === "frontier-occupied"
+      ? frontierSeed.occupiedGeometry.selected ?? frontierSeed.seed
+      : null;
+const candidate = seededCandidate ?? (requested === "label-capacity"
   ? row.candidates.labelCapacity
   : requested === "occupied-geometry"
     ? row.candidates.occupiedGeometry
     : requested === "fast"
       ? row.candidates.fast
-      : row.candidates.post;
+      : row.candidates.post);
 const response = await fetch(`${import.meta.env.BASE_URL}${acceptanceFixturePath({ name: "lighthouse", locale: "en" }).replace(/^\//, "")}`);
 if (!response.ok) throw new Error(`Common-fixture smoke fixture failed: ${response.status}`);
 const dataset = await response.json();
