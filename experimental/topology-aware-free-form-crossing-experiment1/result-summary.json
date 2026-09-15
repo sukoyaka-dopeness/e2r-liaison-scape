@@ -1,0 +1,2408 @@
+{
+  "contract": "LIAISONSCAPE-TOPOLOGY-AWARE-FREE-FORM-CROSSING-MINIMIZING-AUTO-LAYOUT-EXPERIMENT-1",
+  "diagnosticOnly": true,
+  "candidateIdentity": "bounded current-source topology-aware free-form BFS seed plus deterministic local continuous relaxation; no grid/circle finalization",
+  "topologyInputs": [
+    "connected components",
+    "degree/hub",
+    "BFS layers",
+    "bridge detection",
+    "deterministic local neighborhood moves"
+  ],
+  "productAuthoritiesChanged": false,
+  "visualInspectionRequired": true,
+  "rows": [
+    {
+      "fixture": "lighthouse-en",
+      "locale": "en",
+      "source": "../e2r-spec/examples/lighthouse-restoration-demo.en.e2r.json",
+      "graph": {
+        "nodes": 10,
+        "edges": 14
+      },
+      "candidateCount": 6,
+      "productEvaluationCount": 6,
+      "generationMs": 30.59,
+      "evaluationMs": 226.93,
+      "elapsedMs": 257.52,
+      "deterministic": true,
+      "selected": {
+        "family": "topology-free-form-bfs-relaxed-3",
+        "fingerprint": "efdd9c32146c",
+        "seed": "component-bfs-layered-jitter",
+        "iterations": 4,
+        "topology": {
+          "componentCount": 1,
+          "rootIds": [
+            "clara"
+          ],
+          "layerCount": 4,
+          "bridgeIds": [
+            "authority-lighthouse",
+            "daniel-clara",
+            "elias-clara",
+            "sofia-archive",
+            "sofia-elias"
+          ]
+        },
+        "cheapMetrics": {
+          "crossings": 3,
+          "overlapPairs": 0,
+          "minimumSeparation": 141.81835548334357,
+          "spacingDeficit": 0,
+          "score": 3000002.9165798267
+        },
+        "metrics": {
+          "score": 432058.4551293357,
+          "crossings": 3,
+          "overlapPairs": 0,
+          "minimumSeparation": 141.81835548334357,
+          "extent": [
+            787.324,
+            547.776
+          ],
+          "fitScale": 0.5034522439585731,
+          "labelRouteHits": 1,
+          "labelNear20": 2,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 202.12425037376744,
+          "routeMedian": 174.25724484905405,
+          "routeMax": 502.10973761467096,
+          "shortHopCount": 2
+        },
+        "evaluationMs": 39.19,
+        "positions": {
+          "clara": {
+            "x": 50.211999999999996,
+            "y": 20.216
+          },
+          "lighthouse": {
+            "x": -386.116,
+            "y": 246.244
+          },
+          "maya": {
+            "x": -203.684,
+            "y": 209.164
+          },
+          "elias": {
+            "x": -4.368,
+            "y": 201.212
+          },
+          "thomas": {
+            "x": 168.60139999999998,
+            "y": 206.5096
+          },
+          "daniel": {
+            "x": 401.20799999999997,
+            "y": 176.6
+          },
+          "beacon": {
+            "x": -254.764,
+            "y": 389.712
+          },
+          "sofia": {
+            "x": 24.976,
+            "y": 406.288
+          },
+          "authority": {
+            "x": 164.96,
+            "y": 383.552
+          },
+          "archive": {
+            "x": 24.639999999999997,
+            "y": 567.992
+          }
+        }
+      },
+      "finalistSummaries": [
+        {
+          "family": "topology-free-form-bfs-relaxed-3",
+          "fingerprint": "efdd9c32146c",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.81835548334357,
+            "spacingDeficit": 0,
+            "score": 3000002.9165798267
+          },
+          "metrics": {
+            "score": 432058.4551293357,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.81835548334357,
+            "extent": [
+              787.324,
+              547.776
+            ],
+            "fitScale": 0.5034522439585731,
+            "labelRouteHits": 1,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 202.12425037376744,
+            "routeMedian": 174.25724484905405,
+            "routeMax": 502.10973761467096,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 39.19
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-1",
+          "fingerprint": "ea09f95fdc6d",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.96687936214948,
+            "spacingDeficit": 0,
+            "score": 3000000.4817548883
+          },
+          "metrics": {
+            "score": 437179.0244184228,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.96687936214948,
+            "extent": [
+              735.4639999999999,
+              485.97600000000006
+            ],
+            "fitScale": 0.560024437429997,
+            "labelRouteHits": 1,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 233.4906591447951,
+            "routeMedian": 174.25724484905408,
+            "routeMax": 526.119118109642,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 47.54
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-5",
+          "fingerprint": "9ac1c2c26159",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 156.64243977773071,
+            "spacingDeficit": 0,
+            "score": 3000002.93093293
+          },
+          "metrics": {
+            "score": 452109.9038071016,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 156.64243977773071,
+            "extent": [
+              787.328,
+              541.3116
+            ],
+            "fitScale": 0.5088288412116999,
+            "labelRouteHits": 1,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 235.6411451790647,
+            "routeMedian": 174.25724484905405,
+            "routeMax": 534.5045290626321,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 30.21
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-4",
+          "fingerprint": "53119cd7c8f6",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.6021615654224,
+            "spacingDeficit": 0,
+            "score": 3000008.642355183
+          },
+          "metrics": {
+            "score": 456280.223798627,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.6021615654224,
+            "extent": [
+              507.07120000000003,
+              721.288
+            ],
+            "fitScale": 0.39221279326820224,
+            "labelRouteHits": 2,
+            "labelNear20": 4,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 195.087580643254,
+            "routeMedian": 174.25724484905405,
+            "routeMax": 484.3543595582009,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 26.24
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-2",
+          "fingerprint": "b05434f047f2",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 154.37494200808626,
+            "spacingDeficit": 0,
+            "score": 3000000.1349779153
+          },
+          "metrics": {
+            "score": 479763.6643999766,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 154.37494200808626,
+            "extent": [
+              567.1332,
+              767.4434000000001
+            ],
+            "fitScale": 0.37044012857640096,
+            "labelRouteHits": 2,
+            "labelNear20": 4,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 285.74987344073696,
+            "routeMedian": 155.30926962965574,
+            "routeMax": 572.3019103395579,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 56.64
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-6",
+          "fingerprint": "03b2bf120b7d",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 185.00443151449105,
+            "spacingDeficit": 0,
+            "score": 3000005.0031700497
+          },
+          "metrics": {
+            "score": 506473.1698436779,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 185.00443151449105,
+            "extent": [
+              556.736,
+              790.4996000000001
+            ],
+            "fitScale": 0.36044487323341046,
+            "labelRouteHits": 3,
+            "labelNear20": 5,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 312.6261922617728,
+            "routeMedian": 174.25724484905402,
+            "routeMax": 543.9802490891433,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 27.08
+        }
+      ],
+      "references": {
+        "frontier": {
+          "family": "structural-frontier-9-circular-order",
+          "fingerprint": "4cc6d8ae2c92",
+          "elapsedMs": 651,
+          "candidateCount": 12,
+          "evaluationCount": 13,
+          "presentationMs": 365.13,
+          "metrics": {
+            "score": 77901.07799312752,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 169,
+            "extent": [
+              529,
+              545
+            ],
+            "fitScale": 0.5057471264367817,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 106.58211939358561,
+            "routeMedian": 188.15817494951617,
+            "routeMax": 489.69202179594873,
+            "shortHopCount": 2
+          }
+        },
+        "post": {
+          "family": "post-structural-constrained-relaxation",
+          "fingerprint": "83c990d7ef46",
+          "elapsedMs": 9430,
+          "candidateCount": 53,
+          "evaluationCount": 468,
+          "presentationMs": 9130.16,
+          "metrics": {
+            "score": 49619.38836616404,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.05554484295286,
+            "extent": [
+              633,
+              401
+            ],
+            "fitScale": 0.6623655913978495,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 159.28264248784612,
+            "routeMedian": 193.43756775581642,
+            "routeMax": 370.01056544512807,
+            "shortHopCount": 2
+          }
+        }
+      }
+    },
+    {
+      "fixture": "lighthouse-ja",
+      "locale": "ja",
+      "source": "../e2r-spec/examples/lighthouse-restoration-demo.ja.e2r.json",
+      "graph": {
+        "nodes": 10,
+        "edges": 14
+      },
+      "candidateCount": 6,
+      "productEvaluationCount": 6,
+      "generationMs": 21.2,
+      "evaluationMs": 154.14,
+      "elapsedMs": 175.34,
+      "deterministic": true,
+      "selected": {
+        "family": "topology-free-form-bfs-relaxed-5",
+        "fingerprint": "9ac1c2c26159",
+        "seed": "component-bfs-layered-jitter",
+        "iterations": 6,
+        "topology": {
+          "componentCount": 1,
+          "rootIds": [
+            "clara"
+          ],
+          "layerCount": 4,
+          "bridgeIds": [
+            "authority-lighthouse",
+            "daniel-clara",
+            "elias-clara",
+            "sofia-archive",
+            "sofia-elias"
+          ]
+        },
+        "cheapMetrics": {
+          "crossings": 3,
+          "overlapPairs": 0,
+          "minimumSeparation": 156.64243977773071,
+          "spacingDeficit": 0,
+          "score": 3000002.93093293
+        },
+        "metrics": {
+          "score": 406091.6519867258,
+          "crossings": 3,
+          "overlapPairs": 0,
+          "minimumSeparation": 156.64243977773071,
+          "extent": [
+            787.328,
+            541.3116
+          ],
+          "fitScale": 0.5088288412116999,
+          "labelRouteHits": 1,
+          "labelNear20": 2,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 259.9123557275914,
+          "routeMedian": 174.25724484905405,
+          "routeMax": 535.133303739718,
+          "shortHopCount": 2
+        },
+        "evaluationMs": 25.43,
+        "positions": {
+          "clara": {
+            "x": 20.487599999999997,
+            "y": 20.896399999999993
+          },
+          "lighthouse": {
+            "x": -380.14,
+            "y": 168.848
+          },
+          "maya": {
+            "x": -178.88400000000001,
+            "y": 192.312
+          },
+          "elias": {
+            "x": -3.7520000000000002,
+            "y": 175.652
+          },
+          "thomas": {
+            "x": 165.128,
+            "y": 187.636
+          },
+          "daniel": {
+            "x": 407.188,
+            "y": 176.464
+          },
+          "beacon": {
+            "x": -250.6,
+            "y": 339.628
+          },
+          "sofia": {
+            "x": 10.052,
+            "y": 384.12
+          },
+          "authority": {
+            "x": 184.428,
+            "y": 378.604
+          },
+          "archive": {
+            "x": 18.144,
+            "y": 562.208
+          }
+        }
+      },
+      "finalistSummaries": [
+        {
+          "family": "topology-free-form-bfs-relaxed-5",
+          "fingerprint": "9ac1c2c26159",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 156.64243977773071,
+            "spacingDeficit": 0,
+            "score": 3000002.93093293
+          },
+          "metrics": {
+            "score": 406091.6519867258,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 156.64243977773071,
+            "extent": [
+              787.328,
+              541.3116
+            ],
+            "fitScale": 0.5088288412116999,
+            "labelRouteHits": 1,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 259.9123557275914,
+            "routeMedian": 174.25724484905405,
+            "routeMax": 535.133303739718,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 25.43
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-3",
+          "fingerprint": "efdd9c32146c",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.81835548334357,
+            "spacingDeficit": 0,
+            "score": 3000002.9165798267
+          },
+          "metrics": {
+            "score": 422018.0638326519,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.81835548334357,
+            "extent": [
+              787.324,
+              547.776
+            ],
+            "fitScale": 0.5034522439585731,
+            "labelRouteHits": 1,
+            "labelNear20": 5,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 279.6499226426628,
+            "routeMedian": 174.25724484905405,
+            "routeMax": 502.10973761467096,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 25.65
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-6",
+          "fingerprint": "03b2bf120b7d",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 185.00443151449105,
+            "spacingDeficit": 0,
+            "score": 3000005.0031700497
+          },
+          "metrics": {
+            "score": 439998.41275851056,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 185.00443151449105,
+            "extent": [
+              556.736,
+              790.4996000000001
+            ],
+            "fitScale": 0.36044487323341046,
+            "labelRouteHits": 2,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 221.35522185071906,
+            "routeMedian": 174.25724484905402,
+            "routeMax": 542.7439166468912,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 23.93
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-2",
+          "fingerprint": "b05434f047f2",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 154.37494200808626,
+            "spacingDeficit": 0,
+            "score": 3000000.1349779153
+          },
+          "metrics": {
+            "score": 453686.4314041003,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 154.37494200808626,
+            "extent": [
+              567.1332,
+              767.4434000000001
+            ],
+            "fitScale": 0.37044012857640096,
+            "labelRouteHits": 2,
+            "labelNear20": 5,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 323.796640442732,
+            "routeMedian": 155.30926962965574,
+            "routeMax": 556.7847819452816,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 27.36
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-4",
+          "fingerprint": "53119cd7c8f6",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.6021615654224,
+            "spacingDeficit": 0,
+            "score": 3000008.642355183
+          },
+          "metrics": {
+            "score": 620094.6333444144,
+            "crossings": 5,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.6021615654224,
+            "extent": [
+              507.07120000000003,
+              721.288
+            ],
+            "fitScale": 0.39221279326820224,
+            "labelRouteHits": 1,
+            "labelNear20": 4,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 203.41078010163554,
+            "routeMedian": 174.25724484905405,
+            "routeMax": 484.3543595582009,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 25.14
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-1",
+          "fingerprint": "ea09f95fdc6d",
+          "cheapMetrics": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.96687936214948,
+            "spacingDeficit": 0,
+            "score": 3000000.4817548883
+          },
+          "metrics": {
+            "score": 651491.310040935,
+            "crossings": 5,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.96687936214948,
+            "extent": [
+              735.4639999999999,
+              485.97600000000006
+            ],
+            "fitScale": 0.560024437429997,
+            "labelRouteHits": 2,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 268.1693610266237,
+            "routeMedian": 162.92877323074828,
+            "routeMax": 524.6011082634064,
+            "shortHopCount": 2
+          },
+          "evaluationMs": 26.59
+        }
+      ],
+      "references": {
+        "frontier": {
+          "family": "structural-frontier-9-circular-order",
+          "fingerprint": "4cc6d8ae2c92",
+          "elapsedMs": 635,
+          "candidateCount": 12,
+          "evaluationCount": 13,
+          "presentationMs": 361.98,
+          "metrics": {
+            "score": 40808.6031157123,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 169,
+            "extent": [
+              529,
+              545
+            ],
+            "fitScale": 0.5057471264367817,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 159.41163125042885,
+            "routeMedian": 188.15817494951617,
+            "routeMax": 489.69202179594873,
+            "shortHopCount": 2
+          }
+        },
+        "post": {
+          "family": "post-structural-constrained-relaxation",
+          "fingerprint": "25da7dc81368",
+          "elapsedMs": 9104,
+          "candidateCount": 53,
+          "evaluationCount": 440,
+          "presentationMs": 8805,
+          "metrics": {
+            "score": 61724.73002822792,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 136.0588108135596,
+            "extent": [
+              640,
+              418
+            ],
+            "fitScale": 0.6390041493775933,
+            "labelRouteHits": 0,
+            "labelNear20": 1,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 156.6040376167873,
+            "routeMedian": 189.94629347209073,
+            "routeMax": 550.498863009274,
+            "shortHopCount": 2
+          }
+        }
+      }
+    },
+    {
+      "fixture": "apollo-en",
+      "locale": "en",
+      "source": "../e2r-spec/examples/apollo-11-mission.en.e2r.json",
+      "graph": {
+        "nodes": 9,
+        "edges": 11
+      },
+      "candidateCount": 6,
+      "productEvaluationCount": 6,
+      "generationMs": 20.03,
+      "evaluationMs": 109.25,
+      "elapsedMs": 129.28,
+      "deterministic": true,
+      "selected": {
+        "family": "topology-free-form-bfs-relaxed-6",
+        "fingerprint": "9da0a96cc4ab",
+        "seed": "component-bfs-transposed-jitter",
+        "iterations": 12,
+        "topology": {
+          "componentCount": 1,
+          "rootIds": [
+            "columbia"
+          ],
+          "layerCount": 3,
+          "bridgeIds": [
+            "entity-11",
+            "entity-9"
+          ]
+        },
+        "cheapMetrics": {
+          "crossings": 6,
+          "overlapPairs": 0,
+          "minimumSeparation": 140.0017227535433,
+          "spacingDeficit": 0,
+          "score": 6000096.630954227
+        },
+        "metrics": {
+          "score": 773225.5812926706,
+          "crossings": 6,
+          "overlapPairs": 0,
+          "minimumSeparation": 140.0017227535433,
+          "extent": [
+            305.164,
+            584.348
+          ],
+          "fitScale": 0.47505352064015005,
+          "labelRouteHits": 2,
+          "labelNear20": 4,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 276.21719027903697,
+          "routeMedian": 163.64410094854878,
+          "routeMax": 523.4637851536082,
+          "shortHopCount": 0
+        },
+        "evaluationMs": 17.5,
+        "positions": {
+          "columbia": {
+            "x": 78.36,
+            "y": -52.816
+          },
+          "eagle": {
+            "x": 175.8986,
+            "y": -253.506
+          },
+          "collins": {
+            "x": 207.82,
+            "y": -117.19200000000001
+          },
+          "saturn-v": {
+            "x": 195.892,
+            "y": 113.048
+          },
+          "hornet": {
+            "x": 165.932,
+            "y": 311.9
+          },
+          "nasa": {
+            "x": 374.62,
+            "y": -272.448
+          },
+          "aldrin": {
+            "x": 344.344,
+            "y": -76.75999999999999
+          },
+          "armstrong": {
+            "x": 358.884,
+            "y": 123.71600000000001
+          },
+          "moon": {
+            "x": 383.524,
+            "y": 279.14
+          }
+        }
+      },
+      "finalistSummaries": [
+        {
+          "family": "topology-free-form-bfs-relaxed-6",
+          "fingerprint": "9da0a96cc4ab",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.0017227535433,
+            "spacingDeficit": 0,
+            "score": 6000096.630954227
+          },
+          "metrics": {
+            "score": 773225.5812926706,
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.0017227535433,
+            "extent": [
+              305.164,
+              584.348
+            ],
+            "fitScale": 0.47505352064015005,
+            "labelRouteHits": 2,
+            "labelNear20": 4,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 276.21719027903697,
+            "routeMedian": 163.64410094854878,
+            "routeMax": 523.4637851536082,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 17.5
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-3",
+          "fingerprint": "ffe7d7c231de",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.07388290484414,
+            "spacingDeficit": 0,
+            "score": 6000056.262770637
+          },
+          "metrics": {
+            "score": 804680.7621165056,
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.07388290484414,
+            "extent": [
+              562.1686,
+              373.8182
+            ],
+            "fitScale": 0.7034883428783911,
+            "labelRouteHits": 4,
+            "labelNear20": 4,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 263.5911520114329,
+            "routeMedian": 159.99720085607714,
+            "routeMax": 518.1297080299896,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 16.62
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-5",
+          "fingerprint": "74c11c03de78",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 143.9928405442437,
+            "spacingDeficit": 0,
+            "score": 6000044.127734063
+          },
+          "metrics": {
+            "score": 818213.235869277,
+            "crossings": 7,
+            "overlapPairs": 0,
+            "minimumSeparation": 143.9928405442437,
+            "extent": [
+              561.544,
+              318.096
+            ],
+            "fitScale": 0.8060801473975127,
+            "labelRouteHits": 1,
+            "labelNear20": 1,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 79.29721817417989,
+            "routeMedian": 175.01993197341068,
+            "routeMax": 509.9051014236812,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 17.29
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-1",
+          "fingerprint": "9c7906f04332",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.12398743595733,
+            "spacingDeficit": 0,
+            "score": 6000000.617820859
+          },
+          "metrics": {
+            "score": 862330.2898605509,
+            "crossings": 7,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.12398743595733,
+            "extent": [
+              509.4496,
+              357.8374
+            ],
+            "fitScale": 0.7301391484017301,
+            "labelRouteHits": 2,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 198.45107627266339,
+            "routeMedian": 178.26620336301372,
+            "routeMax": 460.809285316834,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 18.49
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-2",
+          "fingerprint": "7a06beb4c1d6",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 145.5211066924658,
+            "spacingDeficit": 0,
+            "score": 6000000.602570046
+          },
+          "metrics": {
+            "score": 877623.4382686856,
+            "crossings": 7,
+            "overlapPairs": 0,
+            "minimumSeparation": 145.5211066924658,
+            "extent": [
+              332.5328,
+              559.4696
+            ],
+            "fitScale": 0.49400965179376827,
+            "labelRouteHits": 2,
+            "labelNear20": 4,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 208.62678059444656,
+            "routeMedian": 149.05681145582776,
+            "routeMax": 519.0580592157313,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 18.74
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-4",
+          "fingerprint": "20c08f8c4622",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 143.75852581325395,
+            "spacingDeficit": 0,
+            "score": 6000000.052777136
+          },
+          "metrics": {
+            "score": 929744.3915838144,
+            "crossings": 7,
+            "overlapPairs": 0,
+            "minimumSeparation": 143.75852581325395,
+            "extent": [
+              323.634,
+              505.67379999999997
+            ],
+            "fitScale": 0.5406602866412322,
+            "labelRouteHits": 4,
+            "labelNear20": 5,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 315.47218212681486,
+            "routeMedian": 139.82725336211317,
+            "routeMax": 467.5269309983445,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 20.6
+        }
+      ],
+      "references": {
+        "frontier": {
+          "family": "structural-frontier-4-grid-structural",
+          "fingerprint": "9e821a079aee",
+          "elapsedMs": 620,
+          "candidateCount": 12,
+          "evaluationCount": 13,
+          "presentationMs": 251.32,
+          "metrics": {
+            "score": 21579.150855111817,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              517,
+              367
+            ],
+            "fitScale": 0.7146171693735499,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 63.250862850144436,
+            "routeMedian": 298.3964426438739,
+            "routeMax": 336.1727846388807,
+            "shortHopCount": 0
+          }
+        },
+        "post": {
+          "family": "post-structural-constrained-relaxation",
+          "fingerprint": "260e766b79de",
+          "elapsedMs": 5632,
+          "candidateCount": 69,
+          "evaluationCount": 454,
+          "presentationMs": 5171.54,
+          "metrics": {
+            "score": 1004.5989570054821,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 164,
+            "extent": [
+              622,
+              419
+            ],
+            "fitScale": 0.6376811594202898,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 73.65896019777507,
+            "routeMedian": 195.74164841452995,
+            "routeMax": 352.8656601764223,
+            "shortHopCount": 0
+          }
+        }
+      }
+    },
+    {
+      "fixture": "apollo-ja",
+      "locale": "ja",
+      "source": "../e2r-spec/examples/apollo-11-mission.ja.e2r.json",
+      "graph": {
+        "nodes": 9,
+        "edges": 11
+      },
+      "candidateCount": 6,
+      "productEvaluationCount": 6,
+      "generationMs": 18.56,
+      "evaluationMs": 99,
+      "elapsedMs": 117.56,
+      "deterministic": true,
+      "selected": {
+        "family": "topology-free-form-bfs-relaxed-3",
+        "fingerprint": "ffe7d7c231de",
+        "seed": "component-bfs-layered-jitter",
+        "iterations": 8,
+        "topology": {
+          "componentCount": 1,
+          "rootIds": [
+            "columbia"
+          ],
+          "layerCount": 3,
+          "bridgeIds": [
+            "entity-11",
+            "entity-9"
+          ]
+        },
+        "cheapMetrics": {
+          "crossings": 6,
+          "overlapPairs": 0,
+          "minimumSeparation": 140.07388290484414,
+          "spacingDeficit": 0,
+          "score": 6000056.262770637
+        },
+        "metrics": {
+          "score": 718823.149579255,
+          "crossings": 6,
+          "overlapPairs": 0,
+          "minimumSeparation": 140.07388290484414,
+          "extent": [
+            562.1686,
+            373.8182
+          ],
+          "fitScale": 0.7034883428783911,
+          "labelRouteHits": 2,
+          "labelNear20": 3,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 259.770699546275,
+          "routeMedian": 159.99720085607714,
+          "routeMax": 514.5626081801207,
+          "shortHopCount": 0
+        },
+        "evaluationMs": 16.47,
+        "positions": {
+          "columbia": {
+            "x": -54.272,
+            "y": 23.024
+          },
+          "eagle": {
+            "x": -218.27999999999997,
+            "y": 175.088
+          },
+          "collins": {
+            "x": -90.8352,
+            "y": 233.213
+          },
+          "saturn-v": {
+            "x": 106.056,
+            "y": 166.352
+          },
+          "hornet": {
+            "x": 286.444,
+            "y": 181.388
+          },
+          "nasa": {
+            "x": -248.76059999999998,
+            "y": 396.8422
+          },
+          "aldrin": {
+            "x": -100.456,
+            "y": 377.336
+          },
+          "armstrong": {
+            "x": 105.16,
+            "y": 383.076
+          },
+          "moon": {
+            "x": 313.408,
+            "y": 381.25600000000003
+          }
+        }
+      },
+      "finalistSummaries": [
+        {
+          "family": "topology-free-form-bfs-relaxed-3",
+          "fingerprint": "ffe7d7c231de",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.07388290484414,
+            "spacingDeficit": 0,
+            "score": 6000056.262770637
+          },
+          "metrics": {
+            "score": 718823.149579255,
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.07388290484414,
+            "extent": [
+              562.1686,
+              373.8182
+            ],
+            "fitScale": 0.7034883428783911,
+            "labelRouteHits": 2,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 259.770699546275,
+            "routeMedian": 159.99720085607714,
+            "routeMax": 514.5626081801207,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 16.47
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-6",
+          "fingerprint": "9da0a96cc4ab",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.0017227535433,
+            "spacingDeficit": 0,
+            "score": 6000096.630954227
+          },
+          "metrics": {
+            "score": 773049.5303784601,
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.0017227535433,
+            "extent": [
+              305.164,
+              584.348
+            ],
+            "fitScale": 0.47505352064015005,
+            "labelRouteHits": 2,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 295.8324010245846,
+            "routeMedian": 163.64410094854878,
+            "routeMax": 519.4963992737145,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 17.33
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-5",
+          "fingerprint": "74c11c03de78",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 143.9928405442437,
+            "spacingDeficit": 0,
+            "score": 6000044.127734063
+          },
+          "metrics": {
+            "score": 763223.6839361815,
+            "crossings": 7,
+            "overlapPairs": 0,
+            "minimumSeparation": 143.9928405442437,
+            "extent": [
+              561.544,
+              318.096
+            ],
+            "fitScale": 0.8060801473975127,
+            "labelRouteHits": 1,
+            "labelNear20": 1,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 80.04135399621427,
+            "routeMedian": 175.01993197341068,
+            "routeMax": 509.9051014236812,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 15.62
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-1",
+          "fingerprint": "9c7906f04332",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.12398743595733,
+            "spacingDeficit": 0,
+            "score": 6000000.617820859
+          },
+          "metrics": {
+            "score": 835090.8549911873,
+            "crossings": 7,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.12398743595733,
+            "extent": [
+              509.4496,
+              357.8374
+            ],
+            "fitScale": 0.7301391484017301,
+            "labelRouteHits": 2,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 203.61868902779196,
+            "routeMedian": 166.66889133335533,
+            "routeMax": 460.809285316834,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 16.11
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-2",
+          "fingerprint": "7a06beb4c1d6",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 145.5211066924658,
+            "spacingDeficit": 0,
+            "score": 6000000.602570046
+          },
+          "metrics": {
+            "score": 835432.1788970872,
+            "crossings": 7,
+            "overlapPairs": 0,
+            "minimumSeparation": 145.5211066924658,
+            "extent": [
+              332.5328,
+              559.4696
+            ],
+            "fitScale": 0.49400965179376827,
+            "labelRouteHits": 2,
+            "labelNear20": 4,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 209.58599784314225,
+            "routeMedian": 149.05681145582776,
+            "routeMax": 519.0580592157313,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 16.52
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-4",
+          "fingerprint": "20c08f8c4622",
+          "cheapMetrics": {
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 143.75852581325395,
+            "spacingDeficit": 0,
+            "score": 6000000.052777136
+          },
+          "metrics": {
+            "score": 886602.5047454889,
+            "crossings": 8,
+            "overlapPairs": 0,
+            "minimumSeparation": 143.75852581325395,
+            "extent": [
+              323.634,
+              505.67379999999997
+            ],
+            "fitScale": 0.5406602866412322,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 39.52950640960409,
+            "routeMedian": 139.82725336211317,
+            "routeMax": 467.5269309983445,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 16.93
+        }
+      ],
+      "references": {
+        "frontier": {
+          "family": "structural-frontier-4-grid-structural",
+          "fingerprint": "9e821a079aee",
+          "elapsedMs": 766,
+          "candidateCount": 12,
+          "evaluationCount": 13,
+          "presentationMs": 289.68,
+          "metrics": {
+            "score": 15903.036151065275,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              517,
+              367
+            ],
+            "fitScale": 0.7146171693735499,
+            "labelRouteHits": 0,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 107.0356392885336,
+            "routeMedian": 298.3964426438739,
+            "routeMax": 334.6259818269074,
+            "shortHopCount": 0
+          }
+        },
+        "post": {
+          "family": "post-structural-constrained-relaxation",
+          "fingerprint": "552cdc0d22a3",
+          "elapsedMs": 5381,
+          "candidateCount": 69,
+          "evaluationCount": 437,
+          "presentationMs": 4942.75,
+          "metrics": {
+            "score": 994.8917036883884,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 129.71121771072848,
+            "extent": [
+              601,
+              400
+            ],
+            "fitScale": 0.6637931034482759,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 163.58620253830676,
+            "routeMedian": 193.14604839090964,
+            "routeMax": 358.3496069065691,
+            "shortHopCount": 0
+          }
+        }
+      }
+    },
+    {
+      "fixture": "titanic-en",
+      "locale": "en",
+      "source": "../e2r-spec/examples/titanic-final-voyage.en.e2r.json",
+      "graph": {
+        "nodes": 13,
+        "edges": 12
+      },
+      "candidateCount": 6,
+      "productEvaluationCount": 6,
+      "generationMs": 71.57,
+      "evaluationMs": 128.47,
+      "elapsedMs": 200.04,
+      "deterministic": true,
+      "selected": {
+        "family": "topology-free-form-bfs-relaxed-5",
+        "fingerprint": "9595ff552998",
+        "seed": "component-bfs-layered-jitter",
+        "iterations": 28,
+        "topology": {
+          "componentCount": 2,
+          "rootIds": [
+            "titanic",
+            "californian"
+          ],
+          "layerCount": 3,
+          "bridgeIds": [
+            "r1",
+            "r12",
+            "r2",
+            "r3",
+            "r4",
+            "r5",
+            "r6",
+            "r7",
+            "r8",
+            "r9"
+          ]
+        },
+        "cheapMetrics": {
+          "crossings": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 140.16867792770248,
+          "spacingDeficit": 0,
+          "score": 248.40581005664808
+        },
+        "metrics": {
+          "score": 40775.24445454635,
+          "crossings": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 140.16867792770248,
+          "extent": [
+            2827.696,
+            347.776
+          ],
+          "fitScale": 0.21025723312547379,
+          "labelRouteHits": 1,
+          "labelNear20": 1,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 166.54837452650045,
+          "routeMedian": 223.6972063063701,
+          "routeMax": 850.0241390349358,
+          "shortHopCount": 0
+        },
+        "evaluationMs": 20.49,
+        "positions": {
+          "titanic": {
+            "x": 61.007400000000004,
+            "y": 41.9772
+          },
+          "carpathia": {
+            "x": -779.096,
+            "y": 174.616
+          },
+          "white-star-line": {
+            "x": -368.17599999999993,
+            "y": 224.736
+          },
+          "andrews": {
+            "x": -213.30560000000003,
+            "y": 38.54759999999999
+          },
+          "bride": {
+            "x": -180.10139999999998,
+            "y": 177.605
+          },
+          "fleet": {
+            "x": 18.424,
+            "y": 183.548
+          },
+          "harland-wolff": {
+            "x": 183.224,
+            "y": 191.5
+          },
+          "molly-brown": {
+            "x": 319.868,
+            "y": 154.10399999999998
+          },
+          "phillips": {
+            "x": 337.27199999999993,
+            "y": 15.02000000000001
+          },
+          "smith": {
+            "x": 801.58,
+            "y": 191.192
+          },
+          "ismay": {
+            "x": -98.4216,
+            "y": 292.5884
+          },
+          "rostron": {
+            "x": 107.264,
+            "y": 338.172
+          },
+          "californian": {
+            "x": 2048.6,
+            "y": -9.604
+          }
+        }
+      },
+      "finalistSummaries": [
+        {
+          "family": "topology-free-form-bfs-relaxed-5",
+          "fingerprint": "9595ff552998",
+          "cheapMetrics": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.16867792770248,
+            "spacingDeficit": 0,
+            "score": 248.40581005664808
+          },
+          "metrics": {
+            "score": 40775.24445454635,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.16867792770248,
+            "extent": [
+              2827.696,
+              347.776
+            ],
+            "fitScale": 0.21025723312547379,
+            "labelRouteHits": 1,
+            "labelNear20": 1,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 166.54837452650045,
+            "routeMedian": 223.6972063063701,
+            "routeMax": 850.0241390349358,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 20.49
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-6",
+          "fingerprint": "de03f0057a0e",
+          "cheapMetrics": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.445682286783,
+            "spacingDeficit": 0,
+            "score": 340.76988802338997
+          },
+          "metrics": {
+            "score": 63752.034601840394,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.445682286783,
+            "extent": [
+              2010.532,
+              1631.444
+            ],
+            "fitScale": 0.181663328308101,
+            "labelRouteHits": 1,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 215.7203929185609,
+            "routeMedian": 297.9018491755136,
+            "routeMax": 894.9232654547391,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 22.23
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-3",
+          "fingerprint": "fb98db16f4e0",
+          "cheapMetrics": {
+            "crossings": 1,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.4053512940301,
+            "spacingDeficit": 0,
+            "score": 1000406.6798425032
+          },
+          "metrics": {
+            "score": 108490.07913957798,
+            "crossings": 1,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.4053512940301,
+            "extent": [
+              2803.108,
+              374.704
+            ],
+            "fitScale": 0.21206037582121076,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 112.94467493349487,
+            "routeMedian": 257.234473479367,
+            "routeMax": 827.9373393879295,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 21.51
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-1",
+          "fingerprint": "84db7ef8240c",
+          "cheapMetrics": {
+            "crossings": 1,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.22444215870496,
+            "spacingDeficit": 0,
+            "score": 1000422.0222094693
+          },
+          "metrics": {
+            "score": 108591.27503128747,
+            "crossings": 1,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.22444215870496,
+            "extent": [
+              2758.2200000000003,
+              381.27200000000005
+            ],
+            "fitScale": 0.2154332404986146,
+            "labelRouteHits": 0,
+            "labelNear20": 1,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 113.82535364726056,
+            "routeMedian": 256.9993688737759,
+            "routeMax": 799.7672576866647,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 21.1
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-2",
+          "fingerprint": "30f6913bcccd",
+          "cheapMetrics": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.7004327451402,
+            "spacingDeficit": 0,
+            "score": 201.01040820891262
+          },
+          "metrics": {
+            "score": 198550.32839751843,
+            "crossings": 1,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.7004327451402,
+            "extent": [
+              2074.152,
+              1473.788
+            ],
+            "fitScale": 0.20028768594890842,
+            "labelRouteHits": 2,
+            "labelNear20": 4,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 282.44842457518166,
+            "routeMedian": 287.0183755016796,
+            "routeMax": 810.4105874127818,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 21.17
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-4",
+          "fingerprint": "53a3cc6ac0ca",
+          "cheapMetrics": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 143.39557675758343,
+            "spacingDeficit": 0,
+            "score": 368.94214020563845
+          },
+          "metrics": {
+            "score": 224222.6948263677,
+            "crossings": 1,
+            "overlapPairs": 0,
+            "minimumSeparation": 143.39557675758343,
+            "extent": [
+              2054.792,
+              1561.184
+            ],
+            "fitScale": 0.18951700238249947,
+            "labelRouteHits": 3,
+            "labelNear20": 4,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 326.2659225878604,
+            "routeMedian": 319.8111905952809,
+            "routeMax": 873.2546510026469,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 21.95
+        }
+      ],
+      "references": {
+        "frontier": {
+          "family": "structural-frontier-11-circular-order",
+          "fingerprint": "9a27b996f084",
+          "elapsedMs": 673,
+          "candidateCount": 12,
+          "evaluationCount": 13,
+          "presentationMs": 401.31,
+          "metrics": {
+            "score": 2851.460767229036,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 168.19334112859522,
+            "extent": [
+              714,
+              694
+            ],
+            "fitScale": 0.40633245382585753,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 43.074524573957106,
+            "routeMedian": 407.9104396532347,
+            "routeMax": 638.7016163176268,
+            "shortHopCount": 0
+          }
+        },
+        "post": {
+          "family": "post-structural-constrained-relaxation",
+          "fingerprint": "4c23c0512579",
+          "elapsedMs": 8829,
+          "candidateCount": 53,
+          "evaluationCount": 495,
+          "presentationMs": 8511.89,
+          "metrics": {
+            "score": 9488.802216433209,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 123.98790263570072,
+            "extent": [
+              744,
+              584
+            ],
+            "fitScale": 0.47530864197530864,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 53.04425388469935,
+            "routeMedian": 299.2865004223424,
+            "routeMax": 618.820189927888,
+            "shortHopCount": 0
+          }
+        }
+      }
+    },
+    {
+      "fixture": "label-heavy-ja-10",
+      "locale": "ja",
+      "source": "synthetic:label-heavy-ja-10",
+      "graph": {
+        "nodes": 10,
+        "edges": 20
+      },
+      "candidateCount": 6,
+      "productEvaluationCount": 6,
+      "generationMs": 28.1,
+      "evaluationMs": 295.33,
+      "elapsedMs": 323.43,
+      "deterministic": true,
+      "selected": {
+        "family": "topology-free-form-bfs-relaxed-3",
+        "fingerprint": "eb1f38737e12",
+        "seed": "component-bfs-layered-jitter",
+        "iterations": 4,
+        "topology": {
+          "componentCount": 3,
+          "rootIds": [
+            "label-n0",
+            "label-n2",
+            "label-n5"
+          ],
+          "layerCount": 3,
+          "bridgeIds": []
+        },
+        "cheapMetrics": {
+          "crossings": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 160.64170766024617,
+          "spacingDeficit": 0,
+          "score": 2.615437997772574
+        },
+        "metrics": {
+          "score": 148592.96078274644,
+          "crossings": 0,
+          "overlapPairs": 0,
+          "minimumSeparation": 160.64170766024617,
+          "extent": [
+            1544.7279999999998,
+            410.26399999999995
+          ],
+          "fitScale": 0.37793834632081996,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 40.10986531340431,
+          "routeMedian": 158.73518952962098,
+          "routeMax": 177.34221241051557,
+          "shortHopCount": 0
+        },
+        "evaluationMs": 48.51,
+        "positions": {
+          "label-n0": {
+            "x": 18.060000000000002,
+            "y": -24.304
+          },
+          "label-n1": {
+            "x": -98.888,
+            "y": 189.144
+          },
+          "label-n3": {
+            "x": 105.244,
+            "y": 176.012
+          },
+          "label-n4": {
+            "x": -11.704,
+            "y": 385.96
+          },
+          "label-n2": {
+            "x": 621.564,
+            "y": -15.007999999999996
+          },
+          "label-n7": {
+            "x": 659.98,
+            "y": 202.276
+          },
+          "label-n5": {
+            "x": 1382.876,
+            "y": 23.408
+          },
+          "label-n6": {
+            "x": 1265.9279999999999,
+            "y": 180.828
+          },
+          "label-n8": {
+            "x": 1445.84,
+            "y": 171.196
+          },
+          "label-n9": {
+            "x": 1384.92,
+            "y": 384.644
+          }
+        }
+      },
+      "finalistSummaries": [
+        {
+          "family": "topology-free-form-bfs-relaxed-3",
+          "fingerprint": "eb1f38737e12",
+          "cheapMetrics": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 160.64170766024617,
+            "spacingDeficit": 0,
+            "score": 2.615437997772574
+          },
+          "metrics": {
+            "score": 148592.96078274644,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 160.64170766024617,
+            "extent": [
+              1544.7279999999998,
+              410.26399999999995
+            ],
+            "fitScale": 0.37793834632081996,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 40.10986531340431,
+            "routeMedian": 158.73518952962098,
+            "routeMax": 177.34221241051557,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 48.51
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-5",
+          "fingerprint": "3d850bc3b1a3",
+          "cheapMetrics": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 159.76414741737273,
+            "spacingDeficit": 0,
+            "score": 1.3251121558099612
+          },
+          "metrics": {
+            "score": 259679.67665960634,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 159.76414741737273,
+            "extent": [
+              1574.9479999999999,
+              380.236
+            ],
+            "fitScale": 0.3709696707888231,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 47.72646396892998,
+            "routeMedian": 155.5275726193596,
+            "routeMax": 173.39998543210532,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 48.81
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-1",
+          "fingerprint": "e2bdeda21ca5",
+          "cheapMetrics": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 211.81560539299275,
+            "spacingDeficit": 0,
+            "score": 0.5617339512318722
+          },
+          "metrics": {
+            "score": 344522.1080904612,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 211.81560539299275,
+            "extent": [
+              1561.92,
+              424.036
+            ],
+            "fitScale": 0.3739421373745326,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 16.20188010654649,
+            "routeMedian": 156.79549997205896,
+            "routeMax": 184.8105457885798,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 48.97
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-6",
+          "fingerprint": "4bc4834e638f",
+          "cheapMetrics": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 187.24594444740316,
+            "spacingDeficit": 0,
+            "score": 1.2033201208447508
+          },
+          "metrics": {
+            "score": 683735.6897350065,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 187.24594444740316,
+            "extent": [
+              1761.948,
+              246.39600000000002
+            ],
+            "fitScale": 0.33297771897118644,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 17.520191779463005,
+            "routeMedian": 155.55627075385286,
+            "routeMax": 213.72480929448324,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 48.98
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-4",
+          "fingerprint": "76a448802434",
+          "cheapMetrics": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 174.7316594095072,
+            "spacingDeficit": 0,
+            "score": 1.9878431089624655
+          },
+          "metrics": {
+            "score": 815253.0242937934,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 174.7316594095072,
+            "extent": [
+              1709.92,
+              251.632
+            ],
+            "fitScale": 0.34274375394606293,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 58.644190556847725,
+            "routeMedian": 157.2119359866081,
+            "routeMax": 179.004831188395,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 49.33
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-2",
+          "fingerprint": "509817a691d0",
+          "cheapMetrics": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 148.10964597891657,
+            "spacingDeficit": 0,
+            "score": 1.1575950513081352
+          },
+          "metrics": {
+            "score": 939239.0405758057,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 148.10964597891657,
+            "extent": [
+              1738.92,
+              208.46800000000002
+            ],
+            "fitScale": 0.33723071461850773,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 28.72889080829202,
+            "routeMedian": 155.06649003866775,
+            "routeMax": 171.72707949238975,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 50.71
+        }
+      ],
+      "references": {
+        "frontier": {
+          "family": "structural-frontier-10-circular-order",
+          "fingerprint": "66a8a20d5889",
+          "elapsedMs": 1521,
+          "candidateCount": 12,
+          "evaluationCount": 13,
+          "presentationMs": 985.1,
+          "metrics": {
+            "score": 767817.0547673274,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 142.9475428260311,
+            "extent": [
+              437,
+              496
+            ],
+            "fitScale": 0.55,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 48.3032037634338,
+            "routeMedian": 93.03594409273676,
+            "routeMax": 320.7109695832062,
+            "shortHopCount": 0
+          }
+        },
+        "post": {
+          "family": "post-structural-constrained-relaxation",
+          "fingerprint": "f2f79e547b2a",
+          "elapsedMs": 21150,
+          "candidateCount": 53,
+          "evaluationCount": 458,
+          "presentationMs": 20721.1,
+          "metrics": {
+            "score": 216264.44314722563,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.11780757633915,
+            "extent": [
+              673,
+              345
+            ],
+            "fitScale": 0.7530562347188264,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 85.17332362983025,
+            "routeMedian": 233.12806987688938,
+            "routeMax": 383.8899539273632,
+            "shortHopCount": 0
+          }
+        }
+      }
+    },
+    {
+      "fixture": "dense-k7-7",
+      "locale": "en",
+      "source": "synthetic:k7-7",
+      "graph": {
+        "nodes": 14,
+        "edges": 49
+      },
+      "candidateCount": 6,
+      "productEvaluationCount": 6,
+      "generationMs": 1053.53,
+      "evaluationMs": 893.45,
+      "elapsedMs": 1946.98,
+      "deterministic": true,
+      "selected": {
+        "family": "topology-free-form-bfs-relaxed-5",
+        "fingerprint": "098fe9bb7986",
+        "seed": "component-bfs-layered-jitter",
+        "iterations": 18,
+        "topology": {
+          "componentCount": 1,
+          "rootIds": [
+            "left-1"
+          ],
+          "layerCount": 3,
+          "bridgeIds": []
+        },
+        "cheapMetrics": {
+          "crossings": 109,
+          "overlapPairs": 0,
+          "minimumSeparation": 146.46111535352983,
+          "spacingDeficit": 0,
+          "score": 109000604.77407488
+        },
+        "metrics": {
+          "score": 11049324.048109429,
+          "crossings": 100,
+          "overlapPairs": 0,
+          "minimumSeparation": 146.46111535352983,
+          "extent": [
+            1293.3818,
+            538.5342
+          ],
+          "fitScale": 0.44792113759002805,
+          "labelRouteHits": 5,
+          "labelNear20": 17,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 1099.2541933310235,
+          "routeMedian": 338.3764331518968,
+          "routeMax": 1173.9635377255497,
+          "shortHopCount": 0
+        },
+        "evaluationMs": 143.08,
+        "positions": {
+          "left-1": {
+            "x": -73.47579999999999,
+            "y": -27.578199999999995
+          },
+          "right-1": {
+            "x": -562.5618000000001,
+            "y": 161.001
+          },
+          "right-2": {
+            "x": -377.6901999999999,
+            "y": 185.11460000000002
+          },
+          "right-3": {
+            "x": -242.42959999999997,
+            "y": 241.2878
+          },
+          "right-4": {
+            "x": 66.81819999999999,
+            "y": 315.75379999999996
+          },
+          "right-5": {
+            "x": 146.088,
+            "y": 134.12
+          },
+          "right-6": {
+            "x": 403.24,
+            "y": 303.404
+          },
+          "right-7": {
+            "x": 730.82,
+            "y": 276.852
+          },
+          "left-2": {
+            "x": -480.04,
+            "y": 510.956
+          },
+          "left-3": {
+            "x": -283.68680000000006,
+            "y": 400.40319999999997
+          },
+          "left-4": {
+            "x": -60.16980000000001,
+            "y": 223.3676
+          },
+          "left-5": {
+            "x": -124.224,
+            "y": 358.64
+          },
+          "left-6": {
+            "x": 249.37840000000003,
+            "y": 247.3502
+          },
+          "left-7": {
+            "x": 511.044,
+            "y": 194.172
+          }
+        }
+      },
+      "finalistSummaries": [
+        {
+          "family": "topology-free-form-bfs-relaxed-5",
+          "fingerprint": "098fe9bb7986",
+          "cheapMetrics": {
+            "crossings": 109,
+            "overlapPairs": 0,
+            "minimumSeparation": 146.46111535352983,
+            "spacingDeficit": 0,
+            "score": 109000604.77407488
+          },
+          "metrics": {
+            "score": 11049324.048109429,
+            "crossings": 100,
+            "overlapPairs": 0,
+            "minimumSeparation": 146.46111535352983,
+            "extent": [
+              1293.3818,
+              538.5342
+            ],
+            "fitScale": 0.44792113759002805,
+            "labelRouteHits": 5,
+            "labelNear20": 17,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1099.2541933310235,
+            "routeMedian": 338.3764331518968,
+            "routeMax": 1173.9635377255497,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 143.08
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-3",
+          "fingerprint": "dbec0eefb54b",
+          "cheapMetrics": {
+            "crossings": 125,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.75379090212815,
+            "spacingDeficit": 0,
+            "score": 125000546.39577296
+          },
+          "metrics": {
+            "score": 14696046.593735335,
+            "crossings": 130,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.75379090212815,
+            "extent": [
+              1111.132,
+              465.95840000000004
+            ],
+            "fitScale": 0.5173886848456173,
+            "labelRouteHits": 15,
+            "labelNear20": 24,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1685.5600432719978,
+            "routeMedian": 364.86415599825443,
+            "routeMax": 989.0717062926605,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 145.85
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-1",
+          "fingerprint": "ff8360fccf8d",
+          "cheapMetrics": {
+            "crossings": 137,
+            "overlapPairs": 0,
+            "minimumSeparation": 142.02427907734653,
+            "spacingDeficit": 0,
+            "score": 137000497.24240693
+          },
+          "metrics": {
+            "score": 14864766.377877975,
+            "crossings": 131,
+            "overlapPairs": 0,
+            "minimumSeparation": 142.02427907734653,
+            "extent": [
+              1216.596,
+              482.0926
+            ],
+            "fitScale": 0.47477893106022506,
+            "labelRouteHits": 7,
+            "labelNear20": 19,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1258.0323975224958,
+            "routeMedian": 294.10420446655087,
+            "routeMax": 1093.3119746640966,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 142.73
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-4",
+          "fingerprint": "115565577679",
+          "cheapMetrics": {
+            "crossings": 159,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.34106132703997,
+            "spacingDeficit": 0,
+            "score": 159000526.7162857
+          },
+          "metrics": {
+            "score": 17808069.912278853,
+            "crossings": 159,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.34106132703997,
+            "extent": [
+              457.70320000000004,
+              1180.632
+            ],
+            "fitScale": 0.24746270383535052,
+            "labelRouteHits": 13,
+            "labelNear20": 26,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1834.0579173531162,
+            "routeMedian": 321.8540127838754,
+            "routeMax": 1001.2692482324277,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 149.59
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-2",
+          "fingerprint": "7e325b11dea1",
+          "cheapMetrics": {
+            "crossings": 157,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.32072229004527,
+            "spacingDeficit": 0,
+            "score": 157000545.1451067
+          },
+          "metrics": {
+            "score": 19223109.246849034,
+            "crossings": 173,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.32072229004527,
+            "extent": [
+              475.864,
+              1177.5208
+            ],
+            "fitScale": 0.2480828351808524,
+            "labelRouteHits": 14,
+            "labelNear20": 22,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1684.0058030198832,
+            "routeMedian": 317.8911196274147,
+            "routeMax": 993.9318037082979,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 154.69
+        },
+        {
+          "family": "topology-free-form-bfs-relaxed-6",
+          "fingerprint": "31d7a5c92633",
+          "cheapMetrics": {
+            "crossings": 173,
+            "overlapPairs": 0,
+            "minimumSeparation": 142.29270024410948,
+            "spacingDeficit": 0,
+            "score": 173000382.07786968
+          },
+          "metrics": {
+            "score": 20086695.269125577,
+            "crossings": 181,
+            "overlapPairs": 0,
+            "minimumSeparation": 142.29270024410948,
+            "extent": [
+              413.85,
+              1171.368
+            ],
+            "fitScale": 0.2493184217172535,
+            "labelRouteHits": 11,
+            "labelNear20": 24,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1362.6476988824127,
+            "routeMedian": 309.0242093668122,
+            "routeMax": 1053.7582184773025,
+            "shortHopCount": 0
+          },
+          "evaluationMs": 157.49
+        }
+      ],
+      "references": {
+        "frontier": {
+          "family": "structural-frontier-1-grid-structural",
+          "fingerprint": "bdd252c1b045",
+          "elapsedMs": 4046,
+          "candidateCount": 12,
+          "evaluationCount": 13,
+          "presentationMs": 2063.78,
+          "metrics": {
+            "score": 15832409.425210206,
+            "crossings": 143,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              690,
+              368
+            ],
+            "fitScale": 0.7129629629629629,
+            "labelRouteHits": 6,
+            "labelNear20": 18,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1152.3883426202865,
+            "routeMedian": 320.75733153334073,
+            "routeMax": 656.9396533231513,
+            "shortHopCount": 0
+          }
+        },
+        "post": {
+          "family": "grid-structural",
+          "fingerprint": "ab9eadb27b53",
+          "elapsedMs": 7743,
+          "candidateCount": 44,
+          "evaluationCount": 44,
+          "presentationMs": 6168.35,
+          "metrics": {
+            "score": 14486653.112270225,
+            "crossings": 129,
+            "overlapPairs": 0,
+            "minimumSeparation": 164,
+            "extent": [
+              784,
+              328
+            ],
+            "fitScale": 0.7169811320754716,
+            "labelRouteHits": 8,
+            "labelNear20": 20,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1083.1555928649598,
+            "routeMedian": 313.6483590104196,
+            "routeMax": 747.8155522041401,
+            "shortHopCount": 0
+          }
+        }
+      }
+    }
+  ],
+  "interpretationPending": true,
+  "readiness": {
+    "humanReview": "NOT READY",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productionProvider": "NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "initialLayoutReleaseBlocker": "OPEN"
+  },
+  "elapsedMs": 4417.44
+}
