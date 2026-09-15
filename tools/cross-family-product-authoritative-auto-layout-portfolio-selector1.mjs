@@ -5,18 +5,13 @@ import { buildEntityGraph } from "../src/dataset.ts";
 import { deriveBoundedAutomaticPresentation } from "../src/graph-presentation.ts";
 import { deriveAutomaticLayoutQualityMetrics } from "../src/automatic-layout-quality.ts";
 import { placeNodeLabel } from "../src/viewport.ts";
+import { bipartite as sharedBipartite, labelHeavyJa as sharedLabelHeavyJa } from "../experimental/diagnostic-fixtures.mjs";
 
 const root = process.cwd();
 const outputDirectory = path.join(root, "experimental", "cross-family-product-authoritative-auto-layout-portfolio-selector1");
 const comparisonArtifact = JSON.parse(fs.readFileSync(path.join(root, "experimental", "frontier-g3-post-current-source-comparison1", "result-summary.json"), "utf8"));
 const freeFormArtifact = JSON.parse(fs.readFileSync(path.join(root, "experimental", "topology-aware-free-form-crossing-experiment1", "result-summary.json"), "utf8"));
 const SELECTOR_TOP_K = 2;
-
-function bipartite(leftSize, rightSize) {
-  const left = Array.from({ length: leftSize }, (_, index) => `left-${index + 1}`);
-  const right = Array.from({ length: rightSize }, (_, index) => `right-${index + 1}`);
-  return { version: "1.0", entities: [...left, ...right].map((id) => ({ id, name: id.replace("-", " ") })), events: [], relations: left.flatMap((sourceId) => right.map((targetId) => ({ id: `${sourceId}-${targetId}`, sourceId, targetId, name: "connected" }))) };
-}
 
 function labelHeavyJa() {
   const ids = Array.from({ length: 10 }, (_, index) => `label-n${index}`);
@@ -34,8 +29,8 @@ const fixtures = [
 ];
 
 function loadFixture(fixture) {
-  if (fixture.source === "synthetic:label-heavy-ja-10") return labelHeavyJa();
-  if (fixture.source === "synthetic:k7-7") return bipartite(7, 7);
+  if (fixture.source === "synthetic:label-heavy-ja-10") return sharedLabelHeavyJa();
+  if (fixture.source === "synthetic:k7-7") return sharedBipartite(7, 7);
   return JSON.parse(fs.readFileSync(path.resolve(root, fixture.source), "utf8"));
 }
 
