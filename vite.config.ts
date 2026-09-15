@@ -7,6 +7,7 @@ import path from "node:path";
 import { ACCEPTANCE_FIXTURE_ENDPOINT } from "./src/acceptance-fixture-access.ts";
 
 const canonicalExamples = path.resolve(process.cwd(), "..", "e2r-spec", "examples");
+const berlinExamples = path.resolve(process.cwd(), "..", "e2r-narrative-line", "src", "sample");
 const canonicalFixtureFiles = {
   titanic: "titanic-final-voyage",
   "apollo-11": "apollo-11-mission",
@@ -64,6 +65,14 @@ export default defineConfig({
         const match = /^\/(titanic|apollo-11|lighthouse|ashen-crown)\.(en|ja)\.e2r\.json$/.exec(request.url ?? "");
         if (!match || request.method !== "GET") return next();
         const filePath = path.join(canonicalExamples, `${canonicalFixtureFiles[match[1]]}.${match[2]}.e2r.json`);
+        if (!fs.existsSync(filePath)) { response.statusCode = 404; response.end("Not found"); return; }
+        response.setHeader("Content-Type", "application/json; charset=utf-8");
+        response.end(fs.readFileSync(filePath));
+      });
+      server.middlewares.use("/e2r-liaison-scape/__frontier-sweep-fixtures", (request, response, next) => {
+        const match = /^\/berlin-wall-history\.(en|ja)\.e2r\.json$/.exec(request.url ?? "");
+        if (!match || request.method !== "GET") return next();
+        const filePath = path.join(berlinExamples, `berlin-wall-history.${match[1]}.e2r.json`);
         if (!fs.existsSync(filePath)) { response.statusCode = 404; response.end("Not found"); return; }
         response.setHeader("Content-Type", "application/json; charset=utf-8");
         response.end(fs.readFileSync(filePath));
