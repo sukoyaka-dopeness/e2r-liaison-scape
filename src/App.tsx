@@ -457,7 +457,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, oper
   const previewExpected = operationLocalPreview ? { operationId: operationLocalPreview.operationId, generation: operationLocalPreview.generation, snapshotIdentity: operationLocalPreview.snapshotIdentity, entityIds: graph.nodes.map(({ id }) => id) } : null;
   const validatedPreview = import.meta.env.DEV && previewExpected && validateOperationLocalProductPreview(operationLocalPreview, previewExpected) ? operationLocalPreview : null;
   const renderPositions = activeOperationPreview?.positions ?? positions;
-  useEffect(() => { setActiveOperationPreview(validatedPreview); }, [validatedPreview?.candidateFingerprint]);
+  useEffect(() => { setActiveOperationPreview(validatedPreview); }, [validatedPreview?.operationId, validatedPreview?.generation, validatedPreview?.snapshotIdentity, validatedPreview?.candidateFingerprint]);
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
   const relationMap = useMemo(() => new Map(dataset?.relations.map((relation) => [relation.id, relation]) ?? []), [dataset]);
   const provisionalNodeLabels = useMemo(() =>

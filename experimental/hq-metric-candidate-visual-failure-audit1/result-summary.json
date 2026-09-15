@@ -1,0 +1,3226 @@
+{
+  "contract": "LIAISONSCAPE-HQ-METRIC-CANDIDATE-VISUAL-FAILURE-AUDIT-v1",
+  "diagnosticOnly": true,
+  "metricMutation": false,
+  "candidateGenerationMutation": false,
+  "sourceBoundary": "Existing deterministic browser frontier adapter and current Product presentation are replayed. Visual-risk metrics diagnose output only and do not replace Product label/routing authority or production selection.",
+  "metricAudit": {
+    "currentScoreIncludes": [
+      "crossings",
+      "crossingRelationLabelNear",
+      "Node-label route hits/near",
+      "Node-label pair overlap",
+      "usable relation span",
+      "short hops",
+      "route length",
+      "extent"
+    ],
+    "recordedButNotScored": [
+      "fitScale",
+      "labelCorridorDeficit",
+      "labelCorridorConflictPairs",
+      "labelCorridorMinimumClearance",
+      "labelCorridorMaximumIntrusion",
+      "minimumSeparation"
+    ],
+    "missingFromCurrentMetric": [
+      "Relation-label/Relation-label overlap",
+      "Node-label/Relation-label overlap",
+      "foreign-route/Relation-label collision",
+      "Relation-label ownership ambiguity",
+      "post-fit effective text scale",
+      "screen label occupancy"
+    ]
+  },
+  "rows": [
+    {
+      "fixture": "canonical",
+      "family": "canonical",
+      "graph": {
+        "nodes": 8,
+        "edges": 10
+      },
+      "candidateCount": 8,
+      "currentSelectedIndex": 4,
+      "currentSelectedFingerprint": "canonical-n0:167.909,169.909|canonical-n1:323.411,168.615|canonical-n2:630.319,166.909|canonical-n3:785.821,165.615|canonical-n4:280.173,278.485|canonical-n5:162.539,322.352|canonical-n6:742.583,280.485|canonical-n7:633.950,319.352",
+      "currentSelectedVisualRiskRank": 2,
+      "visualRiskBestIndex": 1,
+      "visualRiskBestFingerprint": "canonical-n0:164.909,166.909|canonical-n1:320.411,165.615|canonical-n2:636.319,168.909|canonical-n3:782.821,167.615|canonical-n4:277.173,280.485|canonical-n5:168.539,319.352|canonical-n6:739.583,277.485|canonical-n7:630.950,321.352",
+      "visualRiskDelta": {
+        "totalLabelOverlapPairs": 0,
+        "ownershipAmbiguityCount": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "fitScale": 0.006965815531903008
+      },
+      "candidateVisualDiversity": 7,
+      "candidates": [
+        {
+          "index": 1,
+          "family": "browser-existing-frontier-adapter-1",
+          "fingerprint": "canonical-n0:164.909,166.909|canonical-n1:320.411,165.615|canonical-n2:636.319,168.909|canonical-n3:782.821,167.615|canonical-n4:277.173,280.485|canonical-n5:168.539,319.352|canonical-n6:739.583,277.485|canonical-n7:630.950,321.352",
+          "positions": {
+            "canonical-n0": {
+              "x": 164.908939523866,
+              "y": 166.90911574513873
+            },
+            "canonical-n1": {
+              "x": 320.4105335513307,
+              "y": 165.61498335528643
+            },
+            "canonical-n2": {
+              "x": 636.3194730751968,
+              "y": 168.90911574513873
+            },
+            "canonical-n3": {
+              "x": 782.8210671026612,
+              "y": 167.61498335528643
+            },
+            "canonical-n4": {
+              "x": 277.17254269462114,
+              "y": 280.4849947083173
+            },
+            "canonical-n5": {
+              "x": 168.53946828230121,
+              "y": 319.35210082006023
+            },
+            "canonical-n6": {
+              "x": 739.5830762459518,
+              "y": 277.4849947083173
+            },
+            "canonical-n7": {
+              "x": 630.9500018336319,
+              "y": 321.35210082006023
+            }
+          },
+          "quality": {
+            "score": 35012.82277271358,
+            "overlapPairs": 0,
+            "minimumSeparation": 115.37676019794507,
+            "extent": [
+              617.9121275787952,
+              155.7371174647738
+            ],
+            "aspectRatio": 3.9676612591636085,
+            "fitScale": 0.8916104808969618,
+            "routeMedian": 82.50481284668375,
+            "routeMax": 95.3907707469447,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 56.266522490061575,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 25.196253451643923,
+            "labelCorridorMaximumIntrusion": 22.803746548356077,
+            "usableSpanPenalty": 8639.752516253093,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.8916104808969618,
+            "effectiveFontScale": 0.8916104808969618,
+            "labelScreenOccupancy": 0.04988432041524328,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 0
+          }
+        },
+        {
+          "index": 2,
+          "family": "browser-existing-frontier-adapter-2",
+          "fingerprint": "canonical-n0:174.611,170.612|canonical-n1:314.936,168.719|canonical-n2:633.547,172.612|canonical-n3:782.872,170.719|canonical-n4:273.879,275.281|canonical-n5:168.617,316.863|canonical-n6:741.815,277.281|canonical-n7:627.553,318.863",
+          "positions": {
+            "canonical-n0": {
+              "x": 174.6113177340122,
+              "y": 170.61179509347
+            },
+            "canonical-n1": {
+              "x": 314.93586383119816,
+              "y": 168.7185861709283
+            },
+            "canonical-n2": {
+              "x": 633.5471815652105,
+              "y": 172.61179509347
+            },
+            "canonical-n3": {
+              "x": 782.8717276623963,
+              "y": 170.7185861709283
+            },
+            "canonical-n4": {
+              "x": 273.87888713565775,
+              "y": 275.28080726465566
+            },
+            "canonical-n5": {
+              "x": 168.61687111179242,
+              "y": 316.8634920329843
+            },
+            "canonical-n6": {
+              "x": 741.814750966856,
+              "y": 277.28080726465566
+            },
+            "canonical-n7": {
+              "x": 627.5527349429906,
+              "y": 318.8634920329843
+            }
+          },
+          "quality": {
+            "score": 39291.30468530193,
+            "overlapPairs": 0,
+            "minimumSeparation": 113.17778797074394,
+            "extent": [
+              614.2548565506039,
+              150.14490586205602
+            ],
+            "aspectRatio": 4.091080233617408,
+            "fitScale": 0.8964182034642575,
+            "routeMedian": 80.27842030984233,
+            "routeMax": 85.33140352458067,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 60.08802000657063,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 23.328200591142686,
+            "labelCorridorMaximumIntrusion": 24.671799408857314,
+            "usableSpanPenalty": 9713.579125138627,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.8964182034642575,
+            "effectiveFontScale": 0.8964182034642575,
+            "labelScreenOccupancy": 0.050423741117755966,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 1
+          }
+        },
+        {
+          "index": 3,
+          "family": "browser-existing-frontier-adapter-3",
+          "fingerprint": "canonical-n0:175.191,174.192|canonical-n1:318.609,171.771|canonical-n2:630.801,176.192|canonical-n3:774.219,168.771|canonical-n4:279.609,275.094|canonical-n5:168.643,314.526|canonical-n6:735.219,277.094|canonical-n7:633.253,316.526",
+          "positions": {
+            "canonical-n0": {
+              "x": 175.1912595245616,
+              "y": 174.19224787777551
+            },
+            "canonical-n1": {
+              "x": 318.609435373159,
+              "y": 171.77123206133862
+            },
+            "canonical-n2": {
+              "x": 630.8006948977206,
+              "y": 176.19224787777551
+            },
+            "canonical-n3": {
+              "x": 774.2188707463177,
+              "y": 168.77123206133862
+            },
+            "canonical-n4": {
+              "x": 279.6093207155032,
+              "y": 275.09412323682585
+            },
+            "canonical-n5": {
+              "x": 168.64307419608906,
+              "y": 314.5255609998597
+            },
+            "canonical-n6": {
+              "x": 735.2187560886622,
+              "y": 277.09412323682585
+            },
+            "canonical-n7": {
+              "x": 633.252509569248,
+              "y": 316.5255609998597
+            }
+          },
+          "quality": {
+            "score": 46135.61409460917,
+            "overlapPairs": 0,
+            "minimumSeparation": 109.32499125688489,
+            "extent": [
+              605.5757965502287,
+              147.75432893852107
+            ],
+            "aspectRatio": 4.098531670108982,
+            "fitScale": 0.9080376010192156,
+            "routeMedian": 76.34496255274398,
+            "routeMax": 83.36602737004647,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 58.07766155961863,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 23.915079201535097,
+            "labelCorridorMaximumIntrusion": 24.084920798464903,
+            "usableSpanPenalty": 10177.806402690363,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.9080376010192156,
+            "effectiveFontScale": 0.9080376010192156,
+            "labelScreenOccupancy": 0.05173940087526194,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 1,
+            "relationLabelsWithForeignRouteHit": 1,
+            "ownershipAmbiguityCount": 3
+          }
+        },
+        {
+          "index": 4,
+          "family": "browser-existing-frontier-adapter-4",
+          "fingerprint": "canonical-n0:167.909,169.909|canonical-n1:323.411,168.615|canonical-n2:630.319,166.909|canonical-n3:785.821,165.615|canonical-n4:280.173,278.485|canonical-n5:162.539,322.352|canonical-n6:742.583,280.485|canonical-n7:633.950,319.352",
+          "positions": {
+            "canonical-n0": {
+              "x": 167.908939523866,
+              "y": 169.90911574513873
+            },
+            "canonical-n1": {
+              "x": 323.4105335513307,
+              "y": 168.61498335528643
+            },
+            "canonical-n2": {
+              "x": 630.3194730751968,
+              "y": 166.90911574513873
+            },
+            "canonical-n3": {
+              "x": 785.8210671026612,
+              "y": 165.61498335528643
+            },
+            "canonical-n4": {
+              "x": 280.17254269462114,
+              "y": 278.4849947083173
+            },
+            "canonical-n5": {
+              "x": 162.53946828230121,
+              "y": 322.35210082006023
+            },
+            "canonical-n6": {
+              "x": 742.5830762459518,
+              "y": 280.4849947083173
+            },
+            "canonical-n7": {
+              "x": 633.9500018336319,
+              "y": 319.35210082006023
+            }
+          },
+          "quality": {
+            "score": 30977.796519278738,
+            "overlapPairs": 0,
+            "minimumSeparation": 115.3767601979451,
+            "extent": [
+              623.28159882036,
+              156.7371174647738
+            ],
+            "aspectRatio": 3.976604960598696,
+            "fitScale": 0.8846446653650588,
+            "routeMedian": 88.46806329458595,
+            "routeMax": 95.39077074694472,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 57.00865098790061,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 25.196253451643983,
+            "labelCorridorMaximumIntrusion": 22.803746548356017,
+            "usableSpanPenalty": 7627.616235717835,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.8846446653650588,
+            "effectiveFontScale": 0.8846446653650588,
+            "labelScreenOccupancy": 0.04910791054341829,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 0
+          }
+        },
+        {
+          "index": 5,
+          "family": "browser-existing-frontier-adapter-5",
+          "fingerprint": "canonical-n0:168.611,173.612|canonical-n1:317.936,166.719|canonical-n2:636.547,170.612|canonical-n3:776.872,168.719|canonical-n4:276.879,278.281|canonical-n5:171.617,319.863|canonical-n6:735.815,275.281|canonical-n7:630.553,316.863",
+          "positions": {
+            "canonical-n0": {
+              "x": 168.6113177340122,
+              "y": 173.61179509347
+            },
+            "canonical-n1": {
+              "x": 317.93586383119816,
+              "y": 166.7185861709283
+            },
+            "canonical-n2": {
+              "x": 636.5471815652105,
+              "y": 170.61179509347
+            },
+            "canonical-n3": {
+              "x": 776.8717276623963,
+              "y": 168.7185861709283
+            },
+            "canonical-n4": {
+              "x": 276.87888713565775,
+              "y": 278.28080726465566
+            },
+            "canonical-n5": {
+              "x": 171.61687111179242,
+              "y": 319.8634920329843
+            },
+            "canonical-n6": {
+              "x": 735.814750966856,
+              "y": 275.28080726465566
+            },
+            "canonical-n7": {
+              "x": 630.5527349429906,
+              "y": 316.8634920329843
+            }
+          },
+          "quality": {
+            "score": 40260.1690798963,
+            "overlapPairs": 0,
+            "minimumSeparation": 113.17778797074394,
+            "extent": [
+              608.2604099283841,
+              153.14490586205602
+            ],
+            "aspectRatio": 3.9717965576750527,
+            "fitScale": 0.9044114319698973,
+            "routeMedian": 76.33149224891827,
+            "routeMax": 89.29231302848582,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 55.97339780570402,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 25.969377265270143,
+            "labelCorridorMaximumIntrusion": 22.030622734729857,
+            "usableSpanPenalty": 9956.965613355593,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.9044114319698973,
+            "effectiveFontScale": 0.9044114319698973,
+            "labelScreenOccupancy": 0.05132699240193447,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 2
+          }
+        },
+        {
+          "index": 6,
+          "family": "browser-existing-frontier-adapter-6",
+          "fingerprint": "canonical-n0:178.191,172.192|canonical-n1:312.609,169.771|canonical-n2:633.801,174.192|canonical-n3:777.219,171.771|canonical-n4:273.609,278.094|canonical-n5:171.643,312.526|canonical-n6:738.219,275.094|canonical-n7:627.253,314.526",
+          "positions": {
+            "canonical-n0": {
+              "x": 178.1912595245616,
+              "y": 172.19224787777551
+            },
+            "canonical-n1": {
+              "x": 312.609435373159,
+              "y": 169.77123206133862
+            },
+            "canonical-n2": {
+              "x": 633.8006948977206,
+              "y": 174.19224787777551
+            },
+            "canonical-n3": {
+              "x": 777.2188707463177,
+              "y": 171.77123206133862
+            },
+            "canonical-n4": {
+              "x": 273.6093207155032,
+              "y": 278.09412323682585
+            },
+            "canonical-n5": {
+              "x": 171.64307419608906,
+              "y": 312.5255609998597
+            },
+            "canonical-n6": {
+              "x": 738.2187560886622,
+              "y": 275.09412323682585
+            },
+            "canonical-n7": {
+              "x": 627.252509569248,
+              "y": 314.5255609998597
+            }
+          },
+          "quality": {
+            "score": 49951.151563471816,
+            "overlapPairs": 0,
+            "minimumSeparation": 107.62267110459398,
+            "extent": [
+              605.5757965502287,
+              144.75432893852107
+            ],
+            "aspectRatio": 4.183472791390053,
+            "fitScale": 0.9080376010192156,
+            "routeMedian": 74.37982049960698,
+            "routeMax": 79.42949062146823,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 59.528595693909324,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 22.640293809112215,
+            "labelCorridorMaximumIntrusion": 25.359706190887785,
+            "usableSpanPenalty": 11133.844975119737,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.9080376010192156,
+            "effectiveFontScale": 0.9080376010192156,
+            "labelScreenOccupancy": 0.05173940087526194,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 2
+          }
+        },
+        {
+          "index": 7,
+          "family": "browser-existing-frontier-adapter-7",
+          "fingerprint": "canonical-n0:170.909,167.909|canonical-n1:317.411,166.615|canonical-n2:633.319,169.909|canonical-n3:788.821,168.615|canonical-n4:274.173,276.485|canonical-n5:165.539,320.352|canonical-n6:745.583,278.485|canonical-n7:627.950,322.352",
+          "positions": {
+            "canonical-n0": {
+              "x": 170.908939523866,
+              "y": 167.90911574513873
+            },
+            "canonical-n1": {
+              "x": 317.4105335513307,
+              "y": 166.61498335528643
+            },
+            "canonical-n2": {
+              "x": 633.3194730751968,
+              "y": 169.90911574513873
+            },
+            "canonical-n3": {
+              "x": 788.8210671026612,
+              "y": 168.61498335528643
+            },
+            "canonical-n4": {
+              "x": 274.17254269462114,
+              "y": 276.4849947083173
+            },
+            "canonical-n5": {
+              "x": 165.53946828230121,
+              "y": 320.35210082006023
+            },
+            "canonical-n6": {
+              "x": 745.5830762459518,
+              "y": 278.4849947083173
+            },
+            "canonical-n7": {
+              "x": 627.9500018336319,
+              "y": 322.35210082006023
+            }
+          },
+          "quality": {
+            "score": 33945.57273306859,
+            "overlapPairs": 0,
+            "minimumSeparation": 117.15574187760305,
+            "extent": [
+              623.28159882036,
+              155.7371174647738
+            ],
+            "aspectRatio": 4.002139046662015,
+            "fitScale": 0.8846446653650588,
+            "routeMedian": 86.4348711579737,
+            "routeMax": 91.50476271100435,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 58.860659520012035,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 24.008594080163324,
+            "labelCorridorMaximumIntrusion": 23.991405919836676,
+            "usableSpanPenalty": 8371.61088724259,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.8846446653650588,
+            "effectiveFontScale": 0.8846446653650588,
+            "labelScreenOccupancy": 0.04910791054341829,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 1,
+            "relationLabelsWithForeignRouteHit": 1,
+            "ownershipAmbiguityCount": 2
+          }
+        },
+        {
+          "index": 8,
+          "family": "browser-existing-frontier-adapter-8",
+          "fingerprint": "canonical-n0:171.611,171.612|canonical-n1:320.936,169.719|canonical-n2:630.547,173.612|canonical-n3:779.872,166.719|canonical-n4:279.879,276.281|canonical-n5:165.617,317.863|canonical-n6:738.815,278.281|canonical-n7:633.553,319.863",
+          "positions": {
+            "canonical-n0": {
+              "x": 171.6113177340122,
+              "y": 171.61179509347
+            },
+            "canonical-n1": {
+              "x": 320.93586383119816,
+              "y": 169.7185861709283
+            },
+            "canonical-n2": {
+              "x": 630.5471815652105,
+              "y": 173.61179509347
+            },
+            "canonical-n3": {
+              "x": 779.8717276623963,
+              "y": 166.7185861709283
+            },
+            "canonical-n4": {
+              "x": 279.87888713565775,
+              "y": 276.28080726465566
+            },
+            "canonical-n5": {
+              "x": 165.61687111179242,
+              "y": 317.8634920329843
+            },
+            "canonical-n6": {
+              "x": 738.814750966856,
+              "y": 278.28080726465566
+            },
+            "canonical-n7": {
+              "x": 633.5527349429906,
+              "y": 319.8634920329843
+            }
+          },
+          "quality": {
+            "score": 35888.45214509872,
+            "overlapPairs": 0,
+            "minimumSeparation": 113.177787970744,
+            "extent": [
+              614.2548565506039,
+              153.14490586205602
+            ],
+            "aspectRatio": 4.010938875785322,
+            "fitScale": 0.8964182034642575,
+            "routeMedian": 82.26906359095545,
+            "routeMax": 89.2477470909052,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 56.91752492347571,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 24.557440381272936,
+            "labelCorridorMaximumIntrusion": 23.442559618727064,
+            "usableSpanPenalty": 8860.704082555685,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.8964182034642575,
+            "effectiveFontScale": 0.8964182034642575,
+            "labelScreenOccupancy": 0.050423741117755966,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 1
+          }
+        }
+      ]
+    },
+    {
+      "fixture": "dense",
+      "family": "dense",
+      "graph": {
+        "nodes": 14,
+        "edges": 49
+      },
+      "candidateCount": 12,
+      "currentSelectedIndex": 11,
+      "currentSelectedFingerprint": "dense-n0:162.986,158.447|dense-n1:298.641,167.216|dense-n10:614.432,158.000|dense-n11:1059.706,170.600|dense-n12:257.565,277.336|dense-n13:156.514,326.550|dense-n2:1220.380,176.107|dense-n3:769.862,161.000|dense-n4:61.856,279.354|dense-n5:1187.348,275.618|dense-n6:1081.447,316.875|dense-n7:961.726,266.463|dense-n8:913.509,169.145|dense-n9:20.873,170.132",
+      "currentSelectedVisualRiskRank": 6,
+      "visualRiskBestIndex": 1,
+      "visualRiskBestFingerprint": "dense-n0:155.993,158.230|dense-n1:307.823,165.301|dense-n10:620.825,158.000|dense-n11:1074.107,167.904|dense-n12:256.889,278.477|dense-n13:158.623,328.329|dense-n2:1237.734,172.438|dense-n3:772.783,161.000|dense-n4:57.668,280.492|dense-n5:1200.717,276.696|dense-n6:1082.685,320.358|dense-n7:969.898,270.021|dense-n8:921.744,167.245|dense-n9:6.800,168.237",
+      "visualRiskDelta": {
+        "totalLabelOverlapPairs": -7,
+        "ownershipAmbiguityCount": 0,
+        "foreignRouteRelationLabelHits": 5,
+        "fitScale": -0.011678472293544906
+      },
+      "candidateVisualDiversity": 12,
+      "candidates": [
+        {
+          "index": 1,
+          "family": "browser-existing-frontier-adapter-1",
+          "fingerprint": "dense-n0:155.993,158.230|dense-n1:307.823,165.301|dense-n10:620.825,158.000|dense-n11:1074.107,167.904|dense-n12:256.889,278.477|dense-n13:158.623,328.329|dense-n2:1237.734,172.438|dense-n3:772.783,161.000|dense-n4:57.668,280.492|dense-n5:1200.717,276.696|dense-n6:1082.685,320.358|dense-n7:969.898,270.021|dense-n8:921.744,167.245|dense-n9:6.800,168.237",
+          "positions": {
+            "dense-n0": {
+              "x": 155.99295990635062,
+              "y": 158.22984572287004
+            },
+            "dense-n1": {
+              "x": 307.8227630167336,
+              "y": 165.30149815680923
+            },
+            "dense-n2": {
+              "x": 1237.7342002921168,
+              "y": 172.437651219652
+            },
+            "dense-n3": {
+              "x": 772.7825447236049,
+              "y": 161
+            },
+            "dense-n4": {
+              "x": 57.66752706066169,
+              "y": 280.49219142843435
+            },
+            "dense-n5": {
+              "x": 1200.7167763458538,
+              "y": 276.6964972065405
+            },
+            "dense-n6": {
+              "x": 1082.6848397373988,
+              "y": 320.358359759664
+            },
+            "dense-n7": {
+              "x": 969.8984624246463,
+              "y": 270.0211640852455
+            },
+            "dense-n8": {
+              "x": 921.7440980652206,
+              "y": 167.244715990429
+            },
+            "dense-n9": {
+              "x": 6.799567305038362,
+              "y": 168.23681622534426
+            },
+            "dense-n10": {
+              "x": 620.8250219710397,
+              "y": 158
+            },
+            "dense-n11": {
+              "x": 1074.1069316956743,
+              "y": 167.9041688789358
+            },
+            "dense-n12": {
+              "x": 256.889117185012,
+              "y": 278.47666924412135
+            },
+            "dense-n13": {
+              "x": 158.62266819897013,
+              "y": 328.3286908775159
+            }
+          },
+          "quality": {
+            "score": 4612909.450491071,
+            "overlapPairs": 0,
+            "minimumSeparation": 110.1885613721443,
+            "extent": [
+              1230.9346329870784,
+              170.3286908775159
+            ],
+            "aspectRatio": 7.226819079307366,
+            "fitScale": 0.469521769293869,
+            "routeMedian": 92.43708778417374,
+            "routeMax": 350.5558932947259,
+            "crossings": 37,
+            "crossingRelationLabelNear": 33,
+            "labelRouteHits": 5,
+            "labelNear20": 9,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 558.3331052228025,
+            "labelCorridorConflictPairs": 20,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 51755.92614781034,
+            "shortHopCount": 3,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.469521769293869,
+            "effectiveFontScale": 0.469521769293869,
+            "labelScreenOccupancy": 0.056977134686455266,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 6,
+            "totalLabelOverlapPairs": 6,
+            "foreignRouteRelationLabelHits": 51,
+            "relationLabelsWithForeignRouteHit": 24,
+            "ownershipAmbiguityCount": 39
+          }
+        },
+        {
+          "index": 2,
+          "family": "browser-existing-frontier-adapter-2",
+          "fingerprint": "dense-n0:162.986,159.447|dense-n1:298.641,168.216|dense-n10:614.432,159.000|dense-n11:1059.706,171.600|dense-n12:257.565,278.336|dense-n13:156.514,327.550|dense-n2:1220.380,177.107|dense-n3:769.862,162.000|dense-n4:61.856,275.354|dense-n5:1187.348,276.618|dense-n6:1081.447,317.875|dense-n7:961.726,267.463|dense-n8:913.509,170.145|dense-n9:20.873,166.132",
+          "positions": {
+            "dense-n0": {
+              "x": 162.9864152955139,
+              "y": 159.44726093572547
+            },
+            "dense-n1": {
+              "x": 298.6409145105423,
+              "y": 168.215554365719
+            },
+            "dense-n2": {
+              "x": 1220.3799657011039,
+              "y": 177.10681367899667
+            },
+            "dense-n3": {
+              "x": 769.8616670452393,
+              "y": 162
+            },
+            "dense-n4": {
+              "x": 61.85629233080637,
+              "y": 275.3542481927256
+            },
+            "dense-n5": {
+              "x": 1187.3478370151408,
+              "y": 276.617796429001
+            },
+            "dense-n6": {
+              "x": 1081.4474271476013,
+              "y": 317.8753876789684
+            },
+            "dense-n7": {
+              "x": 961.7260490449977,
+              "y": 267.46272971222635
+            },
+            "dense-n8": {
+              "x": 913.5093599921588,
+              "y": 170.14504388452394
+            },
+            "dense-n9": {
+              "x": 20.872703123073858,
+              "y": 166.13238392710025
+            },
+            "dense-n10": {
+              "x": 614.4324088743947,
+              "y": 159
+            },
+            "dense-n11": {
+              "x": 1059.7059253567115,
+              "y": 171.60047416279576
+            },
+            "dense-n12": {
+              "x": 257.56470920542375,
+              "y": 278.33568827918447
+            },
+            "dense-n13": {
+              "x": 156.51443239659673,
+              "y": 327.5497598406625
+            }
+          },
+          "quality": {
+            "score": 5212994.840310353,
+            "overlapPairs": 0,
+            "minimumSeparation": 104.8501655382464,
+            "extent": [
+              1199.50726257803,
+              168.5497598406625
+            ],
+            "aspectRatio": 7.116635845176979,
+            "fitScale": 0.4812002415874139,
+            "routeMedian": 87.28104189161274,
+            "routeMax": 342.77949197234057,
+            "crossings": 41,
+            "crossingRelationLabelNear": 41,
+            "labelRouteHits": 5,
+            "labelNear20": 11,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 664.6029764791587,
+            "labelCorridorConflictPairs": 25,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 59283.87111974803,
+            "shortHopCount": 11,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4812002415874139,
+            "effectiveFontScale": 0.4812002415874139,
+            "labelScreenOccupancy": 0.05984678331114716,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 9,
+            "totalLabelOverlapPairs": 9,
+            "foreignRouteRelationLabelHits": 54,
+            "relationLabelsWithForeignRouteHit": 25,
+            "ownershipAmbiguityCount": 39
+          }
+        },
+        {
+          "index": 3,
+          "family": "browser-existing-frontier-adapter-3",
+          "fingerprint": "dense-n0:160.978,160.725|dense-n1:298.829,171.045|dense-n10:617.310,160.000|dense-n11:1045.958,175.171|dense-n12:249.593,278.238|dense-n13:163.414,321.795|dense-n2:1203.730,181.560|dense-n3:758.408,158.000|dense-n4:74.698,275.259|dense-n5:1174.435,276.577|dense-n6:1071.549,315.545|dense-n7:962.859,265.129|dense-n8:905.633,167.963|dense-n9:25.584,168.945",
+          "positions": {
+            "dense-n0": {
+              "x": 160.97814946228047,
+              "y": 160.7254224313101
+            },
+            "dense-n1": {
+              "x": 298.82886154043837,
+              "y": 171.04522847978575
+            },
+            "dense-n2": {
+              "x": 1203.7302523474148,
+              "y": 181.56041785709488
+            },
+            "dense-n3": {
+              "x": 758.4083025077074,
+              "y": 158
+            },
+            "dense-n4": {
+              "x": 74.6978374290749,
+              "y": 275.25861265339006
+            },
+            "dense-n5": {
+              "x": 1174.43530913765,
+              "y": 276.5774002572061
+            },
+            "dense-n6": {
+              "x": 1071.549362574732,
+              "y": 315.5453489746547
+            },
+            "dense-n7": {
+              "x": 962.8590203256339,
+              "y": 265.12876975393533
+            },
+            "dense-n8": {
+              "x": 905.6326926382692,
+              "y": 167.96322220775133
+            },
+            "dense-n9": {
+              "x": 25.583572767005133,
+              "y": 168.9449575870894
+            },
+            "dense-n10": {
+              "x": 617.3100825513659,
+              "y": 160
+            },
+            "dense-n11": {
+              "x": 1045.9583696748539,
+              "y": 175.17122486107797
+            },
+            "dense-n12": {
+              "x": 249.59334811338258,
+              "y": 278.23788208895354
+            },
+            "dense-n13": {
+              "x": 163.41400635831465,
+              "y": 321.79462683146886
+            }
+          },
+          "quality": {
+            "score": 6114518.339323552,
+            "overlapPairs": 0,
+            "minimumSeparation": 96.56121870555191,
+            "extent": [
+              1178.1466795804097,
+              163.79462683146886
+            ],
+            "aspectRatio": 7.192828619418788,
+            "fitScale": 0.4894752044946729,
+            "routeMedian": 81.05070279651679,
+            "routeMax": 329.93008179146005,
+            "crossings": 48,
+            "crossingRelationLabelNear": 48,
+            "labelRouteHits": 6,
+            "labelNear20": 11,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 689.5163270594996,
+            "labelCorridorConflictPairs": 24,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 70922.70562739127,
+            "shortHopCount": 15,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4894752044946729,
+            "effectiveFontScale": 0.4894752044946729,
+            "labelScreenOccupancy": 0.061922792344231724,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 15,
+            "totalLabelOverlapPairs": 15,
+            "foreignRouteRelationLabelHits": 60,
+            "relationLabelsWithForeignRouteHit": 23,
+            "ownershipAmbiguityCount": 40
+          }
+        },
+        {
+          "index": 4,
+          "family": "browser-existing-frontier-adapter-4",
+          "fingerprint": "dense-n0:158.993,161.230|dense-n1:310.823,168.301|dense-n10:623.825,161.000|dense-n11:1068.107,170.904|dense-n12:259.889,276.477|dense-n13:161.623,326.329|dense-n2:1231.734,170.438|dense-n3:775.783,159.000|dense-n4:60.668,278.492|dense-n5:1194.717,279.696|dense-n6:1085.685,323.358|dense-n7:972.898,268.021|dense-n8:915.744,165.245|dense-n9:9.800,166.237",
+          "positions": {
+            "dense-n0": {
+              "x": 158.99295990635062,
+              "y": 161.22984572287004
+            },
+            "dense-n1": {
+              "x": 310.8227630167336,
+              "y": 168.30149815680923
+            },
+            "dense-n2": {
+              "x": 1231.7342002921168,
+              "y": 170.437651219652
+            },
+            "dense-n3": {
+              "x": 775.7825447236049,
+              "y": 159
+            },
+            "dense-n4": {
+              "x": 60.66752706066168,
+              "y": 278.49219142843435
+            },
+            "dense-n5": {
+              "x": 1194.7167763458538,
+              "y": 279.6964972065405
+            },
+            "dense-n6": {
+              "x": 1085.6848397373988,
+              "y": 323.358359759664
+            },
+            "dense-n7": {
+              "x": 972.8984624246463,
+              "y": 268.0211640852455
+            },
+            "dense-n8": {
+              "x": 915.7440980652206,
+              "y": 165.244715990429
+            },
+            "dense-n9": {
+              "x": 9.799567305038362,
+              "y": 166.23681622534426
+            },
+            "dense-n10": {
+              "x": 623.8250219710397,
+              "y": 161
+            },
+            "dense-n11": {
+              "x": 1068.1069316956743,
+              "y": 170.9041688789358
+            },
+            "dense-n12": {
+              "x": 259.889117185012,
+              "y": 276.47666924412135
+            },
+            "dense-n13": {
+              "x": 161.62266819897013,
+              "y": 326.3286908775159
+            }
+          },
+          "quality": {
+            "score": 4996396.879326524,
+            "overlapPairs": 0,
+            "minimumSeparation": 110.1885613721443,
+            "extent": [
+              1221.9346329870784,
+              167.3286908775159
+            ],
+            "aspectRatio": 7.302600806705235,
+            "fitScale": 0.4728078585049738,
+            "routeMedian": 92.30168810353523,
+            "routeMax": 344.7646546400161,
+            "crossings": 40,
+            "crossingRelationLabelNear": 40,
+            "labelRouteHits": 4,
+            "labelNear20": 9,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 515.6739856947266,
+            "labelCorridorConflictPairs": 21,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 53880.04886617763,
+            "shortHopCount": 3,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4728078585049738,
+            "effectiveFontScale": 0.4728078585049738,
+            "labelScreenOccupancy": 0.057777468811039165,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 1,
+            "relationRelationOverlapPairs": 12,
+            "totalLabelOverlapPairs": 13,
+            "foreignRouteRelationLabelHits": 50,
+            "relationLabelsWithForeignRouteHit": 26,
+            "ownershipAmbiguityCount": 41
+          }
+        },
+        {
+          "index": 5,
+          "family": "browser-existing-frontier-adapter-5",
+          "fingerprint": "dense-n0:156.986,162.447|dense-n1:301.641,166.216|dense-n10:617.432,162.000|dense-n11:1062.706,169.600|dense-n12:251.565,276.336|dense-n13:159.514,325.550|dense-n2:1223.380,175.107|dense-n3:763.862,160.000|dense-n4:64.856,278.354|dense-n5:1190.348,279.618|dense-n6:1075.447,315.875|dense-n7:964.726,265.463|dense-n8:916.509,168.145|dense-n9:14.873,169.132",
+          "positions": {
+            "dense-n0": {
+              "x": 156.9864152955139,
+              "y": 162.44726093572547
+            },
+            "dense-n1": {
+              "x": 301.6409145105423,
+              "y": 166.215554365719
+            },
+            "dense-n2": {
+              "x": 1223.3799657011039,
+              "y": 175.10681367899667
+            },
+            "dense-n3": {
+              "x": 763.8616670452393,
+              "y": 160
+            },
+            "dense-n4": {
+              "x": 64.85629233080637,
+              "y": 278.3542481927256
+            },
+            "dense-n5": {
+              "x": 1190.3478370151408,
+              "y": 279.617796429001
+            },
+            "dense-n6": {
+              "x": 1075.4474271476013,
+              "y": 315.8753876789684
+            },
+            "dense-n7": {
+              "x": 964.7260490449977,
+              "y": 265.46272971222635
+            },
+            "dense-n8": {
+              "x": 916.5093599921588,
+              "y": 168.14504388452394
+            },
+            "dense-n9": {
+              "x": 14.872703123073858,
+              "y": 169.13238392710025
+            },
+            "dense-n10": {
+              "x": 617.4324088743947,
+              "y": 162
+            },
+            "dense-n11": {
+              "x": 1062.7059253567115,
+              "y": 169.60047416279576
+            },
+            "dense-n12": {
+              "x": 251.56470920542375,
+              "y": 276.33568827918447
+            },
+            "dense-n13": {
+              "x": 159.51443239659673,
+              "y": 325.5497598406625
+            }
+          },
+          "quality": {
+            "score": 5678420.094401395,
+            "overlapPairs": 0,
+            "minimumSeparation": 104.38044979899233,
+            "extent": [
+              1208.50726257803,
+              165.5497598406625
+            ],
+            "aspectRatio": 7.299963852204847,
+            "fitScale": 0.4777968801279966,
+            "routeMedian": 86.3650411111227,
+            "routeMax": 342.7794919723407,
+            "crossings": 46,
+            "crossingRelationLabelNear": 46,
+            "labelRouteHits": 1,
+            "labelNear20": 9,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 450.94063279882,
+            "labelCorridorConflictPairs": 20,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 60640.267642898885,
+            "shortHopCount": 14,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4777968801279966,
+            "effectiveFontScale": 0.4777968801279966,
+            "labelScreenOccupancy": 0.05900322614462907,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 16,
+            "totalLabelOverlapPairs": 16,
+            "foreignRouteRelationLabelHits": 58,
+            "relationLabelsWithForeignRouteHit": 24,
+            "ownershipAmbiguityCount": 40
+          }
+        },
+        {
+          "index": 6,
+          "family": "browser-existing-frontier-adapter-6",
+          "fingerprint": "dense-n0:163.978,158.725|dense-n1:292.829,169.045|dense-n10:611.310,158.000|dense-n11:1048.958,173.171|dense-n12:252.593,276.238|dense-n13:157.414,324.795|dense-n2:1206.730,179.560|dense-n3:761.408,161.000|dense-n4:68.698,278.259|dense-n5:1177.435,274.577|dense-n6:1074.549,313.545|dense-n7:956.859,263.129|dense-n8:908.633,170.963|dense-n9:28.584,171.945",
+          "positions": {
+            "dense-n0": {
+              "x": 163.97814946228047,
+              "y": 158.7254224313101
+            },
+            "dense-n1": {
+              "x": 292.82886154043837,
+              "y": 169.04522847978575
+            },
+            "dense-n2": {
+              "x": 1206.7302523474148,
+              "y": 179.56041785709488
+            },
+            "dense-n3": {
+              "x": 761.4083025077074,
+              "y": 161
+            },
+            "dense-n4": {
+              "x": 68.6978374290749,
+              "y": 278.25861265339006
+            },
+            "dense-n5": {
+              "x": 1177.43530913765,
+              "y": 274.5774002572061
+            },
+            "dense-n6": {
+              "x": 1074.549362574732,
+              "y": 313.5453489746547
+            },
+            "dense-n7": {
+              "x": 956.8590203256339,
+              "y": 263.12876975393533
+            },
+            "dense-n8": {
+              "x": 908.6326926382692,
+              "y": 170.96322220775133
+            },
+            "dense-n9": {
+              "x": 28.583572767005137,
+              "y": 171.9449575870894
+            },
+            "dense-n10": {
+              "x": 611.3100825513659,
+              "y": 158
+            },
+            "dense-n11": {
+              "x": 1048.9583696748539,
+              "y": 173.17122486107797
+            },
+            "dense-n12": {
+              "x": 252.5933481133826,
+              "y": 276.23788208895354
+            },
+            "dense-n13": {
+              "x": 157.41400635831465,
+              "y": 324.79462683146886
+            }
+          },
+          "quality": {
+            "score": 5054743.210746847,
+            "overlapPairs": 0,
+            "minimumSeparation": 99.43048145355824,
+            "extent": [
+              1178.1466795804097,
+              166.79462683146886
+            ],
+            "aspectRatio": 7.063457030728107,
+            "fitScale": 0.4894752044946729,
+            "routeMedian": 82.96242409460434,
+            "routeMax": 335.5755164813758,
+            "crossings": 38,
+            "crossingRelationLabelNear": 38,
+            "labelRouteHits": 9,
+            "labelNear20": 10,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 663.5023328680898,
+            "labelCorridorConflictPairs": 25,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 68476.36876389348,
+            "shortHopCount": 18,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4894752044946729,
+            "effectiveFontScale": 0.4894752044946729,
+            "labelScreenOccupancy": 0.061922792344231724,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 13,
+            "totalLabelOverlapPairs": 13,
+            "foreignRouteRelationLabelHits": 54,
+            "relationLabelsWithForeignRouteHit": 24,
+            "ownershipAmbiguityCount": 39
+          }
+        },
+        {
+          "index": 7,
+          "family": "browser-existing-frontier-adapter-7",
+          "fingerprint": "dense-n0:161.993,159.230|dense-n1:304.823,166.301|dense-n10:617.825,159.000|dense-n11:1071.107,168.904|dense-n12:262.889,279.477|dense-n13:155.623,329.329|dense-n2:1234.734,173.438|dense-n3:778.783,162.000|dense-n4:54.668,276.492|dense-n5:1197.717,277.696|dense-n6:1088.685,321.358|dense-n7:966.898,271.021|dense-n8:918.744,168.245|dense-n9:12.800,164.237",
+          "positions": {
+            "dense-n0": {
+              "x": 161.99295990635062,
+              "y": 159.22984572287004
+            },
+            "dense-n1": {
+              "x": 304.8227630167336,
+              "y": 166.30149815680923
+            },
+            "dense-n2": {
+              "x": 1234.7342002921168,
+              "y": 173.437651219652
+            },
+            "dense-n3": {
+              "x": 778.7825447236049,
+              "y": 162
+            },
+            "dense-n4": {
+              "x": 54.66752706066169,
+              "y": 276.49219142843435
+            },
+            "dense-n5": {
+              "x": 1197.7167763458538,
+              "y": 277.6964972065405
+            },
+            "dense-n6": {
+              "x": 1088.6848397373988,
+              "y": 321.358359759664
+            },
+            "dense-n7": {
+              "x": 966.8984624246463,
+              "y": 271.0211640852455
+            },
+            "dense-n8": {
+              "x": 918.7440980652206,
+              "y": 168.244715990429
+            },
+            "dense-n9": {
+              "x": 12.799567305038362,
+              "y": 164.23681622534426
+            },
+            "dense-n10": {
+              "x": 617.8250219710397,
+              "y": 159
+            },
+            "dense-n11": {
+              "x": 1071.1069316956743,
+              "y": 168.9041688789358
+            },
+            "dense-n12": {
+              "x": 262.889117185012,
+              "y": 279.47666924412135
+            },
+            "dense-n13": {
+              "x": 155.62266819897013,
+              "y": 329.3286908775159
+            }
+          },
+          "quality": {
+            "score": 4529848.273103324,
+            "overlapPairs": 0,
+            "minimumSeparation": 110.63542218537025,
+            "extent": [
+              1221.9346329870784,
+              170.3286908775159
+            ],
+            "aspectRatio": 7.173980065788077,
+            "fitScale": 0.4728078585049738,
+            "routeMedian": 92.80758899510083,
+            "routeMax": 350.55589329472576,
+            "crossings": 37,
+            "crossingRelationLabelNear": 37,
+            "labelRouteHits": 1,
+            "labelNear20": 8,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 471.930584826157,
+            "labelCorridorConflictPairs": 19,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 50991.00905026814,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4728078585049738,
+            "effectiveFontScale": 0.4728078585049738,
+            "labelScreenOccupancy": 0.057777468811039165,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 8,
+            "totalLabelOverlapPairs": 8,
+            "foreignRouteRelationLabelHits": 50,
+            "relationLabelsWithForeignRouteHit": 23,
+            "ownershipAmbiguityCount": 40
+          }
+        },
+        {
+          "index": 8,
+          "family": "browser-existing-frontier-adapter-8",
+          "fingerprint": "dense-n0:159.986,160.447|dense-n1:304.641,169.216|dense-n10:620.432,160.000|dense-n11:1056.706,172.600|dense-n12:254.565,279.336|dense-n13:162.514,323.550|dense-n2:1217.380,178.107|dense-n3:766.862,158.000|dense-n4:67.856,276.354|dense-n5:1184.348,277.618|dense-n6:1078.447,318.875|dense-n7:967.726,268.463|dense-n8:910.509,166.145|dense-n9:17.873,167.132",
+          "positions": {
+            "dense-n0": {
+              "x": 159.9864152955139,
+              "y": 160.44726093572547
+            },
+            "dense-n1": {
+              "x": 304.6409145105423,
+              "y": 169.215554365719
+            },
+            "dense-n2": {
+              "x": 1217.3799657011039,
+              "y": 178.10681367899667
+            },
+            "dense-n3": {
+              "x": 766.8616670452393,
+              "y": 158
+            },
+            "dense-n4": {
+              "x": 67.85629233080637,
+              "y": 276.3542481927256
+            },
+            "dense-n5": {
+              "x": 1184.3478370151408,
+              "y": 277.617796429001
+            },
+            "dense-n6": {
+              "x": 1078.4474271476013,
+              "y": 318.8753876789684
+            },
+            "dense-n7": {
+              "x": 967.7260490449977,
+              "y": 268.46272971222635
+            },
+            "dense-n8": {
+              "x": 910.5093599921588,
+              "y": 166.14504388452394
+            },
+            "dense-n9": {
+              "x": 17.872703123073858,
+              "y": 167.13238392710025
+            },
+            "dense-n10": {
+              "x": 620.4324088743947,
+              "y": 160
+            },
+            "dense-n11": {
+              "x": 1056.7059253567115,
+              "y": 172.60047416279576
+            },
+            "dense-n12": {
+              "x": 254.56470920542375,
+              "y": 279.33568827918447
+            },
+            "dense-n13": {
+              "x": 162.51443239659673,
+              "y": 323.5497598406625
+            }
+          },
+          "quality": {
+            "score": 5207843.832161076,
+            "overlapPairs": 0,
+            "minimumSeparation": 102.11825294542194,
+            "extent": [
+              1199.50726257803,
+              165.5497598406625
+            ],
+            "aspectRatio": 7.2455995329291065,
+            "fitScale": 0.4812002415874139,
+            "routeMedian": 87.28104189161276,
+            "routeMax": 318.0577851255759,
+            "crossings": 41,
+            "crossingRelationLabelNear": 37,
+            "labelRouteHits": 6,
+            "labelNear20": 13,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 682.4250362452613,
+            "labelCorridorConflictPairs": 23,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 63002.4870091406,
+            "shortHopCount": 11,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4812002415874139,
+            "effectiveFontScale": 0.4812002415874139,
+            "labelScreenOccupancy": 0.05984678331114716,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 10,
+            "totalLabelOverlapPairs": 10,
+            "foreignRouteRelationLabelHits": 52,
+            "relationLabelsWithForeignRouteHit": 26,
+            "ownershipAmbiguityCount": 38
+          }
+        },
+        {
+          "index": 9,
+          "family": "browser-existing-frontier-adapter-9",
+          "fingerprint": "dense-n0:157.978,161.725|dense-n1:295.829,172.045|dense-n10:614.310,161.000|dense-n11:1051.958,176.171|dense-n12:246.593,274.238|dense-n13:160.414,322.795|dense-n2:1209.730,177.560|dense-n3:755.408,159.000|dense-n4:71.698,276.259|dense-n5:1180.435,277.577|dense-n6:1068.549,316.545|dense-n7:959.859,261.129|dense-n8:911.633,168.963|dense-n9:22.584,169.945",
+          "positions": {
+            "dense-n0": {
+              "x": 157.97814946228047,
+              "y": 161.7254224313101
+            },
+            "dense-n1": {
+              "x": 295.82886154043837,
+              "y": 172.04522847978575
+            },
+            "dense-n2": {
+              "x": 1209.7302523474148,
+              "y": 177.56041785709488
+            },
+            "dense-n3": {
+              "x": 755.4083025077074,
+              "y": 159
+            },
+            "dense-n4": {
+              "x": 71.6978374290749,
+              "y": 276.25861265339006
+            },
+            "dense-n5": {
+              "x": 1180.43530913765,
+              "y": 277.5774002572061
+            },
+            "dense-n6": {
+              "x": 1068.549362574732,
+              "y": 316.5453489746547
+            },
+            "dense-n7": {
+              "x": 959.8590203256339,
+              "y": 261.12876975393533
+            },
+            "dense-n8": {
+              "x": 911.6326926382692,
+              "y": 168.96322220775133
+            },
+            "dense-n9": {
+              "x": 22.583572767005133,
+              "y": 169.9449575870894
+            },
+            "dense-n10": {
+              "x": 614.3100825513659,
+              "y": 161
+            },
+            "dense-n11": {
+              "x": 1051.9583696748539,
+              "y": 176.17122486107797
+            },
+            "dense-n12": {
+              "x": 246.59334811338258,
+              "y": 274.23788208895354
+            },
+            "dense-n13": {
+              "x": 160.41400635831465,
+              "y": 322.79462683146886
+            }
+          },
+          "quality": {
+            "score": 5256787.213917128,
+            "overlapPairs": 0,
+            "minimumSeparation": 98.91732105817759,
+            "extent": [
+              1187.1466795804097,
+              163.79462683146886
+            ],
+            "aspectRatio": 7.247775476798061,
+            "fitScale": 0.485954212981568,
+            "routeMedian": 81.0507027965168,
+            "routeMax": 335.5755164813758,
+            "crossings": 41,
+            "crossingRelationLabelNear": 38,
+            "labelRouteHits": 6,
+            "labelNear20": 11,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 697.3890767213567,
+            "labelCorridorConflictPairs": 26,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 70237.95041711279,
+            "shortHopCount": 14,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.485954212981568,
+            "effectiveFontScale": 0.485954212981568,
+            "labelScreenOccupancy": 0.061035125565479985,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 7,
+            "totalLabelOverlapPairs": 7,
+            "foreignRouteRelationLabelHits": 62,
+            "relationLabelsWithForeignRouteHit": 25,
+            "ownershipAmbiguityCount": 39
+          }
+        },
+        {
+          "index": 10,
+          "family": "browser-existing-frontier-adapter-10",
+          "fingerprint": "dense-n0:155.993,162.230|dense-n1:307.823,164.301|dense-n10:620.825,162.000|dense-n11:1074.107,166.904|dense-n12:256.889,277.477|dense-n13:158.623,327.329|dense-n2:1237.734,171.438|dense-n3:772.783,160.000|dense-n4:57.668,279.492|dense-n5:1200.717,280.696|dense-n6:1082.685,319.358|dense-n7:969.898,269.021|dense-n8:921.744,166.245|dense-n9:6.800,167.237",
+          "positions": {
+            "dense-n0": {
+              "x": 155.99295990635062,
+              "y": 162.22984572287004
+            },
+            "dense-n1": {
+              "x": 307.8227630167336,
+              "y": 164.30149815680923
+            },
+            "dense-n2": {
+              "x": 1237.7342002921168,
+              "y": 171.437651219652
+            },
+            "dense-n3": {
+              "x": 772.7825447236049,
+              "y": 160
+            },
+            "dense-n4": {
+              "x": 57.66752706066169,
+              "y": 279.49219142843435
+            },
+            "dense-n5": {
+              "x": 1200.7167763458538,
+              "y": 280.6964972065405
+            },
+            "dense-n6": {
+              "x": 1082.6848397373988,
+              "y": 319.358359759664
+            },
+            "dense-n7": {
+              "x": 969.8984624246463,
+              "y": 269.0211640852455
+            },
+            "dense-n8": {
+              "x": 921.7440980652206,
+              "y": 166.244715990429
+            },
+            "dense-n9": {
+              "x": 6.799567305038362,
+              "y": 167.23681622534426
+            },
+            "dense-n10": {
+              "x": 620.8250219710397,
+              "y": 162
+            },
+            "dense-n11": {
+              "x": 1074.1069316956743,
+              "y": 166.9041688789358
+            },
+            "dense-n12": {
+              "x": 256.889117185012,
+              "y": 277.47666924412135
+            },
+            "dense-n13": {
+              "x": 158.62266819897013,
+              "y": 327.3286908775159
+            }
+          },
+          "quality": {
+            "score": 5104695.605235093,
+            "overlapPairs": 0,
+            "minimumSeparation": 110.1885613721443,
+            "extent": [
+              1230.9346329870784,
+              167.3286908775159
+            ],
+            "aspectRatio": 7.356387159498659,
+            "fitScale": 0.469521769293869,
+            "routeMedian": 92.26789855538593,
+            "routeMax": 350.55589329472593,
+            "crossings": 41,
+            "crossingRelationLabelNear": 41,
+            "labelRouteHits": 4,
+            "labelNear20": 9,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 513.1451818613815,
+            "labelCorridorConflictPairs": 20,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 52202.73692843038,
+            "shortHopCount": 3,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.469521769293869,
+            "effectiveFontScale": 0.469521769293869,
+            "labelScreenOccupancy": 0.056977134686455266,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 14,
+            "totalLabelOverlapPairs": 14,
+            "foreignRouteRelationLabelHits": 54,
+            "relationLabelsWithForeignRouteHit": 26,
+            "ownershipAmbiguityCount": 41
+          }
+        },
+        {
+          "index": 11,
+          "family": "browser-existing-frontier-adapter-11",
+          "fingerprint": "dense-n0:162.986,158.447|dense-n1:298.641,167.216|dense-n10:614.432,158.000|dense-n11:1059.706,170.600|dense-n12:257.565,277.336|dense-n13:156.514,326.550|dense-n2:1220.380,176.107|dense-n3:769.862,161.000|dense-n4:61.856,279.354|dense-n5:1187.348,275.618|dense-n6:1081.447,316.875|dense-n7:961.726,266.463|dense-n8:913.509,169.145|dense-n9:20.873,170.132",
+          "positions": {
+            "dense-n0": {
+              "x": 162.9864152955139,
+              "y": 158.44726093572547
+            },
+            "dense-n1": {
+              "x": 298.6409145105423,
+              "y": 167.215554365719
+            },
+            "dense-n2": {
+              "x": 1220.3799657011039,
+              "y": 176.10681367899667
+            },
+            "dense-n3": {
+              "x": 769.8616670452393,
+              "y": 161
+            },
+            "dense-n4": {
+              "x": 61.85629233080637,
+              "y": 279.3542481927256
+            },
+            "dense-n5": {
+              "x": 1187.3478370151408,
+              "y": 275.617796429001
+            },
+            "dense-n6": {
+              "x": 1081.4474271476013,
+              "y": 316.8753876789684
+            },
+            "dense-n7": {
+              "x": 961.7260490449977,
+              "y": 266.46272971222635
+            },
+            "dense-n8": {
+              "x": 913.5093599921588,
+              "y": 169.14504388452394
+            },
+            "dense-n9": {
+              "x": 20.872703123073858,
+              "y": 170.13238392710025
+            },
+            "dense-n10": {
+              "x": 614.4324088743947,
+              "y": 158
+            },
+            "dense-n11": {
+              "x": 1059.7059253567115,
+              "y": 170.60047416279576
+            },
+            "dense-n12": {
+              "x": 257.56470920542375,
+              "y": 277.33568827918447
+            },
+            "dense-n13": {
+              "x": 156.51443239659673,
+              "y": 326.5497598406625
+            }
+          },
+          "quality": {
+            "score": 4304458.663888063,
+            "overlapPairs": 0,
+            "minimumSeparation": 104.8501655382464,
+            "extent": [
+              1199.50726257803,
+              168.5497598406625
+            ],
+            "aspectRatio": 7.116635845176979,
+            "fitScale": 0.4812002415874139,
+            "routeMedian": 87.28104189161274,
+            "routeMax": 342.7794919723407,
+            "crossings": 34,
+            "crossingRelationLabelNear": 34,
+            "labelRouteHits": 2,
+            "labelNear20": 8,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 506.7547789333788,
+            "labelCorridorConflictPairs": 21,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 59649.82701417559,
+            "shortHopCount": 11,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4812002415874139,
+            "effectiveFontScale": 0.4812002415874139,
+            "labelScreenOccupancy": 0.05984678331114716,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 13,
+            "totalLabelOverlapPairs": 13,
+            "foreignRouteRelationLabelHits": 46,
+            "relationLabelsWithForeignRouteHit": 23,
+            "ownershipAmbiguityCount": 39
+          }
+        },
+        {
+          "index": 12,
+          "family": "browser-existing-frontier-adapter-12",
+          "fingerprint": "dense-n0:160.978,159.725|dense-n1:298.829,170.045|dense-n10:617.310,159.000|dense-n11:1045.958,174.171|dense-n12:249.593,277.238|dense-n13:163.414,325.795|dense-n2:1203.730,180.560|dense-n3:758.408,162.000|dense-n4:74.698,274.259|dense-n5:1174.435,275.577|dense-n6:1071.549,314.545|dense-n7:962.859,264.129|dense-n8:905.633,171.963|dense-n9:25.584,167.945",
+          "positions": {
+            "dense-n0": {
+              "x": 160.97814946228047,
+              "y": 159.7254224313101
+            },
+            "dense-n1": {
+              "x": 298.82886154043837,
+              "y": 170.04522847978575
+            },
+            "dense-n2": {
+              "x": 1203.7302523474148,
+              "y": 180.56041785709488
+            },
+            "dense-n3": {
+              "x": 758.4083025077074,
+              "y": 162
+            },
+            "dense-n4": {
+              "x": 74.6978374290749,
+              "y": 274.25861265339006
+            },
+            "dense-n5": {
+              "x": 1174.43530913765,
+              "y": 275.5774002572061
+            },
+            "dense-n6": {
+              "x": 1071.549362574732,
+              "y": 314.5453489746547
+            },
+            "dense-n7": {
+              "x": 962.8590203256339,
+              "y": 264.12876975393533
+            },
+            "dense-n8": {
+              "x": 905.6326926382692,
+              "y": 171.96322220775133
+            },
+            "dense-n9": {
+              "x": 25.583572767005133,
+              "y": 167.9449575870894
+            },
+            "dense-n10": {
+              "x": 617.3100825513659,
+              "y": 159
+            },
+            "dense-n11": {
+              "x": 1045.9583696748539,
+              "y": 174.17122486107797
+            },
+            "dense-n12": {
+              "x": 249.59334811338258,
+              "y": 277.23788208895354
+            },
+            "dense-n13": {
+              "x": 163.41400635831465,
+              "y": 325.79462683146886
+            }
+          },
+          "quality": {
+            "score": 5905575.8658557935,
+            "overlapPairs": 0,
+            "minimumSeparation": 98.91732105817759,
+            "extent": [
+              1178.1466795804097,
+              166.79462683146886
+            ],
+            "aspectRatio": 7.063457030728107,
+            "fitScale": 0.4894752044946729,
+            "routeMedian": 81.05484183888375,
+            "routeMax": 329.93008179146017,
+            "crossings": 48,
+            "crossingRelationLabelNear": 48,
+            "labelRouteHits": 0,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 292.3548529833246,
+            "labelCorridorConflictPairs": 22,
+            "labelCorridorMinimumClearance": 10.116453581792614,
+            "labelCorridorMaximumIntrusion": 37.88354641820739,
+            "usableSpanPenalty": 69936.89769093048,
+            "shortHopCount": 18,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4894752044946729,
+            "effectiveFontScale": 0.4894752044946729,
+            "labelScreenOccupancy": 0.061922792344231724,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 2,
+            "relationRelationOverlapPairs": 14,
+            "totalLabelOverlapPairs": 16,
+            "foreignRouteRelationLabelHits": 63,
+            "relationLabelsWithForeignRouteHit": 23,
+            "ownershipAmbiguityCount": 39
+          }
+        }
+      ]
+    },
+    {
+      "fixture": "label",
+      "family": "label-heavy-ja",
+      "graph": {
+        "nodes": 10,
+        "edges": 20
+      },
+      "candidateCount": 8,
+      "currentSelectedIndex": 4,
+      "currentSelectedFingerprint": "label-n0:173.820,167.462|label-n1:317.601,171.018|label-n2:624.604,158.000|label-n3:269.261,277.480|label-n4:176.315,321.356|label-n5:1098.381,167.462|label-n6:1242.163,171.018|label-n7:785.561,158.000|label-n8:1193.822,277.480|label-n9:1100.876,321.356",
+      "currentSelectedVisualRiskRank": 2,
+      "visualRiskBestIndex": 1,
+      "visualRiskBestFingerprint": "label-n0:170.820,164.462|label-n1:314.601,168.018|label-n2:630.604,160.000|label-n3:266.261,279.480|label-n4:173.315,323.356|label-n5:1104.381,164.462|label-n6:1239.163,168.018|label-n7:782.561,160.000|label-n8:1199.822,279.480|label-n9:1097.876,323.356",
+      "visualRiskDelta": {
+        "totalLabelOverlapPairs": 0,
+        "ownershipAmbiguityCount": -2,
+        "foreignRouteRelationLabelHits": -15,
+        "fitScale": 0
+      },
+      "candidateVisualDiversity": 8,
+      "candidates": [
+        {
+          "index": 1,
+          "family": "browser-existing-frontier-adapter-1",
+          "fingerprint": "label-n0:170.820,164.462|label-n1:314.601,168.018|label-n2:630.604,160.000|label-n3:266.261,279.480|label-n4:173.315,323.356|label-n5:1104.381,164.462|label-n6:1239.163,168.018|label-n7:782.561,160.000|label-n8:1199.822,279.480|label-n9:1097.876,323.356",
+          "positions": {
+            "label-n0": {
+              "x": 170.81967452413426,
+              "y": 164.46248526147383
+            },
+            "label-n1": {
+              "x": 314.6014674760431,
+              "y": 168.01840122385892
+            },
+            "label-n2": {
+              "x": 630.6037264303493,
+              "y": 160
+            },
+            "label-n3": {
+              "x": 266.26119176827416,
+              "y": 279.47950975929
+            },
+            "label-n4": {
+              "x": 173.31496923764774,
+              "y": 323.35588247931975
+            },
+            "label-n5": {
+              "x": 1104.3809237070484,
+              "y": 164.46248526147383
+            },
+            "label-n6": {
+              "x": 1239.1627166589572,
+              "y": 168.01840122385892
+            },
+            "label-n7": {
+              "x": 782.5612491829144,
+              "y": 160
+            },
+            "label-n8": {
+              "x": 1199.8224409511884,
+              "y": 279.47950975929
+            },
+            "label-n9": {
+              "x": 1097.8762184205618,
+              "y": 323.35588247931975
+            }
+          },
+          "quality": {
+            "score": 2494136.3124335874,
+            "overlapPairs": 0,
+            "minimumSeparation": 102.781984636315,
+            "extent": [
+              1068.343042134823,
+              163.35588247931975
+            ],
+            "aspectRatio": 6.539972885702915,
+            "fitScale": 0.536939758868239,
+            "routeMedian": 94.3425041762317,
+            "routeMax": 155.26329303674493,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 9.23462672925396,
+            "labelCorridorConflictPairs": 3,
+            "labelCorridorMinimumClearance": 44.19501490359023,
+            "labelCorridorMaximumIntrusion": 3.804985096409773,
+            "usableSpanPenalty": 390871.1098502611,
+            "shortHopCount": 2,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.536939758868239,
+            "effectiveFontScale": 0.536939758868239,
+            "labelScreenOccupancy": 0.12201038172935384,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 4,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 4,
+            "foreignRouteRelationLabelHits": 29,
+            "relationLabelsWithForeignRouteHit": 12,
+            "ownershipAmbiguityCount": 13
+          }
+        },
+        {
+          "index": 2,
+          "family": "browser-existing-frontier-adapter-2",
+          "fingerprint": "label-n0:182.072,167.525|label-n1:307.601,171.752|label-n2:626.392,161.000|label-n3:269.893,279.272|label-n4:175.435,315.869|label-n5:1098.893,167.525|label-n6:1233.422,171.752|label-n7:772.822,161.000|label-n8:1186.714,279.272|label-n9:1101.256,315.869",
+          "positions": {
+            "label-n0": {
+              "x": 182.07169410766312,
+              "y": 167.52479818975746
+            },
+            "label-n1": {
+              "x": 307.6007745871212,
+              "y": 171.7515910318434
+            },
+            "label-n2": {
+              "x": 626.3922689509735,
+              "y": 161
+            },
+            "label-n3": {
+              "x": 269.8927488048319,
+              "y": 279.27209965999896
+            },
+            "label-n4": {
+              "x": 175.43451376614757,
+              "y": 315.8694971425174
+            },
+            "label-n5": {
+              "x": 1098.893221229481,
+              "y": 167.52479818975746
+            },
+            "label-n6": {
+              "x": 1233.422301708939,
+              "y": 171.7515910318434
+            },
+            "label-n7": {
+              "x": 772.821527121818,
+              "y": 161
+            },
+            "label-n8": {
+              "x": 1186.7142759266499,
+              "y": 279.27209965999896
+            },
+            "label-n9": {
+              "x": 1101.2560408879654,
+              "y": 315.8694971425174
+            }
+          },
+          "quality": {
+            "score": 2618353.599666944,
+            "overlapPairs": 0,
+            "minimumSeparation": 92.96493660741393,
+            "extent": [
+              1057.9877879427913,
+              154.8694971425174
+            ],
+            "aspectRatio": 6.831479455048444,
+            "fitScale": 0.5418953811563242,
+            "routeMedian": 87.96751135822085,
+            "routeMax": 150.27198077008975,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 8.51672715033466,
+            "labelCorridorConflictPairs": 2,
+            "labelCorridorMinimumClearance": 43.09634560571119,
+            "labelCorridorMaximumIntrusion": 4.903654394288807,
+            "usableSpanPenalty": 419431.0445855464,
+            "shortHopCount": 4,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5418953811563242,
+            "effectiveFontScale": 0.5418953811563242,
+            "labelScreenOccupancy": 0.12427293566297376,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 7,
+            "relationRelationOverlapPairs": 2,
+            "totalLabelOverlapPairs": 9,
+            "foreignRouteRelationLabelHits": 29,
+            "relationLabelsWithForeignRouteHit": 11,
+            "ownershipAmbiguityCount": 14
+          }
+        },
+        {
+          "index": 3,
+          "family": "browser-existing-frontier-adapter-3",
+          "fingerprint": "label-n0:184.020,170.540|label-n1:309.925,175.360|label-n2:622.407,162.000|label-n3:264.791,274.082|label-n4:186.049,313.640|label-n5:1093.525,170.540|label-n6:1219.430,175.360|label-n7:772.505,162.000|label-n8:1174.296,274.082|label-n9:1095.554,313.640",
+          "positions": {
+            "label-n0": {
+              "x": 184.0199965408424,
+              "y": 170.54033188737935
+            },
+            "label-n1": {
+              "x": 309.92532788751066,
+              "y": 175.35991067723518
+            },
+            "label-n2": {
+              "x": 622.4065488984382,
+              "y": 162
+            },
+            "label-n3": {
+              "x": 264.79079103338375,
+              "y": 274.0816809947771
+            },
+            "label-n4": {
+              "x": 186.04939676087554,
+              "y": 313.6400693940601
+            },
+            "label-n5": {
+              "x": 1093.5247653956221,
+              "y": 170.54033188737935
+            },
+            "label-n6": {
+              "x": 1219.43009674229,
+              "y": 175.35991067723518
+            },
+            "label-n7": {
+              "x": 772.5047688547799,
+              "y": 162
+            },
+            "label-n8": {
+              "x": 1174.2955598881636,
+              "y": 274.0816809947771
+            },
+            "label-n9": {
+              "x": 1095.5541656156552,
+              "y": 313.6400693940601
+            }
+          },
+          "quality": {
+            "score": 2688381.419382562,
+            "overlapPairs": 0,
+            "minimumSeparation": 88.11965311283923,
+            "extent": [
+              1035.4101002014477,
+              151.6400693940601
+            ],
+            "aspectRatio": 6.828077198453232,
+            "fitScale": 0.5530238442311878,
+            "routeMedian": 78.9827820679704,
+            "routeMax": 141.80261462783056,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 25.587419776566165,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 39.83769545618099,
+            "labelCorridorMaximumIntrusion": 8.162304543819012,
+            "usableSpanPenalty": 436946.2221653499,
+            "shortHopCount": 4,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5530238442311878,
+            "effectiveFontScale": 0.5530238442311878,
+            "labelScreenOccupancy": 0.12942952955238354,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 8,
+            "relationRelationOverlapPairs": 4,
+            "totalLabelOverlapPairs": 12,
+            "foreignRouteRelationLabelHits": 28,
+            "relationLabelsWithForeignRouteHit": 10,
+            "ownershipAmbiguityCount": 14
+          }
+        },
+        {
+          "index": 4,
+          "family": "browser-existing-frontier-adapter-4",
+          "fingerprint": "label-n0:173.820,167.462|label-n1:317.601,171.018|label-n2:624.604,158.000|label-n3:269.261,277.480|label-n4:176.315,321.356|label-n5:1098.381,167.462|label-n6:1242.163,171.018|label-n7:785.561,158.000|label-n8:1193.822,277.480|label-n9:1100.876,321.356",
+          "positions": {
+            "label-n0": {
+              "x": 173.81967452413426,
+              "y": 167.46248526147383
+            },
+            "label-n1": {
+              "x": 317.6014674760431,
+              "y": 171.01840122385892
+            },
+            "label-n2": {
+              "x": 624.6037264303493,
+              "y": 158
+            },
+            "label-n3": {
+              "x": 269.26119176827416,
+              "y": 277.47950975929
+            },
+            "label-n4": {
+              "x": 176.31496923764774,
+              "y": 321.35588247931975
+            },
+            "label-n5": {
+              "x": 1098.3809237070484,
+              "y": 167.46248526147383
+            },
+            "label-n6": {
+              "x": 1242.1627166589572,
+              "y": 171.01840122385892
+            },
+            "label-n7": {
+              "x": 785.5612491829144,
+              "y": 158
+            },
+            "label-n8": {
+              "x": 1193.8224409511884,
+              "y": 277.47950975929
+            },
+            "label-n9": {
+              "x": 1100.8762184205618,
+              "y": 321.35588247931975
+            }
+          },
+          "quality": {
+            "score": 2473862.2727168775,
+            "overlapPairs": 0,
+            "minimumSeparation": 102.781984636315,
+            "extent": [
+              1068.343042134823,
+              163.35588247931975
+            ],
+            "aspectRatio": 6.539972885702915,
+            "fitScale": 0.536939758868239,
+            "routeMedian": 100.81101445040802,
+            "routeMax": 167.14871727258011,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 0,
+            "labelCorridorConflictPairs": 0,
+            "labelCorridorMinimumClearance": 74.54530901501141,
+            "labelCorridorMaximumIntrusion": 0,
+            "usableSpanPenalty": 383296.3943098877,
+            "shortHopCount": 4,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.536939758868239,
+            "effectiveFontScale": 0.536939758868239,
+            "labelScreenOccupancy": 0.12201038172935384,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 4,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 4,
+            "foreignRouteRelationLabelHits": 44,
+            "relationLabelsWithForeignRouteHit": 14,
+            "ownershipAmbiguityCount": 15
+          }
+        },
+        {
+          "index": 5,
+          "family": "browser-existing-frontier-adapter-5",
+          "fingerprint": "label-n0:176.072,170.525|label-n1:310.601,169.752|label-n2:629.392,159.000|label-n3:263.893,277.272|label-n4:178.435,318.869|label-n5:1101.893,170.525|label-n6:1227.422,169.752|label-n7:775.822,159.000|label-n8:1189.714,277.272|label-n9:1095.256,318.869",
+          "positions": {
+            "label-n0": {
+              "x": 176.07169410766312,
+              "y": 170.52479818975746
+            },
+            "label-n1": {
+              "x": 310.6007745871212,
+              "y": 169.7515910318434
+            },
+            "label-n2": {
+              "x": 629.3922689509735,
+              "y": 159
+            },
+            "label-n3": {
+              "x": 263.8927488048319,
+              "y": 277.27209965999896
+            },
+            "label-n4": {
+              "x": 178.43451376614757,
+              "y": 318.8694971425174
+            },
+            "label-n5": {
+              "x": 1101.893221229481,
+              "y": 170.52479818975746
+            },
+            "label-n6": {
+              "x": 1227.422301708939,
+              "y": 169.7515910318434
+            },
+            "label-n7": {
+              "x": 775.821527121818,
+              "y": 159
+            },
+            "label-n8": {
+              "x": 1189.7142759266499,
+              "y": 277.27209965999896
+            },
+            "label-n9": {
+              "x": 1095.2560408879654,
+              "y": 318.8694971425174
+            }
+          },
+          "quality": {
+            "score": 2623497.9807004863,
+            "overlapPairs": 0,
+            "minimumSeparation": 95.0444812350809,
+            "extent": [
+              1051.350607601276,
+              159.8694971425174
+            ],
+            "aspectRatio": 6.5763052138960445,
+            "fitScale": 0.5451200688432785,
+            "routeMedian": 86.36121717759276,
+            "routeMax": 153.40455919557897,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 1,
+            "labelCorridorDeficit": 12.05400441497676,
+            "labelCorridorConflictPairs": 2,
+            "labelCorridorMinimumClearance": 41.25802149605519,
+            "labelCorridorMaximumIntrusion": 6.741978503944807,
+            "usableSpanPenalty": 418217.2621701873,
+            "shortHopCount": 4,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5451200688432785,
+            "effectiveFontScale": 0.5451200688432785,
+            "labelScreenOccupancy": 0.12575637241765256,
+            "nodeNodeOverlapPairs": 1,
+            "nodeRelationOverlapPairs": 5,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 6,
+            "foreignRouteRelationLabelHits": 31,
+            "relationLabelsWithForeignRouteHit": 12,
+            "ownershipAmbiguityCount": 14
+          }
+        },
+        {
+          "index": 6,
+          "family": "browser-existing-frontier-adapter-6",
+          "fingerprint": "label-n0:187.020,168.540|label-n1:303.925,173.360|label-n2:625.407,160.000|label-n3:267.791,277.082|label-n4:180.049,316.640|label-n5:1096.525,168.540|label-n6:1222.430,173.360|label-n7:766.505,160.000|label-n8:1177.296,277.082|label-n9:1098.554,316.640",
+          "positions": {
+            "label-n0": {
+              "x": 187.0199965408424,
+              "y": 168.54033188737935
+            },
+            "label-n1": {
+              "x": 303.92532788751066,
+              "y": 173.35991067723518
+            },
+            "label-n2": {
+              "x": 625.4065488984382,
+              "y": 160
+            },
+            "label-n3": {
+              "x": 267.79079103338375,
+              "y": 277.0816809947771
+            },
+            "label-n4": {
+              "x": 180.04939676087554,
+              "y": 316.6400693940601
+            },
+            "label-n5": {
+              "x": 1096.5247653956221,
+              "y": 168.54033188737935
+            },
+            "label-n6": {
+              "x": 1222.43009674229,
+              "y": 173.35991067723518
+            },
+            "label-n7": {
+              "x": 766.5047688547799,
+              "y": 160
+            },
+            "label-n8": {
+              "x": 1177.2955598881636,
+              "y": 277.0816809947771
+            },
+            "label-n9": {
+              "x": 1098.5541656156552,
+              "y": 316.6400693940601
+            }
+          },
+          "quality": {
+            "score": 2714700.8779607746,
+            "overlapPairs": 0,
+            "minimumSeparation": 88.11965311283939,
+            "extent": [
+              1042.3806999814146,
+              156.6400693940601
+            ],
+            "aspectRatio": 6.654623583950879,
+            "fitScale": 0.5495395933878938,
+            "routeMedian": 82.04812000725191,
+            "routeMax": 144.92160456516376,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 20.509670378822122,
+            "labelCorridorConflictPairs": 3,
+            "labelCorridorMinimumClearance": 38.14073856725825,
+            "labelCorridorMaximumIntrusion": 9.859261432741746,
+            "usableSpanPenalty": 443523.0262309627,
+            "shortHopCount": 4,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5495395933878938,
+            "effectiveFontScale": 0.5495395933878938,
+            "labelScreenOccupancy": 0.12780376122143433,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 7,
+            "relationRelationOverlapPairs": 2,
+            "totalLabelOverlapPairs": 9,
+            "foreignRouteRelationLabelHits": 28,
+            "relationLabelsWithForeignRouteHit": 11,
+            "ownershipAmbiguityCount": 14
+          }
+        },
+        {
+          "index": 7,
+          "family": "browser-existing-frontier-adapter-7",
+          "fingerprint": "label-n0:176.820,165.462|label-n1:311.601,169.018|label-n2:627.604,161.000|label-n3:272.261,280.480|label-n4:170.315,319.356|label-n5:1101.381,165.462|label-n6:1245.163,169.018|label-n7:779.561,161.000|label-n8:1196.822,280.480|label-n9:1103.876,319.356",
+          "positions": {
+            "label-n0": {
+              "x": 176.81967452413426,
+              "y": 165.46248526147383
+            },
+            "label-n1": {
+              "x": 311.6014674760431,
+              "y": 169.01840122385892
+            },
+            "label-n2": {
+              "x": 627.6037264303493,
+              "y": 161
+            },
+            "label-n3": {
+              "x": 272.26119176827416,
+              "y": 280.47950975929
+            },
+            "label-n4": {
+              "x": 170.31496923764774,
+              "y": 319.35588247931975
+            },
+            "label-n5": {
+              "x": 1101.3809237070484,
+              "y": 165.46248526147383
+            },
+            "label-n6": {
+              "x": 1245.1627166589572,
+              "y": 169.01840122385892
+            },
+            "label-n7": {
+              "x": 779.5612491829144,
+              "y": 161
+            },
+            "label-n8": {
+              "x": 1196.8224409511884,
+              "y": 280.47950975929
+            },
+            "label-n9": {
+              "x": 1103.8762184205618,
+              "y": 319.35588247931975
+            }
+          },
+          "quality": {
+            "score": 2508952.2650383576,
+            "overlapPairs": 0,
+            "minimumSeparation": 100.74905775529326,
+            "extent": [
+              1074.8477474213094,
+              158.35588247931975
+            ],
+            "aspectRatio": 6.787545436221339,
+            "fitScale": 0.5338729442778397,
+            "routeMedian": 94.3425041762317,
+            "routeMax": 167.14871727257997,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 6.407037666754363,
+            "labelCorridorConflictPairs": 2,
+            "labelCorridorMinimumClearance": 44.195014903590206,
+            "labelCorridorMaximumIntrusion": 3.804985096409794,
+            "usableSpanPenalty": 392072.03260131436,
+            "shortHopCount": 4,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5338729442778397,
+            "effectiveFontScale": 0.5338729442778397,
+            "labelScreenOccupancy": 0.12062059969141563,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 6,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 6,
+            "foreignRouteRelationLabelHits": 28,
+            "relationLabelsWithForeignRouteHit": 11,
+            "ownershipAmbiguityCount": 13
+          }
+        },
+        {
+          "index": 8,
+          "family": "browser-existing-frontier-adapter-8",
+          "fingerprint": "label-n0:179.072,168.525|label-n1:313.601,172.752|label-n2:623.392,162.000|label-n3:266.893,275.272|label-n4:181.435,316.869|label-n5:1095.893,168.525|label-n6:1230.422,172.752|label-n7:778.822,162.000|label-n8:1183.714,275.272|label-n9:1098.256,316.869",
+          "positions": {
+            "label-n0": {
+              "x": 179.07169410766312,
+              "y": 168.52479818975746
+            },
+            "label-n1": {
+              "x": 313.6007745871212,
+              "y": 172.7515910318434
+            },
+            "label-n2": {
+              "x": 623.3922689509735,
+              "y": 162
+            },
+            "label-n3": {
+              "x": 266.8927488048319,
+              "y": 275.27209965999896
+            },
+            "label-n4": {
+              "x": 181.43451376614757,
+              "y": 316.8694971425174
+            },
+            "label-n5": {
+              "x": 1095.893221229481,
+              "y": 168.52479818975746
+            },
+            "label-n6": {
+              "x": 1230.422301708939,
+              "y": 172.7515910318434
+            },
+            "label-n7": {
+              "x": 778.821527121818,
+              "y": 162
+            },
+            "label-n8": {
+              "x": 1183.7142759266499,
+              "y": 275.27209965999896
+            },
+            "label-n9": {
+              "x": 1098.2560408879654,
+              "y": 316.8694971425174
+            }
+          },
+          "quality": {
+            "score": 2584241.7486727415,
+            "overlapPairs": 0,
+            "minimumSeparation": 95.0444812350809,
+            "extent": [
+              1051.350607601276,
+              154.8694971425174
+            ],
+            "aspectRatio": 6.788622853432391,
+            "fitScale": 0.5451200688432785,
+            "routeMedian": 93.88659161456138,
+            "routeMax": 150.2719807700898,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 7.226145512091776,
+            "labelCorridorConflictPairs": 2,
+            "labelCorridorMinimumClearance": 44.3869272439541,
+            "labelCorridorMaximumIntrusion": 3.613072756045902,
+            "usableSpanPenalty": 410900.5371206392,
+            "shortHopCount": 4,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5451200688432785,
+            "effectiveFontScale": 0.5451200688432785,
+            "labelScreenOccupancy": 0.12575637241765256,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 4,
+            "relationRelationOverlapPairs": 2,
+            "totalLabelOverlapPairs": 6,
+            "foreignRouteRelationLabelHits": 30,
+            "relationLabelsWithForeignRouteHit": 12,
+            "ownershipAmbiguityCount": 14
+          }
+        }
+      ]
+    },
+    {
+      "fixture": "self-loop",
+      "family": "self-loop-control",
+      "graph": {
+        "nodes": 8,
+        "edges": 11
+      },
+      "candidateCount": 8,
+      "currentSelectedIndex": 4,
+      "currentSelectedFingerprint": "self-loop-n0:167.909,169.909|self-loop-n1:323.411,168.615|self-loop-n2:630.319,166.909|self-loop-n3:785.821,165.615|self-loop-n4:280.173,278.485|self-loop-n5:162.539,322.352|self-loop-n6:742.583,280.485|self-loop-n7:633.950,319.352",
+      "currentSelectedVisualRiskRank": 1,
+      "visualRiskBestIndex": 4,
+      "visualRiskBestFingerprint": "self-loop-n0:167.909,169.909|self-loop-n1:323.411,168.615|self-loop-n2:630.319,166.909|self-loop-n3:785.821,165.615|self-loop-n4:280.173,278.485|self-loop-n5:162.539,322.352|self-loop-n6:742.583,280.485|self-loop-n7:633.950,319.352",
+      "visualRiskDelta": {
+        "totalLabelOverlapPairs": 0,
+        "ownershipAmbiguityCount": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "fitScale": 0
+      },
+      "candidateVisualDiversity": 8,
+      "candidates": [
+        {
+          "index": 1,
+          "family": "browser-existing-frontier-adapter-1",
+          "fingerprint": "self-loop-n0:164.909,166.909|self-loop-n1:320.411,165.615|self-loop-n2:636.319,168.909|self-loop-n3:782.821,167.615|self-loop-n4:277.173,280.485|self-loop-n5:168.539,319.352|self-loop-n6:739.583,277.485|self-loop-n7:630.950,321.352",
+          "positions": {
+            "self-loop-n0": {
+              "x": 164.908939523866,
+              "y": 166.90911574513873
+            },
+            "self-loop-n1": {
+              "x": 320.4105335513307,
+              "y": 165.61498335528643
+            },
+            "self-loop-n2": {
+              "x": 636.3194730751968,
+              "y": 168.90911574513873
+            },
+            "self-loop-n3": {
+              "x": 782.8210671026612,
+              "y": 167.61498335528643
+            },
+            "self-loop-n4": {
+              "x": 277.17254269462114,
+              "y": 280.4849947083173
+            },
+            "self-loop-n5": {
+              "x": 168.53946828230121,
+              "y": 319.35210082006023
+            },
+            "self-loop-n6": {
+              "x": 739.5830762459518,
+              "y": 277.4849947083173
+            },
+            "self-loop-n7": {
+              "x": 630.9500018336319,
+              "y": 321.35210082006023
+            }
+          },
+          "quality": {
+            "score": 59184.93996970106,
+            "overlapPairs": 0,
+            "minimumSeparation": 115.37676019794507,
+            "extent": [
+              617.9121275787952,
+              155.7371174647738
+            ],
+            "aspectRatio": 3.9676612591636085,
+            "fitScale": 0.8916104808969618,
+            "routeMedian": 82.50481284668375,
+            "routeMax": 174.25724484905408,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 65.16478418158205,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 30.661001642050845,
+            "labelCorridorMaximumIntrusion": 17.338998357949155,
+            "usableSpanPenalty": 13413.065196974436,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.8916104808969618,
+            "effectiveFontScale": 0.8916104808969618,
+            "labelScreenOccupancy": 0.05353521669423938,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 1
+          }
+        },
+        {
+          "index": 2,
+          "family": "browser-existing-frontier-adapter-2",
+          "fingerprint": "self-loop-n0:174.611,170.612|self-loop-n1:314.936,168.719|self-loop-n2:633.547,172.612|self-loop-n3:782.872,170.719|self-loop-n4:273.879,275.281|self-loop-n5:168.617,316.863|self-loop-n6:741.815,277.281|self-loop-n7:627.553,318.863",
+          "positions": {
+            "self-loop-n0": {
+              "x": 174.6113177340122,
+              "y": 170.61179509347
+            },
+            "self-loop-n1": {
+              "x": 314.93586383119816,
+              "y": 168.7185861709283
+            },
+            "self-loop-n2": {
+              "x": 633.5471815652105,
+              "y": 172.61179509347
+            },
+            "self-loop-n3": {
+              "x": 782.8717276623963,
+              "y": 170.7185861709283
+            },
+            "self-loop-n4": {
+              "x": 273.87888713565775,
+              "y": 275.28080726465566
+            },
+            "self-loop-n5": {
+              "x": 168.61687111179242,
+              "y": 316.8634920329843
+            },
+            "self-loop-n6": {
+              "x": 741.814750966856,
+              "y": 277.28080726465566
+            },
+            "self-loop-n7": {
+              "x": 627.5527349429906,
+              "y": 318.8634920329843
+            }
+          },
+          "quality": {
+            "score": 60543.74168773424,
+            "overlapPairs": 0,
+            "minimumSeparation": 113.17778797074394,
+            "extent": [
+              614.2548565506039,
+              150.14490586205602
+            ],
+            "aspectRatio": 4.091080233617408,
+            "fitScale": 0.8964182034642575,
+            "routeMedian": 76.33149224891841,
+            "routeMax": 174.25724484905408,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 69.2386977852165,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 28.39796312772727,
+            "labelCorridorMaximumIntrusion": 19.60203687227273,
+            "usableSpanPenalty": 13756.430379446047,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.8964182034642575,
+            "effectiveFontScale": 0.8964182034642575,
+            "labelScreenOccupancy": 0.054114116115099295,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 1,
+            "totalLabelOverlapPairs": 1,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 1
+          }
+        },
+        {
+          "index": 3,
+          "family": "browser-existing-frontier-adapter-3",
+          "fingerprint": "self-loop-n0:175.191,174.192|self-loop-n1:318.609,171.771|self-loop-n2:630.801,176.192|self-loop-n3:774.219,168.771|self-loop-n4:279.609,275.094|self-loop-n5:168.643,314.526|self-loop-n6:735.219,277.094|self-loop-n7:633.253,316.526",
+          "positions": {
+            "self-loop-n0": {
+              "x": 175.1912595245616,
+              "y": 174.19224787777551
+            },
+            "self-loop-n1": {
+              "x": 318.609435373159,
+              "y": 171.77123206133862
+            },
+            "self-loop-n2": {
+              "x": 630.8006948977206,
+              "y": 176.19224787777551
+            },
+            "self-loop-n3": {
+              "x": 774.2188707463177,
+              "y": 168.77123206133862
+            },
+            "self-loop-n4": {
+              "x": 279.6093207155032,
+              "y": 275.09412323682585
+            },
+            "self-loop-n5": {
+              "x": 168.64307419608906,
+              "y": 314.5255609998597
+            },
+            "self-loop-n6": {
+              "x": 735.2187560886622,
+              "y": 277.09412323682585
+            },
+            "self-loop-n7": {
+              "x": 633.252509569248,
+              "y": 316.5255609998597
+            }
+          },
+          "quality": {
+            "score": 68066.15864628271,
+            "overlapPairs": 0,
+            "minimumSeparation": 109.32499125688489,
+            "extent": [
+              605.5757965502287,
+              147.75432893852107
+            ],
+            "aspectRatio": 4.098531670108982,
+            "fitScale": 0.9080376010192156,
+            "routeMedian": 76.41636859950478,
+            "routeMax": 174.25724484905408,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 65.83067771029641,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 27.829553976129485,
+            "labelCorridorMaximumIntrusion": 20.170446023870515,
+            "usableSpanPenalty": 14387.684033215613,
+            "shortHopCount": 2,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.9080376010192156,
+            "effectiveFontScale": 0.9080376010192156,
+            "labelScreenOccupancy": 0.05552606539350322,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 2
+          }
+        },
+        {
+          "index": 4,
+          "family": "browser-existing-frontier-adapter-4",
+          "fingerprint": "self-loop-n0:167.909,169.909|self-loop-n1:323.411,168.615|self-loop-n2:630.319,166.909|self-loop-n3:785.821,165.615|self-loop-n4:280.173,278.485|self-loop-n5:162.539,322.352|self-loop-n6:742.583,280.485|self-loop-n7:633.950,319.352",
+          "positions": {
+            "self-loop-n0": {
+              "x": 167.908939523866,
+              "y": 169.90911574513873
+            },
+            "self-loop-n1": {
+              "x": 323.4105335513307,
+              "y": 168.61498335528643
+            },
+            "self-loop-n2": {
+              "x": 630.3194730751968,
+              "y": 166.90911574513873
+            },
+            "self-loop-n3": {
+              "x": 785.8210671026612,
+              "y": 165.61498335528643
+            },
+            "self-loop-n4": {
+              "x": 280.17254269462114,
+              "y": 278.4849947083173
+            },
+            "self-loop-n5": {
+              "x": 162.53946828230121,
+              "y": 322.35210082006023
+            },
+            "self-loop-n6": {
+              "x": 742.5830762459518,
+              "y": 280.4849947083173
+            },
+            "self-loop-n7": {
+              "x": 633.9500018336319,
+              "y": 319.35210082006023
+            }
+          },
+          "quality": {
+            "score": 55149.97325231964,
+            "overlapPairs": 0,
+            "minimumSeparation": 115.3767601979451,
+            "extent": [
+              623.28159882036,
+              156.7371174647738
+            ],
+            "aspectRatio": 3.976604960598696,
+            "fitScale": 0.8846446653650588,
+            "routeMedian": 88.49783132130462,
+            "routeMax": 174.25724484905408,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 64.07208268308383,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 28.949508158897803,
+            "labelCorridorMaximumIntrusion": 19.050491841102197,
+            "usableSpanPenalty": 12400.928916439176,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.8846446653650588,
+            "effectiveFontScale": 0.8846446653650588,
+            "labelScreenOccupancy": 0.05270198351824933,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 0
+          }
+        },
+        {
+          "index": 5,
+          "family": "browser-existing-frontier-adapter-5",
+          "fingerprint": "self-loop-n0:168.611,173.612|self-loop-n1:317.936,166.719|self-loop-n2:636.547,170.612|self-loop-n3:776.872,168.719|self-loop-n4:276.879,278.281|self-loop-n5:171.617,319.863|self-loop-n6:735.815,275.281|self-loop-n7:630.553,316.863",
+          "positions": {
+            "self-loop-n0": {
+              "x": 168.6113177340122,
+              "y": 173.61179509347
+            },
+            "self-loop-n1": {
+              "x": 317.93586383119816,
+              "y": 166.7185861709283
+            },
+            "self-loop-n2": {
+              "x": 636.5471815652105,
+              "y": 170.61179509347
+            },
+            "self-loop-n3": {
+              "x": 776.8717276623963,
+              "y": 168.7185861709283
+            },
+            "self-loop-n4": {
+              "x": 276.87888713565775,
+              "y": 278.28080726465566
+            },
+            "self-loop-n5": {
+              "x": 171.61687111179242,
+              "y": 319.8634920329843
+            },
+            "self-loop-n6": {
+              "x": 735.814750966856,
+              "y": 275.28080726465566
+            },
+            "self-loop-n7": {
+              "x": 630.5527349429906,
+              "y": 316.8634920329843
+            }
+          },
+          "quality": {
+            "score": 63360.34361745237,
+            "overlapPairs": 0,
+            "minimumSeparation": 113.17778797074394,
+            "extent": [
+              608.2604099283841,
+              153.14490586205602
+            ],
+            "aspectRatio": 3.9717965576750527,
+            "fitScale": 0.9044114319698973,
+            "routeMedian": 76.33149224891827,
+            "routeMax": 174.25724484905408,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 65.42629856002199,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 30.156538414406945,
+            "labelCorridorMaximumIntrusion": 17.843461585593055,
+            "usableSpanPenalty": 14460.768014789466,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.9044114319698973,
+            "effectiveFontScale": 0.9044114319698973,
+            "labelScreenOccupancy": 0.05508347387772545,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 2
+          }
+        },
+        {
+          "index": 6,
+          "family": "browser-existing-frontier-adapter-6",
+          "fingerprint": "self-loop-n0:178.191,172.192|self-loop-n1:312.609,169.771|self-loop-n2:633.801,174.192|self-loop-n3:777.219,171.771|self-loop-n4:273.609,278.094|self-loop-n5:171.643,312.526|self-loop-n6:738.219,275.094|self-loop-n7:627.253,314.526",
+          "positions": {
+            "self-loop-n0": {
+              "x": 178.1912595245616,
+              "y": 172.19224787777551
+            },
+            "self-loop-n1": {
+              "x": 312.609435373159,
+              "y": 169.77123206133862
+            },
+            "self-loop-n2": {
+              "x": 633.8006948977206,
+              "y": 174.19224787777551
+            },
+            "self-loop-n3": {
+              "x": 777.2188707463177,
+              "y": 171.77123206133862
+            },
+            "self-loop-n4": {
+              "x": 273.6093207155032,
+              "y": 278.09412323682585
+            },
+            "self-loop-n5": {
+              "x": 171.64307419608906,
+              "y": 312.5255609998597
+            },
+            "self-loop-n6": {
+              "x": 738.2187560886622,
+              "y": 275.09412323682585
+            },
+            "self-loop-n7": {
+              "x": 627.252509569248,
+              "y": 314.5255609998597
+            }
+          },
+          "quality": {
+            "score": 69834.12218344014,
+            "overlapPairs": 0,
+            "minimumSeparation": 107.62267110459398,
+            "extent": [
+              605.5757965502287,
+              144.75432893852107
+            ],
+            "aspectRatio": 4.183472791390053,
+            "fitScale": 0.9080376010192156,
+            "routeMedian": 70.42959670882921,
+            "routeMax": 174.25724484905408,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 68.22279385138313,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 29.636647954706984,
+            "labelCorridorMaximumIntrusion": 18.363352045293016,
+            "usableSpanPenalty": 14832.855803450306,
+            "shortHopCount": 2,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.9080376010192156,
+            "effectiveFontScale": 0.9080376010192156,
+            "labelScreenOccupancy": 0.05552606539350322,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 1,
+            "relationLabelsWithForeignRouteHit": 1,
+            "ownershipAmbiguityCount": 2
+          }
+        },
+        {
+          "index": 7,
+          "family": "browser-existing-frontier-adapter-7",
+          "fingerprint": "self-loop-n0:170.909,167.909|self-loop-n1:317.411,166.615|self-loop-n2:633.319,169.909|self-loop-n3:788.821,168.615|self-loop-n4:274.173,276.485|self-loop-n5:165.539,320.352|self-loop-n6:745.583,278.485|self-loop-n7:627.950,322.352",
+          "positions": {
+            "self-loop-n0": {
+              "x": 170.908939523866,
+              "y": 167.90911574513873
+            },
+            "self-loop-n1": {
+              "x": 317.4105335513307,
+              "y": 166.61498335528643
+            },
+            "self-loop-n2": {
+              "x": 633.3194730751968,
+              "y": 169.90911574513873
+            },
+            "self-loop-n3": {
+              "x": 788.8210671026612,
+              "y": 168.61498335528643
+            },
+            "self-loop-n4": {
+              "x": 274.17254269462114,
+              "y": 276.4849947083173
+            },
+            "self-loop-n5": {
+              "x": 165.53946828230121,
+              "y": 320.35210082006023
+            },
+            "self-loop-n6": {
+              "x": 745.5830762459518,
+              "y": 278.4849947083173
+            },
+            "self-loop-n7": {
+              "x": 627.9500018336319,
+              "y": 322.35210082006023
+            }
+          },
+          "quality": {
+            "score": 56488.79164994946,
+            "overlapPairs": 0,
+            "minimumSeparation": 117.15574187760305,
+            "extent": [
+              623.28159882036,
+              155.7371174647738
+            ],
+            "aspectRatio": 4.002139046662015,
+            "fitScale": 0.8846446653650588,
+            "routeMedian": 82.504812846684,
+            "routeMax": 174.25724484905408,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 66.8762776647351,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 28.94950815889777,
+            "labelCorridorMaximumIntrusion": 19.05049184110223,
+            "usableSpanPenalty": 12738.69252508394,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.8846446653650588,
+            "effectiveFontScale": 0.8846446653650588,
+            "labelScreenOccupancy": 0.05270198351824933,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 1
+          }
+        },
+        {
+          "index": 8,
+          "family": "browser-existing-frontier-adapter-8",
+          "fingerprint": "self-loop-n0:171.611,171.612|self-loop-n1:320.936,169.719|self-loop-n2:630.547,173.612|self-loop-n3:779.872,166.719|self-loop-n4:279.879,276.281|self-loop-n5:165.617,317.863|self-loop-n6:738.815,278.281|self-loop-n7:633.553,319.863",
+          "positions": {
+            "self-loop-n0": {
+              "x": 171.6113177340122,
+              "y": 171.61179509347
+            },
+            "self-loop-n1": {
+              "x": 320.93586383119816,
+              "y": 169.7185861709283
+            },
+            "self-loop-n2": {
+              "x": 630.5471815652105,
+              "y": 173.61179509347
+            },
+            "self-loop-n3": {
+              "x": 779.8717276623963,
+              "y": 166.7185861709283
+            },
+            "self-loop-n4": {
+              "x": 279.87888713565775,
+              "y": 276.28080726465566
+            },
+            "self-loop-n5": {
+              "x": 165.61687111179242,
+              "y": 317.8634920329843
+            },
+            "self-loop-n6": {
+              "x": 738.814750966856,
+              "y": 278.28080726465566
+            },
+            "self-loop-n7": {
+              "x": 633.5527349429906,
+              "y": 319.8634920329843
+            }
+          },
+          "quality": {
+            "score": 58985.78741243914,
+            "overlapPairs": 0,
+            "minimumSeparation": 113.177787970744,
+            "extent": [
+              614.2548565506039,
+              153.14490586205602
+            ],
+            "aspectRatio": 4.010938875785322,
+            "fitScale": 0.8964182034642575,
+            "routeMedian": 82.32075731806343,
+            "routeMax": 174.25724484905408,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 64.3415110512758,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 28.39796312772727,
+            "labelCorridorMaximumIntrusion": 19.60203687227273,
+            "usableSpanPenalty": 13363.7596780877,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.8964182034642575,
+            "effectiveFontScale": 0.8964182034642575,
+            "labelScreenOccupancy": 0.054114116115099295,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 1
+          }
+        }
+      ]
+    }
+  ],
+  "diagnosticOrdering": "lexicographic: total label overlap, ownership ambiguity, foreign-route hits, descending fitScale, existing quality score; no tuned scalar weights",
+  "classification": "C. METRIC AND CANDIDATE FORMULATION BOTH INSUFFICIENT",
+  "readiness": {
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productionProvider": "NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "humanReview": "NOT READY",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}

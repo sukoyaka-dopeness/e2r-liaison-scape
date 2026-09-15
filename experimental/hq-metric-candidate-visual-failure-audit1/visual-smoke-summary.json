@@ -1,0 +1,52 @@
+{
+  "actualProductSurface": true,
+  "formalHumanReview": false,
+  "reviewedCandidates": [
+    {
+      "fixture": "dense",
+      "candidateIndex": 11,
+      "role": "current-HQ-selected",
+      "fitScale": 0.481,
+      "visualRisk": { "relationRelationOverlapPairs": 13, "foreignRouteRelationLabelHits": 46, "ownershipAmbiguityCount": 39 },
+      "result": "FAIL",
+      "observation": "Three compact clusters contain severe Relation-label crowding and unclear route ownership."
+    },
+    {
+      "fixture": "dense",
+      "candidateIndex": 1,
+      "role": "lexicographic-visual-risk-best",
+      "fitScale": 0.47,
+      "visualRisk": { "relationRelationOverlapPairs": 6, "foreignRouteRelationLabelHits": 51, "ownershipAmbiguityCount": 39 },
+      "result": "FAIL",
+      "observation": "Relation-label overlap is reduced, but route association remains unreadable and the candidate is not visually acceptable."
+    },
+    {
+      "fixture": "label",
+      "candidateIndex": 4,
+      "role": "current-HQ-selected",
+      "fitScale": 0.537,
+      "visualRisk": { "nodeRelationOverlapPairs": 4, "foreignRouteRelationLabelHits": 44, "ownershipAmbiguityCount": 15 },
+      "result": "FAIL",
+      "observation": "Long Japanese Node and Relation labels are too dense to read or associate reliably."
+    },
+    {
+      "fixture": "label",
+      "candidateIndex": 1,
+      "role": "lexicographic-visual-risk-best",
+      "fitScale": 0.537,
+      "visualRisk": { "nodeRelationOverlapPairs": 4, "foreignRouteRelationLabelHits": 29, "ownershipAmbiguityCount": 13 },
+      "result": "FAIL",
+      "observation": "Foreign-route pressure is lower, but the same long-label readability blocker remains."
+    },
+    {
+      "fixture": "self-loop",
+      "candidateIndex": 4,
+      "role": "current-HQ-selected-control",
+      "fitScale": 0.885,
+      "visualRisk": { "totalLabelOverlapPairs": 0, "foreignRouteRelationLabelHits": 0, "ownershipAmbiguityCount": 0 },
+      "result": "PASS_SMOKE_ONLY",
+      "observation": "The single Self-loop is readable and has no obvious collision; this is a bounded control, not Self-loop acceptance."
+    }
+  ],
+  "classification": "C. METRIC AND CANDIDATE FORMULATION BOTH INSUFFICIENT"
+}
