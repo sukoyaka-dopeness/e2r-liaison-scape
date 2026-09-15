@@ -1,0 +1,26 @@
+{
+  "contract": "LIAISONSCAPE-OCCUPIED-GEOMETRY-FEASIBILITY-FIRST-ACTUAL-PRODUCT-SMOKE-v1",
+  "diagnosticOnly": true,
+  "surface": "Actual Product App via operation-local-product-preview1",
+  "server": "http://127.0.0.1:5175/e2r-liaison-scape/",
+  "fixture": "connected",
+  "candidate": "occupied-feedback-8-sweeps",
+  "inspection": {
+    "overviewAfterReset": {
+      "zoomPercent": 36,
+      "result": "whole graph visible; overview labels are not expected to be simultaneously readable"
+    },
+    "productReadableZoom": {
+      "zoomPercent": 78,
+      "result": "Node bodies remain separated, but dense long Relation-label and route association remains visibly crowded"
+    },
+    "pan": {
+      "attempted": true,
+      "result": "browser automation timed out; no pan result was used as evidence"
+    }
+  },
+  "controlDisposition": "canonical, Parallel/Incident, and Self-loop remain diagnostic controls; their selected occupied-geometry positions were unchanged because their occupied audit was already feasible",
+  "smokeAcceptance": "NOT FORMAL ACCEPTANCE",
+  "humanReview": "NOT READY",
+  "productionProvider": "NOT ESTABLISHED"
+}

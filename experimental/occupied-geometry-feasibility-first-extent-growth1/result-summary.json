@@ -1,0 +1,4752 @@
+{
+  "contract": "LIAISONSCAPE-OCCUPIED-GEOMETRY-FEASIBILITY-FIRST-EXTENT-GROWTH-v1",
+  "diagnosticOnly": true,
+  "formulation": "bounded Product-presentation feedback using actual Node body, Node-label, and Relation-label AABB penetration; no fixed expansion multiplier or viewport fit clamp",
+  "variantCount": 3,
+  "candidateCountBound": 3,
+  "variants": [
+    "occupied-feedback-2-sweeps",
+    "occupied-feedback-4-sweeps",
+    "occupied-feedback-8-sweeps"
+  ],
+  "occupiedGeometry": {
+    "sources": [
+      "Node body bounds from ENTITY_ATTACHMENT_SHAPE",
+      "final Node-label LabelRect",
+      "final Relation-label LabelRect"
+    ],
+    "clearanceMargin": 0,
+    "hardConstraint": "zero occupied AABB overlap",
+    "marginStatus": "UX margin not assumed; Product decision remains open",
+    "routeCorridorHardConstraint": false
+  },
+  "extentGrowth": {
+    "policy": "derived collision displacement only",
+    "fitScaleMeaning": "overview camera diagnostic only",
+    "fitHardConstraint": false
+  },
+  "comparisons": [
+    "current-HQ-ranking",
+    "current-feasibility-first-diagnostic-ordering",
+    "prior-infinite-canvas-candidate",
+    "occupied-geometry-feedback-candidate"
+  ],
+  "productionMetricMutation": false,
+  "productAuthoritiesChanged": false,
+  "rows": [
+    {
+      "fixture": "canonical",
+      "family": "canonical",
+      "graph": {
+        "nodes": 8,
+        "edges": 10,
+        "components": 2
+      },
+      "currentHQ": {
+        "family": "current-4",
+        "positions": {
+          "canonical-n0": {
+            "x": 167.908939523866,
+            "y": 169.90911574513873
+          },
+          "canonical-n1": {
+            "x": 323.4105335513307,
+            "y": 168.61498335528643
+          },
+          "canonical-n2": {
+            "x": 630.3194730751968,
+            "y": 166.90911574513873
+          },
+          "canonical-n3": {
+            "x": 785.8210671026612,
+            "y": 165.61498335528643
+          },
+          "canonical-n4": {
+            "x": 280.17254269462114,
+            "y": 278.4849947083173
+          },
+          "canonical-n5": {
+            "x": 162.53946828230121,
+            "y": 322.35210082006023
+          },
+          "canonical-n6": {
+            "x": 742.5830762459518,
+            "y": 280.4849947083173
+          },
+          "canonical-n7": {
+            "x": 633.9500018336319,
+            "y": 319.35210082006023
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 30977.796519278738,
+          "overlapPairs": 0,
+          "minimumSeparation": 115.3767601979451,
+          "extent": [
+            623.28159882036,
+            156.7371174647738
+          ],
+          "aspectRatio": 3.976604960598696,
+          "fitScale": 0.8846446653650588,
+          "routeMedian": 88.46806329458595,
+          "routeMax": 95.39077074694472,
+          "crossings": 0,
+          "crossingRelationLabelNear": 0,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 57.00865098790061,
+          "labelCorridorConflictPairs": 4,
+          "labelCorridorMinimumClearance": 25.196253451643983,
+          "labelCorridorMaximumIntrusion": 22.803746548356017,
+          "usableSpanPenalty": 7627.616235717835,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.8846446653650588,
+          "effectiveFontScale": 0.8846446653650588,
+          "labelScreenOccupancy": 0.04910791054341829,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 0,
+          "relationLabelsWithForeignRouteHit": 0,
+          "ownershipAmbiguityCount": 0
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 5.657099779416528
+        },
+        "extent": {
+          "width": 623.28159882036,
+          "height": 156.7371174647738
+        },
+        "overviewFitScale": 0.8846446653650588,
+        "hardFailure": false
+      },
+      "currentFeasibilityBest": {
+        "family": "current-4",
+        "positions": {
+          "canonical-n0": {
+            "x": 167.908939523866,
+            "y": 169.90911574513873
+          },
+          "canonical-n1": {
+            "x": 323.4105335513307,
+            "y": 168.61498335528643
+          },
+          "canonical-n2": {
+            "x": 630.3194730751968,
+            "y": 166.90911574513873
+          },
+          "canonical-n3": {
+            "x": 785.8210671026612,
+            "y": 165.61498335528643
+          },
+          "canonical-n4": {
+            "x": 280.17254269462114,
+            "y": 278.4849947083173
+          },
+          "canonical-n5": {
+            "x": 162.53946828230121,
+            "y": 322.35210082006023
+          },
+          "canonical-n6": {
+            "x": 742.5830762459518,
+            "y": 280.4849947083173
+          },
+          "canonical-n7": {
+            "x": 633.9500018336319,
+            "y": 319.35210082006023
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 30977.796519278738,
+          "overlapPairs": 0,
+          "minimumSeparation": 115.3767601979451,
+          "extent": [
+            623.28159882036,
+            156.7371174647738
+          ],
+          "aspectRatio": 3.976604960598696,
+          "fitScale": 0.8846446653650588,
+          "routeMedian": 88.46806329458595,
+          "routeMax": 95.39077074694472,
+          "crossings": 0,
+          "crossingRelationLabelNear": 0,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 57.00865098790061,
+          "labelCorridorConflictPairs": 4,
+          "labelCorridorMinimumClearance": 25.196253451643983,
+          "labelCorridorMaximumIntrusion": 22.803746548356017,
+          "usableSpanPenalty": 7627.616235717835,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.8846446653650588,
+          "effectiveFontScale": 0.8846446653650588,
+          "labelScreenOccupancy": 0.04910791054341829,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 0,
+          "relationLabelsWithForeignRouteHit": 0,
+          "ownershipAmbiguityCount": 0
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 5.657099779416528
+        },
+        "extent": {
+          "width": 623.28159882036,
+          "height": 156.7371174647738
+        },
+        "overviewFitScale": 0.8846446653650588,
+        "hardFailure": false
+      },
+      "baseline": {
+        "family": "prior-infinite-canvas",
+        "positions": {
+          "canonical-n0": {
+            "x": 8.990911120438142,
+            "y": 1.7199019461137084
+          },
+          "canonical-n1": {
+            "x": 269.3705552397264,
+            "y": 0
+          },
+          "canonical-n4": {
+            "x": 196.97070144970905,
+            "y": 146.017245088178
+          },
+          "canonical-n5": {
+            "x": 0,
+            "y": 204.31662911068437
+          },
+          "canonical-n2": {
+            "x": 0,
+            "y": 293.9884928661495
+          },
+          "canonical-n3": {
+            "x": 253.07106919999694,
+            "y": 292.3023821546597
+          },
+          "canonical-n6": {
+            "x": 182.7034009802452,
+            "y": 441.9652436130642
+          },
+          "canonical-n7": {
+            "x": 5.908504027915114,
+            "y": 492.6047643093194
+          }
+        },
+        "formulation": {
+          "source": "infinite-canvas-local-density-extent-growth-rebaseline1"
+        },
+        "quality": {
+          "score": 961.5195163857333,
+          "overlapPairs": 0,
+          "minimumSeparation": 89.67186375546513,
+          "extent": [
+            269.3705552397264,
+            492.6047643093194
+          ],
+          "aspectRatio": 0.5468289686913819,
+          "fitScale": 0.5533549472617101,
+          "routeMedian": 138.67283279083912,
+          "routeMax": 199.42907690841773,
+          "crossings": 0,
+          "crossingRelationLabelNear": 0,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 42.07083298611751,
+          "labelCorridorConflictPairs": 4,
+          "labelCorridorMinimumClearance": 32.833807026719256,
+          "labelCorridorMaximumIntrusion": 15.166192973280744,
+          "usableSpanPenalty": 73.56273600209396,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.5533549472617101,
+          "effectiveFontScale": 0.5533549472617101,
+          "labelScreenOccupancy": 0.019214156528102867,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 0,
+          "relationLabelsWithForeignRouteHit": 0,
+          "ownershipAmbiguityCount": 0
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 0.4289797552726782
+        },
+        "extent": {
+          "width": 269.3705552397264,
+          "height": 492.6047643093194
+        },
+        "overviewFitScale": 0.5533549472617101,
+        "hardFailure": false
+      },
+      "probes": [
+        {
+          "family": "occupied-feedback-2-sweeps",
+          "positions": {
+            "canonical-n0": {
+              "x": 8.990911120438142,
+              "y": 1.7199019461137084
+            },
+            "canonical-n1": {
+              "x": 269.3705552397264,
+              "y": 0
+            },
+            "canonical-n4": {
+              "x": 196.97070144970905,
+              "y": 146.017245088178
+            },
+            "canonical-n5": {
+              "x": 0,
+              "y": 204.31662911068437
+            },
+            "canonical-n2": {
+              "x": 0,
+              "y": 293.9884928661495
+            },
+            "canonical-n3": {
+              "x": 253.07106919999694,
+              "y": 292.3023821546597
+            },
+            "canonical-n6": {
+              "x": 182.7034009802452,
+              "y": 441.9652436130642
+            },
+            "canonical-n7": {
+              "x": 5.908504027915114,
+              "y": 492.6047643093194
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 2,
+            "sweepsApplied": 0,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 961.5195163857333,
+            "overlapPairs": 0,
+            "minimumSeparation": 89.67186375546513,
+            "extent": [
+              269.3705552397264,
+              492.6047643093194
+            ],
+            "aspectRatio": 0.5468289686913819,
+            "fitScale": 0.5533549472617101,
+            "routeMedian": 138.67283279083912,
+            "routeMax": 199.42907690841773,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 42.07083298611751,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 32.833807026719256,
+            "labelCorridorMaximumIntrusion": 15.166192973280744,
+            "usableSpanPenalty": 73.56273600209396,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5533549472617101,
+            "effectiveFontScale": 0.5533549472617101,
+            "labelScreenOccupancy": 0.019214156528102867,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 0
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 0.4289797552726782
+          },
+          "extent": {
+            "width": 269.3705552397264,
+            "height": 492.6047643093194
+          },
+          "overviewFitScale": 0.5533549472617101,
+          "hardFailure": false
+        },
+        {
+          "family": "occupied-feedback-4-sweeps",
+          "positions": {
+            "canonical-n0": {
+              "x": 8.990911120438142,
+              "y": 1.7199019461137084
+            },
+            "canonical-n1": {
+              "x": 269.3705552397264,
+              "y": 0
+            },
+            "canonical-n4": {
+              "x": 196.97070144970905,
+              "y": 146.017245088178
+            },
+            "canonical-n5": {
+              "x": 0,
+              "y": 204.31662911068437
+            },
+            "canonical-n2": {
+              "x": 0,
+              "y": 293.9884928661495
+            },
+            "canonical-n3": {
+              "x": 253.07106919999694,
+              "y": 292.3023821546597
+            },
+            "canonical-n6": {
+              "x": 182.7034009802452,
+              "y": 441.9652436130642
+            },
+            "canonical-n7": {
+              "x": 5.908504027915114,
+              "y": 492.6047643093194
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 4,
+            "sweepsApplied": 0,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 961.5195163857333,
+            "overlapPairs": 0,
+            "minimumSeparation": 89.67186375546513,
+            "extent": [
+              269.3705552397264,
+              492.6047643093194
+            ],
+            "aspectRatio": 0.5468289686913819,
+            "fitScale": 0.5533549472617101,
+            "routeMedian": 138.67283279083912,
+            "routeMax": 199.42907690841773,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 42.07083298611751,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 32.833807026719256,
+            "labelCorridorMaximumIntrusion": 15.166192973280744,
+            "usableSpanPenalty": 73.56273600209396,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5533549472617101,
+            "effectiveFontScale": 0.5533549472617101,
+            "labelScreenOccupancy": 0.019214156528102867,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 0
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 0.4289797552726782
+          },
+          "extent": {
+            "width": 269.3705552397264,
+            "height": 492.6047643093194
+          },
+          "overviewFitScale": 0.5533549472617101,
+          "hardFailure": false
+        },
+        {
+          "family": "occupied-feedback-8-sweeps",
+          "positions": {
+            "canonical-n0": {
+              "x": 8.990911120438142,
+              "y": 1.7199019461137084
+            },
+            "canonical-n1": {
+              "x": 269.3705552397264,
+              "y": 0
+            },
+            "canonical-n4": {
+              "x": 196.97070144970905,
+              "y": 146.017245088178
+            },
+            "canonical-n5": {
+              "x": 0,
+              "y": 204.31662911068437
+            },
+            "canonical-n2": {
+              "x": 0,
+              "y": 293.9884928661495
+            },
+            "canonical-n3": {
+              "x": 253.07106919999694,
+              "y": 292.3023821546597
+            },
+            "canonical-n6": {
+              "x": 182.7034009802452,
+              "y": 441.9652436130642
+            },
+            "canonical-n7": {
+              "x": 5.908504027915114,
+              "y": 492.6047643093194
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 8,
+            "sweepsApplied": 0,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 961.5195163857333,
+            "overlapPairs": 0,
+            "minimumSeparation": 89.67186375546513,
+            "extent": [
+              269.3705552397264,
+              492.6047643093194
+            ],
+            "aspectRatio": 0.5468289686913819,
+            "fitScale": 0.5533549472617101,
+            "routeMedian": 138.67283279083912,
+            "routeMax": 199.42907690841773,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 42.07083298611751,
+            "labelCorridorConflictPairs": 4,
+            "labelCorridorMinimumClearance": 32.833807026719256,
+            "labelCorridorMaximumIntrusion": 15.166192973280744,
+            "usableSpanPenalty": 73.56273600209396,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5533549472617101,
+            "effectiveFontScale": 0.5533549472617101,
+            "labelScreenOccupancy": 0.019214156528102867,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 0
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 0.4289797552726782
+          },
+          "extent": {
+            "width": 269.3705552397264,
+            "height": 492.6047643093194
+          },
+          "overviewFitScale": 0.5533549472617101,
+          "hardFailure": false
+        }
+      ],
+      "selectedOccupiedGeometry": {
+        "family": "occupied-feedback-2-sweeps",
+        "positions": {
+          "canonical-n0": {
+            "x": 8.990911120438142,
+            "y": 1.7199019461137084
+          },
+          "canonical-n1": {
+            "x": 269.3705552397264,
+            "y": 0
+          },
+          "canonical-n4": {
+            "x": 196.97070144970905,
+            "y": 146.017245088178
+          },
+          "canonical-n5": {
+            "x": 0,
+            "y": 204.31662911068437
+          },
+          "canonical-n2": {
+            "x": 0,
+            "y": 293.9884928661495
+          },
+          "canonical-n3": {
+            "x": 253.07106919999694,
+            "y": 292.3023821546597
+          },
+          "canonical-n6": {
+            "x": 182.7034009802452,
+            "y": 441.9652436130642
+          },
+          "canonical-n7": {
+            "x": 5.908504027915114,
+            "y": 492.6047643093194
+          }
+        },
+        "formulation": {
+          "kind": "occupied-geometry-feasibility-first",
+          "sweepsRequested": 2,
+          "sweepsApplied": 0,
+          "geometrySource": [
+            "Product Node body bounds",
+            "Product Node-label bounds",
+            "Product Relation-label bounds"
+          ],
+          "hardConstraint": "zero AABB occupied overlap",
+          "clearanceMargin": 0,
+          "extentPolicy": "grow only from derived collision displacement",
+          "stoppingRule": "bounded-sweeps-exhausted"
+        },
+        "quality": {
+          "score": 961.5195163857333,
+          "overlapPairs": 0,
+          "minimumSeparation": 89.67186375546513,
+          "extent": [
+            269.3705552397264,
+            492.6047643093194
+          ],
+          "aspectRatio": 0.5468289686913819,
+          "fitScale": 0.5533549472617101,
+          "routeMedian": 138.67283279083912,
+          "routeMax": 199.42907690841773,
+          "crossings": 0,
+          "crossingRelationLabelNear": 0,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 42.07083298611751,
+          "labelCorridorConflictPairs": 4,
+          "labelCorridorMinimumClearance": 32.833807026719256,
+          "labelCorridorMaximumIntrusion": 15.166192973280744,
+          "usableSpanPenalty": 73.56273600209396,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.5533549472617101,
+          "effectiveFontScale": 0.5533549472617101,
+          "labelScreenOccupancy": 0.019214156528102867,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 0,
+          "relationLabelsWithForeignRouteHit": 0,
+          "ownershipAmbiguityCount": 0
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 0.4289797552726782
+        },
+        "extent": {
+          "width": 269.3705552397264,
+          "height": 492.6047643093194
+        },
+        "overviewFitScale": 0.5533549472617101,
+        "hardFailure": false
+      }
+    },
+    {
+      "fixture": "dense",
+      "family": "dense",
+      "graph": {
+        "nodes": 14,
+        "edges": 49,
+        "components": 3
+      },
+      "currentHQ": {
+        "family": "current-11",
+        "positions": {
+          "dense-n0": {
+            "x": 162.9864152955139,
+            "y": 158.44726093572547
+          },
+          "dense-n1": {
+            "x": 298.6409145105423,
+            "y": 167.215554365719
+          },
+          "dense-n2": {
+            "x": 1220.3799657011039,
+            "y": 176.10681367899667
+          },
+          "dense-n3": {
+            "x": 769.8616670452393,
+            "y": 161
+          },
+          "dense-n4": {
+            "x": 61.85629233080637,
+            "y": 279.3542481927256
+          },
+          "dense-n5": {
+            "x": 1187.3478370151408,
+            "y": 275.617796429001
+          },
+          "dense-n6": {
+            "x": 1081.4474271476013,
+            "y": 316.8753876789684
+          },
+          "dense-n7": {
+            "x": 961.7260490449977,
+            "y": 266.46272971222635
+          },
+          "dense-n8": {
+            "x": 913.5093599921588,
+            "y": 169.14504388452394
+          },
+          "dense-n9": {
+            "x": 20.872703123073858,
+            "y": 170.13238392710025
+          },
+          "dense-n10": {
+            "x": 614.4324088743947,
+            "y": 158
+          },
+          "dense-n11": {
+            "x": 1059.7059253567115,
+            "y": 170.60047416279576
+          },
+          "dense-n12": {
+            "x": 257.56470920542375,
+            "y": 277.33568827918447
+          },
+          "dense-n13": {
+            "x": 156.51443239659673,
+            "y": 326.5497598406625
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 4304458.663888063,
+          "overlapPairs": 0,
+          "minimumSeparation": 104.8501655382464,
+          "extent": [
+            1199.50726257803,
+            168.5497598406625
+          ],
+          "aspectRatio": 7.116635845176979,
+          "fitScale": 0.4812002415874139,
+          "routeMedian": 87.28104189161274,
+          "routeMax": 342.7794919723407,
+          "crossings": 34,
+          "crossingRelationLabelNear": 34,
+          "labelRouteHits": 2,
+          "labelNear20": 8,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 506.7547789333788,
+          "labelCorridorConflictPairs": 21,
+          "labelCorridorMinimumClearance": 0,
+          "labelCorridorMaximumIntrusion": 48,
+          "usableSpanPenalty": 59649.82701417559,
+          "shortHopCount": 11,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.4812002415874139,
+          "effectiveFontScale": 0.4812002415874139,
+          "labelScreenOccupancy": 0.05984678331114716,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 13,
+          "totalLabelOverlapPairs": 13,
+          "foreignRouteRelationLabelHits": 46,
+          "relationLabelsWithForeignRouteHit": 23,
+          "ownershipAmbiguityCount": 39
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 16,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 13,
+          "totalOccupiedOverlaps": 29,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 1199.50726257803,
+          "height": 168.5497598406625
+        },
+        "overviewFitScale": 0.4812002415874139,
+        "hardFailure": true
+      },
+      "currentFeasibilityBest": {
+        "family": "current-1",
+        "positions": {
+          "dense-n0": {
+            "x": 155.99295990635062,
+            "y": 158.22984572287004
+          },
+          "dense-n1": {
+            "x": 307.8227630167336,
+            "y": 165.30149815680923
+          },
+          "dense-n2": {
+            "x": 1237.7342002921168,
+            "y": 172.437651219652
+          },
+          "dense-n3": {
+            "x": 772.7825447236049,
+            "y": 161
+          },
+          "dense-n4": {
+            "x": 57.66752706066169,
+            "y": 280.49219142843435
+          },
+          "dense-n5": {
+            "x": 1200.7167763458538,
+            "y": 276.6964972065405
+          },
+          "dense-n6": {
+            "x": 1082.6848397373988,
+            "y": 320.358359759664
+          },
+          "dense-n7": {
+            "x": 969.8984624246463,
+            "y": 270.0211640852455
+          },
+          "dense-n8": {
+            "x": 921.7440980652206,
+            "y": 167.244715990429
+          },
+          "dense-n9": {
+            "x": 6.799567305038362,
+            "y": 168.23681622534426
+          },
+          "dense-n10": {
+            "x": 620.8250219710397,
+            "y": 158
+          },
+          "dense-n11": {
+            "x": 1074.1069316956743,
+            "y": 167.9041688789358
+          },
+          "dense-n12": {
+            "x": 256.889117185012,
+            "y": 278.47666924412135
+          },
+          "dense-n13": {
+            "x": 158.62266819897013,
+            "y": 328.3286908775159
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 4612909.450491071,
+          "overlapPairs": 0,
+          "minimumSeparation": 110.1885613721443,
+          "extent": [
+            1230.9346329870784,
+            170.3286908775159
+          ],
+          "aspectRatio": 7.226819079307366,
+          "fitScale": 0.469521769293869,
+          "routeMedian": 92.43708778417374,
+          "routeMax": 350.5558932947259,
+          "crossings": 37,
+          "crossingRelationLabelNear": 33,
+          "labelRouteHits": 5,
+          "labelNear20": 9,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 558.3331052228025,
+          "labelCorridorConflictPairs": 20,
+          "labelCorridorMinimumClearance": 0,
+          "labelCorridorMaximumIntrusion": 48,
+          "usableSpanPenalty": 51755.92614781034,
+          "shortHopCount": 3,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.469521769293869,
+          "effectiveFontScale": 0.469521769293869,
+          "labelScreenOccupancy": 0.056977134686455266,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 6,
+          "totalLabelOverlapPairs": 6,
+          "foreignRouteRelationLabelHits": 51,
+          "relationLabelsWithForeignRouteHit": 24,
+          "ownershipAmbiguityCount": 39
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 13,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 6,
+          "totalOccupiedOverlaps": 19,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 1230.9346329870784,
+          "height": 170.3286908775159
+        },
+        "overviewFitScale": 0.469521769293869,
+        "hardFailure": true
+      },
+      "baseline": {
+        "family": "prior-infinite-canvas",
+        "positions": {
+          "dense-n0": {
+            "x": 272.5452619369647,
+            "y": 0
+          },
+          "dense-n1": {
+            "x": 532.703064138529,
+            "y": 12.568861504482939
+          },
+          "dense-n12": {
+            "x": 453.92723763224535,
+            "y": 170.41995568421834
+          },
+          "dense-n13": {
+            "x": 260.1333120450597,
+            "y": 240.96559315251028
+          },
+          "dense-n4": {
+            "x": 78.59820762534821,
+            "y": 173.31344917806211
+          },
+          "dense-n9": {
+            "x": 0,
+            "y": 16.749974634636246
+          },
+          "dense-n10": {
+            "x": 408.2153891130847,
+            "y": 0
+          },
+          "dense-n3": {
+            "x": 706.4307782261694,
+            "y": 4.300333333333356
+          },
+          "dense-n11": {
+            "x": 280.2496706074428,
+            "y": 305.84951903467925
+          },
+          "dense-n2": {
+            "x": 588.2517551256385,
+            "y": 313.7425508234023
+          },
+          "dense-n5": {
+            "x": 524.9312307301432,
+            "y": 456.386016207603
+          },
+          "dense-n6": {
+            "x": 321.92676952022816,
+            "y": 515.5264811760285
+          },
+          "dense-n7": {
+            "x": 92.42837676209808,
+            "y": 443.2627366839241
+          },
+          "dense-n8": {
+            "x": 0,
+            "y": 303.76324058801424
+          }
+        },
+        "formulation": {
+          "source": "infinite-canvas-local-density-extent-growth-rebaseline1"
+        },
+        "quality": {
+          "score": 6083702.475771213,
+          "overlapPairs": 1,
+          "minimumSeparation": 67.93078624374341,
+          "extent": [
+            706.4307782261694,
+            515.5264811760285
+          ],
+          "aspectRatio": 1.3703093905373136,
+          "fitScale": 0.5314683797968611,
+          "routeMedian": 222.39672956755894,
+          "routeMax": 457.1163852011318,
+          "crossings": 56,
+          "crossingRelationLabelNear": 30,
+          "labelRouteHits": 0,
+          "labelNear20": 6,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 342.4746674144991,
+          "labelCorridorConflictPairs": 20,
+          "labelCorridorMinimumClearance": 7.126441061458056,
+          "labelCorridorMaximumIntrusion": 40.87355893854195,
+          "usableSpanPenalty": 623.7691530065924,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.5314683797968611,
+          "effectiveFontScale": 0.5314683797968611,
+          "labelScreenOccupancy": 0.0730035536179825,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 4,
+          "totalLabelOverlapPairs": 4,
+          "foreignRouteRelationLabelHits": 45,
+          "relationLabelsWithForeignRouteHit": 25,
+          "ownershipAmbiguityCount": 36
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 1,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 4,
+          "totalOccupiedOverlaps": 5,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 706.4307782261694,
+          "height": 515.5264811760285
+        },
+        "overviewFitScale": 0.5314683797968611,
+        "hardFailure": true
+      },
+      "probes": [
+        {
+          "family": "occupied-feedback-2-sweeps",
+          "positions": {
+            "dense-n0": {
+              "x": 272.5452619369647,
+              "y": 0
+            },
+            "dense-n1": {
+              "x": 539.3844421186349,
+              "y": 16.852321571211228
+            },
+            "dense-n12": {
+              "x": 453.92723763224535,
+              "y": 170.41995568421834
+            },
+            "dense-n13": {
+              "x": 260.56523203338253,
+              "y": 241.15344560069923
+            },
+            "dense-n4": {
+              "x": 85.7115055937768,
+              "y": 177.78476169297934
+            },
+            "dense-n9": {
+              "x": 0,
+              "y": 16.749974634636246
+            },
+            "dense-n10": {
+              "x": 393.9887931762275,
+              "y": -8.942625029834469
+            },
+            "dense-n3": {
+              "x": 706.4307782261694,
+              "y": 4.300333333333356
+            },
+            "dense-n11": {
+              "x": 280.2496706074428,
+              "y": 305.84951903467925
+            },
+            "dense-n2": {
+              "x": 588.2517551256385,
+              "y": 313.7425508234023
+            },
+            "dense-n5": {
+              "x": 525.4251850779099,
+              "y": 456.25221827824146
+            },
+            "dense-n6": {
+              "x": 321.92676952022816,
+              "y": 515.5264811760285
+            },
+            "dense-n7": {
+              "x": 96.86726651996885,
+              "y": 441.80107297633407
+            },
+            "dense-n8": {
+              "x": -4.93284410563748,
+              "y": 305.35870222496584
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 2,
+            "sweepsApplied": 2,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 6803357.382528458,
+            "overlapPairs": 1,
+            "minimumSeparation": 67.62439677920158,
+            "extent": [
+              711.3636223318069,
+              524.469106205863
+            ],
+            "aspectRatio": 1.356349904912387,
+            "fitScale": 0.5233919618751455,
+            "routeMedian": 228.39519729592155,
+            "routeMax": 452.56660078608786,
+            "crossings": 62,
+            "crossingRelationLabelNear": 32,
+            "labelRouteHits": 2,
+            "labelNear20": 6,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 467.44706871065284,
+            "labelCorridorConflictPairs": 29,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 8034.76683773624,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5233919618751455,
+            "effectiveFontScale": 0.5233919618751455,
+            "labelScreenOccupancy": 0.07080162676410579,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 2,
+            "totalLabelOverlapPairs": 2,
+            "foreignRouteRelationLabelHits": 36,
+            "relationLabelsWithForeignRouteHit": 22,
+            "ownershipAmbiguityCount": 35
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 1,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 2,
+            "totalOccupiedOverlaps": 3,
+            "hardFeasible": false,
+            "minimumClearance": 0
+          },
+          "extent": {
+            "width": 711.3636223318069,
+            "height": 524.469106205863
+          },
+          "overviewFitScale": 0.5233919618751455,
+          "hardFailure": true
+        },
+        {
+          "family": "occupied-feedback-4-sweeps",
+          "positions": {
+            "dense-n0": {
+              "x": 266.95962408429745,
+              "y": 4.394506417649658
+            },
+            "dense-n1": {
+              "x": 535.7286377874891,
+              "y": 21.43808061464952
+            },
+            "dense-n12": {
+              "x": 453.92723763224535,
+              "y": 170.41995568421834
+            },
+            "dense-n13": {
+              "x": 258.635398511861,
+              "y": 240.9621929749106
+            },
+            "dense-n4": {
+              "x": 85.7115055937768,
+              "y": 177.78476169297934
+            },
+            "dense-n9": {
+              "x": 0,
+              "y": 16.749974634636246
+            },
+            "dense-n10": {
+              "x": 405.16006888156204,
+              "y": -17.731637865133784
+            },
+            "dense-n3": {
+              "x": 706.4307782261694,
+              "y": 4.300333333333356
+            },
+            "dense-n11": {
+              "x": 280.2496706074428,
+              "y": 305.84951903467925
+            },
+            "dense-n2": {
+              "x": 588.2517551256385,
+              "y": 313.7425508234023
+            },
+            "dense-n5": {
+              "x": 525.4251850779099,
+              "y": 456.25221827824146
+            },
+            "dense-n6": {
+              "x": 321.92676952022816,
+              "y": 515.5264811760285
+            },
+            "dense-n7": {
+              "x": 96.86726651996885,
+              "y": 441.80107297633407
+            },
+            "dense-n8": {
+              "x": -4.93284410563748,
+              "y": 305.35870222496584
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 4,
+            "sweepsApplied": 4,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 6117127.366158997,
+            "overlapPairs": 1,
+            "minimumSeparation": 68.39255691527094,
+            "extent": [
+              711.3636223318069,
+              533.2581190411622
+            ],
+            "aspectRatio": 1.3339949209041424,
+            "fitScale": 0.5156899340179134,
+            "routeMedian": 225.9890304778453,
+            "routeMax": 452.56660078608786,
+            "crossings": 57,
+            "crossingRelationLabelNear": 25,
+            "labelRouteHits": 0,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 280.9476367791225,
+            "labelCorridorConflictPairs": 21,
+            "labelCorridorMinimumClearance": 11.458483466439974,
+            "labelCorridorMaximumIntrusion": 36.54151653356003,
+            "usableSpanPenalty": 7727.916515477735,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5156899340179134,
+            "effectiveFontScale": 0.5156899340179134,
+            "labelScreenOccupancy": 0.06873318164566083,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 2,
+            "totalLabelOverlapPairs": 2,
+            "foreignRouteRelationLabelHits": 31,
+            "relationLabelsWithForeignRouteHit": 21,
+            "ownershipAmbiguityCount": 31
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 2,
+            "totalOccupiedOverlaps": 2,
+            "hardFeasible": false,
+            "minimumClearance": 0
+          },
+          "extent": {
+            "width": 711.3636223318069,
+            "height": 533.2581190411622
+          },
+          "overviewFitScale": 0.5156899340179134,
+          "hardFailure": true
+        },
+        {
+          "family": "occupied-feedback-8-sweeps",
+          "positions": {
+            "dense-n0": {
+              "x": 266.95962408429745,
+              "y": 4.394506417649658
+            },
+            "dense-n1": {
+              "x": 535.7286377874891,
+              "y": 21.43808061464952
+            },
+            "dense-n12": {
+              "x": 453.92723763224535,
+              "y": 170.41995568421834
+            },
+            "dense-n13": {
+              "x": 258.635398511861,
+              "y": 240.9621929749106
+            },
+            "dense-n4": {
+              "x": 85.7115055937768,
+              "y": 177.78476169297934
+            },
+            "dense-n9": {
+              "x": 0,
+              "y": 16.749974634636246
+            },
+            "dense-n10": {
+              "x": 405.16006888156204,
+              "y": -17.731637865133784
+            },
+            "dense-n3": {
+              "x": 706.4307782261694,
+              "y": 4.300333333333356
+            },
+            "dense-n11": {
+              "x": 280.2496706074428,
+              "y": 305.84951903467925
+            },
+            "dense-n2": {
+              "x": 588.2517551256385,
+              "y": 313.7425508234023
+            },
+            "dense-n5": {
+              "x": 525.4251850779099,
+              "y": 456.25221827824146
+            },
+            "dense-n6": {
+              "x": 321.92676952022816,
+              "y": 515.5264811760285
+            },
+            "dense-n7": {
+              "x": 96.86726651996885,
+              "y": 441.80107297633407
+            },
+            "dense-n8": {
+              "x": -4.93284410563748,
+              "y": 305.35870222496584
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 8,
+            "sweepsApplied": 8,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 6117127.366158997,
+            "overlapPairs": 1,
+            "minimumSeparation": 68.39255691527094,
+            "extent": [
+              711.3636223318069,
+              533.2581190411622
+            ],
+            "aspectRatio": 1.3339949209041424,
+            "fitScale": 0.5156899340179134,
+            "routeMedian": 225.9890304778453,
+            "routeMax": 452.56660078608786,
+            "crossings": 57,
+            "crossingRelationLabelNear": 25,
+            "labelRouteHits": 0,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 280.9476367791225,
+            "labelCorridorConflictPairs": 21,
+            "labelCorridorMinimumClearance": 11.458483466439974,
+            "labelCorridorMaximumIntrusion": 36.54151653356003,
+            "usableSpanPenalty": 7727.916515477735,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5156899340179134,
+            "effectiveFontScale": 0.5156899340179134,
+            "labelScreenOccupancy": 0.06873318164566083,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 2,
+            "totalLabelOverlapPairs": 2,
+            "foreignRouteRelationLabelHits": 31,
+            "relationLabelsWithForeignRouteHit": 21,
+            "ownershipAmbiguityCount": 31
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 2,
+            "totalOccupiedOverlaps": 2,
+            "hardFeasible": false,
+            "minimumClearance": 0
+          },
+          "extent": {
+            "width": 711.3636223318069,
+            "height": 533.2581190411622
+          },
+          "overviewFitScale": 0.5156899340179134,
+          "hardFailure": true
+        }
+      ],
+      "selectedOccupiedGeometry": {
+        "family": "occupied-feedback-4-sweeps",
+        "positions": {
+          "dense-n0": {
+            "x": 266.95962408429745,
+            "y": 4.394506417649658
+          },
+          "dense-n1": {
+            "x": 535.7286377874891,
+            "y": 21.43808061464952
+          },
+          "dense-n12": {
+            "x": 453.92723763224535,
+            "y": 170.41995568421834
+          },
+          "dense-n13": {
+            "x": 258.635398511861,
+            "y": 240.9621929749106
+          },
+          "dense-n4": {
+            "x": 85.7115055937768,
+            "y": 177.78476169297934
+          },
+          "dense-n9": {
+            "x": 0,
+            "y": 16.749974634636246
+          },
+          "dense-n10": {
+            "x": 405.16006888156204,
+            "y": -17.731637865133784
+          },
+          "dense-n3": {
+            "x": 706.4307782261694,
+            "y": 4.300333333333356
+          },
+          "dense-n11": {
+            "x": 280.2496706074428,
+            "y": 305.84951903467925
+          },
+          "dense-n2": {
+            "x": 588.2517551256385,
+            "y": 313.7425508234023
+          },
+          "dense-n5": {
+            "x": 525.4251850779099,
+            "y": 456.25221827824146
+          },
+          "dense-n6": {
+            "x": 321.92676952022816,
+            "y": 515.5264811760285
+          },
+          "dense-n7": {
+            "x": 96.86726651996885,
+            "y": 441.80107297633407
+          },
+          "dense-n8": {
+            "x": -4.93284410563748,
+            "y": 305.35870222496584
+          }
+        },
+        "formulation": {
+          "kind": "occupied-geometry-feasibility-first",
+          "sweepsRequested": 4,
+          "sweepsApplied": 4,
+          "geometrySource": [
+            "Product Node body bounds",
+            "Product Node-label bounds",
+            "Product Relation-label bounds"
+          ],
+          "hardConstraint": "zero AABB occupied overlap",
+          "clearanceMargin": 0,
+          "extentPolicy": "grow only from derived collision displacement",
+          "stoppingRule": "bounded-sweeps-exhausted"
+        },
+        "quality": {
+          "score": 6117127.366158997,
+          "overlapPairs": 1,
+          "minimumSeparation": 68.39255691527094,
+          "extent": [
+            711.3636223318069,
+            533.2581190411622
+          ],
+          "aspectRatio": 1.3339949209041424,
+          "fitScale": 0.5156899340179134,
+          "routeMedian": 225.9890304778453,
+          "routeMax": 452.56660078608786,
+          "crossings": 57,
+          "crossingRelationLabelNear": 25,
+          "labelRouteHits": 0,
+          "labelNear20": 2,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 280.9476367791225,
+          "labelCorridorConflictPairs": 21,
+          "labelCorridorMinimumClearance": 11.458483466439974,
+          "labelCorridorMaximumIntrusion": 36.54151653356003,
+          "usableSpanPenalty": 7727.916515477735,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.5156899340179134,
+          "effectiveFontScale": 0.5156899340179134,
+          "labelScreenOccupancy": 0.06873318164566083,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 2,
+          "totalLabelOverlapPairs": 2,
+          "foreignRouteRelationLabelHits": 31,
+          "relationLabelsWithForeignRouteHit": 21,
+          "ownershipAmbiguityCount": 31
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 2,
+          "totalOccupiedOverlaps": 2,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 711.3636223318069,
+          "height": 533.2581190411622
+        },
+        "overviewFitScale": 0.5156899340179134,
+        "hardFailure": true
+      }
+    },
+    {
+      "fixture": "label",
+      "family": "label-heavy-ja",
+      "graph": {
+        "nodes": 10,
+        "edges": 20,
+        "components": 3
+      },
+      "currentHQ": {
+        "family": "current-4",
+        "positions": {
+          "label-n0": {
+            "x": 173.81967452413426,
+            "y": 167.46248526147383
+          },
+          "label-n1": {
+            "x": 317.6014674760431,
+            "y": 171.01840122385892
+          },
+          "label-n2": {
+            "x": 624.6037264303493,
+            "y": 158
+          },
+          "label-n3": {
+            "x": 269.26119176827416,
+            "y": 277.47950975929
+          },
+          "label-n4": {
+            "x": 176.31496923764774,
+            "y": 321.35588247931975
+          },
+          "label-n5": {
+            "x": 1098.3809237070484,
+            "y": 167.46248526147383
+          },
+          "label-n6": {
+            "x": 1242.1627166589572,
+            "y": 171.01840122385892
+          },
+          "label-n7": {
+            "x": 785.5612491829144,
+            "y": 158
+          },
+          "label-n8": {
+            "x": 1193.8224409511884,
+            "y": 277.47950975929
+          },
+          "label-n9": {
+            "x": 1100.8762184205618,
+            "y": 321.35588247931975
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 2473862.2727168775,
+          "overlapPairs": 0,
+          "minimumSeparation": 102.781984636315,
+          "extent": [
+            1068.343042134823,
+            163.35588247931975
+          ],
+          "aspectRatio": 6.539972885702915,
+          "fitScale": 0.536939758868239,
+          "routeMedian": 100.81101445040802,
+          "routeMax": 167.14871727258011,
+          "crossings": 8,
+          "crossingRelationLabelNear": 8,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 0,
+          "labelCorridorConflictPairs": 0,
+          "labelCorridorMinimumClearance": 74.54530901501141,
+          "labelCorridorMaximumIntrusion": 0,
+          "usableSpanPenalty": 383296.3943098877,
+          "shortHopCount": 4,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.536939758868239,
+          "effectiveFontScale": 0.536939758868239,
+          "labelScreenOccupancy": 0.12201038172935384,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 4,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 4,
+          "foreignRouteRelationLabelHits": 44,
+          "relationLabelsWithForeignRouteHit": 14,
+          "ownershipAmbiguityCount": 15
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 22,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 4,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 26,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 1068.343042134823,
+          "height": 163.35588247931975
+        },
+        "overviewFitScale": 0.536939758868239,
+        "hardFailure": true
+      },
+      "currentFeasibilityBest": {
+        "family": "current-8",
+        "positions": {
+          "label-n0": {
+            "x": 179.07169410766312,
+            "y": 168.52479818975746
+          },
+          "label-n1": {
+            "x": 313.6007745871212,
+            "y": 172.7515910318434
+          },
+          "label-n2": {
+            "x": 623.3922689509735,
+            "y": 162
+          },
+          "label-n3": {
+            "x": 266.8927488048319,
+            "y": 275.27209965999896
+          },
+          "label-n4": {
+            "x": 181.43451376614757,
+            "y": 316.8694971425174
+          },
+          "label-n5": {
+            "x": 1095.893221229481,
+            "y": 168.52479818975746
+          },
+          "label-n6": {
+            "x": 1230.422301708939,
+            "y": 172.7515910318434
+          },
+          "label-n7": {
+            "x": 778.821527121818,
+            "y": 162
+          },
+          "label-n8": {
+            "x": 1183.7142759266499,
+            "y": 275.27209965999896
+          },
+          "label-n9": {
+            "x": 1098.2560408879654,
+            "y": 316.8694971425174
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 2584241.7486727415,
+          "overlapPairs": 0,
+          "minimumSeparation": 95.0444812350809,
+          "extent": [
+            1051.350607601276,
+            154.8694971425174
+          ],
+          "aspectRatio": 6.788622853432391,
+          "fitScale": 0.5451200688432785,
+          "routeMedian": 93.88659161456138,
+          "routeMax": 150.2719807700898,
+          "crossings": 8,
+          "crossingRelationLabelNear": 8,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 7.226145512091776,
+          "labelCorridorConflictPairs": 2,
+          "labelCorridorMinimumClearance": 44.3869272439541,
+          "labelCorridorMaximumIntrusion": 3.613072756045902,
+          "usableSpanPenalty": 410900.5371206392,
+          "shortHopCount": 4,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.5451200688432785,
+          "effectiveFontScale": 0.5451200688432785,
+          "labelScreenOccupancy": 0.12575637241765256,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 4,
+          "relationRelationOverlapPairs": 2,
+          "totalLabelOverlapPairs": 6,
+          "foreignRouteRelationLabelHits": 30,
+          "relationLabelsWithForeignRouteHit": 12,
+          "ownershipAmbiguityCount": 14
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 16,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 4,
+          "relationLabelRelationLabel": 2,
+          "totalOccupiedOverlaps": 22,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 1051.350607601276,
+          "height": 154.8694971425174
+        },
+        "overviewFitScale": 0.5451200688432785,
+        "hardFailure": true
+      },
+      "baseline": {
+        "family": "prior-infinite-canvas",
+        "positions": {
+          "label-n0": {
+            "x": 0,
+            "y": 0
+          },
+          "label-n1": {
+            "x": 299.20991113292234,
+            "y": 5.710010832043267
+          },
+          "label-n3": {
+            "x": 198.61379738505516,
+            "y": 176.6628931158266
+          },
+          "label-n4": {
+            "x": 5.192708298821572,
+            "y": 247.11859739914541
+          },
+          "label-n2": {
+            "x": 444.95260484808796,
+            "y": 0
+          },
+          "label-n7": {
+            "x": 779.9052096961758,
+            "y": 0
+          },
+          "label-n5": {
+            "x": 0,
+            "y": 339.1185973991454
+          },
+          "label-n6": {
+            "x": 299.2099111329221,
+            "y": 344.8286082311887
+          },
+          "label-n8": {
+            "x": 198.61379738505525,
+            "y": 515.781490514972
+          },
+          "label-n9": {
+            "x": 5.192708298821344,
+            "y": 586.2371947982908
+          }
+        },
+        "formulation": {
+          "source": "infinite-canvas-local-density-extent-growth-rebaseline1"
+        },
+        "quality": {
+          "score": 1328290.6110594315,
+          "overlapPairs": 0,
+          "minimumSeparation": 92.14642814280242,
+          "extent": [
+            779.9052096961758,
+            586.2371947982908
+          ],
+          "aspectRatio": 1.3303577743212305,
+          "fitScale": 0.47367330331748286,
+          "routeMedian": 238.0219796287172,
+          "routeMax": 323.52457417981134,
+          "crossings": 8,
+          "crossingRelationLabelNear": 8,
+          "labelRouteHits": 3,
+          "labelNear20": 5,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 322.95535498381815,
+          "labelCorridorConflictPairs": 10,
+          "labelCorridorMinimumClearance": 0,
+          "labelCorridorMaximumIntrusion": 48,
+          "usableSpanPenalty": 73037.37673121758,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.47367330331748286,
+          "effectiveFontScale": 0.47367330331748286,
+          "labelScreenOccupancy": 0.09495185975027456,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 1,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 1,
+          "foreignRouteRelationLabelHits": 13,
+          "relationLabelsWithForeignRouteHit": 10,
+          "ownershipAmbiguityCount": 16
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 1,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 1,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 779.9052096961758,
+          "height": 586.2371947982908
+        },
+        "overviewFitScale": 0.47367330331748286,
+        "hardFailure": true
+      },
+      "probes": [
+        {
+          "family": "occupied-feedback-2-sweeps",
+          "positions": {
+            "label-n0": {
+              "x": 0,
+              "y": 0
+            },
+            "label-n1": {
+              "x": 289.6668698748988,
+              "y": 5.441174319308015
+            },
+            "label-n3": {
+              "x": 198.61379738505516,
+              "y": 176.6628931158266
+            },
+            "label-n4": {
+              "x": -4.350332959201969,
+              "y": 246.84976088641017
+            },
+            "label-n2": {
+              "x": 456.4292126589388,
+              "y": 0.545786274416177
+            },
+            "label-n7": {
+              "x": 787.514684401372,
+              "y": -0.008113248945673291
+            },
+            "label-n5": {
+              "x": 0,
+              "y": 339.1185973991454
+            },
+            "label-n6": {
+              "x": 299.2099111329221,
+              "y": 344.8286082311887
+            },
+            "label-n8": {
+              "x": 198.61379738505525,
+              "y": 515.781490514972
+            },
+            "label-n9": {
+              "x": 5.192708298821344,
+              "y": 586.2371947982908
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 2,
+            "sweepsApplied": 2,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "hard-feasible"
+          },
+          "quality": {
+            "score": 1351962.2246396465,
+            "overlapPairs": 0,
+            "minimumSeparation": 92.37133531713063,
+            "extent": [
+              791.865017360574,
+              586.2453080472364
+            ],
+            "aspectRatio": 1.3507400511199825,
+            "fitScale": 0.4736673931949781,
+            "routeMedian": 238.02197962871696,
+            "routeMax": 323.52457417981134,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 4,
+            "labelNear20": 5,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 256.65234868445435,
+            "labelCorridorConflictPairs": 7,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 71454.5321312143,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4736673931949781,
+            "effectiveFontScale": 0.4736673931949781,
+            "labelScreenOccupancy": 0.09494949029597646,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 16,
+            "relationLabelsWithForeignRouteHit": 10,
+            "ownershipAmbiguityCount": 16
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 1.8631727844046964
+          },
+          "extent": {
+            "width": 791.865017360574,
+            "height": 586.2453080472364
+          },
+          "overviewFitScale": 0.4736673931949781,
+          "hardFailure": false
+        },
+        {
+          "family": "occupied-feedback-4-sweeps",
+          "positions": {
+            "label-n0": {
+              "x": 0,
+              "y": 0
+            },
+            "label-n1": {
+              "x": 289.6668698748988,
+              "y": 5.441174319308015
+            },
+            "label-n3": {
+              "x": 198.61379738505516,
+              "y": 176.6628931158266
+            },
+            "label-n4": {
+              "x": -4.350332959201969,
+              "y": 246.84976088641017
+            },
+            "label-n2": {
+              "x": 456.4292126589388,
+              "y": 0.545786274416177
+            },
+            "label-n7": {
+              "x": 787.514684401372,
+              "y": -0.008113248945673291
+            },
+            "label-n5": {
+              "x": 0,
+              "y": 339.1185973991454
+            },
+            "label-n6": {
+              "x": 299.2099111329221,
+              "y": 344.8286082311887
+            },
+            "label-n8": {
+              "x": 198.61379738505525,
+              "y": 515.781490514972
+            },
+            "label-n9": {
+              "x": 5.192708298821344,
+              "y": 586.2371947982908
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 4,
+            "sweepsApplied": 2,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "hard-feasible"
+          },
+          "quality": {
+            "score": 1351962.2246396465,
+            "overlapPairs": 0,
+            "minimumSeparation": 92.37133531713063,
+            "extent": [
+              791.865017360574,
+              586.2453080472364
+            ],
+            "aspectRatio": 1.3507400511199825,
+            "fitScale": 0.4736673931949781,
+            "routeMedian": 238.02197962871696,
+            "routeMax": 323.52457417981134,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 4,
+            "labelNear20": 5,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 256.65234868445435,
+            "labelCorridorConflictPairs": 7,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 71454.5321312143,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4736673931949781,
+            "effectiveFontScale": 0.4736673931949781,
+            "labelScreenOccupancy": 0.09494949029597646,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 16,
+            "relationLabelsWithForeignRouteHit": 10,
+            "ownershipAmbiguityCount": 16
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 1.8631727844046964
+          },
+          "extent": {
+            "width": 791.865017360574,
+            "height": 586.2453080472364
+          },
+          "overviewFitScale": 0.4736673931949781,
+          "hardFailure": false
+        },
+        {
+          "family": "occupied-feedback-8-sweeps",
+          "positions": {
+            "label-n0": {
+              "x": 0,
+              "y": 0
+            },
+            "label-n1": {
+              "x": 289.6668698748988,
+              "y": 5.441174319308015
+            },
+            "label-n3": {
+              "x": 198.61379738505516,
+              "y": 176.6628931158266
+            },
+            "label-n4": {
+              "x": -4.350332959201969,
+              "y": 246.84976088641017
+            },
+            "label-n2": {
+              "x": 456.4292126589388,
+              "y": 0.545786274416177
+            },
+            "label-n7": {
+              "x": 787.514684401372,
+              "y": -0.008113248945673291
+            },
+            "label-n5": {
+              "x": 0,
+              "y": 339.1185973991454
+            },
+            "label-n6": {
+              "x": 299.2099111329221,
+              "y": 344.8286082311887
+            },
+            "label-n8": {
+              "x": 198.61379738505525,
+              "y": 515.781490514972
+            },
+            "label-n9": {
+              "x": 5.192708298821344,
+              "y": 586.2371947982908
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 8,
+            "sweepsApplied": 2,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "hard-feasible"
+          },
+          "quality": {
+            "score": 1351962.2246396465,
+            "overlapPairs": 0,
+            "minimumSeparation": 92.37133531713063,
+            "extent": [
+              791.865017360574,
+              586.2453080472364
+            ],
+            "aspectRatio": 1.3507400511199825,
+            "fitScale": 0.4736673931949781,
+            "routeMedian": 238.02197962871696,
+            "routeMax": 323.52457417981134,
+            "crossings": 8,
+            "crossingRelationLabelNear": 8,
+            "labelRouteHits": 4,
+            "labelNear20": 5,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 256.65234868445435,
+            "labelCorridorConflictPairs": 7,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 71454.5321312143,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.4736673931949781,
+            "effectiveFontScale": 0.4736673931949781,
+            "labelScreenOccupancy": 0.09494949029597646,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 16,
+            "relationLabelsWithForeignRouteHit": 10,
+            "ownershipAmbiguityCount": 16
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 1.8631727844046964
+          },
+          "extent": {
+            "width": 791.865017360574,
+            "height": 586.2453080472364
+          },
+          "overviewFitScale": 0.4736673931949781,
+          "hardFailure": false
+        }
+      ],
+      "selectedOccupiedGeometry": {
+        "family": "occupied-feedback-2-sweeps",
+        "positions": {
+          "label-n0": {
+            "x": 0,
+            "y": 0
+          },
+          "label-n1": {
+            "x": 289.6668698748988,
+            "y": 5.441174319308015
+          },
+          "label-n3": {
+            "x": 198.61379738505516,
+            "y": 176.6628931158266
+          },
+          "label-n4": {
+            "x": -4.350332959201969,
+            "y": 246.84976088641017
+          },
+          "label-n2": {
+            "x": 456.4292126589388,
+            "y": 0.545786274416177
+          },
+          "label-n7": {
+            "x": 787.514684401372,
+            "y": -0.008113248945673291
+          },
+          "label-n5": {
+            "x": 0,
+            "y": 339.1185973991454
+          },
+          "label-n6": {
+            "x": 299.2099111329221,
+            "y": 344.8286082311887
+          },
+          "label-n8": {
+            "x": 198.61379738505525,
+            "y": 515.781490514972
+          },
+          "label-n9": {
+            "x": 5.192708298821344,
+            "y": 586.2371947982908
+          }
+        },
+        "formulation": {
+          "kind": "occupied-geometry-feasibility-first",
+          "sweepsRequested": 2,
+          "sweepsApplied": 2,
+          "geometrySource": [
+            "Product Node body bounds",
+            "Product Node-label bounds",
+            "Product Relation-label bounds"
+          ],
+          "hardConstraint": "zero AABB occupied overlap",
+          "clearanceMargin": 0,
+          "extentPolicy": "grow only from derived collision displacement",
+          "stoppingRule": "hard-feasible"
+        },
+        "quality": {
+          "score": 1351962.2246396465,
+          "overlapPairs": 0,
+          "minimumSeparation": 92.37133531713063,
+          "extent": [
+            791.865017360574,
+            586.2453080472364
+          ],
+          "aspectRatio": 1.3507400511199825,
+          "fitScale": 0.4736673931949781,
+          "routeMedian": 238.02197962871696,
+          "routeMax": 323.52457417981134,
+          "crossings": 8,
+          "crossingRelationLabelNear": 8,
+          "labelRouteHits": 4,
+          "labelNear20": 5,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 256.65234868445435,
+          "labelCorridorConflictPairs": 7,
+          "labelCorridorMinimumClearance": 0,
+          "labelCorridorMaximumIntrusion": 48,
+          "usableSpanPenalty": 71454.5321312143,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.4736673931949781,
+          "effectiveFontScale": 0.4736673931949781,
+          "labelScreenOccupancy": 0.09494949029597646,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 16,
+          "relationLabelsWithForeignRouteHit": 10,
+          "ownershipAmbiguityCount": 16
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 1.8631727844046964
+        },
+        "extent": {
+          "width": 791.865017360574,
+          "height": 586.2453080472364
+        },
+        "overviewFitScale": 0.4736673931949781,
+        "hardFailure": false
+      }
+    },
+    {
+      "fixture": "connected",
+      "family": "connected-dense-label",
+      "graph": {
+        "nodes": 14,
+        "edges": 49,
+        "components": 1
+      },
+      "currentHQ": {
+        "family": "current-6",
+        "positions": {
+          "connected-n0": {
+            "x": -49.89806256551951,
+            "y": 385.4333879280421
+          },
+          "connected-n1": {
+            "x": 62.0771296537923,
+            "y": 275.6932244747776
+          },
+          "connected-n2": {
+            "x": 300.71801085597815,
+            "y": 167.445912564191
+          },
+          "connected-n3": {
+            "x": 172.01195056383813,
+            "y": 38.61316773362634
+          },
+          "connected-n4": {
+            "x": 221.07998413437804,
+            "y": 236.91136861040243
+          },
+          "connected-n5": {
+            "x": 298.4547235339269,
+            "y": 73.51494927075106
+          },
+          "connected-n6": {
+            "x": 455.8564028781655,
+            "y": 170.63390425735778
+          },
+          "connected-n7": {
+            "x": 381.14258486998705,
+            "y": 372.19332227710794
+          },
+          "connected-n8": {
+            "x": 178.56674064091249,
+            "y": 455.1773244674209
+          },
+          "connected-n9": {
+            "x": 132.80025063997087,
+            "y": 319.9789070183015
+          },
+          "connected-n10": {
+            "x": 25.862516544256593,
+            "y": 161.49162198657027
+          },
+          "connected-n11": {
+            "x": 165.8450481266443,
+            "y": 176.6384124196021
+          },
+          "connected-n12": {
+            "x": 44.58333646820499,
+            "y": 80.31775068394982
+          },
+          "connected-n13": {
+            "x": -131.8731626307114,
+            "y": 161.48252657179628
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 9887191.377250072,
+          "overlapPairs": 2,
+          "minimumSeparation": 81.75406658849809,
+          "extent": [
+            587.7295655088769,
+            416.56415673379456
+          ],
+          "aspectRatio": 1.410898071781211,
+          "fitScale": 0.6409133841636354,
+          "routeMedian": 144.9983131270371,
+          "routeMax": 325.8825453133644,
+          "crossings": 64,
+          "crossingRelationLabelNear": 64,
+          "labelRouteHits": 23,
+          "labelNear20": 30,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 1844.0175878546008,
+          "labelCorridorConflictPairs": 57,
+          "labelCorridorMinimumClearance": 0,
+          "labelCorridorMaximumIntrusion": 48,
+          "usableSpanPenalty": 417831.106161986,
+          "shortHopCount": 3,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.6409133841636354,
+          "effectiveFontScale": 0.6409133841636354,
+          "labelScreenOccupancy": 0.34903124011027126,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 21,
+          "relationRelationOverlapPairs": 48,
+          "totalLabelOverlapPairs": 69,
+          "foreignRouteRelationLabelHits": 186,
+          "relationLabelsWithForeignRouteHit": 36,
+          "ownershipAmbiguityCount": 42
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 1,
+          "nodeLabelNodeBody": 2,
+          "relationLabelNodeBody": 56,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 21,
+          "relationLabelRelationLabel": 48,
+          "totalOccupiedOverlaps": 128,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 587.7295655088769,
+          "height": 416.56415673379456
+        },
+        "overviewFitScale": 0.6409133841636354,
+        "hardFailure": true
+      },
+      "currentFeasibilityBest": {
+        "family": "current-7",
+        "positions": {
+          "connected-n0": {
+            "x": -63.37112675516698,
+            "y": 393.06175466913436
+          },
+          "connected-n1": {
+            "x": 54.65943733468679,
+            "y": 281.3001328569532
+          },
+          "connected-n2": {
+            "x": 310.21523830795155,
+            "y": 165.24824776016703
+          },
+          "connected-n3": {
+            "x": 167.6569868561801,
+            "y": 21.516089613620352
+          },
+          "connected-n4": {
+            "x": 238.69651911330843,
+            "y": 248.5428562091381
+          },
+          "connected-n5": {
+            "x": 292.3870663368209,
+            "y": 60.94014181256384
+          },
+          "connected-n6": {
+            "x": 473.62547318159193,
+            "y": 167.14275159010563
+          },
+          "connected-n7": {
+            "x": 387.6445872849383,
+            "y": 385.3666926890368
+          },
+          "connected-n8": {
+            "x": 170.6871153347418,
+            "y": 475.39806516426785
+          },
+          "connected-n9": {
+            "x": 137.33263791111645,
+            "y": 319.2863089812113
+          },
+          "connected-n10": {
+            "x": 9.400333420672425,
+            "y": 159.59247390192056
+          },
+          "connected-n11": {
+            "x": 162.08245232005783,
+            "y": 171.28168292875807
+          },
+          "connected-n12": {
+            "x": 41.16348416016324,
+            "y": 66.58767299604946
+          },
+          "connected-n13": {
+            "x": -154.30988880855827,
+            "y": 162.39105407455844
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 10819824.651306983,
+          "overlapPairs": 0,
+          "minimumSeparation": 90.9824580350175,
+          "extent": [
+            627.9353619901502,
+            453.8819755506475
+          ],
+          "aspectRatio": 1.3834771941061152,
+          "fitScale": 0.5947301017234928,
+          "routeMedian": 165.7423063456618,
+          "routeMax": 342.08987968621534,
+          "crossings": 76,
+          "crossingRelationLabelNear": 76,
+          "labelRouteHits": 16,
+          "labelNear20": 19,
+          "labelOverlap": 2,
+          "labelCorridorDeficit": 1431.450542906384,
+          "labelCorridorConflictPairs": 40,
+          "labelCorridorMinimumClearance": 0,
+          "labelCorridorMaximumIntrusion": 48,
+          "usableSpanPenalty": 367220.15562005487,
+          "shortHopCount": 3,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.5947301017234928,
+          "effectiveFontScale": 0.5947301017234928,
+          "labelScreenOccupancy": 0.30054219864346204,
+          "nodeNodeOverlapPairs": 2,
+          "nodeRelationOverlapPairs": 11,
+          "relationRelationOverlapPairs": 37,
+          "totalLabelOverlapPairs": 50,
+          "foreignRouteRelationLabelHits": 201,
+          "relationLabelsWithForeignRouteHit": 39,
+          "ownershipAmbiguityCount": 44
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 3,
+          "relationLabelNodeBody": 41,
+          "nodeLabelNodeLabel": 2,
+          "nodeLabelRelationLabel": 11,
+          "relationLabelRelationLabel": 37,
+          "totalOccupiedOverlaps": 94,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 627.9353619901502,
+          "height": 453.8819755506475
+        },
+        "overviewFitScale": 0.5947301017234928,
+        "hardFailure": true
+      },
+      "baseline": {
+        "family": "prior-infinite-canvas",
+        "positions": {
+          "connected-n0": {
+            "x": 0,
+            "y": 174.78559700231338
+          },
+          "connected-n1": {
+            "x": 233.02037500838782,
+            "y": 0
+          },
+          "connected-n8": {
+            "x": 475.4352554725849,
+            "y": 285.86831459383825
+          },
+          "connected-n9": {
+            "x": 380.19518978062547,
+            "y": 70.53479071334928
+          },
+          "connected-n2": {
+            "x": 442.2627956325492,
+            "y": 154.51121623085905
+          },
+          "connected-n5": {
+            "x": 437.5528947153606,
+            "y": 0
+          },
+          "connected-n6": {
+            "x": 765.1057894307212,
+            "y": 159.75528545546882
+          },
+          "connected-n7": {
+            "x": 609.6263341557018,
+            "y": 491.30933035251235
+          },
+          "connected-n10": {
+            "x": 328.2479483631084,
+            "y": 616.1246148766886
+          },
+          "connected-n11": {
+            "x": 619.5515965860571,
+            "y": 640.8424938866817
+          },
+          "connected-n12": {
+            "x": 367.205974624845,
+            "y": 483.6578762298457
+          },
+          "connected-n13": {
+            "x": 0,
+            "y": 616.1097721703791
+          },
+          "connected-n3": {
+            "x": 632.3849205578576,
+            "y": 415.6006306974678
+          },
+          "connected-n4": {
+            "x": 734.4954984181511,
+            "y": 739.2012613949355
+          }
+        },
+        "formulation": {
+          "source": "infinite-canvas-local-density-extent-growth-rebaseline1"
+        },
+        "quality": {
+          "score": 17149776.755935315,
+          "overlapPairs": 2,
+          "minimumSeparation": 79.05542649611178,
+          "extent": [
+            765.1057894307212,
+            739.2012613949355
+          ],
+          "aspectRatio": 1.0350439445772883,
+          "fitScale": 0.3834655332401873,
+          "routeMedian": 329.89484203330414,
+          "routeMax": 863.7134820821947,
+          "crossings": 143,
+          "crossingRelationLabelNear": 141,
+          "labelRouteHits": 16,
+          "labelNear20": 21,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 1620.610028672745,
+          "labelCorridorConflictPairs": 47,
+          "labelCorridorMinimumClearance": 0,
+          "labelCorridorMaximumIntrusion": 48,
+          "usableSpanPenalty": 36969.294001615046,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.3834655332401873,
+          "effectiveFontScale": 0.3834655332401873,
+          "labelScreenOccupancy": 0.12494482916114921,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 6,
+          "relationRelationOverlapPairs": 6,
+          "totalLabelOverlapPairs": 12,
+          "foreignRouteRelationLabelHits": 225,
+          "relationLabelsWithForeignRouteHit": 41,
+          "ownershipAmbiguityCount": 43
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 1,
+          "relationLabelNodeBody": 15,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 6,
+          "relationLabelRelationLabel": 6,
+          "totalOccupiedOverlaps": 28,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 765.1057894307212,
+          "height": 739.2012613949355
+        },
+        "overviewFitScale": 0.3834655332401873,
+        "hardFailure": true
+      },
+      "probes": [
+        {
+          "family": "occupied-feedback-2-sweeps",
+          "positions": {
+            "connected-n0": {
+              "x": -23.473583862776472,
+              "y": 172.8109280405399
+            },
+            "connected-n1": {
+              "x": 167.68137061562493,
+              "y": 11.869274481407315
+            },
+            "connected-n8": {
+              "x": 432.80632356978674,
+              "y": 278.0327297860158
+            },
+            "connected-n9": {
+              "x": 393.83979485694425,
+              "y": 63.987821802855976
+            },
+            "connected-n2": {
+              "x": 469.7560918412643,
+              "y": 166.11375436239382
+            },
+            "connected-n5": {
+              "x": 439.55419461008637,
+              "y": -8.40669060574797
+            },
+            "connected-n6": {
+              "x": 805.2743256125765,
+              "y": 160.45304597209167
+            },
+            "connected-n7": {
+              "x": 673.691766416133,
+              "y": 495.7034552178733
+            },
+            "connected-n10": {
+              "x": 309.0001205270406,
+              "y": 617.7403699025094
+            },
+            "connected-n11": {
+              "x": 645.7427058878492,
+              "y": 622.6171796046232
+            },
+            "connected-n12": {
+              "x": 314.77126227275966,
+              "y": 485.59765280062715
+            },
+            "connected-n13": {
+              "x": -14.215224355717575,
+              "y": 615.9736999779856
+            },
+            "connected-n3": {
+              "x": 704.5545806119019,
+              "y": 409.7663355478366
+            },
+            "connected-n4": {
+              "x": 706.1008441424771,
+              "y": 756.0416267133277
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 2,
+            "sweepsApplied": 2,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 16876098.289294578,
+            "overlapPairs": 1,
+            "minimumSeparation": 85.6199262535865,
+            "extent": [
+              828.7479094753529,
+              764.4483173190756
+            ],
+            "aspectRatio": 1.0841124124411397,
+            "fitScale": 0.37177937785752574,
+            "routeMedian": 334.3600077783726,
+            "routeMax": 879.2532865762867,
+            "crossings": 142,
+            "crossingRelationLabelNear": 135,
+            "labelRouteHits": 12,
+            "labelNear20": 20,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1206.2125842228527,
+            "labelCorridorConflictPairs": 35,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 47288.00423393645,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.37177937785752574,
+            "effectiveFontScale": 0.37177937785752574,
+            "labelScreenOccupancy": 0.11744545395836967,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 5,
+            "relationRelationOverlapPairs": 8,
+            "totalLabelOverlapPairs": 13,
+            "foreignRouteRelationLabelHits": 196,
+            "relationLabelsWithForeignRouteHit": 41,
+            "ownershipAmbiguityCount": 43
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 11,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 5,
+            "relationLabelRelationLabel": 8,
+            "totalOccupiedOverlaps": 24,
+            "hardFeasible": false,
+            "minimumClearance": 0
+          },
+          "extent": {
+            "width": 828.7479094753529,
+            "height": 764.4483173190756
+          },
+          "overviewFitScale": 0.37177937785752574,
+          "hardFailure": true
+        },
+        {
+          "family": "occupied-feedback-4-sweeps",
+          "positions": {
+            "connected-n0": {
+              "x": -23.80406607094194,
+              "y": 172.52490742694997
+            },
+            "connected-n1": {
+              "x": 157.58976133826295,
+              "y": 8.580321573335599
+            },
+            "connected-n8": {
+              "x": 364.08444349353243,
+              "y": 299.75912874935494
+            },
+            "connected-n9": {
+              "x": 391.8032875859951,
+              "y": 71.60993499727694
+            },
+            "connected-n2": {
+              "x": 518.011622438555,
+              "y": 150.85846350532663
+            },
+            "connected-n5": {
+              "x": 406.58733119677646,
+              "y": -2.4787021364487014
+            },
+            "connected-n6": {
+              "x": 817.6627802182938,
+              "y": 162.91346197127694
+            },
+            "connected-n7": {
+              "x": 733.8463216298616,
+              "y": 491.06337166793156
+            },
+            "connected-n10": {
+              "x": 295.56007274755785,
+              "y": 617.6939416898363
+            },
+            "connected-n11": {
+              "x": 641.6187517405632,
+              "y": 597.9337046931894
+            },
+            "connected-n12": {
+              "x": 306.27821259307956,
+              "y": 486.7366445739064
+            },
+            "connected-n13": {
+              "x": -25.92397349331965,
+              "y": 615.3321972572802
+            },
+            "connected-n3": {
+              "x": 741.7603870589131,
+              "y": 402.85398673505
+            },
+            "connected-n4": {
+              "x": 700.009640268821,
+              "y": 772.9198209000732
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 4,
+            "sweepsApplied": 4,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 17702713.256879345,
+            "overlapPairs": 1,
+            "minimumSeparation": 75.54928257646365,
+            "extent": [
+              843.5867537116135,
+              775.3985230365219
+            ],
+            "aspectRatio": 1.087939593188882,
+            "fitScale": 0.3669294042665346,
+            "routeMedian": 365.7741776999901,
+            "routeMax": 888.9844670816483,
+            "crossings": 148,
+            "crossingRelationLabelNear": 147,
+            "labelRouteHits": 8,
+            "labelNear20": 11,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 669.4740671977158,
+            "labelCorridorConflictPairs": 27,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 100171.99443441899,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.3669294042665346,
+            "effectiveFontScale": 0.3669294042665346,
+            "labelScreenOccupancy": 0.11440121840177019,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 3,
+            "relationRelationOverlapPairs": 1,
+            "totalLabelOverlapPairs": 4,
+            "foreignRouteRelationLabelHits": 190,
+            "relationLabelsWithForeignRouteHit": 39,
+            "ownershipAmbiguityCount": 43
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 10,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 3,
+            "relationLabelRelationLabel": 1,
+            "totalOccupiedOverlaps": 14,
+            "hardFeasible": false,
+            "minimumClearance": 0
+          },
+          "extent": {
+            "width": 843.5867537116135,
+            "height": 775.3985230365219
+          },
+          "overviewFitScale": 0.3669294042665346,
+          "hardFailure": true
+        },
+        {
+          "family": "occupied-feedback-8-sweeps",
+          "positions": {
+            "connected-n0": {
+              "x": -46.05984566630324,
+              "y": 169.39133935790903
+            },
+            "connected-n1": {
+              "x": 140.67720201297774,
+              "y": 15.7317714139704
+            },
+            "connected-n8": {
+              "x": 311.21658730882604,
+              "y": 303.38733496605107
+            },
+            "connected-n9": {
+              "x": 382.8390427593929,
+              "y": 71.68529385217518
+            },
+            "connected-n2": {
+              "x": 597.7396135504109,
+              "y": 148.5696728546643
+            },
+            "connected-n5": {
+              "x": 380.48459134470534,
+              "y": -8.731337756311541
+            },
+            "connected-n6": {
+              "x": 849.0045336003044,
+              "y": 158.31189501438874
+            },
+            "connected-n7": {
+              "x": 733.3303546727684,
+              "y": 492.2547285496245
+            },
+            "connected-n10": {
+              "x": 246.29428958979975,
+              "y": 622.2272418107389
+            },
+            "connected-n11": {
+              "x": 673.3164090269726,
+              "y": 598.1380641760477
+            },
+            "connected-n12": {
+              "x": 250.66542687383873,
+              "y": 470.1528678149717
+            },
+            "connected-n13": {
+              "x": -23.176427499426747,
+              "y": 622.0586716111512
+            },
+            "connected-n3": {
+              "x": 850.8625262256775,
+              "y": 410.010318488244
+            },
+            "connected-n4": {
+              "x": 677.8902689460064,
+              "y": 775.1133214507142
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 8,
+            "sweepsApplied": 8,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 18494980.876612194,
+            "overlapPairs": 0,
+            "minimumSeparation": 80.45109123386203,
+            "extent": [
+              896.9223718919807,
+              783.8446592070258
+            ],
+            "aspectRatio": 1.1442603599536543,
+            "fitScale": 0.36327409349734774,
+            "routeMedian": 393.9551414338478,
+            "routeMax": 886.0913479781174,
+            "crossings": 158,
+            "crossingRelationLabelNear": 153,
+            "labelRouteHits": 3,
+            "labelNear20": 12,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 463.0326880394189,
+            "labelCorridorConflictPairs": 32,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 61971.67080589262,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.36327409349734774,
+            "effectiveFontScale": 0.36327409349734774,
+            "labelScreenOccupancy": 0.11213326653526984,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 1,
+            "relationRelationOverlapPairs": 2,
+            "totalLabelOverlapPairs": 3,
+            "foreignRouteRelationLabelHits": 160,
+            "relationLabelsWithForeignRouteHit": 40,
+            "ownershipAmbiguityCount": 45
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 1,
+            "relationLabelNodeBody": 6,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 1,
+            "relationLabelRelationLabel": 2,
+            "totalOccupiedOverlaps": 10,
+            "hardFeasible": false,
+            "minimumClearance": 0
+          },
+          "extent": {
+            "width": 896.9223718919807,
+            "height": 783.8446592070258
+          },
+          "overviewFitScale": 0.36327409349734774,
+          "hardFailure": true
+        }
+      ],
+      "selectedOccupiedGeometry": {
+        "family": "occupied-feedback-8-sweeps",
+        "positions": {
+          "connected-n0": {
+            "x": -46.05984566630324,
+            "y": 169.39133935790903
+          },
+          "connected-n1": {
+            "x": 140.67720201297774,
+            "y": 15.7317714139704
+          },
+          "connected-n8": {
+            "x": 311.21658730882604,
+            "y": 303.38733496605107
+          },
+          "connected-n9": {
+            "x": 382.8390427593929,
+            "y": 71.68529385217518
+          },
+          "connected-n2": {
+            "x": 597.7396135504109,
+            "y": 148.5696728546643
+          },
+          "connected-n5": {
+            "x": 380.48459134470534,
+            "y": -8.731337756311541
+          },
+          "connected-n6": {
+            "x": 849.0045336003044,
+            "y": 158.31189501438874
+          },
+          "connected-n7": {
+            "x": 733.3303546727684,
+            "y": 492.2547285496245
+          },
+          "connected-n10": {
+            "x": 246.29428958979975,
+            "y": 622.2272418107389
+          },
+          "connected-n11": {
+            "x": 673.3164090269726,
+            "y": 598.1380641760477
+          },
+          "connected-n12": {
+            "x": 250.66542687383873,
+            "y": 470.1528678149717
+          },
+          "connected-n13": {
+            "x": -23.176427499426747,
+            "y": 622.0586716111512
+          },
+          "connected-n3": {
+            "x": 850.8625262256775,
+            "y": 410.010318488244
+          },
+          "connected-n4": {
+            "x": 677.8902689460064,
+            "y": 775.1133214507142
+          }
+        },
+        "formulation": {
+          "kind": "occupied-geometry-feasibility-first",
+          "sweepsRequested": 8,
+          "sweepsApplied": 8,
+          "geometrySource": [
+            "Product Node body bounds",
+            "Product Node-label bounds",
+            "Product Relation-label bounds"
+          ],
+          "hardConstraint": "zero AABB occupied overlap",
+          "clearanceMargin": 0,
+          "extentPolicy": "grow only from derived collision displacement",
+          "stoppingRule": "bounded-sweeps-exhausted"
+        },
+        "quality": {
+          "score": 18494980.876612194,
+          "overlapPairs": 0,
+          "minimumSeparation": 80.45109123386203,
+          "extent": [
+            896.9223718919807,
+            783.8446592070258
+          ],
+          "aspectRatio": 1.1442603599536543,
+          "fitScale": 0.36327409349734774,
+          "routeMedian": 393.9551414338478,
+          "routeMax": 886.0913479781174,
+          "crossings": 158,
+          "crossingRelationLabelNear": 153,
+          "labelRouteHits": 3,
+          "labelNear20": 12,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 463.0326880394189,
+          "labelCorridorConflictPairs": 32,
+          "labelCorridorMinimumClearance": 0,
+          "labelCorridorMaximumIntrusion": 48,
+          "usableSpanPenalty": 61971.67080589262,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.36327409349734774,
+          "effectiveFontScale": 0.36327409349734774,
+          "labelScreenOccupancy": 0.11213326653526984,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 1,
+          "relationRelationOverlapPairs": 2,
+          "totalLabelOverlapPairs": 3,
+          "foreignRouteRelationLabelHits": 160,
+          "relationLabelsWithForeignRouteHit": 40,
+          "ownershipAmbiguityCount": 45
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 1,
+          "relationLabelNodeBody": 6,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 1,
+          "relationLabelRelationLabel": 2,
+          "totalOccupiedOverlaps": 10,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 896.9223718919807,
+          "height": 783.8446592070258
+        },
+        "overviewFitScale": 0.36327409349734774,
+        "hardFailure": true
+      }
+    },
+    {
+      "fixture": "parallel",
+      "family": "parallel-incident",
+      "graph": {
+        "nodes": 10,
+        "edges": 18,
+        "components": 3
+      },
+      "currentHQ": {
+        "family": "current-1",
+        "positions": {
+          "parallel-n0": {
+            "x": 170.81967452413426,
+            "y": 164.46248526147383
+          },
+          "parallel-n1": {
+            "x": 314.6014674760431,
+            "y": 168.01840122385892
+          },
+          "parallel-n2": {
+            "x": 630.6037264303493,
+            "y": 160
+          },
+          "parallel-n3": {
+            "x": 266.26119176827416,
+            "y": 279.47950975929
+          },
+          "parallel-n4": {
+            "x": 173.31496923764774,
+            "y": 323.35588247931975
+          },
+          "parallel-n5": {
+            "x": 1104.3809237070484,
+            "y": 164.46248526147383
+          },
+          "parallel-n6": {
+            "x": 1239.1627166589572,
+            "y": 168.01840122385892
+          },
+          "parallel-n7": {
+            "x": 782.5612491829144,
+            "y": 160
+          },
+          "parallel-n8": {
+            "x": 1199.8224409511884,
+            "y": 279.47950975929
+          },
+          "parallel-n9": {
+            "x": 1097.8762184205618,
+            "y": 323.35588247931975
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 673655.9812519653,
+          "overlapPairs": 0,
+          "minimumSeparation": 102.781984636315,
+          "extent": [
+            1068.343042134823,
+            163.35588247931975
+          ],
+          "aspectRatio": 6.539972885702915,
+          "fitScale": 0.536939758868239,
+          "routeMedian": 91.86422522977264,
+          "routeMax": 283.43617256651675,
+          "crossings": 4,
+          "crossingRelationLabelNear": 4,
+          "labelRouteHits": 2,
+          "labelNear20": 2,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 183.05091018957154,
+          "labelCorridorConflictPairs": 7,
+          "labelCorridorMinimumClearance": 0,
+          "labelCorridorMaximumIntrusion": 48,
+          "usableSpanPenalty": 33220.222974446435,
+          "shortHopCount": 2,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.536939758868239,
+          "effectiveFontScale": 0.536939758868239,
+          "labelScreenOccupancy": 0.030153747223707755,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 9,
+          "relationLabelsWithForeignRouteHit": 5,
+          "ownershipAmbiguityCount": 9
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 5,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 5,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 1068.343042134823,
+          "height": 163.35588247931975
+        },
+        "overviewFitScale": 0.536939758868239,
+        "hardFailure": true
+      },
+      "currentFeasibilityBest": {
+        "family": "current-1",
+        "positions": {
+          "parallel-n0": {
+            "x": 170.81967452413426,
+            "y": 164.46248526147383
+          },
+          "parallel-n1": {
+            "x": 314.6014674760431,
+            "y": 168.01840122385892
+          },
+          "parallel-n2": {
+            "x": 630.6037264303493,
+            "y": 160
+          },
+          "parallel-n3": {
+            "x": 266.26119176827416,
+            "y": 279.47950975929
+          },
+          "parallel-n4": {
+            "x": 173.31496923764774,
+            "y": 323.35588247931975
+          },
+          "parallel-n5": {
+            "x": 1104.3809237070484,
+            "y": 164.46248526147383
+          },
+          "parallel-n6": {
+            "x": 1239.1627166589572,
+            "y": 168.01840122385892
+          },
+          "parallel-n7": {
+            "x": 782.5612491829144,
+            "y": 160
+          },
+          "parallel-n8": {
+            "x": 1199.8224409511884,
+            "y": 279.47950975929
+          },
+          "parallel-n9": {
+            "x": 1097.8762184205618,
+            "y": 323.35588247931975
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 673655.9812519653,
+          "overlapPairs": 0,
+          "minimumSeparation": 102.781984636315,
+          "extent": [
+            1068.343042134823,
+            163.35588247931975
+          ],
+          "aspectRatio": 6.539972885702915,
+          "fitScale": 0.536939758868239,
+          "routeMedian": 91.86422522977264,
+          "routeMax": 283.43617256651675,
+          "crossings": 4,
+          "crossingRelationLabelNear": 4,
+          "labelRouteHits": 2,
+          "labelNear20": 2,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 183.05091018957154,
+          "labelCorridorConflictPairs": 7,
+          "labelCorridorMinimumClearance": 0,
+          "labelCorridorMaximumIntrusion": 48,
+          "usableSpanPenalty": 33220.222974446435,
+          "shortHopCount": 2,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.536939758868239,
+          "effectiveFontScale": 0.536939758868239,
+          "labelScreenOccupancy": 0.030153747223707755,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 9,
+          "relationLabelsWithForeignRouteHit": 5,
+          "ownershipAmbiguityCount": 9
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 5,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 5,
+          "hardFeasible": false,
+          "minimumClearance": 0
+        },
+        "extent": {
+          "width": 1068.343042134823,
+          "height": 163.35588247931975
+        },
+        "overviewFitScale": 0.536939758868239,
+        "hardFailure": true
+      },
+      "baseline": {
+        "family": "prior-infinite-canvas",
+        "positions": {
+          "parallel-n0": {
+            "x": 0,
+            "y": 0
+          },
+          "parallel-n1": {
+            "x": 248.81096154685554,
+            "y": 4.8186612308053896
+          },
+          "parallel-n3": {
+            "x": 165.15926800932255,
+            "y": 155.8608478639296
+          },
+          "parallel-n4": {
+            "x": 4.318047954929412,
+            "y": 215.31820805209432
+          },
+          "parallel-n2": {
+            "x": 372.9588668642482,
+            "y": 0
+          },
+          "parallel-n7": {
+            "x": 635.9177337284965,
+            "y": 0
+          },
+          "parallel-n5": {
+            "x": 10.930945338238189,
+            "y": 303.16932490251725
+          },
+          "parallel-n6": {
+            "x": 237.42735777490816,
+            "y": 307.895137216527
+          },
+          "parallel-n8": {
+            "x": 171.317305987287,
+            "y": 456.0269504601149
+          },
+          "parallel-n9": {
+            "x": 0,
+            "y": 514.3386498050345
+          }
+        },
+        "formulation": {
+          "source": "infinite-canvas-local-density-extent-growth-rebaseline1"
+        },
+        "quality": {
+          "score": 682280.9135844675,
+          "overlapPairs": 0,
+          "minimumSeparation": 88.09965461719379,
+          "extent": [
+            635.9177337284965,
+            514.3386498050345
+          ],
+          "aspectRatio": 1.2363794437177682,
+          "fitScale": 0.5325599458100039,
+          "routeMedian": 187.97733372322418,
+          "routeMax": 289.09142652252194,
+          "crossings": 6,
+          "crossingRelationLabelNear": 5,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 120.48664539158787,
+          "labelCorridorConflictPairs": 9,
+          "labelCorridorMinimumClearance": 30.715779121191918,
+          "labelCorridorMaximumIntrusion": 17.284220878808082,
+          "usableSpanPenalty": 1582.075848653792,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.5325599458100039,
+          "effectiveFontScale": 0.5325599458100039,
+          "labelScreenOccupancy": 0.029663825828209932,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 0,
+          "relationLabelsWithForeignRouteHit": 0,
+          "ownershipAmbiguityCount": 6
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 0.07119386062872479
+        },
+        "extent": {
+          "width": 635.9177337284965,
+          "height": 514.3386498050345
+        },
+        "overviewFitScale": 0.5325599458100039,
+        "hardFailure": false
+      },
+      "probes": [
+        {
+          "family": "occupied-feedback-2-sweeps",
+          "positions": {
+            "parallel-n0": {
+              "x": 0,
+              "y": 0
+            },
+            "parallel-n1": {
+              "x": 248.81096154685554,
+              "y": 4.8186612308053896
+            },
+            "parallel-n3": {
+              "x": 165.15926800932255,
+              "y": 155.8608478639296
+            },
+            "parallel-n4": {
+              "x": 4.318047954929412,
+              "y": 215.31820805209432
+            },
+            "parallel-n2": {
+              "x": 372.9588668642482,
+              "y": 0
+            },
+            "parallel-n7": {
+              "x": 635.9177337284965,
+              "y": 0
+            },
+            "parallel-n5": {
+              "x": 10.930945338238189,
+              "y": 303.16932490251725
+            },
+            "parallel-n6": {
+              "x": 237.42735777490816,
+              "y": 307.895137216527
+            },
+            "parallel-n8": {
+              "x": 171.317305987287,
+              "y": 456.0269504601149
+            },
+            "parallel-n9": {
+              "x": 0,
+              "y": 514.3386498050345
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 2,
+            "sweepsApplied": 0,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 682280.9135844675,
+            "overlapPairs": 0,
+            "minimumSeparation": 88.09965461719379,
+            "extent": [
+              635.9177337284965,
+              514.3386498050345
+            ],
+            "aspectRatio": 1.2363794437177682,
+            "fitScale": 0.5325599458100039,
+            "routeMedian": 187.97733372322418,
+            "routeMax": 289.09142652252194,
+            "crossings": 6,
+            "crossingRelationLabelNear": 5,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 120.48664539158787,
+            "labelCorridorConflictPairs": 9,
+            "labelCorridorMinimumClearance": 30.715779121191918,
+            "labelCorridorMaximumIntrusion": 17.284220878808082,
+            "usableSpanPenalty": 1582.075848653792,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5325599458100039,
+            "effectiveFontScale": 0.5325599458100039,
+            "labelScreenOccupancy": 0.029663825828209932,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 6
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 0.07119386062872479
+          },
+          "extent": {
+            "width": 635.9177337284965,
+            "height": 514.3386498050345
+          },
+          "overviewFitScale": 0.5325599458100039,
+          "hardFailure": false
+        },
+        {
+          "family": "occupied-feedback-4-sweeps",
+          "positions": {
+            "parallel-n0": {
+              "x": 0,
+              "y": 0
+            },
+            "parallel-n1": {
+              "x": 248.81096154685554,
+              "y": 4.8186612308053896
+            },
+            "parallel-n3": {
+              "x": 165.15926800932255,
+              "y": 155.8608478639296
+            },
+            "parallel-n4": {
+              "x": 4.318047954929412,
+              "y": 215.31820805209432
+            },
+            "parallel-n2": {
+              "x": 372.9588668642482,
+              "y": 0
+            },
+            "parallel-n7": {
+              "x": 635.9177337284965,
+              "y": 0
+            },
+            "parallel-n5": {
+              "x": 10.930945338238189,
+              "y": 303.16932490251725
+            },
+            "parallel-n6": {
+              "x": 237.42735777490816,
+              "y": 307.895137216527
+            },
+            "parallel-n8": {
+              "x": 171.317305987287,
+              "y": 456.0269504601149
+            },
+            "parallel-n9": {
+              "x": 0,
+              "y": 514.3386498050345
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 4,
+            "sweepsApplied": 0,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 682280.9135844675,
+            "overlapPairs": 0,
+            "minimumSeparation": 88.09965461719379,
+            "extent": [
+              635.9177337284965,
+              514.3386498050345
+            ],
+            "aspectRatio": 1.2363794437177682,
+            "fitScale": 0.5325599458100039,
+            "routeMedian": 187.97733372322418,
+            "routeMax": 289.09142652252194,
+            "crossings": 6,
+            "crossingRelationLabelNear": 5,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 120.48664539158787,
+            "labelCorridorConflictPairs": 9,
+            "labelCorridorMinimumClearance": 30.715779121191918,
+            "labelCorridorMaximumIntrusion": 17.284220878808082,
+            "usableSpanPenalty": 1582.075848653792,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5325599458100039,
+            "effectiveFontScale": 0.5325599458100039,
+            "labelScreenOccupancy": 0.029663825828209932,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 6
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 0.07119386062872479
+          },
+          "extent": {
+            "width": 635.9177337284965,
+            "height": 514.3386498050345
+          },
+          "overviewFitScale": 0.5325599458100039,
+          "hardFailure": false
+        },
+        {
+          "family": "occupied-feedback-8-sweeps",
+          "positions": {
+            "parallel-n0": {
+              "x": 0,
+              "y": 0
+            },
+            "parallel-n1": {
+              "x": 248.81096154685554,
+              "y": 4.8186612308053896
+            },
+            "parallel-n3": {
+              "x": 165.15926800932255,
+              "y": 155.8608478639296
+            },
+            "parallel-n4": {
+              "x": 4.318047954929412,
+              "y": 215.31820805209432
+            },
+            "parallel-n2": {
+              "x": 372.9588668642482,
+              "y": 0
+            },
+            "parallel-n7": {
+              "x": 635.9177337284965,
+              "y": 0
+            },
+            "parallel-n5": {
+              "x": 10.930945338238189,
+              "y": 303.16932490251725
+            },
+            "parallel-n6": {
+              "x": 237.42735777490816,
+              "y": 307.895137216527
+            },
+            "parallel-n8": {
+              "x": 171.317305987287,
+              "y": 456.0269504601149
+            },
+            "parallel-n9": {
+              "x": 0,
+              "y": 514.3386498050345
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 8,
+            "sweepsApplied": 0,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 682280.9135844675,
+            "overlapPairs": 0,
+            "minimumSeparation": 88.09965461719379,
+            "extent": [
+              635.9177337284965,
+              514.3386498050345
+            ],
+            "aspectRatio": 1.2363794437177682,
+            "fitScale": 0.5325599458100039,
+            "routeMedian": 187.97733372322418,
+            "routeMax": 289.09142652252194,
+            "crossings": 6,
+            "crossingRelationLabelNear": 5,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 120.48664539158787,
+            "labelCorridorConflictPairs": 9,
+            "labelCorridorMinimumClearance": 30.715779121191918,
+            "labelCorridorMaximumIntrusion": 17.284220878808082,
+            "usableSpanPenalty": 1582.075848653792,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5325599458100039,
+            "effectiveFontScale": 0.5325599458100039,
+            "labelScreenOccupancy": 0.029663825828209932,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 6
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 0.07119386062872479
+          },
+          "extent": {
+            "width": 635.9177337284965,
+            "height": 514.3386498050345
+          },
+          "overviewFitScale": 0.5325599458100039,
+          "hardFailure": false
+        }
+      ],
+      "selectedOccupiedGeometry": {
+        "family": "occupied-feedback-2-sweeps",
+        "positions": {
+          "parallel-n0": {
+            "x": 0,
+            "y": 0
+          },
+          "parallel-n1": {
+            "x": 248.81096154685554,
+            "y": 4.8186612308053896
+          },
+          "parallel-n3": {
+            "x": 165.15926800932255,
+            "y": 155.8608478639296
+          },
+          "parallel-n4": {
+            "x": 4.318047954929412,
+            "y": 215.31820805209432
+          },
+          "parallel-n2": {
+            "x": 372.9588668642482,
+            "y": 0
+          },
+          "parallel-n7": {
+            "x": 635.9177337284965,
+            "y": 0
+          },
+          "parallel-n5": {
+            "x": 10.930945338238189,
+            "y": 303.16932490251725
+          },
+          "parallel-n6": {
+            "x": 237.42735777490816,
+            "y": 307.895137216527
+          },
+          "parallel-n8": {
+            "x": 171.317305987287,
+            "y": 456.0269504601149
+          },
+          "parallel-n9": {
+            "x": 0,
+            "y": 514.3386498050345
+          }
+        },
+        "formulation": {
+          "kind": "occupied-geometry-feasibility-first",
+          "sweepsRequested": 2,
+          "sweepsApplied": 0,
+          "geometrySource": [
+            "Product Node body bounds",
+            "Product Node-label bounds",
+            "Product Relation-label bounds"
+          ],
+          "hardConstraint": "zero AABB occupied overlap",
+          "clearanceMargin": 0,
+          "extentPolicy": "grow only from derived collision displacement",
+          "stoppingRule": "bounded-sweeps-exhausted"
+        },
+        "quality": {
+          "score": 682280.9135844675,
+          "overlapPairs": 0,
+          "minimumSeparation": 88.09965461719379,
+          "extent": [
+            635.9177337284965,
+            514.3386498050345
+          ],
+          "aspectRatio": 1.2363794437177682,
+          "fitScale": 0.5325599458100039,
+          "routeMedian": 187.97733372322418,
+          "routeMax": 289.09142652252194,
+          "crossings": 6,
+          "crossingRelationLabelNear": 5,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 120.48664539158787,
+          "labelCorridorConflictPairs": 9,
+          "labelCorridorMinimumClearance": 30.715779121191918,
+          "labelCorridorMaximumIntrusion": 17.284220878808082,
+          "usableSpanPenalty": 1582.075848653792,
+          "shortHopCount": 0,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.5325599458100039,
+          "effectiveFontScale": 0.5325599458100039,
+          "labelScreenOccupancy": 0.029663825828209932,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 0,
+          "relationLabelsWithForeignRouteHit": 0,
+          "ownershipAmbiguityCount": 6
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 0.07119386062872479
+        },
+        "extent": {
+          "width": 635.9177337284965,
+          "height": 514.3386498050345
+        },
+        "overviewFitScale": 0.5325599458100039,
+        "hardFailure": false
+      }
+    },
+    {
+      "fixture": "self-loop",
+      "family": "self-loop",
+      "graph": {
+        "nodes": 8,
+        "edges": 11,
+        "components": 2
+      },
+      "currentHQ": {
+        "family": "current-4",
+        "positions": {
+          "self-loop-n0": {
+            "x": 167.908939523866,
+            "y": 169.90911574513873
+          },
+          "self-loop-n1": {
+            "x": 323.4105335513307,
+            "y": 168.61498335528643
+          },
+          "self-loop-n2": {
+            "x": 630.3194730751968,
+            "y": 166.90911574513873
+          },
+          "self-loop-n3": {
+            "x": 785.8210671026612,
+            "y": 165.61498335528643
+          },
+          "self-loop-n4": {
+            "x": 280.17254269462114,
+            "y": 278.4849947083173
+          },
+          "self-loop-n5": {
+            "x": 162.53946828230121,
+            "y": 322.35210082006023
+          },
+          "self-loop-n6": {
+            "x": 742.5830762459518,
+            "y": 280.4849947083173
+          },
+          "self-loop-n7": {
+            "x": 633.9500018336319,
+            "y": 319.35210082006023
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 55149.97325231964,
+          "overlapPairs": 0,
+          "minimumSeparation": 115.3767601979451,
+          "extent": [
+            623.28159882036,
+            156.7371174647738
+          ],
+          "aspectRatio": 3.976604960598696,
+          "fitScale": 0.8846446653650588,
+          "routeMedian": 88.49783132130462,
+          "routeMax": 174.25724484905408,
+          "crossings": 0,
+          "crossingRelationLabelNear": 0,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 64.07208268308383,
+          "labelCorridorConflictPairs": 6,
+          "labelCorridorMinimumClearance": 28.949508158897803,
+          "labelCorridorMaximumIntrusion": 19.050491841102197,
+          "usableSpanPenalty": 12400.928916439176,
+          "shortHopCount": 1,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.8846446653650588,
+          "effectiveFontScale": 0.8846446653650588,
+          "labelScreenOccupancy": 0.05270198351824933,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 0,
+          "relationLabelsWithForeignRouteHit": 0,
+          "ownershipAmbiguityCount": 0
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 1.9621233561216513
+        },
+        "extent": {
+          "width": 623.28159882036,
+          "height": 156.7371174647738
+        },
+        "overviewFitScale": 0.8846446653650588,
+        "hardFailure": false
+      },
+      "currentFeasibilityBest": {
+        "family": "current-4",
+        "positions": {
+          "self-loop-n0": {
+            "x": 167.908939523866,
+            "y": 169.90911574513873
+          },
+          "self-loop-n1": {
+            "x": 323.4105335513307,
+            "y": 168.61498335528643
+          },
+          "self-loop-n2": {
+            "x": 630.3194730751968,
+            "y": 166.90911574513873
+          },
+          "self-loop-n3": {
+            "x": 785.8210671026612,
+            "y": 165.61498335528643
+          },
+          "self-loop-n4": {
+            "x": 280.17254269462114,
+            "y": 278.4849947083173
+          },
+          "self-loop-n5": {
+            "x": 162.53946828230121,
+            "y": 322.35210082006023
+          },
+          "self-loop-n6": {
+            "x": 742.5830762459518,
+            "y": 280.4849947083173
+          },
+          "self-loop-n7": {
+            "x": 633.9500018336319,
+            "y": 319.35210082006023
+          }
+        },
+        "formulation": null,
+        "quality": {
+          "score": 55149.97325231964,
+          "overlapPairs": 0,
+          "minimumSeparation": 115.3767601979451,
+          "extent": [
+            623.28159882036,
+            156.7371174647738
+          ],
+          "aspectRatio": 3.976604960598696,
+          "fitScale": 0.8846446653650588,
+          "routeMedian": 88.49783132130462,
+          "routeMax": 174.25724484905408,
+          "crossings": 0,
+          "crossingRelationLabelNear": 0,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 64.07208268308383,
+          "labelCorridorConflictPairs": 6,
+          "labelCorridorMinimumClearance": 28.949508158897803,
+          "labelCorridorMaximumIntrusion": 19.050491841102197,
+          "usableSpanPenalty": 12400.928916439176,
+          "shortHopCount": 1,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.8846446653650588,
+          "effectiveFontScale": 0.8846446653650588,
+          "labelScreenOccupancy": 0.05270198351824933,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 0,
+          "relationLabelsWithForeignRouteHit": 0,
+          "ownershipAmbiguityCount": 0
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 1.9621233561216513
+        },
+        "extent": {
+          "width": 623.28159882036,
+          "height": 156.7371174647738
+        },
+        "overviewFitScale": 0.8846446653650588,
+        "hardFailure": false
+      },
+      "baseline": {
+        "family": "prior-infinite-canvas",
+        "positions": {
+          "self-loop-n0": {
+            "x": 8.990911120438142,
+            "y": 1.7199019461137084
+          },
+          "self-loop-n1": {
+            "x": 269.3705552397264,
+            "y": 0
+          },
+          "self-loop-n4": {
+            "x": 196.97070144970905,
+            "y": 146.017245088178
+          },
+          "self-loop-n5": {
+            "x": 0,
+            "y": 204.31662911068437
+          },
+          "self-loop-n2": {
+            "x": 0,
+            "y": 296.0125119614738
+          },
+          "self-loop-n3": {
+            "x": 257.28678809662426,
+            "y": 294.309505632672
+          },
+          "self-loop-n6": {
+            "x": 185.74691829111498,
+            "y": 445.47205890596325
+          },
+          "self-loop-n7": {
+            "x": 6.006929312796615,
+            "y": 496.6190112653441
+          }
+        },
+        "formulation": {
+          "source": "infinite-canvas-local-density-extent-growth-rebaseline1"
+        },
+        "quality": {
+          "score": 28186.358280659057,
+          "overlapPairs": 0,
+          "minimumSeparation": 91.69588285078945,
+          "extent": [
+            269.3705552397264,
+            496.6190112653441
+          ],
+          "aspectRatio": 0.5424088670173792,
+          "fitScale": 0.5493927137876204,
+          "routeMedian": 138.73313894151548,
+          "routeMax": 196.38392817444378,
+          "crossings": 0,
+          "crossingRelationLabelNear": 0,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 49.02462396329117,
+          "labelCorridorConflictPairs": 5,
+          "labelCorridorMinimumClearance": 32.99181296834564,
+          "labelCorridorMaximumIntrusion": 15.008187031654359,
+          "usableSpanPenalty": 5630.252670743828,
+          "shortHopCount": 1,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.5493927137876204,
+          "effectiveFontScale": 0.5493927137876204,
+          "labelScreenOccupancy": 0.020326145296748366,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 0,
+          "relationLabelsWithForeignRouteHit": 0,
+          "ownershipAmbiguityCount": 0
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 0.4289797552726782
+        },
+        "extent": {
+          "width": 269.3705552397264,
+          "height": 496.6190112653441
+        },
+        "overviewFitScale": 0.5493927137876204,
+        "hardFailure": false
+      },
+      "probes": [
+        {
+          "family": "occupied-feedback-2-sweeps",
+          "positions": {
+            "self-loop-n0": {
+              "x": 8.990911120438142,
+              "y": 1.7199019461137084
+            },
+            "self-loop-n1": {
+              "x": 269.3705552397264,
+              "y": 0
+            },
+            "self-loop-n4": {
+              "x": 196.97070144970905,
+              "y": 146.017245088178
+            },
+            "self-loop-n5": {
+              "x": 0,
+              "y": 204.31662911068437
+            },
+            "self-loop-n2": {
+              "x": 0,
+              "y": 296.0125119614738
+            },
+            "self-loop-n3": {
+              "x": 257.28678809662426,
+              "y": 294.309505632672
+            },
+            "self-loop-n6": {
+              "x": 185.74691829111498,
+              "y": 445.47205890596325
+            },
+            "self-loop-n7": {
+              "x": 6.006929312796615,
+              "y": 496.6190112653441
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 2,
+            "sweepsApplied": 0,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 28186.358280659057,
+            "overlapPairs": 0,
+            "minimumSeparation": 91.69588285078945,
+            "extent": [
+              269.3705552397264,
+              496.6190112653441
+            ],
+            "aspectRatio": 0.5424088670173792,
+            "fitScale": 0.5493927137876204,
+            "routeMedian": 138.73313894151548,
+            "routeMax": 196.38392817444378,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 49.02462396329117,
+            "labelCorridorConflictPairs": 5,
+            "labelCorridorMinimumClearance": 32.99181296834564,
+            "labelCorridorMaximumIntrusion": 15.008187031654359,
+            "usableSpanPenalty": 5630.252670743828,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5493927137876204,
+            "effectiveFontScale": 0.5493927137876204,
+            "labelScreenOccupancy": 0.020326145296748366,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 0
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 0.4289797552726782
+          },
+          "extent": {
+            "width": 269.3705552397264,
+            "height": 496.6190112653441
+          },
+          "overviewFitScale": 0.5493927137876204,
+          "hardFailure": false
+        },
+        {
+          "family": "occupied-feedback-4-sweeps",
+          "positions": {
+            "self-loop-n0": {
+              "x": 8.990911120438142,
+              "y": 1.7199019461137084
+            },
+            "self-loop-n1": {
+              "x": 269.3705552397264,
+              "y": 0
+            },
+            "self-loop-n4": {
+              "x": 196.97070144970905,
+              "y": 146.017245088178
+            },
+            "self-loop-n5": {
+              "x": 0,
+              "y": 204.31662911068437
+            },
+            "self-loop-n2": {
+              "x": 0,
+              "y": 296.0125119614738
+            },
+            "self-loop-n3": {
+              "x": 257.28678809662426,
+              "y": 294.309505632672
+            },
+            "self-loop-n6": {
+              "x": 185.74691829111498,
+              "y": 445.47205890596325
+            },
+            "self-loop-n7": {
+              "x": 6.006929312796615,
+              "y": 496.6190112653441
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 4,
+            "sweepsApplied": 0,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 28186.358280659057,
+            "overlapPairs": 0,
+            "minimumSeparation": 91.69588285078945,
+            "extent": [
+              269.3705552397264,
+              496.6190112653441
+            ],
+            "aspectRatio": 0.5424088670173792,
+            "fitScale": 0.5493927137876204,
+            "routeMedian": 138.73313894151548,
+            "routeMax": 196.38392817444378,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 49.02462396329117,
+            "labelCorridorConflictPairs": 5,
+            "labelCorridorMinimumClearance": 32.99181296834564,
+            "labelCorridorMaximumIntrusion": 15.008187031654359,
+            "usableSpanPenalty": 5630.252670743828,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5493927137876204,
+            "effectiveFontScale": 0.5493927137876204,
+            "labelScreenOccupancy": 0.020326145296748366,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 0
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 0.4289797552726782
+          },
+          "extent": {
+            "width": 269.3705552397264,
+            "height": 496.6190112653441
+          },
+          "overviewFitScale": 0.5493927137876204,
+          "hardFailure": false
+        },
+        {
+          "family": "occupied-feedback-8-sweeps",
+          "positions": {
+            "self-loop-n0": {
+              "x": 8.990911120438142,
+              "y": 1.7199019461137084
+            },
+            "self-loop-n1": {
+              "x": 269.3705552397264,
+              "y": 0
+            },
+            "self-loop-n4": {
+              "x": 196.97070144970905,
+              "y": 146.017245088178
+            },
+            "self-loop-n5": {
+              "x": 0,
+              "y": 204.31662911068437
+            },
+            "self-loop-n2": {
+              "x": 0,
+              "y": 296.0125119614738
+            },
+            "self-loop-n3": {
+              "x": 257.28678809662426,
+              "y": 294.309505632672
+            },
+            "self-loop-n6": {
+              "x": 185.74691829111498,
+              "y": 445.47205890596325
+            },
+            "self-loop-n7": {
+              "x": 6.006929312796615,
+              "y": 496.6190112653441
+            }
+          },
+          "formulation": {
+            "kind": "occupied-geometry-feasibility-first",
+            "sweepsRequested": 8,
+            "sweepsApplied": 0,
+            "geometrySource": [
+              "Product Node body bounds",
+              "Product Node-label bounds",
+              "Product Relation-label bounds"
+            ],
+            "hardConstraint": "zero AABB occupied overlap",
+            "clearanceMargin": 0,
+            "extentPolicy": "grow only from derived collision displacement",
+            "stoppingRule": "bounded-sweeps-exhausted"
+          },
+          "quality": {
+            "score": 28186.358280659057,
+            "overlapPairs": 0,
+            "minimumSeparation": 91.69588285078945,
+            "extent": [
+              269.3705552397264,
+              496.6190112653441
+            ],
+            "aspectRatio": 0.5424088670173792,
+            "fitScale": 0.5493927137876204,
+            "routeMedian": 138.73313894151548,
+            "routeMax": 196.38392817444378,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 49.02462396329117,
+            "labelCorridorConflictPairs": 5,
+            "labelCorridorMinimumClearance": 32.99181296834564,
+            "labelCorridorMaximumIntrusion": 15.008187031654359,
+            "usableSpanPenalty": 5630.252670743828,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "visualRisk": {
+            "fitScale": 0.5493927137876204,
+            "effectiveFontScale": 0.5493927137876204,
+            "labelScreenOccupancy": 0.020326145296748366,
+            "nodeNodeOverlapPairs": 0,
+            "nodeRelationOverlapPairs": 0,
+            "relationRelationOverlapPairs": 0,
+            "totalLabelOverlapPairs": 0,
+            "foreignRouteRelationLabelHits": 0,
+            "relationLabelsWithForeignRouteHit": 0,
+            "ownershipAmbiguityCount": 0
+          },
+          "occupied": {
+            "nodeBodyNodeBody": 0,
+            "nodeLabelNodeBody": 0,
+            "relationLabelNodeBody": 0,
+            "nodeLabelNodeLabel": 0,
+            "nodeLabelRelationLabel": 0,
+            "relationLabelRelationLabel": 0,
+            "totalOccupiedOverlaps": 0,
+            "hardFeasible": true,
+            "minimumClearance": 0.4289797552726782
+          },
+          "extent": {
+            "width": 269.3705552397264,
+            "height": 496.6190112653441
+          },
+          "overviewFitScale": 0.5493927137876204,
+          "hardFailure": false
+        }
+      ],
+      "selectedOccupiedGeometry": {
+        "family": "occupied-feedback-2-sweeps",
+        "positions": {
+          "self-loop-n0": {
+            "x": 8.990911120438142,
+            "y": 1.7199019461137084
+          },
+          "self-loop-n1": {
+            "x": 269.3705552397264,
+            "y": 0
+          },
+          "self-loop-n4": {
+            "x": 196.97070144970905,
+            "y": 146.017245088178
+          },
+          "self-loop-n5": {
+            "x": 0,
+            "y": 204.31662911068437
+          },
+          "self-loop-n2": {
+            "x": 0,
+            "y": 296.0125119614738
+          },
+          "self-loop-n3": {
+            "x": 257.28678809662426,
+            "y": 294.309505632672
+          },
+          "self-loop-n6": {
+            "x": 185.74691829111498,
+            "y": 445.47205890596325
+          },
+          "self-loop-n7": {
+            "x": 6.006929312796615,
+            "y": 496.6190112653441
+          }
+        },
+        "formulation": {
+          "kind": "occupied-geometry-feasibility-first",
+          "sweepsRequested": 2,
+          "sweepsApplied": 0,
+          "geometrySource": [
+            "Product Node body bounds",
+            "Product Node-label bounds",
+            "Product Relation-label bounds"
+          ],
+          "hardConstraint": "zero AABB occupied overlap",
+          "clearanceMargin": 0,
+          "extentPolicy": "grow only from derived collision displacement",
+          "stoppingRule": "bounded-sweeps-exhausted"
+        },
+        "quality": {
+          "score": 28186.358280659057,
+          "overlapPairs": 0,
+          "minimumSeparation": 91.69588285078945,
+          "extent": [
+            269.3705552397264,
+            496.6190112653441
+          ],
+          "aspectRatio": 0.5424088670173792,
+          "fitScale": 0.5493927137876204,
+          "routeMedian": 138.73313894151548,
+          "routeMax": 196.38392817444378,
+          "crossings": 0,
+          "crossingRelationLabelNear": 0,
+          "labelRouteHits": 0,
+          "labelNear20": 0,
+          "labelOverlap": 0,
+          "labelCorridorDeficit": 49.02462396329117,
+          "labelCorridorConflictPairs": 5,
+          "labelCorridorMinimumClearance": 32.99181296834564,
+          "labelCorridorMaximumIntrusion": 15.008187031654359,
+          "usableSpanPenalty": 5630.252670743828,
+          "shortHopCount": 1,
+          "feedbackApplied": true
+        },
+        "visualRisk": {
+          "fitScale": 0.5493927137876204,
+          "effectiveFontScale": 0.5493927137876204,
+          "labelScreenOccupancy": 0.020326145296748366,
+          "nodeNodeOverlapPairs": 0,
+          "nodeRelationOverlapPairs": 0,
+          "relationRelationOverlapPairs": 0,
+          "totalLabelOverlapPairs": 0,
+          "foreignRouteRelationLabelHits": 0,
+          "relationLabelsWithForeignRouteHit": 0,
+          "ownershipAmbiguityCount": 0
+        },
+        "occupied": {
+          "nodeBodyNodeBody": 0,
+          "nodeLabelNodeBody": 0,
+          "relationLabelNodeBody": 0,
+          "nodeLabelNodeLabel": 0,
+          "nodeLabelRelationLabel": 0,
+          "relationLabelRelationLabel": 0,
+          "totalOccupiedOverlaps": 0,
+          "hardFeasible": true,
+          "minimumClearance": 0.4289797552726782
+        },
+        "extent": {
+          "width": 269.3705552397264,
+          "height": 496.6190112653441
+        },
+        "overviewFitScale": 0.5493927137876204,
+        "hardFailure": false
+      }
+    }
+  ],
+  "classification": "B. GEOMETRY CAPACITY FURTHER IMPROVES / RELATION OWNERSHIP RESIDUAL CONFIRMED",
+  "readiness": {
+    "nodeNodeFeasibility": "ZERO BODY OVERLAP; GEOMETRY CAPACITY IMPROVED",
+    "occupiedGeometryFeasibility": "OPEN / SINGLE-CONNECTED HARD FEASIBILITY NOT CLOSED",
+    "routeLabelOwnership": "OPEN",
+    "infiniteCanvasModel": "PRIOR BASELINE; NOT SUFFICIENT FOR ROUTE OWNERSHIP",
+    "humanReview": "NOT READY",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productionProvider": "NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}

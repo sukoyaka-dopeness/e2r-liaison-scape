@@ -7,6 +7,7 @@ import { solveAutoLayout } from "../../src/auto-layout.ts";
 import labelCapacityArtifact from "../explicit-label-capacity-candidate-formulation-probe1/result-summary.json";
 import refinementArtifact from "../bounded-label-capacity-screen-ownership-refinement1/result-summary.json";
 import infiniteCanvasArtifact from "../infinite-canvas-local-density-extent-growth-rebaseline1/result-summary.json";
+import occupiedGeometryArtifact from "../occupied-geometry-feasibility-first-extent-growth1/result-summary.json";
 
 type Point = { x: number; y: number };
 function positions(value: string): Record<string, Point> { return Object.fromEntries(value.split("|").map((item) => { const [id, pair] = item.split(":"); const [x, y] = pair!.split(",").map(Number); return [id!, { x, y }]; })); }
@@ -32,6 +33,10 @@ const infiniteCanvasIndex = Number(new URLSearchParams(location.search).get("ext
 const infiniteCanvasSelected = new URLSearchParams(location.search).get("extent") === "selected"
   ? infiniteCanvasArtifact.rows.find(({ fixture }) => fixture === id)?.selectedInfiniteCanvas?.positions
   : null;
+const occupiedSelected = new URLSearchParams(location.search).get("occupied") === "selected"
+  ? occupiedGeometryArtifact.rows.find(({ fixture }) => fixture === id)?.selectedOccupiedGeometry?.positions
+  : null;
+const occupiedIndex = Number(new URLSearchParams(location.search).get("occupied"));
 const selectedRefinement = new URLSearchParams(location.search).get("refine") === "selected"
   ? refinementArtifact.rows.find(({ fixture }) => fixture === id)?.selectedForPreview?.positions
   : null;
@@ -50,8 +55,11 @@ const refinement = Number.isInteger(refinementIndex) && refinementIndex >= 1 && 
 const infiniteCanvas = Number.isInteger(infiniteCanvasIndex) && infiniteCanvasIndex >= 1 && infiniteCanvasIndex <= 2
   ? infiniteCanvasArtifact.rows.find(({ fixture }) => fixture === id)?.probes[infiniteCanvasIndex - 1]?.positions
   : null;
+const occupied = Number.isInteger(occupiedIndex) && occupiedIndex >= 1 && occupiedIndex <= 3
+  ? occupiedGeometryArtifact.rows.find(({ fixture }) => fixture === id)?.probes[occupiedIndex - 1]?.positions
+  : null;
 const fallback = solveAutoLayout({ entities: dataset.entities, relations: dataset.relations }, { iterations: 3 });
-const selected = infiniteCanvasSelected ?? infiniteCanvas ?? selectedRefinement ?? refinement ?? probe ?? generated ?? candidates[id as keyof typeof candidates] ?? fallback;
+const selected = occupiedSelected ?? occupied ?? infiniteCanvasSelected ?? infiniteCanvas ?? selectedRefinement ?? refinement ?? probe ?? generated ?? candidates[id as keyof typeof candidates] ?? fallback;
 const previewRequested = new URLSearchParams(location.search).get("mode") === "hq";
 const preview = previewRequested ? { operationId: 1, generation: 1, snapshotIdentity: `worker-parity-${id}`, candidateFingerprint: fingerprintPreviewPositions(selected), positions: selected } : undefined;
 if (previewRequested) { const next = new URL(location.href); next.searchParams.delete("mode"); history.replaceState(history.state, "", next); }
