@@ -1,0 +1,20 @@
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import App from "../../../src/App.tsx";
+import "../../../src/styles.css";
+import { fingerprintPreviewPositions } from "../../../src/operation-local-product-preview.ts";
+import { parallelSelfLoop } from "../../diagnostic-fixtures.mjs";
+import artifact from "../../product-presentation-local-spacing-parallel-label-self-loop-refinement1/result-summary.json";
+
+type Point = { x: number; y: number };
+type Candidate = { id: string; positions: Record<string, Point> };
+const params = new URLSearchParams(location.search);
+const candidateId = params.get("candidate") ?? "current";
+const variant = params.get("variant") ?? "current";
+const candidate = (artifact.candidates as Candidate[]).find(({ id }) => id === candidateId);
+if (!candidate) throw new Error(`Unknown local refinement candidate: ${candidateId}`);
+const parallelBundleVariant = variant === "bundle-16" ? "bundle-16" : variant === "pair-16" ? "pair-16" : variant === "corridor-aware-16" ? "corridor-aware" : undefined;
+const dataset = parallelSelfLoop();
+const preview = { operationId: 1, generation: 1, snapshotIdentity: `product-presentation-local-refinement1-${candidateId}-${variant}`, candidateFingerprint: fingerprintPreviewPositions(candidate.positions), positions: candidate.positions };
+document.title = `${candidateId} / ${variant}`;
+createRoot(document.getElementById("root")!).render(<StrictMode><App diagnosticDataset={dataset} operationLocalPreview={preview} parallelBundleVariant={parallelBundleVariant} /></StrictMode>);

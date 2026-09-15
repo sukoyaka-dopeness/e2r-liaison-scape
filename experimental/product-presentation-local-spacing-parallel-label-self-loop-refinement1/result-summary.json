@@ -1,0 +1,4872 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-PRESENTATION-LOCAL-SPACING-PARALLEL-LABEL-SELF-LOOP-REFINEMENT-v1",
+  "diagnosticOnly": true,
+  "fixture": "parallel-self-loop-control",
+  "sourcePositionFingerprint": "0f8c410890f6",
+  "positionPolicy": "retain-current-topology-and-ordering; bounded-alpha-beta-local-displacement-only",
+  "candidates": [
+    {
+      "id": "current",
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 208,
+          "y": -10
+        },
+        "alpha": {
+          "x": 35,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "alphaBetaDistance": 173
+    },
+    {
+      "id": "local-spacing-1.15",
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 220.975,
+          "y": -10
+        },
+        "alpha": {
+          "x": 22.025000000000006,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "alphaBetaDistance": 198.95
+    },
+    {
+      "id": "local-spacing-1.30",
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 233.95,
+          "y": -10
+        },
+        "alpha": {
+          "x": 9.049999999999997,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "alphaBetaDistance": 224.89999999999998
+    }
+  ],
+  "routeVariants": [
+    "current-default",
+    "bundle-16",
+    "pair-16",
+    "corridor-aware-16"
+  ],
+  "rows": [
+    {
+      "candidate": "current",
+      "routeVariant": {
+        "id": "current-default"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 208,
+          "y": -10
+        },
+        "alpha": {
+          "x": 35,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 31.324684593234103,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1336.875878360339,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7649057074998561,
+            "pan": {
+              "x": 78.02038216498532,
+              "y": 141.7615086800023
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 64.6679946429489
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 232.66799464294888
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -17.332005357051116
+          },
+          "occupiedExtent": [
+            574,
+            338.66401071410223
+          ]
+        }
+      },
+      "quality": {
+        "score": 37263.53490799711,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 93.06957944944057,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 28.005164801720404,
+        "labelCorridorMaximumIntrusion": 19.994835198279596,
+        "usableSpanPenalty": 7922.061129437121,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "candidate": "current",
+      "routeVariant": {
+        "id": "bundle-16",
+        "spacing": 16,
+        "mode": "bundle"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 208,
+          "y": -10
+        },
+        "alpha": {
+          "x": 35,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 2,
+            "negative": 2
+          },
+          "signs": [
+            1,
+            -1,
+            -1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 1.1490889318475384,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 13.363401661625005,
+          "ambiguousCount": 0,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 7.738082378057327,
+              "foreignDistance": 18.99508250408448,
+              "ownershipMargin": 11.257000126027151
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 6.523351374868598,
+              "foreignDistance": 17.230680082286675,
+              "ownershipMargin": 10.707328707418077
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 0,
+              "foreignDistance": 4.29993574882166,
+              "ownershipMargin": 4.29993574882166
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 4.299935748821667,
+              "ownershipMargin": 4.299935748821667
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.928045914605335,
+              "ownershipMargin": 56.928045914605335
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 56.13813775974081,
+              "ownershipMargin": 56.13813775974081
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 116.23524614779073,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1354.332859802753,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 34,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.8265091802362502,
+            "pan": {
+              "x": 110.75223015165753,
+              "y": 140.77585311622
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 266,
+            "y": 79.6741809014384
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 372,
+            "y": 247.6741809014384
+          },
+          "postNodeFitCenterOffset": {
+            "x": -28,
+            "y": -2.3258190985615954
+          },
+          "occupiedExtent": [
+            638,
+            308.6516381971232
+          ]
+        }
+      },
+      "quality": {
+        "score": 37400.380967462625,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 116.23524614779073,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 67.0628460081382,
+        "labelCorridorConflictPairs": 6,
+        "labelCorridorMinimumClearance": 22.8935132326255,
+        "labelCorridorMaximumIntrusion": 25.1064867673745,
+        "usableSpanPenalty": 7954.538307579498,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 0
+      }
+    },
+    {
+      "candidate": "current",
+      "routeVariant": {
+        "id": "pair-16",
+        "spacing": 16,
+        "mode": "pair"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 208,
+          "y": -10
+        },
+        "alpha": {
+          "x": 35,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 2,
+            "negative": 2
+          },
+          "signs": [
+            1,
+            -1,
+            -1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 1.1490889318475384,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 13.363401661625005,
+          "ambiguousCount": 0,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 7.738082378057327,
+              "foreignDistance": 18.99508250408448,
+              "ownershipMargin": 11.257000126027151
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 6.523351374868598,
+              "foreignDistance": 17.230680082286675,
+              "ownershipMargin": 10.707328707418077
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 0,
+              "foreignDistance": 4.29993574882166,
+              "ownershipMargin": 4.29993574882166
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 4.299935748821667,
+              "ownershipMargin": 4.299935748821667
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.928045914605335,
+              "ownershipMargin": 56.928045914605335
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 56.13813775974081,
+              "ownershipMargin": 56.13813775974081
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 116.23524614779073,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1354.332859802753,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 34,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.8265091802362502,
+            "pan": {
+              "x": 110.75223015165753,
+              "y": 140.77585311622
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 266,
+            "y": 79.6741809014384
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 372,
+            "y": 247.6741809014384
+          },
+          "postNodeFitCenterOffset": {
+            "x": -28,
+            "y": -2.3258190985615954
+          },
+          "occupiedExtent": [
+            638,
+            308.6516381971232
+          ]
+        }
+      },
+      "quality": {
+        "score": 37400.380967462625,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 116.23524614779073,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 67.0628460081382,
+        "labelCorridorConflictPairs": 6,
+        "labelCorridorMinimumClearance": 22.8935132326255,
+        "labelCorridorMaximumIntrusion": 25.1064867673745,
+        "usableSpanPenalty": 7954.538307579498,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 0
+      }
+    },
+    {
+      "candidate": "current",
+      "routeVariant": {
+        "id": "corridor-aware-16",
+        "spacing": 16,
+        "mode": "corridor"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 208,
+          "y": -10
+        },
+        "alpha": {
+          "x": 35,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 2,
+            "negative": 2
+          },
+          "signs": [
+            1,
+            -1,
+            -1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 1.1490889318475384,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 13.363401661625005,
+          "ambiguousCount": 0,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 7.738082378057327,
+              "foreignDistance": 18.99508250408448,
+              "ownershipMargin": 11.257000126027151
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 6.523351374868598,
+              "foreignDistance": 17.230680082286675,
+              "ownershipMargin": 10.707328707418077
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 0,
+              "foreignDistance": 4.29993574882166,
+              "ownershipMargin": 4.29993574882166
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 4.299935748821667,
+              "ownershipMargin": 4.299935748821667
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.928045914605335,
+              "ownershipMargin": 56.928045914605335
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 56.13813775974081,
+              "ownershipMargin": 56.13813775974081
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 116.23524614779073,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1354.332859802753,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 34,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.8265091802362502,
+            "pan": {
+              "x": 110.75223015165753,
+              "y": 140.77585311622
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 266,
+            "y": 79.6741809014384
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 372,
+            "y": 247.6741809014384
+          },
+          "postNodeFitCenterOffset": {
+            "x": -28,
+            "y": -2.3258190985615954
+          },
+          "occupiedExtent": [
+            638,
+            308.6516381971232
+          ]
+        }
+      },
+      "quality": {
+        "score": 37400.380967462625,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 116.23524614779073,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 67.0628460081382,
+        "labelCorridorConflictPairs": 6,
+        "labelCorridorMinimumClearance": 22.8935132326255,
+        "labelCorridorMaximumIntrusion": 25.1064867673745,
+        "usableSpanPenalty": 7954.538307579498,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 0
+      }
+    },
+    {
+      "candidate": "local-spacing-1.15",
+      "routeVariant": {
+        "id": "current-default"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 220.975,
+          "y": -10
+        },
+        "alpha": {
+          "x": 22.025000000000006,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 2,
+            "negative": 2
+          },
+          "signs": [
+            1,
+            -1,
+            -1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.7646499011135852,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 13.363401661625005,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 10.379061386890854,
+              "foreignDistance": 15.206265848667714,
+              "ownershipMargin": 4.82720446177686
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 28.999999999999993,
+              "foreignDistance": 13.144231126557898,
+              "ownershipMargin": -15.855768873442095
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 0,
+              "foreignDistance": 4.855768873442095,
+              "ownershipMargin": 4.855768873442095
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 4.855768873442095,
+              "ownershipMargin": 4.855768873442095
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 120,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1422.3495451621839,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 112.48750000000001,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7990996589162652,
+            "pan": {
+              "x": 86.69232424667834,
+              "y": 141.21440545733975
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 287.5125,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 291.5125,
+            "y": 73.28311133450616
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 241.28311133450615
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -8.716888665493855
+          },
+          "occupiedExtent": [
+            586.975,
+            321.4337773309877
+          ]
+        }
+      },
+      "quality": {
+        "score": 36926.06887677884,
+        "overlapPairs": 0,
+        "minimumSeparation": 159.025,
+        "extent": [
+          530.975,
+          184
+        ],
+        "aspectRatio": 2.885733695652174,
+        "fitScale": 1,
+        "routeMedian": 120,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 134.372135908323,
+        "labelCorridorConflictPairs": 9,
+        "labelCorridorMinimumClearance": 24.417896894719966,
+        "labelCorridorMaximumIntrusion": 23.582103105280034,
+        "usableSpanPenalty": 7833.266970482446,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "candidate": "local-spacing-1.15",
+      "routeVariant": {
+        "id": "bundle-16",
+        "spacing": 16,
+        "mode": "bundle"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 220.975,
+          "y": -10
+        },
+        "alpha": {
+          "x": 22.025000000000006,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 1.0254708465339348,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 31.324684593234103,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.711971081182135,
+              "ownershipMargin": 56.711971081182135
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.432761923378232,
+              "foreignDistance": 20.641445409506762,
+              "ownershipMargin": 12.20868348612853
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.90045807834035,
+              "ownershipMargin": -14.09954192165965
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 15.719094495059826,
+              "foreignDistance": 28.117887694488797,
+              "ownershipMargin": 12.39879319942897
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.928045914605335,
+              "ownershipMargin": 56.928045914605335
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 56.13813775974081,
+              "ownershipMargin": 56.13813775974081
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 120,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1465.1103419188057,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 112.48750000000001,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7485762120869701,
+            "pan": {
+              "x": 81.21116180878518,
+              "y": 142.02278060660848
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 287.5125,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 291.5125,
+            "y": 60.276123775479824
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 228.27612377547982
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -21.723876224520183
+          },
+          "occupiedExtent": [
+            586.975,
+            347.44775244904037
+          ]
+        }
+      },
+      "quality": {
+        "score": 36926.06887677884,
+        "overlapPairs": 0,
+        "minimumSeparation": 159.025,
+        "extent": [
+          530.975,
+          184
+        ],
+        "aspectRatio": 2.885733695652174,
+        "fitScale": 1,
+        "routeMedian": 120,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 106.71049937154743,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 22.8935132326255,
+        "labelCorridorMaximumIntrusion": 25.1064867673745,
+        "usableSpanPenalty": 7833.266970482446,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "candidate": "local-spacing-1.15",
+      "routeVariant": {
+        "id": "pair-16",
+        "spacing": 16,
+        "mode": "pair"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 220.975,
+          "y": -10
+        },
+        "alpha": {
+          "x": 22.025000000000006,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 1.0254708465339348,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 31.324684593234103,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.711971081182135,
+              "ownershipMargin": 56.711971081182135
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.432761923378232,
+              "foreignDistance": 20.641445409506762,
+              "ownershipMargin": 12.20868348612853
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.90045807834035,
+              "ownershipMargin": -14.09954192165965
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 15.719094495059826,
+              "foreignDistance": 28.117887694488797,
+              "ownershipMargin": 12.39879319942897
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.928045914605335,
+              "ownershipMargin": 56.928045914605335
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 56.13813775974081,
+              "ownershipMargin": 56.13813775974081
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 120,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1465.1103419188057,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 112.48750000000001,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7485762120869701,
+            "pan": {
+              "x": 81.21116180878518,
+              "y": 142.02278060660848
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 287.5125,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 291.5125,
+            "y": 60.276123775479824
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 228.27612377547982
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -21.723876224520183
+          },
+          "occupiedExtent": [
+            586.975,
+            347.44775244904037
+          ]
+        }
+      },
+      "quality": {
+        "score": 36926.06887677884,
+        "overlapPairs": 0,
+        "minimumSeparation": 159.025,
+        "extent": [
+          530.975,
+          184
+        ],
+        "aspectRatio": 2.885733695652174,
+        "fitScale": 1,
+        "routeMedian": 120,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 106.71049937154743,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 22.8935132326255,
+        "labelCorridorMaximumIntrusion": 25.1064867673745,
+        "usableSpanPenalty": 7833.266970482446,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "candidate": "local-spacing-1.15",
+      "routeVariant": {
+        "id": "corridor-aware-16",
+        "spacing": 16,
+        "mode": "corridor"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 220.975,
+          "y": -10
+        },
+        "alpha": {
+          "x": 22.025000000000006,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 1.0254708465339348,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 31.324684593234103,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.711971081182135,
+              "ownershipMargin": 56.711971081182135
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.432761923378232,
+              "foreignDistance": 20.641445409506762,
+              "ownershipMargin": 12.20868348612853
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.90045807834035,
+              "ownershipMargin": -14.09954192165965
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 15.719094495059826,
+              "foreignDistance": 28.117887694488797,
+              "ownershipMargin": 12.39879319942897
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.928045914605335,
+              "ownershipMargin": 56.928045914605335
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 56.13813775974081,
+              "ownershipMargin": 56.13813775974081
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 120,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1465.1103419188057,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 112.48750000000001,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7485762120869701,
+            "pan": {
+              "x": 81.21116180878518,
+              "y": 142.02278060660848
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 287.5125,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 291.5125,
+            "y": 60.276123775479824
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 228.27612377547982
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -21.723876224520183
+          },
+          "occupiedExtent": [
+            586.975,
+            347.44775244904037
+          ]
+        }
+      },
+      "quality": {
+        "score": 36926.06887677884,
+        "overlapPairs": 0,
+        "minimumSeparation": 159.025,
+        "extent": [
+          530.975,
+          184
+        ],
+        "aspectRatio": 2.885733695652174,
+        "fitScale": 1,
+        "routeMedian": 120,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 106.71049937154743,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 22.8935132326255,
+        "labelCorridorMaximumIntrusion": 25.1064867673745,
+        "usableSpanPenalty": 7833.266970482446,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "candidate": "local-spacing-1.30",
+      "routeVariant": {
+        "id": "current-default"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 233.95,
+          "y": -10
+        },
+        "alpha": {
+          "x": 9.049999999999997,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 2,
+            "negative": 2
+          },
+          "signs": [
+            1,
+            -1,
+            -1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.683511670737217,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 13.363401661625005,
+          "ambiguousCount": 2,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 11.246440750814447,
+              "foreignDistance": 14.504848182644231,
+              "ownershipMargin": 3.2584074318297844
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 29.000000000000007,
+              "foreignDistance": 13.585148955091157,
+              "ownershipMargin": -15.41485104490885
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 0,
+              "foreignDistance": 4.4148510449088505,
+              "ownershipMargin": 4.4148510449088505
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 4.4148510449088505,
+              "ownershipMargin": 4.4148510449088505
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 120,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1524.653544643979,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 118.97500000000002,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.8006417228501648,
+            "pan": {
+              "x": 92.05378208469772,
+              "y": 141.18973243439734
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 281.025,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 285.025,
+            "y": 73.65429079590929
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 241.65429079590928
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -8.345709204090724
+          },
+          "occupiedExtent": [
+            599.95,
+            320.69141840818145
+          ]
+        }
+      },
+      "quality": {
+        "score": 36929.31262677884,
+        "overlapPairs": 0,
+        "minimumSeparation": 146.05,
+        "extent": [
+          543.95,
+          184
+        ],
+        "aspectRatio": 2.9562500000000003,
+        "fitScale": 1,
+        "routeMedian": 120,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 122.54528538801819,
+        "labelCorridorConflictPairs": 9,
+        "labelCorridorMinimumClearance": 27.637195566148694,
+        "labelCorridorMaximumIntrusion": 20.362804433851306,
+        "usableSpanPenalty": 7833.266970482446,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 2
+      }
+    },
+    {
+      "candidate": "local-spacing-1.30",
+      "routeVariant": {
+        "id": "bundle-16",
+        "spacing": 16,
+        "mode": "bundle"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 233.95,
+          "y": -10
+        },
+        "alpha": {
+          "x": 9.049999999999997,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.9240912335584434,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 31.324684593234103,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 57.02262189133622,
+              "ownershipMargin": 57.02262189133622
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 9.796531509518912,
+              "foreignDistance": 22.731638312303264,
+              "ownershipMargin": 12.935106802784352
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29.000000000000007,
+              "foreignDistance": 14.632318386837568,
+              "ownershipMargin": -14.36768161316244
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0.9553787615696138,
+              "foreignDistance": 14.112197845129224,
+              "ownershipMargin": 13.15681908355961
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.928045914605335,
+              "ownershipMargin": 56.928045914605335
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 56.13813775974081,
+              "ownershipMargin": 56.13813775974081
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 120,
+        "routeMax": 187.12153550500634,
+        "routeTotal": 1560.6731113593476,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 118.97500000000002,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7506995948962257,
+            "pan": {
+              "x": 86.31168592319356,
+              "y": 141.9888064816604
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 281.025,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 285.025,
+            "y": 60.85802170801962
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 228.85802170801963
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -21.141978291980365
+          },
+          "occupiedExtent": [
+            599.95,
+            346.28395658396073
+          ]
+        }
+      },
+      "quality": {
+        "score": 36942.176917434794,
+        "overlapPairs": 0,
+        "minimumSeparation": 146.05,
+        "extent": [
+          543.95,
+          184
+        ],
+        "aspectRatio": 2.9562500000000003,
+        "fitScale": 1,
+        "routeMedian": 120,
+        "routeMax": 187.12153550500634,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 100.50406360369902,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 22.8935132326255,
+        "labelCorridorMaximumIntrusion": 25.1064867673745,
+        "usableSpanPenalty": 7833.266970482446,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "candidate": "local-spacing-1.30",
+      "routeVariant": {
+        "id": "pair-16",
+        "spacing": 16,
+        "mode": "pair"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 233.95,
+          "y": -10
+        },
+        "alpha": {
+          "x": 9.049999999999997,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.9240912335584434,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 31.324684593234103,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 57.02262189133622,
+              "ownershipMargin": 57.02262189133622
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 9.796531509518912,
+              "foreignDistance": 22.731638312303264,
+              "ownershipMargin": 12.935106802784352
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29.000000000000007,
+              "foreignDistance": 14.632318386837568,
+              "ownershipMargin": -14.36768161316244
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0.9553787615696138,
+              "foreignDistance": 14.112197845129224,
+              "ownershipMargin": 13.15681908355961
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.928045914605335,
+              "ownershipMargin": 56.928045914605335
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 56.13813775974081,
+              "ownershipMargin": 56.13813775974081
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 120,
+        "routeMax": 187.12153550500634,
+        "routeTotal": 1560.6731113593476,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 118.97500000000002,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7506995948962257,
+            "pan": {
+              "x": 86.31168592319356,
+              "y": 141.9888064816604
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 281.025,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 285.025,
+            "y": 60.85802170801962
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 228.85802170801963
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -21.141978291980365
+          },
+          "occupiedExtent": [
+            599.95,
+            346.28395658396073
+          ]
+        }
+      },
+      "quality": {
+        "score": 36942.176917434794,
+        "overlapPairs": 0,
+        "minimumSeparation": 146.05,
+        "extent": [
+          543.95,
+          184
+        ],
+        "aspectRatio": 2.9562500000000003,
+        "fitScale": 1,
+        "routeMedian": 120,
+        "routeMax": 187.12153550500634,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 100.50406360369902,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 22.8935132326255,
+        "labelCorridorMaximumIntrusion": 25.1064867673745,
+        "usableSpanPenalty": 7833.266970482446,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "candidate": "local-spacing-1.30",
+      "routeVariant": {
+        "id": "corridor-aware-16",
+        "spacing": 16,
+        "mode": "corridor"
+      },
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 233.95,
+          "y": -10
+        },
+        "alpha": {
+          "x": 9.049999999999997,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.9240912335584434,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 31.324684593234103,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 57.02262189133622,
+              "ownershipMargin": 57.02262189133622
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 9.796531509518912,
+              "foreignDistance": 22.731638312303264,
+              "ownershipMargin": 12.935106802784352
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29.000000000000007,
+              "foreignDistance": 14.632318386837568,
+              "ownershipMargin": -14.36768161316244
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0.9553787615696138,
+              "foreignDistance": 14.112197845129224,
+              "ownershipMargin": 13.15681908355961
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 56.928045914605335,
+              "ownershipMargin": 56.928045914605335
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 56.13813775974081,
+              "ownershipMargin": 56.13813775974081
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 120,
+        "routeMax": 187.12153550500634,
+        "routeTotal": 1560.6731113593476,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 118.97500000000002,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7506995948962257,
+            "pan": {
+              "x": 86.31168592319356,
+              "y": 141.9888064816604
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 281.025,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 285.025,
+            "y": 60.85802170801962
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 228.85802170801963
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -21.141978291980365
+          },
+          "occupiedExtent": [
+            599.95,
+            346.28395658396073
+          ]
+        }
+      },
+      "quality": {
+        "score": 36942.176917434794,
+        "overlapPairs": 0,
+        "minimumSeparation": 146.05,
+        "extent": [
+          543.95,
+          184
+        ],
+        "aspectRatio": 2.9562500000000003,
+        "fitScale": 1,
+        "routeMedian": 120,
+        "routeMax": 187.12153550500634,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 100.50406360369902,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 22.8935132326255,
+        "labelCorridorMaximumIntrusion": 25.1064867673745,
+        "usableSpanPenalty": 7833.266970482446,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    }
+  ],
+  "selfLoopAutomatic": {
+    "orientation": -1.5707963267948966,
+    "radius": 91.636598338375,
+    "preferredOrientation": -1.5707963267948966,
+    "preferredDelta": 0,
+    "labelDistanceToOwnRoute": 1.0773768485049604
+  },
+  "selfLoopProbes": [
+    {
+      "orientation": -1.5707963267948966,
+      "radius": 91.636598338375,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 31.324684593234103,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 1.0773768485049604,
+              "foreignDistance": 13.695537099627586,
+              "ownershipMargin": 12.618160251122626
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 13.363401661625005,
+              "ownershipMargin": 13.363401661625005
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234103,
+              "ownershipMargin": 31.324684593234103
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1336.875878360339,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 1.0773768485049604
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7649057074998561,
+            "pan": {
+              "x": 78.02038216498532,
+              "y": 141.7615086800023
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 64.6679946429489
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 232.66799464294888
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -17.332005357051116
+          },
+          "occupiedExtent": [
+            574,
+            338.66401071410223
+          ]
+        }
+      },
+      "quality": {
+        "score": 37263.53490799711,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 93.06957944944057,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 28.005164801720404,
+        "labelCorridorMaximumIntrusion": 19.994835198279596,
+        "usableSpanPenalty": 7922.061129437121,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "orientation": -1.5707963267948966,
+      "radius": 123.98917482103775,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 29.824812946275834,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 0,
+              "foreignDistance": 16.69829781941047,
+              "ownershipMargin": 16.69829781941047
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 14.785414941875375,
+              "ownershipMargin": 14.785414941875375
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 29.824812946275834,
+              "ownershipMargin": 29.824812946275834
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 266.2521240872724,
+        "routeTotal": 1428.8707575985572,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 123.98917482103775,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 0
+        },
+        "selectedCandidateConflictSignals": 46,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7649057074998561,
+            "pan": {
+              "x": 78.02038216498532,
+              "y": 141.7615086800023
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 64.6679946429489
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 232.66799464294888
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -17.332005357051116
+          },
+          "occupiedExtent": [
+            574,
+            338.66401071410223
+          ]
+        }
+      },
+      "quality": {
+        "score": 40637.58223446048,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 266.2521240872724,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 93.06957944944057,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 28.005164801720404,
+        "labelCorridorMaximumIntrusion": 19.994835198279596,
+        "usableSpanPenalty": 8742.574241243408,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "orientation": -1.5707963267948966,
+      "radius": 154.02173025247163,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 28.486062482878484,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 0,
+              "foreignDistance": 17.678955771097833,
+              "ownershipMargin": 17.678955771097833
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 8.363831559204812,
+              "ownershipMargin": 8.363831559204812
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 35.0458710759274,
+              "ownershipMargin": 35.0458710759274
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 75.07104422890217,
+              "ownershipMargin": 75.07104422890217
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 28.486062482878484,
+              "ownershipMargin": 28.486062482878484
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 355.51468093576625,
+        "routeTotal": 1518.133314447051,
+        "selfLoop": {
+          "orientation": -1.5707963267948966,
+          "radius": 154.02173025247163,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 0,
+          "labelDistanceToOwnRoute": 0
+        },
+        "selectedCandidateConflictSignals": 46,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7649057074998561,
+            "pan": {
+              "x": 78.02038216498532,
+              "y": 141.7615086800023
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 64.6679946429489
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 232.66799464294888
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -17.332005357051116
+          },
+          "occupiedExtent": [
+            574,
+            338.66401071410223
+          ]
+        }
+      },
+      "quality": {
+        "score": 42345.190671062555,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 355.51468093576625,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 112.13690520615785,
+        "labelCorridorConflictPairs": 8,
+        "labelCorridorMinimumClearance": 28.005164801720404,
+        "labelCorridorMaximumIntrusion": 19.994835198279596,
+        "usableSpanPenalty": 9147.160711181803,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "orientation": 0,
+      "radius": 91.636598338375,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 38.660131579816856,
+          "ambiguousCount": 2,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 0,
+              "foreignDistance": 5.829946165693684,
+              "ownershipMargin": 5.829946165693684
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 45.84039981480794,
+              "ownershipMargin": 45.84039981480794
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 29,
+              "foreignDistance": 6.434671989825314,
+              "ownershipMargin": -22.565328010174685
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1336.875878360339,
+        "selfLoop": {
+          "orientation": 0,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 1.5707963267948966,
+          "labelDistanceToOwnRoute": 0
+        },
+        "selectedCandidateConflictSignals": 30,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7649057074998561,
+            "pan": {
+              "x": 56.60302235498935,
+              "y": 141.7615086800023
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 326,
+            "y": 64.6679946429489
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 432,
+            "y": 232.66799464294888
+          },
+          "postNodeFitCenterOffset": {
+            "x": 32,
+            "y": -17.332005357051116
+          },
+          "occupiedExtent": [
+            630,
+            338.66401071410223
+          ]
+        }
+      },
+      "quality": {
+        "score": 5966.022581622886,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 83.73897461018541,
+        "labelCorridorConflictPairs": 5,
+        "labelCorridorMinimumClearance": 28.005164801720404,
+        "labelCorridorMaximumIntrusion": 19.994835198279596,
+        "usableSpanPenalty": 97.68304784356457,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 2
+      }
+    },
+    {
+      "orientation": 0,
+      "radius": 123.98917482103775,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 38.660131579816856,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 0,
+              "foreignDistance": 40.9705173741292,
+              "ownershipMargin": 40.9705173741292
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 38.35822519790516,
+              "ownershipMargin": 38.35822519790516
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 54.46234261347524,
+              "ownershipMargin": 54.46234261347524
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 14.852399319431255,
+              "ownershipMargin": 14.852399319431255
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 266.2521240872724,
+        "routeTotal": 1428.8707575985572,
+        "selfLoop": {
+          "orientation": 0,
+          "radius": 123.98917482103775,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 1.5707963267948966,
+          "labelDistanceToOwnRoute": 0
+        },
+        "selectedCandidateConflictSignals": 42,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.759304197923224,
+            "pan": {
+              "x": 77.44902818816885,
+              "y": 139.59560652104824
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 66.1532533300135
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 234.1532533300135
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -15.846746669986487
+          },
+          "occupiedExtent": [
+            574,
+            341.6345280882314
+          ]
+        }
+      },
+      "quality": {
+        "score": 6058.017460861104,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 266.2521240872724,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 100.64724530964486,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 28.005164801720404,
+        "labelCorridorMaximumIntrusion": 19.994835198279596,
+        "usableSpanPenalty": 97.68304784356457,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "orientation": 0,
+      "radius": 154.02173025247157,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 32.524171611931216,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 28.956942891574442,
+              "foreignDistance": 94.88589866267228,
+              "ownershipMargin": 65.92895577109783
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 32.524171611931216,
+              "ownershipMargin": 32.524171611931216
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 31.027014848298702,
+              "ownershipMargin": 31.027014848298702
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.34486640446618,
+              "ownershipMargin": 31.34486640446618
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 355.51468093576625,
+        "routeTotal": 1518.133314447051,
+        "selfLoop": {
+          "orientation": 0,
+          "radius": 154.02173025247157,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 1.5707963267948966,
+          "labelDistanceToOwnRoute": 28.956942891574442
+        },
+        "selectedCandidateConflictSignals": 40,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.6702210004082012,
+            "pan": {
+              "x": 49.59635403020689,
+              "y": 105.15034008265302
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 326,
+            "y": 93.11094397428504
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 432,
+            "y": 261.110943974285
+          },
+          "postNodeFitCenterOffset": {
+            "x": 32,
+            "y": 11.110943974285021
+          },
+          "occupiedExtent": [
+            630,
+            395.5499093767745
+          ]
+        }
+      },
+      "quality": {
+        "score": 6147.280017709599,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 355.51468093576625,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 83.73897461018541,
+        "labelCorridorConflictPairs": 5,
+        "labelCorridorMinimumClearance": 28.005164801720404,
+        "labelCorridorMaximumIntrusion": 19.994835198279596,
+        "usableSpanPenalty": 97.68304784356457,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "orientation": 1.5707963267948966,
+      "radius": 91.636598338375,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 39.69284271656853,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 0,
+              "foreignDistance": 80.636598338375,
+              "ownershipMargin": 80.636598338375
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 31.324684593234082,
+              "ownershipMargin": 31.324684593234082
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 174.25724484905408,
+        "routeTotal": 1336.875878360339,
+        "selfLoop": {
+          "orientation": 1.5707963267948966,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 3.141592653589793,
+          "labelDistanceToOwnRoute": 0
+        },
+        "selectedCandidateConflictSignals": 26,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.6916675920461255,
+            "pan": {
+              "x": 70.5500943887048,
+              "y": 113.44296522152032
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 85.9862938121364
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 253.9862938121364
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": 3.9862938121364095
+          },
+          "occupiedExtent": [
+            574,
+            381.30060905247717
+          ]
+        }
+      },
+      "quality": {
+        "score": 37263.53490799711,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 174.25724484905408,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 101.63281906841937,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 28.005164801720404,
+        "labelCorridorMaximumIntrusion": 19.994835198279596,
+        "usableSpanPenalty": 7922.061129437121,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "orientation": 1.5707963267948966,
+      "radius": 123.98917482103775,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 39.69284271656853,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 0,
+              "foreignDistance": 112.98917482103775,
+              "ownershipMargin": 112.98917482103775
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 29.824812946275813,
+              "ownershipMargin": 29.824812946275813
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 266.25212408727253,
+        "routeTotal": 1428.8707575985572,
+        "selfLoop": {
+          "orientation": 1.5707963267948966,
+          "radius": 123.98917482103775,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 3.141592653589793,
+          "labelDistanceToOwnRoute": 0
+        },
+        "selectedCandidateConflictSignals": 26,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.6448193152002774,
+            "pan": {
+              "x": 65.77157015042829,
+              "y": 95.32842260126012
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 102.16258205346777
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 270.16258205346776
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": 20.16258205346776
+          },
+          "occupiedExtent": [
+            574,
+            413.65318553514
+          ]
+        }
+      },
+      "quality": {
+        "score": 40637.58223446051,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 266.25212408727253,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 97.4618685997118,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 28.005164801720404,
+        "labelCorridorMaximumIntrusion": 19.994835198279596,
+        "usableSpanPenalty": 8742.574241243416,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "orientation": 1.5707963267948966,
+      "radius": 154.02173025247163,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 39.69284271656853,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 0,
+              "foreignDistance": 143.02173025247163,
+              "ownershipMargin": 143.02173025247163
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 28.486062482878467,
+              "ownershipMargin": 28.486062482878467
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 355.5146809357663,
+        "routeTotal": 1518.1333144470511,
+        "selfLoop": {
+          "orientation": 1.5707963267948966,
+          "radius": 154.02173025247163,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 3.141592653589793,
+          "labelDistanceToOwnRoute": 0
+        },
+        "selectedCandidateConflictSignals": 26,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.6066745136737627,
+            "pan": {
+              "x": 61.88080039472379,
+              "y": 80.5792006551245
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 117.17885976918471
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 285.1788597691847
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": 35.178859769184726
+          },
+          "occupiedExtent": [
+            574,
+            443.6857409665738
+          ]
+        }
+      },
+      "quality": {
+        "score": 42345.190671062555,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 355.5146809357663,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 93.94786710307818,
+        "labelCorridorConflictPairs": 7,
+        "labelCorridorMinimumClearance": 28.005164801720404,
+        "labelCorridorMaximumIntrusion": 19.994835198279596,
+        "usableSpanPenalty": 9147.160711181803,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "orientation": 3.141592653589793,
+      "radius": 91.636598338375,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 39.69284271656853,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 0,
+              "foreignDistance": 39.67617191882649,
+              "ownershipMargin": 39.67617191882649
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 45.84039981480791,
+              "ownershipMargin": 45.84039981480791
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 174.25724484905405,
+        "routeTotal": 1336.875878360339,
+        "selfLoop": {
+          "orientation": 3.141592653589793,
+          "radius": 91.636598338375,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 1.570796326794897,
+          "labelDistanceToOwnRoute": 0
+        },
+        "selectedCandidateConflictSignals": 26,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.7567272054753553,
+            "pan": {
+              "x": 77.18617495848625,
+              "y": 138.59917628557542
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 66.84393625241582
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 234.8439362524158
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -15.156063747584199
+          },
+          "occupiedExtent": [
+            574,
+            343.01589393303607
+          ]
+        }
+      },
+      "quality": {
+        "score": 10966.022581622887,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 174.25724484905405,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 1,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 112.1390361668962,
+        "labelCorridorConflictPairs": 8,
+        "labelCorridorMinimumClearance": 26.882199158028328,
+        "labelCorridorMaximumIntrusion": 21.117800841971672,
+        "usableSpanPenalty": 97.68304784356457,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "orientation": 3.141592653589793,
+      "radius": 123.98917482103775,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 39.69284271656853,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 0,
+              "foreignDistance": 70.59519290619184,
+              "ownershipMargin": 70.59519290619184
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 38.358225197905185,
+              "ownershipMargin": 38.358225197905185
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 266.2521240872724,
+        "routeTotal": 1428.8707575985572,
+        "selfLoop": {
+          "orientation": 3.141592653589793,
+          "radius": 123.98917482103775,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 1.570796326794897,
+          "labelDistanceToOwnRoute": 0
+        },
+        "selectedCandidateConflictSignals": 26,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.759304197923224,
+            "pan": {
+              "x": 77.44902818816885,
+              "y": 139.59560652104824
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 66.1532533300135
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 234.1532533300135
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": -15.846746669986487
+          },
+          "occupiedExtent": [
+            574,
+            341.6345280882314
+          ]
+        }
+      },
+      "quality": {
+        "score": 6058.017460861104,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 266.2521240872724,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 0,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 124.95139589017344,
+        "labelCorridorConflictPairs": 8,
+        "labelCorridorMinimumClearance": 24.60254390335264,
+        "labelCorridorMaximumIntrusion": 23.39745609664736,
+        "usableSpanPenalty": 97.68304784356457,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    },
+    {
+      "orientation": 3.141592653589793,
+      "radius": 154.02173025247163,
+      "metrics": {
+        "alphaBetaSideDistribution": {
+          "counts": {
+            "positive": 3,
+            "negative": 1
+          },
+          "signs": [
+            1,
+            -1,
+            1,
+            1
+          ]
+        },
+        "alphaBetaForwardEndpointAngularSeparation": 0.8662812892443628,
+        "occupiedPathConflictCount": 0,
+        "relationLabels": {
+          "medianOwnerDistance": 0,
+          "minimumOwnerDistance": 0,
+          "medianOwnershipMargin": 39.69284271656853,
+          "ambiguousCount": 1,
+          "rows": [
+            {
+              "id": "r-ab-1",
+              "ownerDistance": 0,
+              "foreignDistance": 38.660131579816856,
+              "ownershipMargin": 38.660131579816856
+            },
+            {
+              "id": "r-ab-2",
+              "ownerDistance": 8.405461229456868,
+              "foreignDistance": 14.873419242306024,
+              "ownershipMargin": 6.467958012849156
+            },
+            {
+              "id": "r-ba-1",
+              "ownerDistance": 29,
+              "foreignDistance": 14.300722035133859,
+              "ownershipMargin": -14.699277964866141
+            },
+            {
+              "id": "r-ba-2",
+              "ownerDistance": 0,
+              "foreignDistance": 8.731510612241722,
+              "ownershipMargin": 8.731510612241722
+            },
+            {
+              "id": "r-cd-1",
+              "ownerDistance": 0,
+              "foreignDistance": 40.13422694174803,
+              "ownershipMargin": 40.13422694174803
+            },
+            {
+              "id": "r-cd-2",
+              "ownerDistance": 0,
+              "foreignDistance": 39.69284271656853,
+              "ownershipMargin": 39.69284271656853
+            },
+            {
+              "id": "r-loop",
+              "ownerDistance": 28.956942891574442,
+              "foreignDistance": 108.12701074587679,
+              "ownershipMargin": 79.17006785430235
+            },
+            {
+              "id": "r-ef",
+              "ownerDistance": 0,
+              "foreignDistance": 32.524171611931216,
+              "ownershipMargin": 32.524171611931216
+            },
+            {
+              "id": "r-fg",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            },
+            {
+              "id": "r-gh",
+              "ownerDistance": 0,
+              "foreignDistance": 81,
+              "ownershipMargin": 81
+            },
+            {
+              "id": "r-he",
+              "ownerDistance": 0,
+              "foreignDistance": 58.40590723548432,
+              "ownershipMargin": 58.40590723548432
+            }
+          ]
+        },
+        "routeMedian": 112.76657269978722,
+        "routeMax": 355.51468093576625,
+        "routeTotal": 1518.133314447051,
+        "selfLoop": {
+          "orientation": 3.141592653589793,
+          "radius": 154.02173025247163,
+          "preferredOrientation": -1.5707963267948966,
+          "preferredDelta": 1.570796326794897,
+          "labelDistanceToOwnRoute": 28.956942891574442
+        },
+        "selectedCandidateConflictSignals": 26,
+        "viewport": {
+          "nodeOnlyFit": {
+            "scale": 1,
+            "pan": {
+              "x": 106,
+              "y": 168
+            }
+          },
+          "presentationFit": {
+            "scale": 0.6702210004082012,
+            "pan": {
+              "x": 68.36254204163652,
+              "y": 105.15034008265302
+            }
+          },
+          "nodeBoundsCenter": {
+            "x": 294,
+            "y": 82
+          },
+          "occupiedBoundsCenter": {
+            "x": 298,
+            "y": 93.11094397428504
+          },
+          "postNodeFitOccupiedCenter": {
+            "x": 404,
+            "y": 261.110943974285
+          },
+          "postNodeFitCenterOffset": {
+            "x": 4,
+            "y": 11.110943974285021
+          },
+          "occupiedExtent": [
+            574,
+            395.5499093767745
+          ]
+        }
+      },
+      "quality": {
+        "score": 11147.2800177096,
+        "overlapPairs": 0,
+        "minimumSeparation": 172,
+        "extent": [
+          518,
+          184
+        ],
+        "aspectRatio": 2.8152173913043477,
+        "fitScale": 1,
+        "routeMedian": 112.76657269978722,
+        "routeMax": 355.51468093576625,
+        "crossings": 0,
+        "crossingRelationLabelNear": 0,
+        "labelRouteHits": 0,
+        "labelNear20": 1,
+        "labelOverlap": 0,
+        "labelCorridorDeficit": 112.36546521370906,
+        "labelCorridorConflictPairs": 8,
+        "labelCorridorMinimumClearance": 21.048931826140734,
+        "labelCorridorMaximumIntrusion": 26.951068173859266,
+        "usableSpanPenalty": 97.68304784356457,
+        "shortHopCount": 1,
+        "feedbackApplied": true
+      },
+      "visualRisk": {
+        "fitScale": 1,
+        "effectiveFontScale": 1,
+        "labelScreenOccupancy": 0.0578725,
+        "nodeNodeOverlapPairs": 0,
+        "nodeRelationOverlapPairs": 0,
+        "relationRelationOverlapPairs": 0,
+        "totalLabelOverlapPairs": 0,
+        "foreignRouteRelationLabelHits": 0,
+        "relationLabelsWithForeignRouteHit": 0,
+        "ownershipAmbiguityCount": 1
+      }
+    }
+  ],
+  "viewportFinding": "current-fit-uses-node-centers-only; compare post-node-fit occupied bounds against presentation-fit bounds; no viewport fix adopted in this diagnostic",
+  "authorityFinding": "routing-label-placement-self-loop-and-viewport-remain-Product-owned; no Incident allocator or endpoint-plan authority reopened",
+  "selection": "no production winner; retain current unless Actual Product smoke validates a bounded candidate",
+  "readiness": {
+    "productPresentationCandidate": "DIAGNOSTIC ONLY",
+    "humanReview": "NOT READY",
+    "productionProvider": "NOT ESTABLISHED",
+    "productDefault": "HOLD",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}
