@@ -1,0 +1,1198 @@
+{
+  "contract": "LIAISONSCAPE-CROSS-FAMILY-PRODUCT-AUTHORITATIVE-AUTO-LAYOUT-PORTFOLIO-SELECTOR-EXPERIMENT-1",
+  "diagnosticOnly": true,
+  "candidateFamilies": [
+    "frontier",
+    "post",
+    "topology-aware-free-form-experiment1"
+  ],
+  "candidateSource": "completed current-source artifacts; no historical replay, new solver, or Product authority change",
+  "parityInterpretation": "Persisted family summaries are lineage references only. Every candidate used for gating and ranking was freshly evaluated through the current Product-authoritative presentation/quality path; any persisted-field mismatch is recorded per candidate and is not silently inherited.",
+  "productAuthority": "current ordinary routing, Parallel/Incident allocation, endpoint-plan, final Relation-label, Node-label, Self-loop, viewport/camera, styling, Dataset, persistence, Save Coordinates, and manual placement",
+  "selectorArchitecture": {
+    "oracle": "full Product-authoritative evaluation of every hard-gate-admitted unique geometry",
+    "boundedSelector": "cheap geometry-only ranking, top-2 finalist Product evaluation, lexicographic Product ordering rather than one scalar",
+    "hardGates": [
+      "node-body overlap",
+      "pathological extent/aspect",
+      "baseline zero-crossing regression",
+      "non-finite geometry"
+    ],
+    "duplicateReuse": "fingerprint exact reuse before Product evaluation"
+  },
+  "visualInspectionRequired": true,
+  "rows": [
+    {
+      "fixture": "lighthouse-en",
+      "locale": "en",
+      "source": "../e2r-spec/examples/lighthouse-restoration-demo.en.e2r.json",
+      "graph": {
+        "nodes": 10,
+        "edges": 14
+      },
+      "candidateMaterializationCount": 3,
+      "uniqueGeometryCount": 3,
+      "duplicateGeometryReuseCount": 0,
+      "candidates": [
+        {
+          "family": "frontier",
+          "lineage": "frontier-12",
+          "fingerprint": "dba5c1b8fc8d",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 4,
+            "minimumSeparation": 169,
+            "extent": [
+              529,
+              545
+            ],
+            "aspect": 1.0302457466918715,
+            "pathologicalExtent": false,
+            "score": 40000000
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 77901.07799312752,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 169,
+            "extent": [
+              529,
+              545
+            ],
+            "fitScale": 0.5057471264367817,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 106.58211939358561,
+            "routeMedian": 188.15817494951617,
+            "routeMax": 489.69202179594873
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "post",
+          "lineage": "post",
+          "fingerprint": "1c7a7474640c",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.05554484295286,
+            "extent": [
+              633,
+              401
+            ],
+            "aspect": 1.5785536159600997,
+            "pathologicalExtent": false,
+            "score": 0
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 49619.38836616404,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.05554484295286,
+            "extent": [
+              633,
+              401
+            ],
+            "fitScale": 0.6623655913978495,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 159.28264248784612,
+            "routeMedian": 193.43756775581642,
+            "routeMax": 370.01056544512807
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "free-form",
+          "lineage": "topology-aware-free-form-experiment1",
+          "fingerprint": "efdd9c32146c",
+          "cheap": {
+            "crossings": 3,
+            "overlapPairs": 1,
+            "minimumSeparation": 141.81835548334357,
+            "extent": [
+              787.324,
+              547.776
+            ],
+            "aspect": 1.4373101413716556,
+            "pathologicalExtent": false,
+            "score": 13000000
+          },
+          "hardGate": {
+            "admitted": false,
+            "failures": [
+              "baseline-zero-crossing-regression"
+            ]
+          },
+          "metrics": {
+            "score": 432058.4551293357,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 141.81835548334357,
+            "extent": [
+              787.324,
+              547.776
+            ],
+            "fitScale": 0.5034522439585731,
+            "labelRouteHits": 1,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 152.75161067105333,
+            "routeMedian": 174.25724484905405,
+            "routeMax": 502.10973761467096
+          },
+          "persistedMetricParityDiff": []
+        }
+      ],
+      "oracle": {
+        "family": "frontier",
+        "fingerprint": "dba5c1b8fc8d",
+        "productEvaluationCount": 2,
+        "ranking": "hard gates, then crossings -> overlap -> label-route hits -> label-near -> label overlap -> corridor deficit -> score"
+      },
+      "selector": {
+        "topK": 2,
+        "cheapRanking": [
+          "post",
+          "frontier"
+        ],
+        "finalists": [
+          "post",
+          "frontier"
+        ],
+        "family": "frontier",
+        "fingerprint": "dba5c1b8fc8d",
+        "productEvaluationCount": 2,
+        "exactBest": true,
+        "meaningfulEquivalent": false,
+        "regret": 0,
+        "admittedFamilyCount": 2
+      },
+      "selectionCost": {
+        "oracleProductEvaluations": 2,
+        "selectorProductEvaluations": 2,
+        "avoidedProductEvaluations": 0,
+        "candidateGeneration": "reused completed current-source family artifacts; no new solver generation"
+      }
+    },
+    {
+      "fixture": "lighthouse-ja",
+      "locale": "ja",
+      "source": "../e2r-spec/examples/lighthouse-restoration-demo.ja.e2r.json",
+      "graph": {
+        "nodes": 10,
+        "edges": 14
+      },
+      "candidateMaterializationCount": 3,
+      "uniqueGeometryCount": 3,
+      "duplicateGeometryReuseCount": 0,
+      "candidates": [
+        {
+          "family": "frontier",
+          "lineage": "frontier-12",
+          "fingerprint": "dba5c1b8fc8d",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 4,
+            "minimumSeparation": 169,
+            "extent": [
+              529,
+              545
+            ],
+            "aspect": 1.0302457466918715,
+            "pathologicalExtent": false,
+            "score": 40000000
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 40808.6031157123,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 169,
+            "extent": [
+              529,
+              545
+            ],
+            "fitScale": 0.5057471264367817,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 159.41163125042885,
+            "routeMedian": 188.15817494951617,
+            "routeMax": 489.69202179594873
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "post",
+          "lineage": "post",
+          "fingerprint": "dbebf0d3bfd0",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 3,
+            "minimumSeparation": 136.0588108135596,
+            "extent": [
+              640,
+              418
+            ],
+            "aspect": 1.5311004784688995,
+            "pathologicalExtent": false,
+            "score": 30003941.18918644
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 61724.73002822792,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 136.0588108135596,
+            "extent": [
+              640,
+              418
+            ],
+            "fitScale": 0.6390041493775933,
+            "labelRouteHits": 0,
+            "labelNear20": 1,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 156.6040376167873,
+            "routeMedian": 189.94629347209073,
+            "routeMax": 550.498863009274
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "free-form",
+          "lineage": "topology-aware-free-form-experiment1",
+          "fingerprint": "9ac1c2c26159",
+          "cheap": {
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 156.64243977773071,
+            "extent": [
+              787.328,
+              541.3116
+            ],
+            "aspect": 1.4544820395498637,
+            "pathologicalExtent": false,
+            "score": 3000000
+          },
+          "hardGate": {
+            "admitted": false,
+            "failures": [
+              "baseline-zero-crossing-regression"
+            ]
+          },
+          "metrics": {
+            "score": 391091.02321204875,
+            "crossings": 3,
+            "overlapPairs": 0,
+            "minimumSeparation": 156.64243977773071,
+            "extent": [
+              787.328,
+              541.3116
+            ],
+            "fitScale": 0.5088288412116999,
+            "labelRouteHits": 1,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 270.38125698879924,
+            "routeMedian": 174.25724484905405,
+            "routeMax": 534.5045290626321
+          },
+          "persistedMetricParityDiff": []
+        }
+      ],
+      "oracle": {
+        "family": "frontier",
+        "fingerprint": "dba5c1b8fc8d",
+        "productEvaluationCount": 2,
+        "ranking": "hard gates, then crossings -> overlap -> label-route hits -> label-near -> label overlap -> corridor deficit -> score"
+      },
+      "selector": {
+        "topK": 2,
+        "cheapRanking": [
+          "post",
+          "frontier"
+        ],
+        "finalists": [
+          "post",
+          "frontier"
+        ],
+        "family": "frontier",
+        "fingerprint": "dba5c1b8fc8d",
+        "productEvaluationCount": 2,
+        "exactBest": true,
+        "meaningfulEquivalent": false,
+        "regret": 0,
+        "admittedFamilyCount": 2
+      },
+      "selectionCost": {
+        "oracleProductEvaluations": 2,
+        "selectorProductEvaluations": 2,
+        "avoidedProductEvaluations": 0,
+        "candidateGeneration": "reused completed current-source family artifacts; no new solver generation"
+      }
+    },
+    {
+      "fixture": "apollo-en",
+      "locale": "en",
+      "source": "../e2r-spec/examples/apollo-11-mission.en.e2r.json",
+      "graph": {
+        "nodes": 9,
+        "edges": 11
+      },
+      "candidateMaterializationCount": 3,
+      "uniqueGeometryCount": 3,
+      "duplicateGeometryReuseCount": 0,
+      "candidates": [
+        {
+          "family": "frontier",
+          "lineage": "frontier-12",
+          "fingerprint": "43e7656dd8fb",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              517,
+              367
+            ],
+            "aspect": 1.4087193460490464,
+            "pathologicalExtent": false,
+            "score": 0
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 21579.150855111817,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              517,
+              367
+            ],
+            "fitScale": 0.7146171693735499,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 63.250862850144436,
+            "routeMedian": 298.3964426438739,
+            "routeMax": 336.1727846388807
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "post",
+          "lineage": "post",
+          "fingerprint": "fedad3307894",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 1,
+            "minimumSeparation": 164,
+            "extent": [
+              622,
+              419
+            ],
+            "aspect": 1.4844868735083532,
+            "pathologicalExtent": false,
+            "score": 10000000
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 1004.5989570054821,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 164,
+            "extent": [
+              622,
+              419
+            ],
+            "fitScale": 0.6376811594202898,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 73.65896019777507,
+            "routeMedian": 195.74164841452995,
+            "routeMax": 352.8656601764223
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "free-form",
+          "lineage": "topology-aware-free-form-experiment1",
+          "fingerprint": "9da0a96cc4ab",
+          "cheap": {
+            "crossings": 6,
+            "overlapPairs": 3,
+            "minimumSeparation": 140.0017227535433,
+            "extent": [
+              305.164,
+              584.348
+            ],
+            "aspect": 1.9148654493977009,
+            "pathologicalExtent": false,
+            "score": 36000000
+          },
+          "hardGate": {
+            "admitted": false,
+            "failures": [
+              "baseline-zero-crossing-regression"
+            ]
+          },
+          "metrics": {
+            "score": 864317.7121574885,
+            "crossings": 6,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.0017227535433,
+            "extent": [
+              305.164,
+              584.348
+            ],
+            "fitScale": 0.47505352064015005,
+            "labelRouteHits": 5,
+            "labelNear20": 7,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 393.3896768002326,
+            "routeMedian": 163.64410094854878,
+            "routeMax": 527.8105212732801
+          },
+          "persistedMetricParityDiff": [
+            "labelRouteHits",
+            "labelNear20"
+          ]
+        }
+      ],
+      "oracle": {
+        "family": "frontier",
+        "fingerprint": "43e7656dd8fb",
+        "productEvaluationCount": 2,
+        "ranking": "hard gates, then crossings -> overlap -> label-route hits -> label-near -> label overlap -> corridor deficit -> score"
+      },
+      "selector": {
+        "topK": 2,
+        "cheapRanking": [
+          "frontier",
+          "post"
+        ],
+        "finalists": [
+          "frontier",
+          "post"
+        ],
+        "family": "frontier",
+        "fingerprint": "43e7656dd8fb",
+        "productEvaluationCount": 2,
+        "exactBest": true,
+        "meaningfulEquivalent": false,
+        "regret": 0,
+        "admittedFamilyCount": 2
+      },
+      "selectionCost": {
+        "oracleProductEvaluations": 2,
+        "selectorProductEvaluations": 2,
+        "avoidedProductEvaluations": 0,
+        "candidateGeneration": "reused completed current-source family artifacts; no new solver generation"
+      }
+    },
+    {
+      "fixture": "apollo-ja",
+      "locale": "ja",
+      "source": "../e2r-spec/examples/apollo-11-mission.ja.e2r.json",
+      "graph": {
+        "nodes": 9,
+        "edges": 11
+      },
+      "candidateMaterializationCount": 3,
+      "uniqueGeometryCount": 3,
+      "duplicateGeometryReuseCount": 0,
+      "candidates": [
+        {
+          "family": "frontier",
+          "lineage": "frontier-12",
+          "fingerprint": "43e7656dd8fb",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              517,
+              367
+            ],
+            "aspect": 1.4087193460490464,
+            "pathologicalExtent": false,
+            "score": 0
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 15903.036151065275,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              517,
+              367
+            ],
+            "fitScale": 0.7146171693735499,
+            "labelRouteHits": 0,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 107.0356392885336,
+            "routeMedian": 298.3964426438739,
+            "routeMax": 334.6259818269074
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "post",
+          "lineage": "post",
+          "fingerprint": "ce99d56d35c3",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 1,
+            "minimumSeparation": 129.71121771072848,
+            "extent": [
+              601,
+              400
+            ],
+            "aspect": 1.5025,
+            "pathologicalExtent": false,
+            "score": 10010288.782289272
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 994.8917036883884,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 129.71121771072848,
+            "extent": [
+              601,
+              400
+            ],
+            "fitScale": 0.6637931034482759,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 163.58620253830676,
+            "routeMedian": 193.14604839090964,
+            "routeMax": 358.3496069065691
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "free-form",
+          "lineage": "topology-aware-free-form-experiment1",
+          "fingerprint": "ffe7d7c231de",
+          "cheap": {
+            "crossings": 6,
+            "overlapPairs": 1,
+            "minimumSeparation": 140.07388290484414,
+            "extent": [
+              562.1686,
+              373.8182
+            ],
+            "aspect": 1.5038556175167501,
+            "pathologicalExtent": false,
+            "score": 16000000
+          },
+          "hardGate": {
+            "admitted": false,
+            "failures": [
+              "baseline-zero-crossing-regression"
+            ]
+          },
+          "metrics": {
+            "score": 733823.149579255,
+            "crossings": 7,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.07388290484414,
+            "extent": [
+              562.1686,
+              373.8182
+            ],
+            "fitScale": 0.7034883428783911,
+            "labelRouteHits": 0,
+            "labelNear20": 1,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 95.6405347307132,
+            "routeMedian": 159.99720085607714,
+            "routeMax": 514.5626081801207
+          },
+          "persistedMetricParityDiff": [
+            "crossings",
+            "labelRouteHits",
+            "labelNear20"
+          ]
+        }
+      ],
+      "oracle": {
+        "family": "post",
+        "fingerprint": "ce99d56d35c3",
+        "productEvaluationCount": 2,
+        "ranking": "hard gates, then crossings -> overlap -> label-route hits -> label-near -> label overlap -> corridor deficit -> score"
+      },
+      "selector": {
+        "topK": 2,
+        "cheapRanking": [
+          "frontier",
+          "post"
+        ],
+        "finalists": [
+          "frontier",
+          "post"
+        ],
+        "family": "post",
+        "fingerprint": "ce99d56d35c3",
+        "productEvaluationCount": 2,
+        "exactBest": true,
+        "meaningfulEquivalent": false,
+        "regret": 0,
+        "admittedFamilyCount": 2
+      },
+      "selectionCost": {
+        "oracleProductEvaluations": 2,
+        "selectorProductEvaluations": 2,
+        "avoidedProductEvaluations": 0,
+        "candidateGeneration": "reused completed current-source family artifacts; no new solver generation"
+      }
+    },
+    {
+      "fixture": "titanic-en",
+      "locale": "en",
+      "source": "../e2r-spec/examples/titanic-final-voyage.en.e2r.json",
+      "graph": {
+        "nodes": 13,
+        "edges": 12
+      },
+      "candidateMaterializationCount": 3,
+      "uniqueGeometryCount": 3,
+      "duplicateGeometryReuseCount": 0,
+      "candidates": [
+        {
+          "family": "frontier",
+          "lineage": "frontier-12",
+          "fingerprint": "00d626292fa8",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 4,
+            "minimumSeparation": 168.19334112859522,
+            "extent": [
+              714,
+              694
+            ],
+            "aspect": 1.0288184438040346,
+            "pathologicalExtent": false,
+            "score": 40000000
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 2851.460767229036,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 168.19334112859522,
+            "extent": [
+              714,
+              694
+            ],
+            "fitScale": 0.40633245382585753,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 43.074524573957106,
+            "routeMedian": 407.9104396532347,
+            "routeMax": 638.7016163176268
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "post",
+          "lineage": "post",
+          "fingerprint": "5a01bb29cee4",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 5,
+            "minimumSeparation": 123.98790263570072,
+            "extent": [
+              744,
+              584
+            ],
+            "aspect": 1.273972602739726,
+            "pathologicalExtent": false,
+            "score": 50016012.0973643
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 9488.802216433209,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 123.98790263570072,
+            "extent": [
+              744,
+              584
+            ],
+            "fitScale": 0.47530864197530864,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 53.04425388469935,
+            "routeMedian": 299.2865004223424,
+            "routeMax": 618.820189927888
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "free-form",
+          "lineage": "topology-aware-free-form-experiment1",
+          "fingerprint": "9595ff552998",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 5,
+            "minimumSeparation": 140.16867792770248,
+            "extent": [
+              2827.696,
+              347.776
+            ],
+            "aspect": 8.130796834744203,
+            "pathologicalExtent": true,
+            "score": 50000000
+          },
+          "hardGate": {
+            "admitted": false,
+            "failures": [
+              "pathological-extent"
+            ]
+          },
+          "metrics": {
+            "score": 40684.01567586904,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.16867792770248,
+            "extent": [
+              2827.696,
+              347.776
+            ],
+            "fitScale": 0.21025723312547379,
+            "labelRouteHits": 1,
+            "labelNear20": 1,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 186.58746862472842,
+            "routeMedian": 213.27273005569225,
+            "routeMax": 850.0241390349358
+          },
+          "persistedMetricParityDiff": []
+        }
+      ],
+      "oracle": {
+        "family": "frontier",
+        "fingerprint": "00d626292fa8",
+        "productEvaluationCount": 2,
+        "ranking": "hard gates, then crossings -> overlap -> label-route hits -> label-near -> label overlap -> corridor deficit -> score"
+      },
+      "selector": {
+        "topK": 2,
+        "cheapRanking": [
+          "frontier",
+          "post"
+        ],
+        "finalists": [
+          "frontier",
+          "post"
+        ],
+        "family": "frontier",
+        "fingerprint": "00d626292fa8",
+        "productEvaluationCount": 2,
+        "exactBest": true,
+        "meaningfulEquivalent": false,
+        "regret": 0,
+        "admittedFamilyCount": 2
+      },
+      "selectionCost": {
+        "oracleProductEvaluations": 2,
+        "selectorProductEvaluations": 2,
+        "avoidedProductEvaluations": 0,
+        "candidateGeneration": "reused completed current-source family artifacts; no new solver generation"
+      }
+    },
+    {
+      "fixture": "label-heavy-ja-10",
+      "locale": "ja",
+      "source": "synthetic:label-heavy-ja-10",
+      "graph": {
+        "nodes": 10,
+        "edges": 20
+      },
+      "candidateMaterializationCount": 3,
+      "uniqueGeometryCount": 3,
+      "duplicateGeometryReuseCount": 0,
+      "candidates": [
+        {
+          "family": "frontier",
+          "lineage": "frontier-12",
+          "fingerprint": "53b5f2d30fd9",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 8,
+            "minimumSeparation": 142.9475428260311,
+            "extent": [
+              437,
+              496
+            ],
+            "aspect": 1.1350114416475972,
+            "pathologicalExtent": false,
+            "score": 80000000
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 767817.0547673274,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 142.9475428260311,
+            "extent": [
+              437,
+              496
+            ],
+            "fitScale": 0.55,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 48.3032037634338,
+            "routeMedian": 93.03594409273676,
+            "routeMax": 320.7109695832062
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "post",
+          "lineage": "post",
+          "fingerprint": "b15ec42823af",
+          "cheap": {
+            "crossings": 4,
+            "overlapPairs": 1,
+            "minimumSeparation": 140.11780757633915,
+            "extent": [
+              673,
+              345
+            ],
+            "aspect": 1.9507246376811593,
+            "pathologicalExtent": false,
+            "score": 14000000
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 216264.44314722563,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 140.11780757633915,
+            "extent": [
+              673,
+              345
+            ],
+            "fitScale": 0.7530562347188264,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 85.17332362983025,
+            "routeMedian": 233.12806987688938,
+            "routeMax": 383.8899539273632
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "free-form",
+          "lineage": "topology-aware-free-form-experiment1",
+          "fingerprint": "eb1f38737e12",
+          "cheap": {
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 160.64170766024617,
+            "extent": [
+              1544.7279999999998,
+              410.26399999999995
+            ],
+            "aspect": 3.7652048437103915,
+            "pathologicalExtent": false,
+            "score": 0
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 148592.96078274644,
+            "crossings": 0,
+            "overlapPairs": 0,
+            "minimumSeparation": 160.64170766024617,
+            "extent": [
+              1544.7279999999998,
+              410.26399999999995
+            ],
+            "fitScale": 0.37793834632081996,
+            "labelRouteHits": 0,
+            "labelNear20": 0,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 40.10986531340431,
+            "routeMedian": 158.73518952962098,
+            "routeMax": 177.34221241051557
+          },
+          "persistedMetricParityDiff": []
+        }
+      ],
+      "oracle": {
+        "family": "free-form",
+        "fingerprint": "eb1f38737e12",
+        "productEvaluationCount": 3,
+        "ranking": "hard gates, then crossings -> overlap -> label-route hits -> label-near -> label overlap -> corridor deficit -> score"
+      },
+      "selector": {
+        "topK": 2,
+        "cheapRanking": [
+          "free-form",
+          "frontier",
+          "post"
+        ],
+        "finalists": [
+          "free-form",
+          "frontier"
+        ],
+        "family": "free-form",
+        "fingerprint": "eb1f38737e12",
+        "productEvaluationCount": 2,
+        "exactBest": true,
+        "meaningfulEquivalent": false,
+        "regret": 0,
+        "admittedFamilyCount": 3
+      },
+      "selectionCost": {
+        "oracleProductEvaluations": 3,
+        "selectorProductEvaluations": 2,
+        "avoidedProductEvaluations": 1,
+        "candidateGeneration": "reused completed current-source family artifacts; no new solver generation"
+      }
+    },
+    {
+      "fixture": "dense-k7-7",
+      "locale": "en",
+      "source": "synthetic:k7-7",
+      "graph": {
+        "nodes": 14,
+        "edges": 49
+      },
+      "candidateMaterializationCount": 3,
+      "uniqueGeometryCount": 3,
+      "duplicateGeometryReuseCount": 0,
+      "candidates": [
+        {
+          "family": "frontier",
+          "lineage": "frontier-12",
+          "fingerprint": "4a4fa977f163",
+          "cheap": {
+            "crossings": 107,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              690,
+              368
+            ],
+            "aspect": 1.875,
+            "pathologicalExtent": false,
+            "score": 107000000
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 15832409.425210206,
+            "crossings": 143,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              690,
+              368
+            ],
+            "fitScale": 0.7129629629629629,
+            "labelRouteHits": 6,
+            "labelNear20": 18,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1152.3883426202865,
+            "routeMedian": 320.75733153334073,
+            "routeMax": 656.9396533231513
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "post",
+          "lineage": "post",
+          "fingerprint": "3da600551f3b",
+          "cheap": {
+            "crossings": 100,
+            "overlapPairs": 0,
+            "minimumSeparation": 164,
+            "extent": [
+              784,
+              328
+            ],
+            "aspect": 2.3902439024390243,
+            "pathologicalExtent": false,
+            "score": 100000000
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 14486653.112270225,
+            "crossings": 129,
+            "overlapPairs": 0,
+            "minimumSeparation": 164,
+            "extent": [
+              784,
+              328
+            ],
+            "fitScale": 0.7169811320754716,
+            "labelRouteHits": 8,
+            "labelNear20": 20,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 1083.1555928649598,
+            "routeMedian": 313.6483590104196,
+            "routeMax": 747.8155522041401
+          },
+          "persistedMetricParityDiff": []
+        },
+        {
+          "family": "free-form",
+          "lineage": "topology-aware-free-form-experiment1",
+          "fingerprint": "098fe9bb7986",
+          "cheap": {
+            "crossings": 109,
+            "overlapPairs": 6,
+            "minimumSeparation": 146.46111535352983,
+            "extent": [
+              1293.3818,
+              538.5342
+            ],
+            "aspect": 2.4016706831246744,
+            "pathologicalExtent": false,
+            "score": 169000000
+          },
+          "hardGate": {
+            "admitted": true,
+            "failures": []
+          },
+          "metrics": {
+            "score": 11357730.258560473,
+            "crossings": 102,
+            "overlapPairs": 0,
+            "minimumSeparation": 146.46111535352983,
+            "extent": [
+              1293.3818,
+              538.5342
+            ],
+            "fitScale": 0.44792113759002805,
+            "labelRouteHits": 7,
+            "labelNear20": 15,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 980.2912373770154,
+            "routeMedian": 338.3764331518968,
+            "routeMax": 1173.9635377255497
+          },
+          "persistedMetricParityDiff": [
+            "crossings",
+            "labelRouteHits",
+            "labelNear20"
+          ]
+        }
+      ],
+      "oracle": {
+        "family": "free-form",
+        "fingerprint": "098fe9bb7986",
+        "productEvaluationCount": 3,
+        "ranking": "hard gates, then crossings -> overlap -> label-route hits -> label-near -> label overlap -> corridor deficit -> score"
+      },
+      "selector": {
+        "topK": 2,
+        "cheapRanking": [
+          "post",
+          "frontier",
+          "free-form"
+        ],
+        "finalists": [
+          "post",
+          "frontier"
+        ],
+        "family": "post",
+        "fingerprint": "3da600551f3b",
+        "productEvaluationCount": 2,
+        "exactBest": false,
+        "meaningfulEquivalent": false,
+        "regret": 3128922.8537097517,
+        "admittedFamilyCount": 3
+      },
+      "selectionCost": {
+        "oracleProductEvaluations": 3,
+        "selectorProductEvaluations": 2,
+        "avoidedProductEvaluations": 1,
+        "candidateGeneration": "reused completed current-source family artifacts; no new solver generation"
+      }
+    }
+  ],
+  "aggregate": {
+    "fixtureCount": 7,
+    "exactBestCount": 6,
+    "meaningfulEquivalentCount": 6,
+    "exactOrEquivalentRate": 0.8571428571428571,
+    "rejectedFreeFormCount": 5,
+    "duplicateGeometryReuseCount": 0,
+    "oracleProductEvaluations": 16,
+    "selectorProductEvaluations": 14,
+    "avoidedProductEvaluations": 2,
+    "metricParityMismatchCount": 21
+  },
+  "interpretationPending": true,
+  "readiness": {
+    "humanReview": "NOT READY",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productionProvider": "NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "adaptiveCascade": "INACTIVE",
+    "initialLayoutReleaseBlocker": "OPEN"
+  },
+  "elapsedMs": 1341.33
+}
