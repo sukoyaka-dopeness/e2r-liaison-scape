@@ -2,7 +2,7 @@ import type { GraphEdge, GraphNode } from "./dataset.ts";
 import { reconstructManualRelationLabelTarget, type ManualNodeLabelOffset, type ManualRelationLabelAnchor } from "./relation-label-presentation.ts";
 import { createFeedbackStageInput, createPresentationPassSnapshot, createRouteSelectionSnapshot, type FeedbackStageInput, type PresentationPassSnapshot } from "./presentation-stage-contracts.ts";
 import { dependencyFingerprint, type PresentationDependencyTrace } from "./presentation-dependency.ts";
-import { compareRouteGeometry, placeEdgeLabel, placeNodeLabel, pointBounds, relationLabelDisplayWidth, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementCandidateDiagnostic, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type PointBounds, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteGeometryCache, type RouteYieldPath } from "./viewport.ts";
+import { compareRouteGeometry, getRelationLabelTextGeometry, placeEdgeLabel, placeNodeLabel, pointBounds, relationLabelDisplayWidth, routeGraphEdge, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence, routeSamplesHaveOccupiedPathConflict, type LabelPlacementCandidateDiagnostic, type LabelPlacementProfile, type LabelPlacementTrace, type LabelRect, type Point, type PointBounds, type RelationLabelWrapPolicy, type RouteArbitrationProfile, type RouteCandidateCache, type RouteCandidateDiagnostic, type RouteGeometryCache, type RouteYieldPath } from "./viewport.ts";
 
 export type RoutingGraphEdge = GraphEdge & { label: string };
 export type SelfLoopOverride = { orientation: number; radius: number };
@@ -634,6 +634,8 @@ export type AutomaticRelationLabelInput = {
   relationLabelStaggerById?: Readonly<Record<string, number>>;
   /** Development-only normal-offset candidate set; normal Product callers omit it. */
   relationLabelNormalOffsets?: readonly number[];
+  /** Development-only display-only automatic wrap policy; normal Product callers omit it. */
+  relationLabelWrapPolicy?: RelationLabelWrapPolicy;
   draggedNodeId?: string;
   profile?: LabelPlacementProfile;
   pass?: AutomaticRouteDecision["pass"];
@@ -722,7 +724,7 @@ export function stepAutomaticRelationLabelPlacement(state: AutomaticRelationLabe
     state.done = state.nextIndex >= state.orderedEdges.length;
     return { done: state.done, relationId: edge.id, skipped: true };
   }
-  const { previousPlacements, manualAnchors, relationLabelStaggerById, relationLabelNormalOffsets, draggedNodeId, profile, placementTraceSink, candidateTraceSink } = state.input;
+  const { previousPlacements, manualAnchors, relationLabelStaggerById, relationLabelNormalOffsets, relationLabelWrapPolicy, draggedNodeId, profile, placementTraceSink, candidateTraceSink } = state.input;
   const otherEdges = state.orderedEdges.filter(({ id }) => id !== edge.id);
   const otherEdgePaths = otherEdges.map(({ samples }) => samples);
   const otherEdgePathBounds = state.orderedEdges
@@ -735,6 +737,7 @@ export function stepAutomaticRelationLabelPlacement(state: AutomaticRelationLabe
   const inputFingerprint = placementTraceSink ? JSON.stringify({ route: routeFingerprint, label: edge.label, occupiedLabels: state.occupiedLabels, nodes: state.nodePoints, otherEdgePaths, previousPlacement: relationMovesWithDraggedNode ? undefined : previousPlacements.get(edge.id), manualAnchor: manualAnchors.get(edge.id) }) : "";
   let placementTrace: LabelPlacementTrace | undefined;
   let candidateDiagnostics: readonly LabelPlacementCandidateDiagnostic[] | undefined;
+  const displayGeometry = getRelationLabelTextGeometry(edge.label, edge.samples, relationLabelWrapPolicy);
   const automaticPlacement = placeEdgeLabel(
     edge.samples,
     edge.label,
@@ -748,6 +751,7 @@ export function stepAutomaticRelationLabelPlacement(state: AutomaticRelationLabe
     relationLabelStaggerById?.[edge.id] ?? 0,
     relationLabelNormalOffsets,
     candidateTraceSink ? (candidates) => { candidateDiagnostics = candidates; } : undefined,
+    displayGeometry,
   );
   const manualAnchor = manualAnchors.get(edge.id);
   if (manualAnchor && profile) profile.manualAnchorReconstructions += 1;
@@ -937,6 +941,8 @@ export type BoundedAutomaticPresentationInput = {
   relationLabelStaggerById?: Readonly<Record<string, number>>;
   /** Development-only normal-offset candidate set; normal Product callers omit it. */
   relationLabelNormalOffsets?: readonly number[];
+  /** Development-only display-only automatic wrap policy; normal Product callers omit it. */
+  relationLabelWrapPolicy?: RelationLabelWrapPolicy;
   /** Development-only slot policy for parallel-group spacing. */
   parallelBundleMode?: "pair" | "bundle" | "corridor";
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
@@ -1107,6 +1113,7 @@ function verificationRelationLabelInput(
     manualAnchors: input.manualRelationLabelAnchors,
     relationLabelStaggerById: input.relationLabelStaggerById,
     relationLabelNormalOffsets: input.relationLabelNormalOffsets,
+    relationLabelWrapPolicy: input.relationLabelWrapPolicy,
     draggedNodeId: input.draggedNodeId,
     profile: input.profiler?.passes[pass].relationLabel,
     pass,
@@ -1575,6 +1582,7 @@ export function deriveBoundedAutomaticPresentation({
   parallelBundleSpacingByKey,
   relationLabelStaggerById,
   relationLabelNormalOffsets,
+  relationLabelWrapPolicy,
   parallelBundleMode = "bundle",
   profiler,
   replayPrefix,
@@ -1683,6 +1691,7 @@ export function deriveBoundedAutomaticPresentation({
       relationLabelStaggerById,
       draggedNodeId,
       ...(relationLabelNormalOffsets === undefined ? {} : { relationLabelNormalOffsets }),
+      ...(relationLabelWrapPolicy === undefined ? {} : { relationLabelWrapPolicy }),
     };
     const relationLabels = deriveAutomaticRelationLabels({
       routedEdges: routeSnapshot.routes,
@@ -1691,6 +1700,7 @@ export function deriveBoundedAutomaticPresentation({
       manualAnchors: manualRelationLabelAnchors,
       relationLabelStaggerById,
       relationLabelNormalOffsets,
+      relationLabelWrapPolicy,
       draggedNodeId,
       profile: passProfile?.relationLabel,
       pass: routeDecisionPass,

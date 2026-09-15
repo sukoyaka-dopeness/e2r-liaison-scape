@@ -19,7 +19,7 @@ import { RelationDetailDialog } from "./components/RelationDetailDialog";
 import { CreationDialog } from "./components/CreationDialog";
 import { readRelationArrowDisplay, readRelationLineStyle } from "./presentation-extension";
 import { getRelationArrowheadGeometries } from "./relation-arrow-presentation";
-import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, ENTITY_ATTACHMENT_SHAPE, fitGraphView, getEntityAttachment, getNodeLabelTextGeometry, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, type LabelRect, zoomScale } from "./viewport";
+import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, ENTITY_ATTACHMENT_SHAPE, fitGraphView, getEntityAttachment, getNodeLabelTextGeometry, getRelationLabelTextGeometry, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, type LabelRect, type RelationLabelWrapPolicy, zoomScale } from "./viewport";
 import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
@@ -59,13 +59,15 @@ type AppProps = {
   relationLabelStaggerById?: Readonly<Record<string, number>>;
   /** Development-only normal-offset candidate set; normal Product callers omit it. */
   relationLabelNormalOffsets?: readonly number[];
+  /** Development-only display-only automatic wrap policy; normal Product callers omit it. */
+  relationLabelWrapPolicy?: RelationLabelWrapPolicy;
   /** Development-only, non-adopting Actual Product visual-evidence seam. */
   operationLocalPreview?: OperationLocalProductPreview;
   /** Development-only fixture input for the preview evidence harness. */
   diagnosticDataset?: Dataset;
 };
 
-export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, relationLabelNormalOffsets, operationLocalPreview, diagnosticDataset }: AppProps = {}) {
+export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, relationLabelNormalOffsets, relationLabelWrapPolicy, operationLocalPreview, diagnosticDataset }: AppProps = {}) {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
     window.localStorage,
     window.navigator.language,
@@ -560,6 +562,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       parallelBundleSpacingByKey: import.meta.env.DEV ? parallelBundleSpacingByKey : undefined,
       relationLabelStaggerById: import.meta.env.DEV ? relationLabelStaggerById : undefined,
       relationLabelNormalOffsets: import.meta.env.DEV ? relationLabelNormalOffsets : undefined,
+      relationLabelWrapPolicy: import.meta.env.DEV ? relationLabelWrapPolicy : undefined,
       parallelBundleMode: parallelBundlePolicy?.mode
         ?? (parallelBundleVariant === "pair-16" ? "pair" : parallelBundleVariant === "corridor-aware" ? "corridor" : "bundle"),
     });
@@ -595,7 +598,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       profiler: presentationProfiler,
     });
     return { ...result, derivationPhase, routeDecisions: routeDecisions ?? [] };
-  }, [edgeCurveOffsets, graph, manualLabelRevision, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+  }, [edgeCurveOffsets, graph, manualLabelRevision, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, relationLabelWrapPolicy, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {
@@ -2178,6 +2181,9 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
               {displayedEdges.map((edge) => {
                 if (!edge.label) return null;
                 const labelPoint = displayedEdgeLabelPlacements.get(edge.id) ?? edge.labelPoint;
+                const labelGeometry = relationLabelWrapPolicy
+                  ? getRelationLabelTextGeometry(edge.label, edge.samples, relationLabelWrapPolicy)
+                  : { lines: [edge.label], width: Math.max(48, edge.label.length * 7), height: 22, lineHeight: 15 };
                 return <g
                   key={`label-${edge.id}`}
                    className="edge-label-group"
@@ -2190,16 +2196,20 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
                   <g transform={`translate(${labelPoint.x} ${labelPoint.y})`}>
                     <rect
                       className="label-drag-hit"
-                      x={-Math.max(24, edge.label.length * 3.5)}
-                      y={-18}
-                      width={Math.max(48, edge.label.length * 7)}
-                      height="22"
+                      x={-labelGeometry.width / 2}
+                      y={-labelGeometry.height / 2}
+                      width={labelGeometry.width}
+                      height={labelGeometry.height}
                       rx="3"
                       onContextMenu={(event) => openObjectContextFromPointer("relation-label", edge.id, event)}
                       onPointerEnter={(event) => setPlacementHover(event, "relation-label", edge.id)}
                       onPointerLeave={() => setHoveredPlacement((value) => value?.target === "relation-label" && value.id === edge.id ? null : value)}
                     />
-                    <text className="edge-label" x="0" y="-5" aria-hidden="true">{edge.label}</text>
+                    <text className="edge-label" x="0" y={labelGeometry.lines.length === 1 ? "-5" : "-11"} aria-hidden="true">
+                      {relationLabelWrapPolicy && labelGeometry.lines.length > 1
+                        ? labelGeometry.lines.map((line, index) => <tspan key={`${edge.id}-label-line-${index}`} x="0" dy={index === 0 ? 0 : labelGeometry.lineHeight}>{line}</tspan>)
+                        : edge.label}
+                    </text>
                   </g>
                 </g>;
               })}

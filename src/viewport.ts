@@ -356,6 +356,25 @@ export type LabelRect = Point & { width: number; height: number; directionX: num
 export type RouteYieldPath = { samples: Point[]; deviation: number };
 export type NodeLabelVisualLine = { left: number; right: number; top: number; bottom: number };
 
+export type RelationLabelWrapPolicy = Readonly<{
+  maxLines?: number;
+  maxLineWidth?: number;
+  minimumWidth?: number;
+  routeInset?: number;
+  minimumDeficit?: number;
+}>;
+
+export type RelationLabelTextGeometry = Readonly<{
+  lines: readonly string[];
+  width: number;
+  height: number;
+  lineHeight: number;
+  oneLineWidth: number;
+  wrapped: boolean;
+  usableOwnerRouteSpan: number;
+  tangentialFootprint: number;
+}>;
+
 export type NodeLabelTextGeometry = {
   title: string;
   descriptionLines: string[];
@@ -528,6 +547,85 @@ function pointToRectDistance(point: Point, rect: LabelRect): number {
   return Math.hypot(dx, dy);
 }
 
+function routeSampleLength(samples: readonly Point[]): number {
+  return samples.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - samples[index]!.x, point.y - samples[index]!.y), 0);
+}
+
+export function relationLabelTextWidth(value: string): number {
+  return Array.from(value).reduce((width, character) => width + (labelCharacterWidth(character) === 2 ? 10 : 6.5), 0);
+}
+
+function appendRelationLabelEllipsis(line: string, contentWidth: number): string {
+  const ellipsis = "…";
+  const characters = Array.from(line);
+  while (characters.length > 0 && relationLabelTextWidth(`${characters.join("")}${ellipsis}`) > contentWidth) characters.pop();
+  return `${characters.join("")}${ellipsis}`;
+}
+
+export function wrapRelationLabelText(value: string, maxWidth: number, maxLines = 2): string[] {
+  const normalized = value.trim().replace(/\s+/gu, " ");
+  if (!normalized) return [""];
+  const lineLimit = Math.max(1, maxWidth);
+  const boundedLines = Math.max(1, Math.floor(maxLines));
+  let remaining = Array.from(normalized);
+  const lines: string[] = [];
+  while (remaining.length > 0 && lines.length < boundedLines) {
+    let width = 0;
+    let limit = 0;
+    while (limit < remaining.length) {
+      const nextWidth = width + (labelCharacterWidth(remaining[limit]!) === 2 ? 10 : 6.5);
+      if (nextWidth > lineLimit + 0.01) break;
+      width = nextWidth;
+      limit += 1;
+    }
+    if (limit === 0) limit = 1;
+    if (limit === remaining.length) {
+      lines.push(remaining.join("").trim());
+      remaining = [];
+      break;
+    }
+    const nextCharacterIsSpace = /\s/u.test(remaining[limit] ?? "");
+    let lastSpace = -1;
+    for (let index = 0; index < limit; index += 1) if (/\s/u.test(remaining[index]!)) lastSpace = index;
+    const breakAt = nextCharacterIsSpace ? limit : (lastSpace > 0 ? lastSpace : limit);
+    lines.push(remaining.slice(0, breakAt).join("").trim());
+    remaining = remaining.slice(nextCharacterIsSpace ? limit + 1 : (lastSpace > 0 ? lastSpace + 1 : limit));
+    while (remaining[0] && /\s/u.test(remaining[0]!)) remaining.shift();
+  }
+  if (remaining.length > 0) {
+    const contentWidth = Math.max(1, lineLimit);
+    lines[lines.length - 1] = appendRelationLabelEllipsis(lines[lines.length - 1] ?? "", contentWidth);
+  }
+  return lines.length > 0 ? lines : [""];
+}
+
+export function getRelationLabelTextGeometry(
+  value: string,
+  samples: readonly Point[] = [],
+  policy?: RelationLabelWrapPolicy,
+): RelationLabelTextGeometry {
+  const oneLineWidth = relationLabelDisplayWidth(value);
+  const lineHeight = 15;
+  const routeLength = routeSampleLength(samples);
+  const tangentIndex = Math.min(samples.length - 1, Math.max(0, 20));
+  const previous = samples[Math.max(0, tangentIndex - 1)] ?? samples[0] ?? { x: 1, y: 0 };
+  const next = samples[Math.min(samples.length - 1, tangentIndex + 1)] ?? samples.at(-1) ?? { x: 1, y: 0 };
+  const tangentLength = Math.max(1, Math.hypot(next.x - previous.x, next.y - previous.y));
+  const tangentX = (next.x - previous.x) / tangentLength;
+  const tangentY = (next.y - previous.y) / tangentLength;
+  const minimumWidth = Math.max(48, policy?.minimumWidth ?? 72);
+  const usableOwnerRouteSpan = Math.max(minimumWidth, routeLength - (policy?.routeInset ?? 120));
+  const tangentialFootprint = oneLineWidth * Math.abs(tangentX) + 22 * Math.abs(tangentY);
+  const shouldWrap = Boolean(policy)
+    && oneLineWidth > minimumWidth
+    && tangentialFootprint - usableOwnerRouteSpan > (policy?.minimumDeficit ?? 12);
+  if (!shouldWrap) return { lines: [value], width: oneLineWidth, height: 22, lineHeight, oneLineWidth, wrapped: false, usableOwnerRouteSpan, tangentialFootprint };
+  const maxLineWidth = Math.max(minimumWidth, Math.min(policy?.maxLineWidth ?? 132, oneLineWidth / 2));
+  const lines = wrapRelationLabelText(value, maxLineWidth - 12, Math.min(2, policy?.maxLines ?? 2));
+  const width = Math.max(48, Math.min(220, Math.max(...lines.map(relationLabelTextWidth), 0) + 12));
+  return { lines, width, height: lines.length <= 1 ? 22 : 34, lineHeight, oneLineWidth, wrapped: lines.length > 1, usableOwnerRouteSpan, tangentialFootprint };
+}
+
 export type PointBounds = { minX: number; maxX: number; minY: number; maxY: number };
 
 export function pointBounds(points: readonly Point[]): PointBounds | null {
@@ -577,10 +675,12 @@ export function placeEdgeLabel(
   tangentialOffset = 0,
   normalOffsets?: readonly number[],
   candidateTraceSink?: (candidates: readonly LabelPlacementCandidateDiagnostic[]) => void,
+  displayGeometry?: Pick<RelationLabelTextGeometry, "width" | "height">,
 ): LabelRect {
   const startedAt = performance.now();
   const fallback = samples[Math.floor(samples.length / 2)] ?? { x: 0, y: 0 };
-  const width = relationLabelDisplayWidth(label);
+  const width = displayGeometry?.width ?? relationLabelDisplayWidth(label);
+  const height = displayGeometry?.height ?? 22;
   const candidateIndexes = [20, 16, 24, 12, 28, 8, 32, 4, 36]
     .map((index) => Math.max(0, Math.min(samples.length - 1, Math.round(index / 40 * (samples.length - 1)))))
     .filter((index, position, indexes) => indexes.indexOf(index) === position);
@@ -606,7 +706,7 @@ export function placeEdgeLabel(
         x: point.x + normal.x * normalOffset,
         y: point.y + normal.y * normalOffset,
         width,
-        height: 22,
+        height,
         directionX: normal.x,
         directionY: normal.y,
       },
@@ -634,7 +734,7 @@ export function placeEdgeLabel(
     const labelOverlap = occupiedLabels.reduce((total, occupied) => total + rectOverlapArea(candidate, occupied), 0);
     const nodeOverlap = nodes.reduce((total, node) => {
       const nearestX = Math.max(candidate.x - width / 2, Math.min(node.x, candidate.x + width / 2));
-      const nearestY = Math.max(candidate.y - 11, Math.min(node.y, candidate.y + 11));
+      const nearestY = Math.max(candidate.y - candidate.height / 2, Math.min(node.y, candidate.y + candidate.height / 2));
       return total + (Math.hypot(node.x - nearestX, node.y - nearestY) < 36 ? 1 : 0);
     }, 0);
     const edgeOverlapPathIndexes = candidateTraceSink ? [] as number[] : undefined;
@@ -647,8 +747,8 @@ export function placeEdgeLabel(
         if (profile) profile.edgePathPointChecks += 1;
         return pathTotal + (pathPoint.x >= candidate.x - width / 2 - 4
           && pathPoint.x <= candidate.x + width / 2 + 4
-          && pathPoint.y >= candidate.y - 15
-          && pathPoint.y <= candidate.y + 15 ? 1 : 0);
+          && pathPoint.y >= candidate.y - candidate.height / 2 - 4
+          && pathPoint.y <= candidate.y + candidate.height / 2 + 4 ? 1 : 0);
       }, 0);
       if (pathOverlap > 0) edgeOverlapPathIndexes?.push(pathIndex);
       return total + pathOverlap;
