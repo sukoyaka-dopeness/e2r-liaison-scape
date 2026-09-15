@@ -31,6 +31,7 @@ import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
 import { solveAutoLayout } from "./auto-layout";
 import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation, type AutomaticRouteDecision, type DerivedAutomaticRoute } from "./graph-presentation";
+import { deriveProductParallelBundlePolicy } from "./product-parallel-bundle-policy";
 import { publishDatasetOpenTiming, publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming, type DatasetOpenTimingSample } from "./presentation-diagnostics";
 import { deriveActualProductInitialLayout, type ActualProductInitialLayoutOptIn } from "./actual-product-initial-layout";
 import { acceptanceFixturePath, acceptanceLayoutPath, parseAcceptanceFixture, type AcceptanceLayoutArm } from "./acceptance-fixture-access";
@@ -51,7 +52,7 @@ export type ActualProductDiagnosticInitialLayout = {
 type AppProps = {
   initialLayoutOverride?: ActualProductDiagnosticInitialLayout;
   /** Development-only review seam; normal Product callers omit it. */
-  parallelBundleVariant?: "pair-16" | "bundle-16" | "corridor-aware";
+  parallelBundleVariant?: "pair-16" | "bundle-16" | "corridor-aware" | "adaptive-bundle";
   /** Development-only, non-adopting Actual Product visual-evidence seam. */
   operationLocalPreview?: OperationLocalProductPreview;
   /** Development-only fixture input for the preview evidence harness. */
@@ -520,6 +521,9 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, oper
       })(),
     }));
     const routeDecisions: AutomaticRouteDecision[] | null = import.meta.env.DEV ? [] : null;
+    const parallelBundlePolicy = import.meta.env.DEV && parallelBundleVariant === "adaptive-bundle"
+      ? deriveProductParallelBundlePolicy(edges)
+      : null;
     const result = deriveBoundedAutomaticPresentation({
       graph: { nodes: graph.nodes, edges },
       positions: renderPositions,
@@ -544,8 +548,11 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, oper
       feedbackEnabled: dragRef.current?.kind !== "node",
       routeDecisionSink: routeDecisions === null ? undefined : (decision) => routeDecisions.push(decision),
       profiler: presentationProfiler,
-      parallelBundleSpacing: import.meta.env.DEV && parallelBundleVariant ? 16 : undefined,
-      parallelBundleMode: parallelBundleVariant === "pair-16" ? "pair" : parallelBundleVariant === "corridor-aware" ? "corridor" : "bundle",
+      parallelBundleSpacing: import.meta.env.DEV && parallelBundleVariant
+        ? parallelBundlePolicy?.spacing ?? 16
+        : undefined,
+      parallelBundleMode: parallelBundlePolicy?.mode
+        ?? (parallelBundleVariant === "pair-16" ? "pair" : parallelBundleVariant === "corridor-aware" ? "corridor" : "bundle"),
     });
     const completedAt = performance.now();
     const openTiming = datasetOpenTimingRef.current;
