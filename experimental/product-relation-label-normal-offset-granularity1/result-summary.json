@@ -1,0 +1,5006 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-RELATION-LABEL-NORMAL-OFFSET-GRANULARITY-v1",
+  "diagnosticOnly": true,
+  "candidateIdentity": "product-relation-label-normal-offset-granularity1",
+  "coarseNormalOffsets": [
+    0,
+    -24,
+    24,
+    -40,
+    40
+  ],
+  "fineNormalOffsets": [
+    0,
+    -4,
+    4,
+    -8,
+    8,
+    -12,
+    12,
+    -16,
+    16,
+    -24,
+    24,
+    -32,
+    32,
+    -40,
+    40
+  ],
+  "widenedBundlePolicy": "reuse prior Product-owned bundle-local spacing maps; no new route authority",
+  "wrap": "not evaluated; remains a separate display-only checkpoint",
+  "selfLoopPolicy": "unchanged",
+  "structuralPlacement": "unchanged",
+  "parallelIncidentArchitecture": "CLOSED",
+  "relationLabelAuthority": "Product final Relation-label placement unchanged",
+  "rows": [
+    {
+      "fixture": "parallel-self-loop-control",
+      "family": "primary",
+      "positions": {
+        "gamma": {
+          "x": 208,
+          "y": 174
+        },
+        "beta": {
+          "x": 208,
+          "y": -10
+        },
+        "alpha": {
+          "x": 35,
+          "y": -10
+        },
+        "eta": {
+          "x": 553,
+          "y": -10
+        },
+        "epsilon": {
+          "x": 380,
+          "y": 174
+        },
+        "zeta": {
+          "x": 380,
+          "y": -10
+        },
+        "delta": {
+          "x": 35,
+          "y": 174
+        },
+        "theta": {
+          "x": 553,
+          "y": 174
+        }
+      },
+      "graph": {
+        "nodes": 8,
+        "edges": 11
+      },
+      "arms": {
+        "current-coarse": {
+          "groups": [
+            {
+              "key": "alpha\u0000beta",
+              "count": 4,
+              "side": {
+                "positive": 3,
+                "negative": 1
+              },
+              "laneSeparation": 14.699277964866141
+            },
+            {
+              "key": "delta\u0000gamma",
+              "count": 2,
+              "side": {
+                "negative": 1,
+                "positive": 1
+              },
+              "laneSeparation": 54.7976878612717
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 31.324684593234103,
+            "medianMargin": 31.324684593234103,
+            "ambiguity": 1,
+            "foreignCloser": 1
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 112.76657269978722,
+          "routeTotal": 1336.875878360339,
+          "selfLoops": 1,
+          "normalOffsets": [
+            0,
+            -24,
+            24,
+            -40,
+            40
+          ],
+          "labelTraces": [
+            {
+              "pass": "feedback",
+              "relationId": "r-ab-1",
+              "processingIndex": 0,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0,
+                "preference": 0,
+                "selected": true
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 0,
+                  "preference": 0,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 24,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 12008,
+                  "preference": 8,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ab-2",
+              "processingIndex": 1,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 24,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 2
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 18,
+                "foreignRouteIds": [
+                  "r-ba-1"
+                ],
+                "score": 9000,
+                "preference": 0,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 18,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 9000,
+                  "preference": 0,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 32,
+                  "foreignRouteIds": [
+                    "r-ba-1",
+                    "r-ba-2"
+                  ],
+                  "score": 16026,
+                  "preference": 26,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 7,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 3538,
+                  "preference": 38,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": 40,
+                  "labelOverlap": 395.28677628858173,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 26,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 52547.677628858175,
+                  "preference": 19,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ba-1",
+              "processingIndex": 2,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 40,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 4
+              },
+              "zero": {
+                "sampleIndex": 16,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 18,
+                "foreignRouteIds": [
+                  "r-ba-2"
+                ],
+                "score": 9005,
+                "preference": 5,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 18,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 9005,
+                  "preference": 5,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 329.7529099506837,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 25,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 45476.29099506837,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 9,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 4537,
+                  "preference": 37,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -40,
+                  "labelOverlap": 550.8364697085168,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 4,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 67121.64697085168,
+                  "preference": 38,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": true
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ba-2",
+              "processingIndex": 3,
+              "selected": {
+                "sampleIndex": 4,
+                "normalOffset": 24,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 37
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 5,
+                "foreignRouteIds": [
+                  "r-ba-1"
+                ],
+                "score": 2500,
+                "preference": 0,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 5,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 2500,
+                  "preference": 0,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 52,
+                  "foreignRouteIds": [
+                    "r-ab-2",
+                    "r-ba-1"
+                  ],
+                  "score": 26006,
+                  "preference": 6,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 37,
+                  "preference": 37,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": -40,
+                  "labelOverlap": 447.4671576395683,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 26,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 57754.71576395683,
+                  "preference": 8,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 39,
+                  "preference": 39,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-cd-1",
+              "processingIndex": 4,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0,
+                "preference": 0,
+                "selected": true
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 0,
+                  "preference": 0,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 20,
+                  "foreignRouteIds": [
+                    "r-cd-2"
+                  ],
+                  "score": 10009,
+                  "preference": 9,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-cd-2",
+              "processingIndex": 5,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0,
+                "preference": 0,
+                "selected": true
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 0,
+                  "preference": 0,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": -40,
+                  "labelOverlap": 282.7134702378021,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 21,
+                  "foreignRouteIds": [
+                    "r-cd-1"
+                  ],
+                  "score": 38799.34702378021,
+                  "preference": 28,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                }
+              ]
+            }
+          ],
+          "routeIds": [
+            "r-ab-1",
+            "r-ab-2",
+            "r-ba-1",
+            "r-ba-2",
+            "r-cd-1",
+            "r-cd-2",
+            "r-loop",
+            "r-ef",
+            "r-fg",
+            "r-gh",
+            "r-he"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "widened-coarse": {
+          "groups": [
+            {
+              "key": "alpha\u0000beta",
+              "count": 4,
+              "side": {
+                "positive": 2,
+                "negative": 2
+              },
+              "laneSeparation": 14.992957813824638
+            },
+            {
+              "key": "delta\u0000gamma",
+              "count": 2,
+              "side": {
+                "negative": 1,
+                "positive": 1
+              },
+              "laneSeparation": 71.23699421965318
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 27.992957813824646,
+            "medianMargin": 14.992957813824646,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 117.58120001191372,
+          "routeTotal": 1360.6220759350663,
+          "selfLoops": 1,
+          "spacingByKey": {
+            "alpha\u0000beta": 20,
+            "delta\u0000gamma": 12
+          },
+          "normalOffsets": [
+            0,
+            -24,
+            24,
+            -40,
+            40
+          ],
+          "labelTraces": [
+            {
+              "pass": "feedback",
+              "relationId": "r-ab-1",
+              "processingIndex": 0,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": -24,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 1
+              },
+              "zero": {
+                "sampleIndex": 12,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 12,
+                "foreignRouteIds": [
+                  "r-ba-1"
+                ],
+                "score": 6015,
+                "preference": 15,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 12,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 6015,
+                  "preference": 15,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 10,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 5037,
+                  "preference": 37,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ab-2",
+              "processingIndex": 1,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 24,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 2
+              },
+              "zero": {
+                "sampleIndex": 12,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 14,
+                "foreignRouteIds": [
+                  "r-ba-2"
+                ],
+                "score": 7015,
+                "preference": 15,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 14,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 7015,
+                  "preference": 15,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 11,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 5536,
+                  "preference": 36,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 225.88499495977817,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 22592.499495977816,
+                  "preference": 4,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ba-1",
+              "processingIndex": 2,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": -24,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 1
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 1,
+                "foreignRouteIds": [
+                  "r-ab-1"
+                ],
+                "score": 500,
+                "preference": 0,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 1,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 500,
+                  "preference": 0,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": 24,
+                  "labelOverlap": 388.5426367957604,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 24,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 50861.26367957604,
+                  "preference": 7,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 40,
+                  "labelOverlap": 413.5963198497389,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 41398.631984973894,
+                  "preference": 39,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ba-2",
+              "processingIndex": 3,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 24,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 2
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 1,
+                "foreignRouteIds": [
+                  "r-ab-2"
+                ],
+                "score": 500,
+                "preference": 0,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 1,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 500,
+                  "preference": 0,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": -24,
+                  "labelOverlap": 438.49938541627,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 26,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 56855.938541627,
+                  "preference": 6,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -40,
+                  "labelOverlap": 488.3690932272376,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 58874.90932272376,
+                  "preference": 38,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-cd-1",
+              "processingIndex": 4,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0,
+                "preference": 0,
+                "selected": true
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 0,
+                  "preference": 0,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-cd-2",
+              "processingIndex": 5,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0,
+                "preference": 0,
+                "selected": true
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 0,
+                  "preference": 0,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                }
+              ]
+            }
+          ],
+          "routeIds": [
+            "r-ab-1",
+            "r-ab-2",
+            "r-ba-1",
+            "r-ba-2",
+            "r-cd-1",
+            "r-cd-2",
+            "r-loop",
+            "r-ef",
+            "r-fg",
+            "r-gh",
+            "r-he"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "current-fine": {
+          "groups": [
+            {
+              "key": "alpha\u0000beta",
+              "count": 4,
+              "side": {
+                "positive": 3,
+                "negative": 1
+              },
+              "laneSeparation": 14.699277964866141
+            },
+            {
+              "key": "delta\u0000gamma",
+              "count": 2,
+              "side": {
+                "negative": 1,
+                "positive": 1
+              },
+              "laneSeparation": 54.7976878612717
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 38.660131579816856,
+            "medianMargin": 31.324684593234103,
+            "ambiguity": 1,
+            "foreignCloser": 1
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 112.76657269978722,
+          "routeTotal": 1336.875878360339,
+          "selfLoops": 1,
+          "normalOffsets": [
+            0,
+            -4,
+            4,
+            -8,
+            8,
+            -12,
+            12,
+            -16,
+            16,
+            -24,
+            24,
+            -32,
+            32,
+            -40,
+            40
+          ],
+          "labelTraces": [
+            {
+              "pass": "feedback",
+              "relationId": "r-ab-1",
+              "processingIndex": 0,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0,
+                "preference": 0,
+                "selected": true
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 0,
+                  "preference": 0,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 5,
+                  "preference": 5,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 6,
+                  "preference": 6,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 7,
+                  "preference": 7,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 8,
+                  "preference": 8,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 9,
+                  "preference": 9,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 10,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 11,
+                  "preference": 11,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 12,
+                  "preference": 12,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 24,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 12018,
+                  "preference": 18,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 14,
+                  "preference": 14,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ab-2",
+              "processingIndex": 1,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 8,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 4
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 18,
+                "foreignRouteIds": [
+                  "r-ba-1"
+                ],
+                "score": 9000,
+                "preference": 0,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 18,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 9000,
+                  "preference": 0,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 27,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 13501,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 6,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 3002,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 31,
+                  "foreignRouteIds": [
+                    "r-ba-1",
+                    "r-ba-2"
+                  ],
+                  "score": 15503,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": -12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 36,
+                  "foreignRouteIds": [
+                    "r-ba-1",
+                    "r-ba-2"
+                  ],
+                  "score": 18010,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 6,
+                  "preference": 6,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": -16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 38,
+                  "foreignRouteIds": [
+                    "r-ba-1",
+                    "r-ba-2"
+                  ],
+                  "score": 19022,
+                  "preference": 22,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 8,
+                  "preference": 8,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 32,
+                  "foreignRouteIds": [
+                    "r-ba-1",
+                    "r-ba-2"
+                  ],
+                  "score": 16034,
+                  "preference": 34,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 10,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 19,
+                  "foreignRouteIds": [
+                    "r-ba-1",
+                    "r-ba-2"
+                  ],
+                  "score": 9546,
+                  "preference": 46,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 12,
+                  "preference": 12,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 7,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 3548,
+                  "preference": 48,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": 40,
+                  "labelOverlap": 395.28677628858173,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 26,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 52557.677628858175,
+                  "preference": 29,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ba-1",
+              "processingIndex": 2,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 32,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 12
+              },
+              "zero": {
+                "sampleIndex": 16,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 18,
+                "foreignRouteIds": [
+                  "r-ba-2"
+                ],
+                "score": 9005,
+                "preference": 5,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 18,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 9005,
+                  "preference": 5,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -4,
+                  "labelOverlap": 99.75290995068374,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 27,
+                  "foreignRouteIds": [
+                    "r-ab-2",
+                    "r-ba-2"
+                  ],
+                  "score": 23476.290995068375,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 23,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 11502,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -8,
+                  "labelOverlap": 329.7529099506837,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 27,
+                  "foreignRouteIds": [
+                    "r-ab-2",
+                    "r-ba-2"
+                  ],
+                  "score": 46478.29099506837,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": 8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 19,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 9529,
+                  "preference": 29,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": -12,
+                  "labelOverlap": 536.7086778201005,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 26,
+                  "foreignRouteIds": [
+                    "r-ab-2",
+                    "r-ba-2"
+                  ],
+                  "score": 66680.86778201006,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 17,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 8531,
+                  "preference": 31,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -16,
+                  "labelOverlap": 485.53872385527376,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 21,
+                  "foreignRouteIds": [
+                    "r-ab-2",
+                    "r-ba-2"
+                  ],
+                  "score": 69095.87238552739,
+                  "preference": 42,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 15,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 7533,
+                  "preference": 33,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -24,
+                  "labelOverlap": 365.288502959614,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 12,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 52572.8502959614,
+                  "preference": 44,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 9,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 4545,
+                  "preference": 45,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -32,
+                  "labelOverlap": 188.93141417707298,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 3,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 30439.1414177073,
+                  "preference": 46,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 12,
+                  "preference": 12,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": -40,
+                  "labelOverlap": 104.92418452622324,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 10530.418452622323,
+                  "preference": 38,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 14,
+                  "preference": 14,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ba-2",
+              "processingIndex": 3,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 40,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 14
+              },
+              "zero": {
+                "sampleIndex": 12,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 14,
+                "foreignRouteIds": [
+                  "r-ba-1"
+                ],
+                "score": 7015,
+                "preference": 15,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 14,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 7015,
+                  "preference": 15,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 18,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 9026,
+                  "preference": 26,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 12,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 6027,
+                  "preference": 27,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": -8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 21,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 10518,
+                  "preference": 18,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": 8,
+                  "labelOverlap": 18.56344096493713,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 8,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 5885.344096493713,
+                  "preference": 29,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": -12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 24,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 12020,
+                  "preference": 20,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 7,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 3541,
+                  "preference": 41,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 30,
+                  "foreignRouteIds": [
+                    "r-ab-2",
+                    "r-ba-1"
+                  ],
+                  "score": 15007,
+                  "preference": 7,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 4,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 2043,
+                  "preference": 43,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": -24,
+                  "labelOverlap": 442.15718707326573,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 52,
+                  "foreignRouteIds": [
+                    "r-ab-2",
+                    "r-ba-1"
+                  ],
+                  "score": 70229.71870732657,
+                  "preference": 14,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 45,
+                  "preference": 45,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -32,
+                  "labelOverlap": 645.7035745284325,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 28,
+                  "foreignRouteIds": [
+                    "r-ab-2",
+                    "r-ba-1"
+                  ],
+                  "score": 88616.35745284325,
+                  "preference": 46,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 47,
+                  "preference": 47,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -40,
+                  "labelOverlap": 467.88692045836257,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 10,
+                  "foreignRouteIds": [
+                    "r-ab-2",
+                    "r-ba-1"
+                  ],
+                  "score": 61836.69204583626,
+                  "preference": 48,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 14,
+                  "preference": 14,
+                  "selected": true
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-cd-1",
+              "processingIndex": 4,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0,
+                "preference": 0,
+                "selected": true
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 0,
+                  "preference": 0,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 5,
+                  "preference": 5,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 6,
+                  "preference": 6,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 7,
+                  "preference": 7,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 8,
+                  "preference": 8,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 9,
+                  "preference": 9,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 10,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 11,
+                  "preference": 11,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 12,
+                  "preference": 12,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 13,
+                  "preference": 13,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 20,
+                  "foreignRouteIds": [
+                    "r-cd-2"
+                  ],
+                  "score": 10019,
+                  "preference": 19,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-cd-2",
+              "processingIndex": 5,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0,
+                "preference": 0,
+                "selected": true
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 0,
+                  "preference": 0,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 5,
+                  "preference": 5,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 6,
+                  "preference": 6,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 7,
+                  "preference": 7,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 8,
+                  "preference": 8,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 9,
+                  "preference": 9,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 10,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 11,
+                  "preference": 11,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 12,
+                  "preference": 12,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": -40,
+                  "labelOverlap": 282.7134702378021,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 21,
+                  "foreignRouteIds": [
+                    "r-cd-1"
+                  ],
+                  "score": 38809.34702378021,
+                  "preference": 38,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 14,
+                  "preference": 14,
+                  "selected": false
+                }
+              ]
+            }
+          ],
+          "routeIds": [
+            "r-ab-1",
+            "r-ab-2",
+            "r-ba-1",
+            "r-ba-2",
+            "r-cd-1",
+            "r-cd-2",
+            "r-loop",
+            "r-ef",
+            "r-fg",
+            "r-gh",
+            "r-he"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "widened-fine": {
+          "groups": [
+            {
+              "key": "alpha\u0000beta",
+              "count": 4,
+              "side": {
+                "positive": 2,
+                "negative": 2
+              },
+              "laneSeparation": 14.992957813824638
+            },
+            {
+              "key": "delta\u0000gamma",
+              "count": 2,
+              "side": {
+                "negative": 1,
+                "positive": 1
+              },
+              "laneSeparation": 71.23699421965318
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 25.363401661625005,
+            "medianMargin": 25.363401661625005,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 117.58120001191372,
+          "routeTotal": 1360.6220759350663,
+          "selfLoops": 1,
+          "spacingByKey": {
+            "alpha\u0000beta": 20,
+            "delta\u0000gamma": 12
+          },
+          "normalOffsets": [
+            0,
+            -4,
+            4,
+            -8,
+            8,
+            -12,
+            12,
+            -16,
+            16,
+            -24,
+            24,
+            -32,
+            32,
+            -40,
+            40
+          ],
+          "labelTraces": [
+            {
+              "pass": "feedback",
+              "relationId": "r-ab-1",
+              "processingIndex": 0,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": -12,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 5
+              },
+              "zero": {
+                "sampleIndex": 12,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 12,
+                "foreignRouteIds": [
+                  "r-ba-1"
+                ],
+                "score": 6015,
+                "preference": 15,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 12,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 6015,
+                  "preference": 15,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 6,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 3006,
+                  "preference": 6,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 23,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 11502,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 2,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 1003,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": 8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 19,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 9529,
+                  "preference": 29,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 5,
+                  "preference": 5,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 18,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 9031,
+                  "preference": 31,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 7,
+                  "preference": 7,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 15,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 7533,
+                  "preference": 33,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 9,
+                  "preference": 9,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 10,
+                  "foreignRouteIds": [
+                    "r-ba-1"
+                  ],
+                  "score": 5045,
+                  "preference": 45,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 11,
+                  "preference": 11,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 12,
+                  "preference": 12,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 13,
+                  "preference": 13,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 14,
+                  "preference": 14,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ab-2",
+              "processingIndex": 1,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 12,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 6
+              },
+              "zero": {
+                "sampleIndex": 12,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 14,
+                "foreignRouteIds": [
+                  "r-ba-2"
+                ],
+                "score": 7015,
+                "preference": 15,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 14,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 7015,
+                  "preference": 15,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 25,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 12501,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 8,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 4007,
+                  "preference": 7,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 12,
+                  "normalOffset": -8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 24,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 12018,
+                  "preference": 18,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 4,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 2004,
+                  "preference": 4,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": -12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 19,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 9530,
+                  "preference": 30,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 6,
+                  "preference": 6,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 8,
+                  "normalOffset": -16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 16,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 8032,
+                  "preference": 32,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 8,
+                  "preference": 8,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 11,
+                  "foreignRouteIds": [
+                    "r-ba-2"
+                  ],
+                  "score": 5544,
+                  "preference": 44,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 10,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 11,
+                  "preference": 11,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 12,
+                  "preference": 12,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 13,
+                  "preference": 13,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 14,
+                  "preference": 14,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ba-1",
+              "processingIndex": 2,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": -4,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 1
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 1,
+                "foreignRouteIds": [
+                  "r-ab-1"
+                ],
+                "score": 500,
+                "preference": 0,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 1,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 500,
+                  "preference": 0,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 19,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 9502,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 8,
+                  "labelOverlap": 172.9049257050833,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 23,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 28794.49257050833,
+                  "preference": 4,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 5,
+                  "preference": 5,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": 12,
+                  "labelOverlap": 381.5831223018421,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 24,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 50169.31223018421,
+                  "preference": 11,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 7,
+                  "preference": 7,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 16,
+                  "labelOverlap": 391.82519604338347,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 17,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 57725.51960433835,
+                  "preference": 43,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 9,
+                  "preference": 9,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 24,
+                  "labelOverlap": 317.27953320855323,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 8,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 45772.95332085532,
+                  "preference": 45,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 11,
+                  "preference": 11,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 32,
+                  "labelOverlap": 180.72079996001506,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 4,
+                  "foreignRouteIds": [
+                    "r-ab-1"
+                  ],
+                  "score": 30119.079996001507,
+                  "preference": 47,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 13,
+                  "preference": 13,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 49,
+                  "preference": 49,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-ba-2",
+              "processingIndex": 3,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 4,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 2
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 1,
+                "foreignRouteIds": [
+                  "r-ab-2"
+                ],
+                "score": 500,
+                "preference": 0,
+                "selected": false
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 1,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 500,
+                  "preference": 0,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 19,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 9501,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -8,
+                  "labelOverlap": 192.45069991522269,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 25,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 31748.06999152227,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 16,
+                  "normalOffset": -12,
+                  "labelOverlap": 432.970647456541,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 26,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 56307.0647456541,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 6,
+                  "preference": 6,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -16,
+                  "labelOverlap": 511.7905770723045,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 17,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 69721.05770723044,
+                  "preference": 42,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 8,
+                  "preference": 8,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -24,
+                  "labelOverlap": 396.18071168700016,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 8,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 53662.071168700015,
+                  "preference": 44,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 10,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -32,
+                  "labelOverlap": 218.55777588798776,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 4,
+                  "foreignRouteIds": [
+                    "r-ab-2"
+                  ],
+                  "score": 33901.77758879878,
+                  "preference": 46,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 12,
+                  "preference": 12,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 4,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 1,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 10048,
+                  "preference": 48,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 14,
+                  "preference": 14,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-cd-1",
+              "processingIndex": 4,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0,
+                "preference": 0,
+                "selected": true
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 0,
+                  "preference": 0,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 5,
+                  "preference": 5,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 6,
+                  "preference": 6,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 7,
+                  "preference": 7,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 8,
+                  "preference": 8,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 9,
+                  "preference": 9,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 10,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 11,
+                  "preference": 11,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 12,
+                  "preference": 12,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 13,
+                  "preference": 13,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 14,
+                  "preference": 14,
+                  "selected": false
+                }
+              ]
+            },
+            {
+              "pass": "feedback",
+              "relationId": "r-cd-2",
+              "processingIndex": 5,
+              "selected": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0
+              },
+              "zero": {
+                "sampleIndex": 20,
+                "normalOffset": 0,
+                "labelOverlap": 0,
+                "nodeOverlap": 0,
+                "edgeOverlap": 0,
+                "foreignRouteIds": [],
+                "score": 0,
+                "preference": 0,
+                "selected": true
+              },
+              "offsetSummary": [
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 0,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 0,
+                  "preference": 0,
+                  "selected": true
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 1,
+                  "preference": 1,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 4,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 2,
+                  "preference": 2,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 3,
+                  "preference": 3,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 8,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 4,
+                  "preference": 4,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 5,
+                  "preference": 5,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 12,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 6,
+                  "preference": 6,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 7,
+                  "preference": 7,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 16,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 8,
+                  "preference": 8,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 9,
+                  "preference": 9,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 24,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 10,
+                  "preference": 10,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 11,
+                  "preference": 11,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 32,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 12,
+                  "preference": 12,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": -40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 13,
+                  "preference": 13,
+                  "selected": false
+                },
+                {
+                  "sampleIndex": 20,
+                  "normalOffset": 40,
+                  "labelOverlap": 0,
+                  "nodeOverlap": 0,
+                  "edgeOverlap": 0,
+                  "foreignRouteIds": [],
+                  "score": 14,
+                  "preference": 14,
+                  "selected": false
+                }
+              ]
+            }
+          ],
+          "routeIds": [
+            "r-ab-1",
+            "r-ab-2",
+            "r-ba-1",
+            "r-ba-2",
+            "r-cd-1",
+            "r-cd-2",
+            "r-loop",
+            "r-ef",
+            "r-fg",
+            "r-gh",
+            "r-he"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        }
+      }
+    },
+    {
+      "fixture": "higher-multiplicity-5",
+      "family": "higher-multiplicity",
+      "positions": {
+        "a": {
+          "x": 80,
+          "y": 120
+        },
+        "b": {
+          "x": 440,
+          "y": 120
+        },
+        "c": {
+          "x": 260,
+          "y": -40
+        },
+        "d": {
+          "x": 260,
+          "y": 280
+        }
+      },
+      "graph": {
+        "nodes": 4,
+        "edges": 7
+      },
+      "arms": {
+        "current-coarse": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 5,
+              "side": {
+                "positive": 3,
+                "negative": 2
+              },
+              "laneSeparation": 14.133333333333326
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 7.143268789033028,
+            "medianForeignDistance": 17.18537705306576,
+            "medianMargin": 12.32291025952595,
+            "ambiguity": 3,
+            "foreignCloser": 3
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 298.41699241364586,
+          "routeTotal": 1829.6518208337066,
+          "selfLoops": 0,
+          "normalOffsets": [
+            0,
+            -24,
+            24,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "p-1",
+            "p-2",
+            "p-3",
+            "p-4",
+            "p-5",
+            "ordinary-ca",
+            "ordinary-bd"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "widened-coarse": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 5,
+              "side": {
+                "positive": 3,
+                "negative": 2
+              },
+              "laneSeparation": 21.996773910031436
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 12.155016431846562,
+            "medianMargin": 12.155016431846562,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 311.7201208716508,
+          "routeTotal": 1955.8310009124255,
+          "selfLoops": 0,
+          "spacingByKey": {
+            "a\u0000b": 16
+          },
+          "normalOffsets": [
+            0,
+            -24,
+            24,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "p-1",
+            "p-2",
+            "p-3",
+            "p-4",
+            "p-5",
+            "ordinary-ca",
+            "ordinary-bd"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 1,
+            "ids": [
+              "ordinary-bd"
+            ]
+          }
+        },
+        "current-fine": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 5,
+              "side": {
+                "positive": 3,
+                "negative": 2
+              },
+              "laneSeparation": 14.133333333333326
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 7.133333333333354,
+            "medianMargin": 7.133333333333354,
+            "ambiguity": 1,
+            "foreignCloser": 1
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 298.41699241364586,
+          "routeTotal": 1829.6518208337066,
+          "selfLoops": 0,
+          "normalOffsets": [
+            0,
+            -4,
+            4,
+            -8,
+            8,
+            -12,
+            12,
+            -16,
+            16,
+            -24,
+            24,
+            -32,
+            32,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "p-1",
+            "p-2",
+            "p-3",
+            "p-4",
+            "p-5",
+            "ordinary-ca",
+            "ordinary-bd"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "widened-fine": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 5,
+              "side": {
+                "positive": 3,
+                "negative": 2
+              },
+              "laneSeparation": 21.996773910031436
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 8.429982736614754,
+            "medianMargin": 8.429982736614754,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 311.7201208716508,
+          "routeTotal": 1955.8310009124255,
+          "selfLoops": 0,
+          "spacingByKey": {
+            "a\u0000b": 16
+          },
+          "normalOffsets": [
+            0,
+            -4,
+            4,
+            -8,
+            8,
+            -12,
+            12,
+            -16,
+            16,
+            -24,
+            24,
+            -32,
+            32,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "p-1",
+            "p-2",
+            "p-3",
+            "p-4",
+            "p-5",
+            "ordinary-ca",
+            "ordinary-bd"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 1,
+            "ids": [
+              "ordinary-bd"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "fixture": "mixed-incident-parallel",
+      "family": "mixed-incident",
+      "positions": {
+        "a": {
+          "x": 100,
+          "y": 100
+        },
+        "b": {
+          "x": 460,
+          "y": 100
+        },
+        "c": {
+          "x": 100,
+          "y": 300
+        },
+        "d": {
+          "x": 460,
+          "y": 300
+        },
+        "e": {
+          "x": 100,
+          "y": 500
+        },
+        "f": {
+          "x": 460,
+          "y": 500
+        }
+      },
+      "graph": {
+        "nodes": 6,
+        "edges": 10
+      },
+      "arms": {
+        "current-coarse": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 4,
+              "side": {
+                "positive": 2,
+                "negative": 2
+              },
+              "laneSeparation": 14.13333333333334
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 14.86666666666666,
+            "medianMargin": 14.133333333333354,
+            "ambiguity": 2,
+            "foreignCloser": 2
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 298.4169924136459,
+          "routeTotal": 2448.4169731081665,
+          "selfLoops": 0,
+          "normalOffsets": [
+            0,
+            -24,
+            24,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "ab-1",
+            "ab-2",
+            "ba-1",
+            "ba-2",
+            "ac",
+            "bd",
+            "ce",
+            "df",
+            "ea",
+            "fb"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "widened-coarse": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 4,
+              "side": {
+                "positive": 2,
+                "negative": 2
+              },
+              "laneSeparation": 14.133333333333326
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 24.023936961104244,
+            "medianMargin": 14.133333333333326,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 302.11980215725913,
+          "routeTotal": 2466.371603710108,
+          "selfLoops": 0,
+          "spacingByKey": {
+            "a\u0000b": 24
+          },
+          "normalOffsets": [
+            0,
+            -24,
+            24,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "ab-1",
+            "ab-2",
+            "ba-1",
+            "ba-2",
+            "ac",
+            "bd",
+            "ce",
+            "df",
+            "ea",
+            "fb"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "current-fine": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 4,
+              "side": {
+                "positive": 2,
+                "negative": 2
+              },
+              "laneSeparation": 14.13333333333334
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 7.133333333333354,
+            "medianMargin": 7.133333333333354,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 298.4169924136459,
+          "routeTotal": 2448.4169731081665,
+          "selfLoops": 0,
+          "normalOffsets": [
+            0,
+            -4,
+            4,
+            -8,
+            8,
+            -12,
+            12,
+            -16,
+            16,
+            -24,
+            24,
+            -32,
+            32,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "ab-1",
+            "ab-2",
+            "ba-1",
+            "ba-2",
+            "ac",
+            "bd",
+            "ce",
+            "df",
+            "ea",
+            "fb"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "widened-fine": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 4,
+              "side": {
+                "positive": 2,
+                "negative": 2
+              },
+              "laneSeparation": 14.133333333333326
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 7.975399999999979,
+            "medianMargin": 7.975399999999979,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 302.11980215725913,
+          "routeTotal": 2466.371603710108,
+          "selfLoops": 0,
+          "spacingByKey": {
+            "a\u0000b": 24
+          },
+          "normalOffsets": [
+            0,
+            -4,
+            4,
+            -8,
+            8,
+            -12,
+            12,
+            -16,
+            16,
+            -24,
+            24,
+            -32,
+            32,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "ab-1",
+            "ab-2",
+            "ba-1",
+            "ba-2",
+            "ac",
+            "bd",
+            "ce",
+            "df",
+            "ea",
+            "fb"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        }
+      }
+    },
+    {
+      "fixture": "shared-endpoint-multiple-bundle",
+      "family": "shared-endpoint",
+      "positions": {
+        "a": {
+          "x": 260,
+          "y": 220
+        },
+        "b": {
+          "x": 520,
+          "y": 80
+        },
+        "c": {
+          "x": 520,
+          "y": 360
+        },
+        "d": {
+          "x": 80,
+          "y": 80
+        },
+        "e": {
+          "x": 700,
+          "y": 80
+        },
+        "f": {
+          "x": 700,
+          "y": 360
+        }
+      },
+      "graph": {
+        "nodes": 6,
+        "edges": 9
+      },
+      "arms": {
+        "current-coarse": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 4,
+              "side": {
+                "positive": 2,
+                "negative": 2
+              },
+              "laneSeparation": 14.353336726354678
+            },
+            {
+              "key": "a\u0000c",
+              "count": 2,
+              "side": {
+                "positive": 1,
+                "negative": 1
+              },
+              "laneSeparation": 49.68691406183472
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 18.979536287849022,
+            "medianMargin": 18.979536287849022,
+            "ambiguity": 2,
+            "foreignCloser": 2
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 227.451813260635,
+          "routeTotal": 1765.5597633455018,
+          "selfLoops": 0,
+          "normalOffsets": [
+            0,
+            -24,
+            24,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "ab-1",
+            "ab-2",
+            "ba-1",
+            "ba-2",
+            "ac-1",
+            "ac-2",
+            "da",
+            "be",
+            "cf"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "widened-coarse": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 4,
+              "side": {
+                "positive": 2,
+                "negative": 2
+              },
+              "laneSeparation": 13.958247521918716
+            },
+            {
+              "key": "a\u0000c",
+              "count": 2,
+              "side": {
+                "positive": 1,
+                "negative": 1
+              },
+              "laneSeparation": 68.91943225175397
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 37.403286291359564,
+            "medianMargin": 37.403286291359564,
+            "ambiguity": 1,
+            "foreignCloser": 1
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 233.02680774526976,
+          "routeTotal": 1803.9666167724472,
+          "selfLoops": 0,
+          "spacingByKey": {
+            "a\u0000b": 16,
+            "a\u0000c": 16
+          },
+          "normalOffsets": [
+            0,
+            -24,
+            24,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "ab-1",
+            "ab-2",
+            "ba-1",
+            "ba-2",
+            "ac-1",
+            "ac-2",
+            "da",
+            "be",
+            "cf"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "current-fine": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 4,
+              "side": {
+                "positive": 2,
+                "negative": 2
+              },
+              "laneSeparation": 14.353336726354678
+            },
+            {
+              "key": "a\u0000c",
+              "count": 2,
+              "side": {
+                "positive": 1,
+                "negative": 1
+              },
+              "laneSeparation": 49.68691406183472
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 18.979536287849022,
+            "medianMargin": 18.979536287849022,
+            "ambiguity": 1,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 227.451813260635,
+          "routeTotal": 1765.5597633455018,
+          "selfLoops": 0,
+          "normalOffsets": [
+            0,
+            -4,
+            4,
+            -8,
+            8,
+            -12,
+            12,
+            -16,
+            16,
+            -24,
+            24,
+            -32,
+            32,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "ab-1",
+            "ab-2",
+            "ba-1",
+            "ba-2",
+            "ac-1",
+            "ac-2",
+            "da",
+            "be",
+            "cf"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "widened-fine": {
+          "groups": [
+            {
+              "key": "a\u0000b",
+              "count": 4,
+              "side": {
+                "positive": 2,
+                "negative": 2
+              },
+              "laneSeparation": 13.958247521918716
+            },
+            {
+              "key": "a\u0000c",
+              "count": 2,
+              "side": {
+                "positive": 1,
+                "negative": 1
+              },
+              "laneSeparation": 68.91943225175397
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 37.403286291359564,
+            "medianMargin": 37.403286291359564,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 233.02680774526976,
+          "routeTotal": 1803.9666167724472,
+          "selfLoops": 0,
+          "spacingByKey": {
+            "a\u0000b": 16,
+            "a\u0000c": 16
+          },
+          "normalOffsets": [
+            0,
+            -4,
+            4,
+            -8,
+            8,
+            -12,
+            12,
+            -16,
+            16,
+            -24,
+            24,
+            -32,
+            32,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "ab-1",
+            "ab-2",
+            "ba-1",
+            "ba-2",
+            "ac-1",
+            "ac-2",
+            "da",
+            "be",
+            "cf"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        }
+      }
+    },
+    {
+      "fixture": "lighthouse-en",
+      "family": "public-sample",
+      "positions": {
+        "sofia": {
+          "x": 317,
+          "y": -29
+        },
+        "archive": {
+          "x": 480,
+          "y": 23
+        },
+        "clara": {
+          "x": 581,
+          "y": 159
+        },
+        "lighthouse": {
+          "x": 581,
+          "y": 328
+        },
+        "authority": {
+          "x": 480,
+          "y": 464
+        },
+        "beacon": {
+          "x": 317,
+          "y": 516
+        },
+        "maya": {
+          "x": 153,
+          "y": 464
+        },
+        "thomas": {
+          "x": 52,
+          "y": 328
+        },
+        "daniel": {
+          "x": 52,
+          "y": 159
+        },
+        "elias": {
+          "x": 153,
+          "y": 23
+        }
+      },
+      "graph": {
+        "nodes": 10,
+        "edges": 14
+      },
+      "arms": {
+        "current-coarse": {
+          "groups": [
+            {
+              "key": "clara\u0000thomas",
+              "count": 2,
+              "side": {
+                "negative": 1,
+                "positive": 1
+              },
+              "laneSeparation": 44.87634275661023
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 29.423950453302517,
+            "medianMargin": 29.423950453302517,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 188.15817494951617,
+          "routeTotal": 3489.810516746827,
+          "selfLoops": 2,
+          "normalOffsets": [
+            0,
+            -24,
+            24,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "clara-thomas-supervises",
+            "clara-thomas-mentors",
+            "clara-maya",
+            "elias-clara",
+            "sofia-elias",
+            "daniel-clara",
+            "maya-beacon",
+            "sofia-archive",
+            "clara-lighthouse",
+            "beacon-self-monitor",
+            "beacon-self-calibrate",
+            "authority-lighthouse",
+            "thomas-maya-friends",
+            "beacon-lighthouse-installed-in"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "widened-coarse": {
+          "groups": [
+            {
+              "key": "clara\u0000thomas",
+              "count": 2,
+              "side": {
+                "negative": 1,
+                "positive": 1
+              },
+              "laneSeparation": 58.34858866393609
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 29.206600135521153,
+            "medianMargin": 29.206600135521153,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 188.15817494951617,
+          "routeTotal": 3491.9209132719493,
+          "selfLoops": 2,
+          "spacingByKey": {
+            "clara\u0000thomas": 12
+          },
+          "normalOffsets": [
+            0,
+            -24,
+            24,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "clara-thomas-supervises",
+            "clara-thomas-mentors",
+            "clara-maya",
+            "elias-clara",
+            "sofia-elias",
+            "daniel-clara",
+            "maya-beacon",
+            "sofia-archive",
+            "clara-lighthouse",
+            "beacon-self-monitor",
+            "beacon-self-calibrate",
+            "authority-lighthouse",
+            "thomas-maya-friends",
+            "beacon-lighthouse-installed-in"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "current-fine": {
+          "groups": [
+            {
+              "key": "clara\u0000thomas",
+              "count": 2,
+              "side": {
+                "negative": 1,
+                "positive": 1
+              },
+              "laneSeparation": 44.87634275661023
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 29.423950453302517,
+            "medianMargin": 29.423950453302517,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 188.15817494951617,
+          "routeTotal": 3489.810516746827,
+          "selfLoops": 2,
+          "normalOffsets": [
+            0,
+            -4,
+            4,
+            -8,
+            8,
+            -12,
+            12,
+            -16,
+            16,
+            -24,
+            24,
+            -32,
+            32,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "clara-thomas-supervises",
+            "clara-thomas-mentors",
+            "clara-maya",
+            "elias-clara",
+            "sofia-elias",
+            "daniel-clara",
+            "maya-beacon",
+            "sofia-archive",
+            "clara-lighthouse",
+            "beacon-self-monitor",
+            "beacon-self-calibrate",
+            "authority-lighthouse",
+            "thomas-maya-friends",
+            "beacon-lighthouse-installed-in"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        },
+        "widened-fine": {
+          "groups": [
+            {
+              "key": "clara\u0000thomas",
+              "count": 2,
+              "side": {
+                "negative": 1,
+                "positive": 1
+              },
+              "laneSeparation": 58.34858866393609
+            }
+          ],
+          "crossings": 0,
+          "occupiedConflicts": 0,
+          "ownership": {
+            "medianOwnerDistance": 0,
+            "medianForeignDistance": 29.206600135521153,
+            "medianMargin": 29.206600135521153,
+            "ambiguity": 0,
+            "foreignCloser": 0
+          },
+          "labelOverlap": 0,
+          "nodeCollision": 0,
+          "nodeRelationOverlap": 0,
+          "routeMedian": 188.15817494951617,
+          "routeTotal": 3491.9209132719493,
+          "selfLoops": 2,
+          "spacingByKey": {
+            "clara\u0000thomas": 12
+          },
+          "normalOffsets": [
+            0,
+            -4,
+            4,
+            -8,
+            8,
+            -12,
+            12,
+            -16,
+            16,
+            -24,
+            24,
+            -32,
+            32,
+            -40,
+            40
+          ],
+          "labelTraces": [],
+          "routeIds": [
+            "clara-thomas-supervises",
+            "clara-thomas-mentors",
+            "clara-maya",
+            "elias-clara",
+            "sofia-elias",
+            "daniel-clara",
+            "maya-beacon",
+            "sofia-archive",
+            "clara-lighthouse",
+            "beacon-self-monitor",
+            "beacon-self-calibrate",
+            "authority-lighthouse",
+            "thomas-maya-friends",
+            "beacon-lighthouse-installed-in"
+          ],
+          "ordinaryRouteChurn": {
+            "count": 0,
+            "ids": []
+          }
+        }
+      }
+    }
+  ],
+  "standing": {
+    "productDefault": "HOLD",
+    "productionProvider": "NOT ESTABLISHED",
+    "humanReview": "NOT READY",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}

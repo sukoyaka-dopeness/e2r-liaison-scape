@@ -57,13 +57,15 @@ type AppProps = {
   parallelBundleSpacingByKey?: Readonly<Record<string, number>>;
   /** Development-only one-line Relation-label stagger seam; normal Product callers omit it. */
   relationLabelStaggerById?: Readonly<Record<string, number>>;
+  /** Development-only normal-offset candidate set; normal Product callers omit it. */
+  relationLabelNormalOffsets?: readonly number[];
   /** Development-only, non-adopting Actual Product visual-evidence seam. */
   operationLocalPreview?: OperationLocalProductPreview;
   /** Development-only fixture input for the preview evidence harness. */
   diagnosticDataset?: Dataset;
 };
 
-export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, operationLocalPreview, diagnosticDataset }: AppProps = {}) {
+export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, relationLabelNormalOffsets, operationLocalPreview, diagnosticDataset }: AppProps = {}) {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
     window.localStorage,
     window.navigator.language,
@@ -557,6 +559,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         : undefined,
       parallelBundleSpacingByKey: import.meta.env.DEV ? parallelBundleSpacingByKey : undefined,
       relationLabelStaggerById: import.meta.env.DEV ? relationLabelStaggerById : undefined,
+      relationLabelNormalOffsets: import.meta.env.DEV ? relationLabelNormalOffsets : undefined,
       parallelBundleMode: parallelBundlePolicy?.mode
         ?? (parallelBundleVariant === "pair-16" ? "pair" : parallelBundleVariant === "corridor-aware" ? "corridor" : "bundle"),
     });
@@ -592,7 +595,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       profiler: presentationProfiler,
     });
     return { ...result, derivationPhase, routeDecisions: routeDecisions ?? [] };
-  }, [edgeCurveOffsets, graph, manualLabelRevision, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelStaggerById, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+  }, [edgeCurveOffsets, graph, manualLabelRevision, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {

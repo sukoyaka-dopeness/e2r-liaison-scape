@@ -575,6 +575,8 @@ export function placeEdgeLabel(
   traceSink?: (trace: LabelPlacementTrace) => void,
   providedOtherEdgePathBounds?: readonly (PointBounds | null)[],
   tangentialOffset = 0,
+  normalOffsets?: readonly number[],
+  candidateTraceSink?: (candidates: readonly LabelPlacementCandidateDiagnostic[]) => void,
 ): LabelRect {
   const startedAt = performance.now();
   const fallback = samples[Math.floor(samples.length / 2)] ?? { x: 0, y: 0 };
@@ -597,7 +599,7 @@ export function placeEdgeLabel(
       x: Math.abs(normalX) < 1e-12 ? 0 : normalX,
       y: Math.abs(normalY) < 1e-12 ? 0 : normalY,
     };
-    return [0, -24, 24, -40, 40].map((normalOffset, awayFromPathPreference) => ({
+    return (normalOffsets ?? [0, -24, 24, -40, 40]).map((normalOffset, awayFromPathPreference) => ({
       sampleIndex,
       normalOffset,
       candidate: {
@@ -635,18 +637,21 @@ export function placeEdgeLabel(
       const nearestY = Math.max(candidate.y - 11, Math.min(node.y, candidate.y + 11));
       return total + (Math.hypot(node.x - nearestX, node.y - nearestY) < 36 ? 1 : 0);
     }, 0);
+    const edgeOverlapPathIndexes = candidateTraceSink ? [] as number[] : undefined;
     const edgeOverlap = otherEdgePaths.reduce((total, path, pathIndex) => {
       if (boundsMissRect(otherEdgePathBounds[pathIndex] ?? null, candidate, 4, 15)) {
         if (profile) profile.pathBroadPhaseRejects += 1;
         return total;
       }
-      return total + path.reduce((pathTotal, pathPoint) => {
+      const pathOverlap = path.reduce((pathTotal, pathPoint) => {
         if (profile) profile.edgePathPointChecks += 1;
         return pathTotal + (pathPoint.x >= candidate.x - width / 2 - 4
           && pathPoint.x <= candidate.x + width / 2 + 4
           && pathPoint.y >= candidate.y - 15
           && pathPoint.y <= candidate.y + 15 ? 1 : 0);
       }, 0);
+      if (pathOverlap > 0) edgeOverlapPathIndexes?.push(pathIndex);
+      return total + pathOverlap;
     }, 0);
     return {
       candidate,
@@ -655,6 +660,7 @@ export function placeEdgeLabel(
       labelOverlap,
       nodeOverlap,
       edgeOverlap,
+      edgeOverlapPathIndexes,
       preference,
       nodeClearance: minimumNodeClearance(candidate, nodes),
       score: labelOverlap * 100
@@ -686,6 +692,7 @@ export function placeEdgeLabel(
     candidateFingerprint: JSON.stringify(scoredCandidates.map(({ candidate, sampleIndex, normalOffset, labelOverlap, nodeOverlap, edgeOverlap, score }) => ({ candidate, sampleIndex, normalOffset, labelOverlap, nodeOverlap, edgeOverlap, score }))),
     selectedFingerprint: JSON.stringify(selected.candidate),
   });
+  candidateTraceSink?.(scoredCandidates.map(({ candidate, sampleIndex, normalOffset, labelOverlap, nodeOverlap, edgeOverlap, edgeOverlapPathIndexes, preference, score }) => ({ candidate, sampleIndex, normalOffset, labelOverlap, nodeOverlap, edgeOverlap, edgeOverlapPathIndexes: edgeOverlapPathIndexes ?? [], preference, score, selected: candidate === selected.candidate })));
   return selected.candidate;
 }
 
@@ -938,6 +945,19 @@ export type LabelPlacementProfile = {
 };
 
 /** Opt-in diagnostic trace for one label placement decision. */
+export type LabelPlacementCandidateDiagnostic = {
+  candidate: LabelRect;
+  sampleIndex: number;
+  normalOffset: number;
+  labelOverlap: number;
+  nodeOverlap: number;
+  edgeOverlap: number;
+  edgeOverlapPathIndexes: readonly number[];
+  preference: number;
+  score: number;
+  selected: boolean;
+};
+
 export type LabelPlacementTrace = {
   candidateFingerprint: string;
   selectedFingerprint: string;
