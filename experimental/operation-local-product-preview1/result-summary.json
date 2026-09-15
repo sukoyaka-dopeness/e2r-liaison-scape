@@ -1,0 +1,58 @@
+{
+  "classification": "B. PREVIEW ESTABLISHED / METRIC-VISUAL QUALITY GAP FOUND",
+  "preview": {
+    "location": "App render-position input before current Product presentation derivation",
+    "storage": "isolated React state",
+    "sessionPositionsMutated": false,
+    "datasetMutated": false,
+    "coordinatesDirtyChanged": false,
+    "saveCoordinatesChanged": false,
+    "coordinateOwnershipChanged": false,
+    "manualAuthoritiesChanged": false,
+    "readOnlyGraph": true,
+    "explicitEndRestoresFastGeometry": true,
+    "reloadDisposes": true,
+    "homeDisposes": true,
+    "staleIdentityRejected": true,
+    "productPresentationAuthorityReused": true
+  },
+  "evidence": {
+    "actualProductSurface": true,
+    "diagnosticRenderer": false,
+    "cases": 3,
+    "candidateSource": "exact selected fingerprints from Worker Product Metric Parity campaign",
+    "canonical": {
+      "classification": "PASS WITH NO MATERIAL IMPROVEMENT",
+      "observation": "No Entity overlap or obvious route/label breakage; Fast and HQ geometry were nearly identical. Parallel lanes remained distinguishable."
+    },
+    "dense": {
+      "classification": "FAIL",
+      "observation": "Severe Relation-label crowding and route/label association loss across all three dense clusters; fit required approximately 48%."
+    },
+    "labelHeavyJapanese": {
+      "classification": "FAIL",
+      "observation": "Long Japanese Relation and Node labels overlapped extensively and were not readable at approximately 54% fit."
+    },
+    "selfLoop": {
+      "classification": "NOT TESTED",
+      "reason": "The exact prior Worker selected-candidate set contains no self-loop fixture."
+    },
+    "metricVisualAgreement": "GAP",
+    "wallTime": "No new solver run was required; fixed exact candidate replay was immediate. The prior dense Worker completion-latency blocker remains open."
+  },
+  "readiness": {
+    "operationLocalPreviewSeam": "ESTABLISHED IN DEVELOPMENT EVIDENCE PATH",
+    "previewStateIsolation": "ESTABLISHED",
+    "datasetPersistenceSafety": "ESTABLISHED",
+    "manualAuthoritySafety": "ESTABLISHED",
+    "actualProductHqVisualEvidence": "ESTABLISHED FOR 3 CASES",
+    "visualQuality": "NOT READY",
+    "humanReview": "NOT READY",
+    "workerExecution": "ESTABLISHED IN TESTED ENVELOPE",
+    "browserWallTime": "NOT ESTABLISHED",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productionProvider": "NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}

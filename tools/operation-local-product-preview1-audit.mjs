@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+const result = JSON.parse(fs.readFileSync("experimental/operation-local-product-preview1/result-summary.json", "utf8"));
+assert.equal(result.classification, "B. PREVIEW ESTABLISHED / METRIC-VISUAL QUALITY GAP FOUND");
+for (const key of ["sessionPositionsMutated", "datasetMutated", "coordinatesDirtyChanged", "saveCoordinatesChanged", "coordinateOwnershipChanged", "manualAuthoritiesChanged"]) assert.equal(result.preview[key], false, key);
+assert.equal(result.preview.staleIdentityRejected, true);
+assert.equal(result.preview.productPresentationAuthorityReused, true);
+assert.equal(result.evidence.cases, 3);
+assert.equal(result.evidence.dense.classification, "FAIL");
+assert.equal(result.evidence.labelHeavyJapanese.classification, "FAIL");
+assert.equal(result.readiness.humanReview, "NOT READY");
+assert.equal(result.readiness.productionProvider, "NOT ESTABLISHED");
+console.log(JSON.stringify({ status: "PASS", classification: result.classification }, null, 2));

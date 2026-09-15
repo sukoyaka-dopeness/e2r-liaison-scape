@@ -35,6 +35,7 @@ import { publishDatasetOpenTiming, publishDragPointerProcessing, publishPresenta
 import { deriveActualProductInitialLayout, type ActualProductInitialLayoutOptIn } from "./actual-product-initial-layout";
 import { acceptanceFixturePath, acceptanceLayoutPath, parseAcceptanceFixture, type AcceptanceLayoutArm } from "./acceptance-fixture-access";
 import { readAcceptancePayload, storeAcceptancePayload } from "./acceptance-payload-reopen";
+import { validateOperationLocalProductPreview, type OperationLocalProductPreview } from "./operation-local-product-preview";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
@@ -51,9 +52,13 @@ type AppProps = {
   initialLayoutOverride?: ActualProductDiagnosticInitialLayout;
   /** Development-only review seam; normal Product callers omit it. */
   parallelBundleVariant?: "pair-16" | "bundle-16" | "corridor-aware";
+  /** Development-only, non-adopting Actual Product visual-evidence seam. */
+  operationLocalPreview?: OperationLocalProductPreview;
+  /** Development-only fixture input for the preview evidence harness. */
+  diagnosticDataset?: Dataset;
 };
 
-export default function App({ initialLayoutOverride, parallelBundleVariant }: AppProps = {}) {
+export default function App({ initialLayoutOverride, parallelBundleVariant, operationLocalPreview, diagnosticDataset }: AppProps = {}) {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
     window.localStorage,
     window.navigator.language,
@@ -96,6 +101,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
   const [viewportToolbarCollapsed, setViewportToolbarCollapsed] = useState(false);
   const [viewportToolbarPosition, setViewportToolbarPosition] = useState<{ x: number; y: number } | null>(null);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [activeOperationPreview, setActiveOperationPreview] = useState<OperationLocalProductPreview | null>(null);
   const productInitialLayoutOverrideRef = useRef<ActualProductDiagnosticInitialLayout | null>(null);
   const [liveDragPosition, setLiveDragPosition] = useState<{ id: string; position: { x: number; y: number } } | null>(null);
   const [presentationRevision, setPresentationRevision] = useState(0);
@@ -322,6 +328,12 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
   }, [locale]);
 
   useEffect(() => {
+    if (!import.meta.env.DEV || !diagnosticDataset || dataset || view !== "home") return;
+    const raw = JSON.stringify(diagnosticDataset);
+    scheduleDatasetOpen(() => open(raw, null, "local"));
+  }, []);
+
+  useEffect(() => {
     if (!acceptancePayloadReopen || dataset || view !== "home") return;
     const raw = readAcceptancePayload(window.sessionStorage);
     if (!raw) return;
@@ -408,7 +420,10 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
       const nextView = event.state?.liaisonScapeView;
       if (nextView !== "home" && nextView !== "workspace") return;
       setView(nextView);
-      if (nextView === "home") setMessage(translate(locale, "browserBackDatasetNotice"));
+      if (nextView === "home") {
+        setActiveOperationPreview(null);
+        setMessage(translate(locale, "browserBackDatasetNotice"));
+      }
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -439,23 +454,27 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
   const coordinateMigrationReadiness = dataset ? assessCoordinateDraftMigration(dataset) : null;
   const spaceMigrationReadiness = dataset ? assessLiaisonScapeSpaceMigration(dataset) : null;
   const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [], unsupportedEdges: 0, eventRelatedHiddenEdges: 0, otherUnsupportedEdges: 0 }, [dataset]);
+  const previewExpected = operationLocalPreview ? { operationId: operationLocalPreview.operationId, generation: operationLocalPreview.generation, snapshotIdentity: operationLocalPreview.snapshotIdentity, entityIds: graph.nodes.map(({ id }) => id) } : null;
+  const validatedPreview = import.meta.env.DEV && previewExpected && validateOperationLocalProductPreview(operationLocalPreview, previewExpected) ? operationLocalPreview : null;
+  const renderPositions = activeOperationPreview?.positions ?? positions;
+  useEffect(() => { setActiveOperationPreview(validatedPreview); }, [validatedPreview?.candidateFingerprint]);
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
   const relationMap = useMemo(() => new Map(dataset?.relations.map((relation) => [relation.id, relation]) ?? []), [dataset]);
   const provisionalNodeLabels = useMemo(() =>
     graph.nodes.map((node) => {
-      const position = positions[node.id] ?? node;
+      const position = renderPositions[node.id] ?? node;
       const automatic = placeNodeLabel(
         position,
         node.label,
         node.description,
         [],
-        graph.nodes.filter(({ id }) => id !== node.id).map((other) => positions[other.id] ?? other),
+        graph.nodes.filter(({ id }) => id !== node.id).map((other) => renderPositions[other.id] ?? other),
         [],
       );
       const manual = manualNodeLabelOffsets.current.get(node.id);
       return manual ? { ...automatic, x: position.x + manual.x, y: position.y + manual.y } : automatic;
     }),
-  [graph.nodes, positions]);
+  [graph.nodes, renderPositions]);
   const activeNodeDrag = dragRef.current?.kind === "node";
   const presentationDraggedNodeId = dragRef.current?.kind === "node" ? dragRef.current.id : finalizingNodeDragIdRef.current ?? undefined;
   const presentationPhase: "idle" | "node-drag-active" | "node-drag-finalizing" = activeNodeDrag
@@ -468,11 +487,11 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
     // re-label merely because a pointer enters or leaves a drag phase.
     const derivationPhase = presentationPhase;
     const startedAt = performance.now();
-    let presentationInputId = presentationInputIdentityRef.current.map.get(positions);
+    let presentationInputId = presentationInputIdentityRef.current.map.get(renderPositions);
     if (presentationInputId === undefined) {
       presentationInputId = presentationInputIdentityRef.current.nextId;
       presentationInputIdentityRef.current.nextId += 1;
-      presentationInputIdentityRef.current.map.set(positions, presentationInputId);
+      presentationInputIdentityRef.current.map.set(renderPositions, presentationInputId);
     }
     const draggedNodeId = presentationDraggedNodeId;
     const presentationProfiler = timingDiagnosticsEnabled ? createAutomaticPresentationProfiler() : undefined;
@@ -503,7 +522,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
     const routeDecisions: AutomaticRouteDecision[] | null = import.meta.env.DEV ? [] : null;
     const result = deriveBoundedAutomaticPresentation({
       graph: { nodes: graph.nodes, edges },
-      positions,
+      positions: renderPositions,
       edgeCurveOffsets,
       selfLoopOverrides,
       provisionalNodeLabels,
@@ -560,7 +579,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
       profiler: presentationProfiler,
     });
     return { ...result, derivationPhase, routeDecisions: routeDecisions ?? [] };
-  }, [edgeCurveOffsets, graph, manualLabelRevision, parallelBundleVariant, positions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+  }, [edgeCurveOffsets, graph, manualLabelRevision, parallelBundleVariant, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {
@@ -578,7 +597,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
       result.set(id, state.current);
     }
     return result;
-  }, [edgeLabelPlacements, routedEdges, positions]);
+  }, [edgeLabelPlacements, routedEdges, renderPositions]);
   const nodeLabelPlacements = presentation.nodeLabels;
 
   useEffect(() => {
@@ -601,7 +620,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
       routeDecisions: presentation.routeDecisions,
       nodes: graph.nodes,
       edges: routedEdges.map(({ id, sourceId, targetId, parallelIndex, parallelCount, label }) => ({ id, sourceId, targetId, parallelIndex, parallelCount, label })),
-      positions,
+      positions: renderPositions,
       edgeCurveOffsets,
       selfLoopOverrides,
       provisionalNodeLabels,
@@ -609,7 +628,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
       relationLabels: Array.from(edgeLabelPlacements.entries()),
       nodeLabels: Array.from(nodeLabelPlacements.entries()),
     });
-  }, [dataset, edgeCurveOffsets, edgeLabelPlacements, graph.nodes, liveDragPosition, nodeLabelPlacements, positions, presentationDraggedNodeId, presentationPhase, presentationRevision, provisionalNodeLabels, routedEdges, selfLoopOverrides, presentation.derivationPhase, presentation.feedbackApplied]);
+  }, [dataset, edgeCurveOffsets, edgeLabelPlacements, graph.nodes, liveDragPosition, nodeLabelPlacements, renderPositions, presentationDraggedNodeId, presentationPhase, presentationRevision, provisionalNodeLabels, routedEdges, selfLoopOverrides, presentation.derivationPhase, presentation.feedbackApplied]);
 
   useEffect(() => {
     const timing = datasetOpenTimingRef.current;
@@ -934,6 +953,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
     }
     datasetLoadingAwaitingStableRef.current = true;
     cleanDatasetBaseline.current = structuredClone(nextDataset);
+    setActiveOperationPreview(null);
     setDataset(nextDataset);
     setDatasetModified(false);
     setDatasetTitleEditing(false);
@@ -1170,6 +1190,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
   function goHomeFromWorkspace(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
     if (view === "home") return;
+    setActiveOperationPreview(null);
     setView("home");
     window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href);
   }
@@ -1236,7 +1257,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
   );
 
   function nodePosition(node: GraphNode) {
-    return liveDragPosition?.id === node.id ? liveDragPosition.position : positions[node.id] ?? node;
+    return liveDragPosition?.id === node.id ? liveDragPosition.position : renderPositions[node.id] ?? node;
   }
   function commitPendingNodeDragPosition() {
     nodeDragFrameRef.current = null;
@@ -1955,8 +1976,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
           />
           {dataset && <p className="graph-summary toolbar-graph-summary">{formatGraphSummary(locale, graph.nodes.length, graph.edges.length)}</p>}
           <div className="dataset-actions__buttons">
-            <button type="button" disabled={!dataset} onClick={() => openCreation("entity")}>{translate(locale, "addEntity")}</button>
-            <button type="button" disabled={!dataset} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
+            <button type="button" disabled={!dataset || Boolean(activeOperationPreview)} onClick={() => openCreation("entity")}>{translate(locale, "addEntity")}</button>
+            <button type="button" disabled={!dataset || Boolean(activeOperationPreview)} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
             <button type="button" className="desktop-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
             <details ref={maintenanceMenuRef} className="maintenance-menu" onToggle={(event) => setMaintenanceMenuOpen(event.currentTarget.open)} onKeyDown={handleMaintenanceMenuKeyDown}>
               <summary ref={maintenanceMenuSummaryRef}>{translate(locale, "more")}</summary>
@@ -1964,9 +1985,9 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
                 <button type="button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; closeMaintenanceMenu(); workspaceOpenFileInputRef.current?.click(); }}>{translate(locale, "openWorkspaceDataset")}</button>
                 <button type="button" disabled={!dataset} onClick={() => { closeMaintenanceMenu(); exportDataset(); }}>{translate(locale, "exportDataset")}</button>
                 <button type="button" className="mobile-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={() => { closeMaintenanceMenu(); saveCoordinates(); }}>{translate(locale, "saveCoordinates")}</button>
-                <button type="button" disabled={!dataset || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>{translate(locale, "migrateCoordinateDraft")}</button>
-                <button type="button" disabled={!dataset || spaceMigrationReadiness?.ready !== true} onClick={migrateSpaceToLiaisonScape}>{translate(locale, "migrateLinkscapeCoordinates")}</button>
-                <button type="button" disabled={!dataset || graph.nodes.length === 0} onClick={requestAutoLayout}>{translate(locale, "autoLayout")}</button>
+                <button type="button" disabled={!dataset || Boolean(activeOperationPreview) || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>{translate(locale, "migrateCoordinateDraft")}</button>
+                <button type="button" disabled={!dataset || Boolean(activeOperationPreview) || spaceMigrationReadiness?.ready !== true} onClick={migrateSpaceToLiaisonScape}>{translate(locale, "migrateLinkscapeCoordinates")}</button>
+                <button type="button" disabled={!dataset || Boolean(activeOperationPreview) || graph.nodes.length === 0} onClick={requestAutoLayout}>{translate(locale, "autoLayout")}</button>
                 <div className="mobile-secondary-action mobile-viewport-menu" aria-label={translate(locale, "graphViewControls")}>
                   <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>{translate(locale, "zoomOut")}</button>
                   <span aria-live="polite">{Math.round(scale * 100)}%</span>
@@ -2039,7 +2060,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
             <button type="button" onClick={cancelDatasetTitleEdit}>{translate(locale, "cancel")}</button>
           </dd> : <dd>
             <span>{metadata?.title ?? translate(locale, "untitled")}</span>
-            <button type="button" onClick={(event) => beginDatasetTitleEdit(event.currentTarget)} aria-label={translate(locale, "editDatasetTitle")}>{translate(locale, "edit")}</button>
+            <button type="button" disabled={Boolean(activeOperationPreview)} onClick={(event) => beginDatasetTitleEdit(event.currentTarget)} aria-label={translate(locale, "editDatasetTitle")}>{translate(locale, "edit")}</button>
           </dd>}
           <dt>Dataset ID</dt><dd>{metadata?.datasetId ?? translate(locale, "datasetIdNotAssigned")}</dd>
         </dl>
@@ -2058,6 +2079,10 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
       {dataset && (
         <section className="graph-section">
           <h2>Graph</h2>
+          {activeOperationPreview && <aside className="status-message" role="status" data-hq-preview-fingerprint={activeOperationPreview.candidateFingerprint}>
+            HQ candidate preview · operation {activeOperationPreview.operationId} · read-only
+            <button type="button" onClick={() => setActiveOperationPreview(null)}>End HQ preview</button>
+          </aside>}
           <div ref={viewportToolbarRef} className="viewport-controls mobile-hide" aria-label={translate(locale, "graphViewControls")} style={viewportToolbarPosition ? { left: viewportToolbarPosition.x, top: viewportToolbarPosition.y, right: "auto" } : undefined}>
             <button type="button" className="viewport-toolbar-handle" aria-expanded={!viewportToolbarCollapsed} aria-controls="viewport-toolbar-actions" aria-label={translate(locale, viewportToolbarCollapsed ? "expandViewportControls" : "collapseViewportControls")} onClick={toggleViewportToolbar} onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={(event) => endViewportToolbarDrag(event, true)}>⠿</button>
             <span className="viewport-toolbar-handle-tooltip" role="tooltip" aria-hidden="true">{translate(locale, viewportToolbarCollapsed ? "viewportToolbarMoveExpandHelp" : "viewportToolbarMoveCollapseHelp")}</span>
@@ -2074,6 +2099,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
             viewBox="0 0 800 500"
             role="img"
             aria-label={translate(locale, "entityRelationshipGraph")}
+            style={activeOperationPreview ? { pointerEvents: "none" } : undefined}
             onPointerDown={(event) => { startGraphPointer(event, { kind: "canvas" }); }}
             onPointerDownCapture={startLongPress}
             onPointerMove={onCanvasPointerMove}
@@ -2163,7 +2189,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant }: Ap
               })}
               {displayedNodes.map((node) => {
                 const position = nodePosition(node);
-                const presentationPosition = positions[node.id] ?? node;
+                const presentationPosition = renderPositions[node.id] ?? node;
                 const placement = nodeLabelPlacements.get(node.id)!;
                 const labelGeometry = getNodeLabelTextGeometry(node.label, node.description);
                 const { title, descriptionLines, descriptionBaselines } = labelGeometry;
