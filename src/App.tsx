@@ -53,13 +53,15 @@ type AppProps = {
   initialLayoutOverride?: ActualProductDiagnosticInitialLayout;
   /** Development-only review seam; normal Product callers omit it. */
   parallelBundleVariant?: "pair-16" | "bundle-16" | "corridor-aware" | "adaptive-bundle";
+  /** Development-only bundle-local spacing seam; normal Product callers omit it. */
+  parallelBundleSpacingByKey?: Readonly<Record<string, number>>;
   /** Development-only, non-adopting Actual Product visual-evidence seam. */
   operationLocalPreview?: OperationLocalProductPreview;
   /** Development-only fixture input for the preview evidence harness. */
   diagnosticDataset?: Dataset;
 };
 
-export default function App({ initialLayoutOverride, parallelBundleVariant, operationLocalPreview, diagnosticDataset }: AppProps = {}) {
+export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, operationLocalPreview, diagnosticDataset }: AppProps = {}) {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
     window.localStorage,
     window.navigator.language,
@@ -551,6 +553,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, oper
       parallelBundleSpacing: import.meta.env.DEV && parallelBundleVariant
         ? parallelBundlePolicy?.spacing ?? 16
         : undefined,
+      parallelBundleSpacingByKey: import.meta.env.DEV ? parallelBundleSpacingByKey : undefined,
       parallelBundleMode: parallelBundlePolicy?.mode
         ?? (parallelBundleVariant === "pair-16" ? "pair" : parallelBundleVariant === "corridor-aware" ? "corridor" : "bundle"),
     });
@@ -586,7 +589,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, oper
       profiler: presentationProfiler,
     });
     return { ...result, derivationPhase, routeDecisions: routeDecisions ?? [] };
-  }, [edgeCurveOffsets, graph, manualLabelRevision, parallelBundleVariant, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+  }, [edgeCurveOffsets, graph, manualLabelRevision, parallelBundleSpacingByKey, parallelBundleVariant, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {

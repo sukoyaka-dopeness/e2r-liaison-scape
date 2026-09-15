@@ -169,6 +169,8 @@ export type AutomaticRoutingInput = {
   geometryCache?: RouteGeometryCache;
   /** Development-only automatic parallel-group spacing; omitted by normal Product callers. */
   parallelBundleSpacing?: number;
+  /** Development-only per-bundle override keyed by sorted endpoint IDs. */
+  parallelBundleSpacingByKey?: Readonly<Record<string, number>>;
   /** Development-only slot policy for parallel-group spacing. */
   parallelBundleMode?: "pair" | "bundle" | "corridor";
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
@@ -300,7 +302,6 @@ export function stepAutomaticRouteSelection(state: AutomaticRouteSelectionAccumu
   const { input, orderedEdges, nodeMap } = state;
   const { graph, positions, edgeCurveOffsets, selfLoopOverrides, draggedNodeId, activeDraggedNodeId, previousAutomaticRoutes, previousContinuityNodeLabels, routeDecisionSink, routeTraceSink, candidateCache, geometryCache, profiler } = input;
   const preserveSafeIncidentPreviousRoute = input.preserveSafeIncidentPreviousRoute ?? false;
-  const parallelBundleSpacing = input.parallelBundleSpacing;
   const parallelBundleMode = input.parallelBundleMode ?? "bundle";
   const routeDecisionPass = input.routeDecisionPass ?? "first";
   const occupiedPaths = state.occupiedPaths;
@@ -315,6 +316,9 @@ export function stepAutomaticRouteSelection(state: AutomaticRouteSelectionAccumu
     state.done = true;
     return { done: true };
   }
+  const parallelBundleKey = [edge.sourceId, edge.targetId].sort().join("\u0000");
+  const parallelBundleSpacing = input.parallelBundleSpacingByKey?.[parallelBundleKey]
+    ?? input.parallelBundleSpacing;
     const canonicalPhysicalSideSign = edge.sourceId.localeCompare(edge.targetId) <= 0 ? 1 : -1;
     const sourceNode = nodeMap.get(edge.sourceId)!;
     const targetNode = nodeMap.get(edge.targetId)!;
@@ -898,6 +902,8 @@ export type BoundedAutomaticPresentationInput = {
   geometryCache?: RouteGeometryCache;
   /** Development-only automatic parallel-group spacing; omitted by normal Product callers. */
   parallelBundleSpacing?: number;
+  /** Development-only per-bundle override keyed by sorted endpoint IDs. */
+  parallelBundleSpacingByKey?: Readonly<Record<string, number>>;
   /** Development-only slot policy for parallel-group spacing. */
   parallelBundleMode?: "pair" | "bundle" | "corridor";
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
@@ -1046,6 +1052,7 @@ function verificationRouteInput(
     candidateCache: input.candidateCache,
     geometryCache: input.geometryCache,
     parallelBundleSpacing: input.parallelBundleSpacing,
+    parallelBundleSpacingByKey: input.parallelBundleSpacingByKey,
     parallelBundleMode: input.parallelBundleMode ?? "bundle",
     profiler: input.profiler,
     routeDecisionPass: pass,
@@ -1235,6 +1242,7 @@ export function stepAutomaticPresentationVerification(
             selfLoopOverrides: state.input.selfLoopOverrides,
             provisionalNodeLabels: [],
             parallelBundleSpacing: state.input.parallelBundleSpacing,
+            parallelBundleSpacingByKey: state.input.parallelBundleSpacingByKey,
             parallelBundleMode: state.input.parallelBundleMode ?? "bundle",
             routeDecisionPass: "label-free",
           }, { routes: state.labelFreeSnapshot.routes });
@@ -1268,6 +1276,7 @@ export function stepAutomaticPresentationVerification(
             activeDraggedNodeId: state.input.activeDraggedNodeId,
             preserveSafeIncidentPreviousRoute: state.input.preserveSafeIncidentPreviousRoute,
             parallelBundleSpacing: state.input.parallelBundleSpacing,
+            parallelBundleSpacingByKey: state.input.parallelBundleSpacingByKey,
             parallelBundleMode: state.input.parallelBundleMode ?? "bundle",
             routeDecisionPass: "first",
             replayPrefix: state.input.replayPrefix,
@@ -1371,6 +1380,7 @@ export function stepAutomaticPresentationVerification(
             activeDraggedNodeId: state.input.activeDraggedNodeId,
             preserveSafeIncidentPreviousRoute: state.input.preserveSafeIncidentPreviousRoute,
             parallelBundleSpacing: state.input.parallelBundleSpacing,
+            parallelBundleSpacingByKey: state.input.parallelBundleSpacingByKey,
             parallelBundleMode: state.input.parallelBundleMode ?? "bundle",
             routeDecisionPass: "feedback",
             replayPrefix: undefined,
@@ -1523,6 +1533,7 @@ export function deriveBoundedAutomaticPresentation({
   candidateCache,
   geometryCache,
   parallelBundleSpacing,
+  parallelBundleSpacingByKey,
   parallelBundleMode = "bundle",
   profiler,
   replayPrefix,
@@ -1551,6 +1562,7 @@ export function deriveBoundedAutomaticPresentation({
     selfLoopOverrides,
     provisionalNodeLabels: [],
     parallelBundleSpacing,
+    parallelBundleSpacingByKey,
     parallelBundleMode,
     routeDecisionPass: "label-free" as const,
   };
@@ -1567,6 +1579,7 @@ export function deriveBoundedAutomaticPresentation({
     routeTraceSink,
     routeDecisionPass: "label-free",
     parallelBundleSpacing,
+    parallelBundleSpacingByKey,
     parallelBundleMode,
   });
   const labelFreeSnapshot = createRouteSelectionSnapshot("label-free", routesWithoutNodeLabels);
@@ -1588,6 +1601,7 @@ export function deriveBoundedAutomaticPresentation({
       activeDraggedNodeId,
       preserveSafeIncidentPreviousRoute,
       parallelBundleSpacing,
+      parallelBundleSpacingByKey,
       parallelBundleMode,
       routeDecisionPass,
       replayPrefix: routeDecisionPass === "first" ? replayPrefix : undefined,
@@ -1613,6 +1627,7 @@ export function deriveBoundedAutomaticPresentation({
       replayPrefix: routeDecisionPass === "first" ? replayPrefix : undefined,
       replayPrefixSink: routeDecisionPass === "first" ? replayPrefixSink : undefined,
       parallelBundleSpacing,
+      parallelBundleSpacingByKey,
       parallelBundleMode,
     }));
     reportDependency("route-selection", routeDecisionPass, routeStageInput, { routes: routeSnapshot.routes });
