@@ -1,0 +1,32 @@
+{
+  "contract": "LIAISONSCAPE-INFINITE-CANVAS-LOCAL-DENSITY-EXTENT-GROWTH-REBASELINE-ACTUAL-PRODUCT-SMOKE-v1",
+  "diagnosticOnly": true,
+  "surface": "Actual Product App via operation-local-product-preview1",
+  "urlBase": "http://127.0.0.1:5174/e2r-liaison-scape/experimental/operation-local-product-preview1/",
+  "inspectionMethod": [
+    "whole-graph overview after Product Reset view",
+    "Product-native Zoom in control",
+    "normal/readable zoom inspection",
+    "canvas pan attempt; no false acceptance inferred when the local region remained crowded"
+  ],
+  "observations": {
+    "connected": {
+      "overviewAfterReset": { "zoomPercent": 38, "result": "whole graph visible; labels intentionally unreadable at overview density" },
+      "normalZoom": { "zoomPercent": 82, "result": "nodes remain separated, but long Relation-labels and route association remain visibly crowded; not review-ready" },
+      "hardFailure": "no obvious Node body overlap; avoidable presentation congestion remains"
+    },
+    "canonical": {
+      "overviewAfterReset": { "zoomPercent": 55, "result": "whole graph visible; clean control" },
+      "normalZoom": { "zoomPercent": 81, "result": "Node/Relation geometry and route distinction readable" }
+    },
+    "parallel": {
+      "overview": { "zoomPercent": 53, "result": "parallel lanes and fanout remained visibly distinct; no obvious regression" }
+    },
+    "selfLoop": {
+      "overviewAfterReset": { "zoomPercent": 55, "result": "self-loop remained visible and associated with its owner Node" }
+    }
+  },
+  "smokeAcceptance": "NOT FORMAL ACCEPTANCE",
+  "humanReview": "NOT READY",
+  "productionProvider": "NOT ESTABLISHED"
+}

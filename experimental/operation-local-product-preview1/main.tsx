@@ -6,6 +6,7 @@ import { fingerprintPreviewPositions } from "../../src/operation-local-product-p
 import { solveAutoLayout } from "../../src/auto-layout.ts";
 import labelCapacityArtifact from "../explicit-label-capacity-candidate-formulation-probe1/result-summary.json";
 import refinementArtifact from "../bounded-label-capacity-screen-ownership-refinement1/result-summary.json";
+import infiniteCanvasArtifact from "../infinite-canvas-local-density-extent-growth-rebaseline1/result-summary.json";
 
 type Point = { x: number; y: number };
 function positions(value: string): Record<string, Point> { return Object.fromEntries(value.split("|").map((item) => { const [id, pair] = item.split(":"); const [x, y] = pair!.split(",").map(Number); return [id!, { x, y }]; })); }
@@ -27,6 +28,10 @@ const dataset = id === "dense" ? makeCase("dense", 14, 49) : id === "label" ? ma
 const candidateIndex = Number(new URLSearchParams(location.search).get("candidate"));
 const probeIndex = Number(new URLSearchParams(location.search).get("probe"));
 const refinementIndex = Number(new URLSearchParams(location.search).get("refine"));
+const infiniteCanvasIndex = Number(new URLSearchParams(location.search).get("extent"));
+const infiniteCanvasSelected = new URLSearchParams(location.search).get("extent") === "selected"
+  ? infiniteCanvasArtifact.rows.find(({ fixture }) => fixture === id)?.selectedInfiniteCanvas?.positions
+  : null;
 const selectedRefinement = new URLSearchParams(location.search).get("refine") === "selected"
   ? refinementArtifact.rows.find(({ fixture }) => fixture === id)?.selectedForPreview?.positions
   : null;
@@ -42,8 +47,11 @@ const probe = Number.isInteger(probeIndex) && probeIndex >= 1 && probeIndex <= 3
 const refinement = Number.isInteger(refinementIndex) && refinementIndex >= 1 && refinementIndex <= 3
   ? refinementArtifact.rows.find(({ fixture }) => fixture === id)?.probes[refinementIndex - 1]?.positions
   : null;
+const infiniteCanvas = Number.isInteger(infiniteCanvasIndex) && infiniteCanvasIndex >= 1 && infiniteCanvasIndex <= 2
+  ? infiniteCanvasArtifact.rows.find(({ fixture }) => fixture === id)?.probes[infiniteCanvasIndex - 1]?.positions
+  : null;
 const fallback = solveAutoLayout({ entities: dataset.entities, relations: dataset.relations }, { iterations: 3 });
-const selected = selectedRefinement ?? refinement ?? probe ?? generated ?? candidates[id as keyof typeof candidates] ?? fallback;
+const selected = infiniteCanvasSelected ?? infiniteCanvas ?? selectedRefinement ?? refinement ?? probe ?? generated ?? candidates[id as keyof typeof candidates] ?? fallback;
 const previewRequested = new URLSearchParams(location.search).get("mode") === "hq";
 const preview = previewRequested ? { operationId: 1, generation: 1, snapshotIdentity: `worker-parity-${id}`, candidateFingerprint: fingerprintPreviewPositions(selected), positions: selected } : undefined;
 if (previewRequested) { const next = new URL(location.href); next.searchParams.delete("mode"); history.replaceState(history.state, "", next); }
