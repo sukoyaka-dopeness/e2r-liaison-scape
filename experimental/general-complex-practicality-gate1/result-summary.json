@@ -1,0 +1,297 @@
+{
+  "contract": "GENERAL-COMPLEX-DATASET-PRACTICALITY-GATE1-v1",
+  "diagnosticOnly": true,
+  "sourceBoundary": "Fast is the current three-iteration settleInitialPlacement path. HQ is the existing explicit solveAutoLayout source with 12 iterations. Both use the current Product-authoritative presentation and quality metric code; no provider or Product default is changed.",
+  "matrix": [
+    {
+      "id": "sparse",
+      "description": "8 nodes / 7 relations",
+      "nodes": 8,
+      "relations": 7,
+      "coordinateLess": true
+    },
+    {
+      "id": "dense",
+      "description": "14 nodes / 49 relations",
+      "nodes": 14,
+      "relations": 49,
+      "coordinateLess": true
+    },
+    {
+      "id": "long-label",
+      "description": "10 nodes / 20 relations",
+      "nodes": 10,
+      "relations": 20,
+      "coordinateLess": true
+    },
+    {
+      "id": "connected",
+      "description": "14 nodes / 49 relations",
+      "nodes": 14,
+      "relations": 49,
+      "coordinateLess": true
+    },
+    {
+      "id": "parallel-self-loop",
+      "description": "10 nodes / 18 relations",
+      "nodes": 10,
+      "relations": 18,
+      "coordinateLess": true
+    }
+  ],
+  "rows": [
+    {
+      "id": "sparse",
+      "description": "8 nodes / 7 relations",
+      "phase": "fast",
+      "placementMs": 0.08729999999999905,
+      "presentationMs": 9.776299999999992,
+      "totalMs": 9.863599999999991,
+      "fitScale": 0.8883767021051748,
+      "extent": [
+        620.3943549613922,
+        157.3899848983965
+      ],
+      "overlapPairs": 0,
+      "crossings": 0,
+      "labelRouteHits": 0,
+      "labelOverlap": 0,
+      "finitePositions": true,
+      "medianTotalMs": 12.703799999999987,
+      "repeats": [
+        23.78,
+        12.704,
+        9.864
+      ]
+    },
+    {
+      "id": "sparse",
+      "description": "8 nodes / 7 relations",
+      "phase": "hq",
+      "placementMs": 0.12709999999998445,
+      "presentationMs": 14.07050000000001,
+      "totalMs": 14.197599999999994,
+      "fitScale": 0.9821969190593436,
+      "extent": [
+        555.0204715590897,
+        124.11320797010521
+      ],
+      "overlapPairs": 0,
+      "crossings": 0,
+      "labelRouteHits": 0,
+      "labelOverlap": 0,
+      "finitePositions": true,
+      "medianTotalMs": 14.197599999999994,
+      "repeats": [
+        10.68,
+        18.336,
+        14.198
+      ]
+    },
+    {
+      "id": "dense",
+      "description": "14 nodes / 49 relations",
+      "phase": "fast",
+      "placementMs": 0.2258000000000493,
+      "presentationMs": 183.9796,
+      "totalMs": 184.20540000000005,
+      "fitScale": 0.47170739651162374,
+      "extent": [
+        1224.9346329870784,
+        167.3286908775159
+      ],
+      "overlapPairs": 0,
+      "crossings": 41,
+      "labelRouteHits": 4,
+      "labelOverlap": 0,
+      "finitePositions": true,
+      "medianTotalMs": 197.6377,
+      "repeats": [
+        224.713,
+        197.638,
+        184.205
+      ]
+    },
+    {
+      "id": "dense",
+      "description": "14 nodes / 49 relations",
+      "phase": "hq",
+      "placementMs": 0.14019999999982247,
+      "presentationMs": 165.78869999999984,
+      "totalMs": 165.92889999999966,
+      "fitScale": 0.5417029952505924,
+      "extent": [
+        1058.3862620858106,
+        164.5769090198931
+      ],
+      "overlapPairs": 4,
+      "crossings": 42,
+      "labelRouteHits": 12,
+      "labelOverlap": 0,
+      "finitePositions": true,
+      "medianTotalMs": 167.43639999999994,
+      "repeats": [
+        173.766,
+        167.436,
+        165.929
+      ]
+    },
+    {
+      "id": "long-label",
+      "description": "10 nodes / 20 relations",
+      "phase": "fast",
+      "placementMs": 0.07680000000004839,
+      "presentationMs": 56.18679999999995,
+      "totalMs": 56.2636,
+      "fitScale": 0.5367005419607221,
+      "extent": [
+        1068.8477474213094,
+        161.35588247931975
+      ],
+      "overlapPairs": 0,
+      "crossings": 8,
+      "labelRouteHits": 0,
+      "labelOverlap": 0,
+      "finitePositions": true,
+      "medianTotalMs": 58.390499999999975,
+      "repeats": [
+        59.61,
+        58.39,
+        56.264
+      ]
+    },
+    {
+      "id": "long-label",
+      "description": "10 nodes / 20 relations",
+      "phase": "hq",
+      "placementMs": 0.09140000000002146,
+      "presentationMs": 52.20880000000011,
+      "totalMs": 52.30020000000013,
+      "fitScale": 0.584364609284136,
+      "extent": [
+        976.4463075627012,
+        142.62205949939738
+      ],
+      "overlapPairs": 2,
+      "crossings": 0,
+      "labelRouteHits": 4,
+      "labelOverlap": 1,
+      "finitePositions": true,
+      "medianTotalMs": 52.30020000000013,
+      "repeats": [
+        50.504,
+        58.003,
+        52.3
+      ]
+    },
+    {
+      "id": "connected",
+      "description": "14 nodes / 49 relations",
+      "phase": "fast",
+      "placementMs": 0.15230000000019572,
+      "presentationMs": 188.26229999999987,
+      "totalMs": 188.41460000000006,
+      "fitScale": 0.5947301017234928,
+      "extent": [
+        621.9353619901502,
+        453.8819755506475
+      ],
+      "overlapPairs": 0,
+      "crossings": 72,
+      "labelRouteHits": 13,
+      "labelOverlap": 2,
+      "finitePositions": true,
+      "medianTotalMs": 191.8524,
+      "repeats": [
+        192.732,
+        191.852,
+        188.415
+      ]
+    },
+    {
+      "id": "connected",
+      "description": "14 nodes / 49 relations",
+      "phase": "hq",
+      "placementMs": 0.24069999999983338,
+      "presentationMs": 181.61220000000003,
+      "totalMs": 181.85289999999986,
+      "fitScale": 0.821047493798895,
+      "extent": [
+        467.05961412950984,
+        311.1305525273799
+      ],
+      "overlapPairs": 3,
+      "crossings": 58,
+      "labelRouteHits": 17,
+      "labelOverlap": 2,
+      "finitePositions": true,
+      "medianTotalMs": 182.4319999999998,
+      "repeats": [
+        186.605,
+        182.432,
+        181.853
+      ]
+    },
+    {
+      "id": "parallel-self-loop",
+      "description": "10 nodes / 18 relations",
+      "phase": "fast",
+      "placementMs": 0.06749999999965439,
+      "presentationMs": 39.647500000000036,
+      "totalMs": 39.71499999999969,
+      "fitScale": 0.5367005419607221,
+      "extent": [
+        1068.8477474213094,
+        161.35588247931975
+      ],
+      "overlapPairs": 0,
+      "crossings": 3,
+      "labelRouteHits": 0,
+      "labelOverlap": 0,
+      "finitePositions": true,
+      "medianTotalMs": 39.658800000000156,
+      "repeats": [
+        39.659,
+        39.045,
+        39.715
+      ]
+    },
+    {
+      "id": "parallel-self-loop",
+      "description": "10 nodes / 18 relations",
+      "phase": "hq",
+      "placementMs": 0.09560000000010405,
+      "presentationMs": 35.52970000000005,
+      "totalMs": 35.62530000000015,
+      "fitScale": 0.584364609284136,
+      "extent": [
+        976.4463075627012,
+        142.62205949939738
+      ],
+      "overlapPairs": 2,
+      "crossings": 0,
+      "labelRouteHits": 3,
+      "labelOverlap": 0,
+      "finitePositions": true,
+      "medianTotalMs": 37.44320000000016,
+      "repeats": [
+        37.926,
+        37.443,
+        35.625
+      ]
+    }
+  ],
+  "budget": {
+    "repeatsPerPhase": 3,
+    "phaseBound": "fixed source path; Node diagnostic timing, not a browser SLA"
+  },
+  "disposition": {
+    "actualProductFast": "requires browser smoke",
+    "actualProductHq": "requires browser smoke",
+    "qualitySolver": "HOLD / NOT ESTABLISHED",
+    "productionProvider": "NOT ESTABLISHED",
+    "productIntegration": "HOLD",
+    "humanReview": "NOT READY",
+    "initialLayoutReleaseBlocker": "OPEN"
+  }
+}
