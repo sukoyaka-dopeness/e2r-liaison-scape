@@ -621,6 +621,8 @@ export type AutomaticRelationLabelInput = {
   nodes: readonly Point[];
   previousPlacements: ReadonlyMap<string, LabelRect>;
   manualAnchors: ReadonlyMap<string, ManualRelationLabelAnchor>;
+  /** Development-only arc-length offset by Relation ID; normal Product callers omit it. */
+  relationLabelStaggerById?: Readonly<Record<string, number>>;
   draggedNodeId?: string;
   profile?: LabelPlacementProfile;
   pass?: AutomaticRouteDecision["pass"];
@@ -707,7 +709,7 @@ export function stepAutomaticRelationLabelPlacement(state: AutomaticRelationLabe
     state.done = state.nextIndex >= state.orderedEdges.length;
     return { done: state.done, relationId: edge.id, skipped: true };
   }
-  const { previousPlacements, manualAnchors, draggedNodeId, profile, placementTraceSink } = state.input;
+  const { previousPlacements, manualAnchors, relationLabelStaggerById, draggedNodeId, profile, placementTraceSink } = state.input;
   const otherEdgePaths = state.orderedEdges.filter(({ id }) => id !== edge.id).map(({ samples }) => samples);
   const otherEdgePathBounds = state.orderedEdges
     .map((otherEdge, index) => otherEdge.id === edge.id ? undefined : state.routeBounds[index] ?? null)
@@ -728,6 +730,7 @@ export function stepAutomaticRelationLabelPlacement(state: AutomaticRelationLabe
     profile,
     placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
     otherEdgePathBounds,
+    relationLabelStaggerById?.[edge.id] ?? 0,
   );
   const manualAnchor = manualAnchors.get(edge.id);
   if (manualAnchor && profile) profile.manualAnchorReconstructions += 1;
@@ -904,6 +907,8 @@ export type BoundedAutomaticPresentationInput = {
   parallelBundleSpacing?: number;
   /** Development-only per-bundle override keyed by sorted endpoint IDs. */
   parallelBundleSpacingByKey?: Readonly<Record<string, number>>;
+  /** Development-only arc-length label staggering by Relation ID. */
+  relationLabelStaggerById?: Readonly<Record<string, number>>;
   /** Development-only slot policy for parallel-group spacing. */
   parallelBundleMode?: "pair" | "bundle" | "corridor";
   /** Opt-in diagnostic timings/counters; omitted by normal Product callers. */
@@ -1072,6 +1077,7 @@ function verificationRelationLabelInput(
     nodes: state.nodes,
     previousPlacements: input.previousRelationLabelPlacements,
     manualAnchors: input.manualRelationLabelAnchors,
+    relationLabelStaggerById: input.relationLabelStaggerById,
     draggedNodeId: input.draggedNodeId,
     profile: input.profiler?.passes[pass].relationLabel,
     pass,
@@ -1302,6 +1308,7 @@ export function stepAutomaticPresentationVerification(
             nodes: state.nodes,
             previousPlacements: state.input.previousRelationLabelPlacements,
             manualAnchors: state.input.manualRelationLabelAnchors,
+            relationLabelStaggerById: state.input.relationLabelStaggerById,
             draggedNodeId: state.input.draggedNodeId,
           }, { labels });
           closeRelationLabelTiming(state, "first");
@@ -1406,6 +1413,7 @@ export function stepAutomaticPresentationVerification(
             nodes: state.nodes,
             previousPlacements: state.input.previousRelationLabelPlacements,
             manualAnchors: state.input.manualRelationLabelAnchors,
+            relationLabelStaggerById: state.input.relationLabelStaggerById,
             draggedNodeId: state.input.draggedNodeId,
           }, { labels });
           closeRelationLabelTiming(state, "feedback");
@@ -1534,6 +1542,7 @@ export function deriveBoundedAutomaticPresentation({
   geometryCache,
   parallelBundleSpacing,
   parallelBundleSpacingByKey,
+  relationLabelStaggerById,
   parallelBundleMode = "bundle",
   profiler,
   replayPrefix,
@@ -1639,6 +1648,7 @@ export function deriveBoundedAutomaticPresentation({
       nodes,
       previousPlacements: previousRelationLabelPlacements,
       manualAnchors: manualRelationLabelAnchors,
+      relationLabelStaggerById,
       draggedNodeId,
     };
     const relationLabels = deriveAutomaticRelationLabels({
@@ -1646,6 +1656,7 @@ export function deriveBoundedAutomaticPresentation({
       nodes,
       previousPlacements: previousRelationLabelPlacements,
       manualAnchors: manualRelationLabelAnchors,
+      relationLabelStaggerById,
       draggedNodeId,
       profile: passProfile?.relationLabel,
       pass: routeDecisionPass,

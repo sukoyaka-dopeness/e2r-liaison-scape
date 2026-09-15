@@ -574,6 +574,7 @@ export function placeEdgeLabel(
   profile?: LabelPlacementProfile,
   traceSink?: (trace: LabelPlacementTrace) => void,
   providedOtherEdgePathBounds?: readonly (PointBounds | null)[],
+  tangentialOffset = 0,
 ): LabelRect {
   const startedAt = performance.now();
   const fallback = samples[Math.floor(samples.length / 2)] ?? { x: 0, y: 0 };
@@ -582,7 +583,10 @@ export function placeEdgeLabel(
     .map((index) => Math.max(0, Math.min(samples.length - 1, Math.round(index / 40 * (samples.length - 1)))))
     .filter((index, position, indexes) => indexes.indexOf(index) === position);
 
-  const candidates = candidateIndexes.flatMap((sampleIndex, alongPathPreference) => {
+  const routeLength = samples.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - samples[index]!.x, point.y - samples[index]!.y), 0);
+  const tangentialSampleOffset = routeLength > 0 ? Math.round((tangentialOffset / routeLength) * Math.max(1, samples.length - 1)) : 0;
+  const candidates = candidateIndexes.flatMap((baseSampleIndex, alongPathPreference) => {
+    const sampleIndex = Math.max(0, Math.min(samples.length - 1, baseSampleIndex + tangentialSampleOffset));
     const point = samples[sampleIndex] ?? fallback;
     const previous = samples[Math.max(0, sampleIndex - 1)] ?? point;
     const next = samples[Math.min(samples.length - 1, sampleIndex + 1)] ?? point;
