@@ -5,12 +5,13 @@ import "../../src/styles.css";
 import { fingerprintPreviewPositions } from "../../src/operation-local-product-preview.ts";
 import { solveAutoLayout } from "../../src/auto-layout.ts";
 import labelCapacityArtifact from "../explicit-label-capacity-candidate-formulation-probe1/result-summary.json";
+import refinementArtifact from "../bounded-label-capacity-screen-ownership-refinement1/result-summary.json";
 
 type Point = { x: number; y: number };
 function positions(value: string): Record<string, Point> { return Object.fromEntries(value.split("|").map((item) => { const [id, pair] = item.split(":"); const [x, y] = pair!.split(",").map(Number); return [id!, { x, y }]; })); }
-function makeCase(id: string, nodeCount: number, edgeCount: number, long = false, selfLoop = false) {
+function makeCase(id: string, nodeCount: number, edgeCount: number, long = false, selfLoop = false, connected = false) {
   const ids = Array.from({ length: nodeCount }, (_, index) => `${id}-n${index}`);
-  const relations = Array.from({ length: edgeCount }, (_, index) => ({ id: `${id}-r${index}`, sourceId: ids[index % nodeCount]!, targetId: selfLoop && index === 0 ? ids[0]! : ids[(index * 3 + 1) % nodeCount]!, name: long ? `関係 ${index} — 長い日本語 Relation-label の可読性確認` : `Relation ${index}` }));
+  const relations = Array.from({ length: edgeCount }, (_, index) => ({ id: `${id}-r${index}`, sourceId: ids[index % nodeCount]!, targetId: selfLoop && index === 0 ? ids[0]! : ids[connected && index < nodeCount - 1 ? (index + 1) % nodeCount : (index * 3 + 1) % nodeCount]!, name: long ? `関係 ${index} — 長い日本語 Relation-label の可読性確認` : `Relation ${index}` }));
   return { version: "1.0", metadata: { title: `HQ preview ${id}` }, entities: ids.map((entityId, index) => ({ id: entityId, name: long ? `ノード ${index} — 長い日本語ラベル` : `Node ${index}`, description: long ? "説明文を含むラベル表示" : "" })), events: [], relations };
 }
 const candidates = {
@@ -19,12 +20,16 @@ const candidates = {
   label: positions("label-n0:173.820,167.462|label-n1:317.601,171.018|label-n2:624.604,158.000|label-n3:269.261,277.480|label-n4:176.315,321.356|label-n5:1098.381,167.462|label-n6:1242.163,171.018|label-n7:785.561,158.000|label-n8:1193.822,277.480|label-n9:1100.876,321.356"),
   "self-loop": positions("self-loop-n0:167.909,169.909|self-loop-n1:323.411,168.615|self-loop-n2:630.319,166.909|self-loop-n3:785.821,165.615|self-loop-n4:280.173,278.485|self-loop-n5:162.539,322.352|self-loop-n6:742.583,280.485|self-loop-n7:633.950,319.352"),
 };
-type PreviewCase = keyof typeof candidates | "parallel";
+type PreviewCase = keyof typeof candidates | "parallel" | "connected";
 const requestedCase = new URLSearchParams(location.search).get("case");
-const id: PreviewCase = requestedCase === "dense" || requestedCase === "label" || requestedCase === "parallel" || requestedCase === "self-loop" ? requestedCase : "canonical";
-const dataset = id === "dense" ? makeCase("dense", 14, 49) : id === "label" ? makeCase("label", 10, 20, true) : id === "parallel" ? makeCase("parallel", 10, 18) : id === "self-loop" ? makeCase("self-loop", 8, 11, false, true) : makeCase("canonical", 8, 10);
+const id: PreviewCase = requestedCase === "dense" || requestedCase === "label" || requestedCase === "parallel" || requestedCase === "connected" || requestedCase === "self-loop" ? requestedCase : "canonical";
+const dataset = id === "dense" ? makeCase("dense", 14, 49) : id === "label" ? makeCase("label", 10, 20, true) : id === "connected" ? makeCase("connected", 14, 49, true, false, true) : id === "parallel" ? makeCase("parallel", 10, 18) : id === "self-loop" ? makeCase("self-loop", 8, 11, false, true) : makeCase("canonical", 8, 10);
 const candidateIndex = Number(new URLSearchParams(location.search).get("candidate"));
 const probeIndex = Number(new URLSearchParams(location.search).get("probe"));
+const refinementIndex = Number(new URLSearchParams(location.search).get("refine"));
+const selectedRefinement = new URLSearchParams(location.search).get("refine") === "selected"
+  ? refinementArtifact.rows.find(({ fixture }) => fixture === id)?.selectedForPreview?.positions
+  : null;
 const generated = Number.isInteger(candidateIndex) && candidateIndex >= 1 && candidateIndex <= (id === "dense" ? 12 : 8)
   ? (() => {
       const base = solveAutoLayout({ entities: dataset.entities, relations: dataset.relations }, { iterations: 3 + ((candidateIndex - 1) % 3) });
@@ -34,8 +39,11 @@ const generated = Number.isInteger(candidateIndex) && candidateIndex >= 1 && can
 const probe = Number.isInteger(probeIndex) && probeIndex >= 1 && probeIndex <= 3
   ? labelCapacityArtifact.rows.find(({ fixture }) => fixture === id)?.probes[probeIndex - 1]?.positions
   : null;
+const refinement = Number.isInteger(refinementIndex) && refinementIndex >= 1 && refinementIndex <= 3
+  ? refinementArtifact.rows.find(({ fixture }) => fixture === id)?.probes[refinementIndex - 1]?.positions
+  : null;
 const fallback = solveAutoLayout({ entities: dataset.entities, relations: dataset.relations }, { iterations: 3 });
-const selected = probe ?? generated ?? candidates[id as keyof typeof candidates] ?? fallback;
+const selected = selectedRefinement ?? refinement ?? probe ?? generated ?? candidates[id as keyof typeof candidates] ?? fallback;
 const previewRequested = new URLSearchParams(location.search).get("mode") === "hq";
 const preview = previewRequested ? { operationId: 1, generation: 1, snapshotIdentity: `worker-parity-${id}`, candidateFingerprint: fingerprintPreviewPositions(selected), positions: selected } : undefined;
 if (previewRequested) { const next = new URL(location.href); next.searchParams.delete("mode"); history.replaceState(history.state, "", next); }

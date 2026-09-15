@@ -1,0 +1,51 @@
+{
+  "contract": "LIAISONSCAPE-BOUNDED-LABEL-CAPACITY-SCREEN-OWNERSHIP-ACTUAL-PRODUCT-SMOKE-v1",
+  "surface": "actual App renderer through the operation-local, non-adopting preview seam",
+  "fitAction": "Product viewport reset before observation",
+  "formalAcceptance": false,
+  "cases": [
+    {
+      "fixture": "dense",
+      "candidate": "joint-bounded",
+      "fitPercent": 64,
+      "result": "IMPROVED / NOT ACCEPTABLE",
+      "observation": "Local separation and topology visibility improve, but many route/label associations remain crowded and the dense surface is not review quality."
+    },
+    {
+      "fixture": "label",
+      "candidate": "ownership-corridor",
+      "fitPercent": 60,
+      "result": "IMPROVED / NOT ACCEPTABLE",
+      "observation": "Long-label collision pressure is reduced and the graph is centered after fit, but Japanese/English Relation-label ownership remains difficult to read."
+    },
+    {
+      "fixture": "connected",
+      "candidate": "joint-bounded",
+      "fitPercent": 58,
+      "result": "FAIL / SINGLE-COMPONENT LIMIT",
+      "observation": "The single connected dense core remains a narrow label/route mass; ownership and label readability visibly deteriorate despite some center-separation improvement."
+    },
+    {
+      "fixture": "canonical",
+      "candidate": "selection-gate current fallback",
+      "fitPercent": 88,
+      "result": "PASS CONTROL",
+      "observation": "The non-regression gate retained the current candidate; the canonical graph remained clean and readable."
+    },
+    {
+      "fixture": "parallel",
+      "candidate": "joint-bounded",
+      "fitPercent": 62,
+      "result": "PASS CONTROL",
+      "observation": "Parallel lanes and endpoint fan-out remained readable with no obvious new breakage."
+    },
+    {
+      "fixture": "self-loop",
+      "candidate": "selection-gate current fallback",
+      "fitPercent": 88,
+      "result": "PASS CONTROL / SMOKE ONLY",
+      "observation": "The loop remained clear; the gate retained the current candidate after the raw formulation introduced a diagnostic Node collision. This is not Self-loop acceptance."
+    }
+  ],
+  "humanReview": "NOT READY"
+}
