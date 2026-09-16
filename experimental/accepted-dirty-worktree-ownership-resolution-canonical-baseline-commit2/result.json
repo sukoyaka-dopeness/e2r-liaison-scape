@@ -1,0 +1,50 @@
+{
+  "checkpoint": "accepted-dirty-worktree-ownership-resolution-canonical-baseline-commit2",
+  "date": "2026-09-16",
+  "classification": "ACCEPTED BASELINE ESTABLISHED / CANONICAL COMMITS CREATED",
+  "commits": {
+    "e2r-liaison-scape": {
+      "revision": "9616a75",
+      "fullRevision": "9616a75980f7ddb48af0359bcc28caa7bd157200",
+      "subject": "chore: establish accepted LiaisonScape baseline",
+      "scope": "Accepted current runtime/source state, Frontier shared generator and Worker/adapter chain, focused tests, research/acceptance artifacts, and agent guidance."
+    },
+    "e2r-spec": {
+      "revision": "d68d7f1",
+      "fullRevision": "d68d7f1",
+      "subject": "docs: establish accepted E2R baseline",
+      "scope": "Accepted guidance, formal result documents, roadmap history, and Session-0052 history."
+    }
+  },
+  "frontierExecutableProvenance": "9616a75 -> shared Frontier candidate generator -> Worker Product evaluation/selection -> App async lifecycle adapter -> normal-path render-only adoption -> Production Acceptance evidence",
+  "diagnosticMaterialOutsideBaseline": {
+    "e2r-liaison-scape": [
+      ".tmp-normal-offset-output.json",
+      "experimental/product-evaluation-seam/spacing-inspection2/"
+    ],
+    "e2r-spec": [
+      "work/"
+    ]
+  },
+  "safety": {
+    "ambiguousMaterialDeleted": false,
+    "ambiguousMaterialMoved": false,
+    "resetRestoreStashUsed": false,
+    "runtimeBehaviorChangedForCommit": false,
+    "unrelatedWorkPreserved": true,
+    "pushDeployRelease": false
+  },
+  "validation": {
+    "e2r-liaison-scape": {
+      "tests": "588/588 PASS",
+      "lint": "PASS",
+      "build": "PASS",
+      "cachedDiffCheck": "PASS"
+    },
+    "e2r-spec": {
+      "validate": "PASS",
+      "cachedDiffCheck": "PASS"
+    }
+  },
+  "rollout": "source-level adoption is committed; deployment, release, and public rollout remain deferred"
+}
