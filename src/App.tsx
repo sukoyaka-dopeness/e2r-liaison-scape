@@ -30,9 +30,9 @@ import { resolveRelationTarget, supportsRelationHandoffCapability } from "./capa
 import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
 import { solveAutoLayout } from "./auto-layout";
-import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation, type AutomaticRouteDecision, type DerivedAutomaticRoute } from "./graph-presentation";
+import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation, type AutomaticNodeLabelRecoveryTrace, type AutomaticRouteDecision, type DerivedAutomaticRoute } from "./graph-presentation";
 import { deriveProductParallelBundlePolicy } from "./product-parallel-bundle-policy";
-import { publishDatasetOpenTiming, publishDragPointerProcessing, publishPresentationDiagnostic, publishPresentationTiming, type DatasetOpenTimingSample } from "./presentation-diagnostics";
+import { publishDatasetOpenTiming, publishDragPointerProcessing, publishNodeLabelLifecycleDiagnostic, publishPresentationDiagnostic, publishPresentationTiming, type DatasetOpenTimingSample } from "./presentation-diagnostics";
 import { deriveActualProductInitialLayout, type ActualProductInitialLayoutOptIn } from "./actual-product-initial-layout";
 import { acceptanceFixturePath, acceptanceLayoutPath, parseAcceptanceFixture, type AcceptanceLayoutArm } from "./acceptance-fixture-access";
 import { readAcceptancePayload, storeAcceptancePayload } from "./acceptance-payload-reopen";
@@ -75,9 +75,11 @@ type AppProps = {
   diagnosticNodeLabelOverrideById?: Readonly<Record<string, LabelRect>>;
   /** Development-only hysteresis ablation; never used by normal Product callers. */
   diagnosticIgnoreNodeLabelMovementCost?: boolean;
+  /** Development-only source-parity recovery mode; never used by normal Product callers. */
+  diagnosticNodeLabelRecoveryEnabled?: boolean;
 };
 
-export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, relationLabelNormalOffsets, relationLabelWrapPolicy, operationLocalPreview, diagnosticDataset, nodeLabelAngularEscapeById, diagnosticFeedbackEnabled, diagnosticPreviousNodeLabelPlacements, diagnosticNodeLabelOverrideById, diagnosticIgnoreNodeLabelMovementCost }: AppProps = {}) {
+export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, relationLabelNormalOffsets, relationLabelWrapPolicy, operationLocalPreview, diagnosticDataset, nodeLabelAngularEscapeById, diagnosticFeedbackEnabled, diagnosticPreviousNodeLabelPlacements, diagnosticNodeLabelOverrideById, diagnosticIgnoreNodeLabelMovementCost, diagnosticNodeLabelRecoveryEnabled }: AppProps = {}) {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
     window.localStorage,
     window.navigator.language,
@@ -514,6 +516,12 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     }
     const draggedNodeId = presentationDraggedNodeId;
     const presentationProfiler = timingDiagnosticsEnabled ? createAutomaticPresentationProfiler() : undefined;
+    const previousNodeLabelInput = import.meta.env.DEV && diagnosticIgnoreNodeLabelMovementCost
+      ? new Map<string, LabelRect>()
+      : import.meta.env.DEV && diagnosticPreviousNodeLabelPlacements
+        ? new Map(Object.entries(diagnosticPreviousNodeLabelPlacements))
+        : new Map(previousNodeLabelPlacements.current);
+    const nodeLabelRecoveryTraces: AutomaticNodeLabelRecoveryTrace[] = [];
     // Active routing deliberately defers its full label-feedback pass. For
     // continuity safety, compare a prior remote route with the labels that
     // were actually displayed in the prior frame. The dragged Node is not
@@ -548,11 +556,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       edgeCurveOffsets,
       selfLoopOverrides,
       provisionalNodeLabels,
-      previousNodeLabelPlacements: import.meta.env.DEV && diagnosticIgnoreNodeLabelMovementCost
-        ? new Map()
-        : import.meta.env.DEV && diagnosticPreviousNodeLabelPlacements
-          ? new Map(Object.entries(diagnosticPreviousNodeLabelPlacements))
-          : new Map(previousNodeLabelPlacements.current),
+      previousNodeLabelPlacements: previousNodeLabelInput,
       previousRelationLabelPlacements: new Map(previousEdgeLabelPlacements.current),
       manualNodeLabelOffsets: new Map(manualNodeLabelOffsets.current),
       manualRelationLabelAnchors: new Map(manualRelationLabelAnchors.current),
@@ -580,6 +584,10 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       relationLabelNormalOffsets: import.meta.env.DEV ? relationLabelNormalOffsets : undefined,
       relationLabelWrapPolicy: import.meta.env.DEV ? relationLabelWrapPolicy : undefined,
       nodeLabelAngularEscapeById: import.meta.env.DEV ? nodeLabelAngularEscapeById : undefined,
+      nodeLabelRecoveryMode: import.meta.env.DEV && diagnosticNodeLabelRecoveryEnabled ? "diagnostic-bounded" : undefined,
+      nodeLabelRecoveryTraceSink: import.meta.env.DEV && diagnosticNodeLabelRecoveryEnabled
+        ? (trace) => nodeLabelRecoveryTraces.push(trace)
+        : undefined,
       parallelBundleMode: parallelBundlePolicy?.mode
         ?? (parallelBundleVariant === "pair-16" ? "pair" : parallelBundleVariant === "corridor-aware" ? "corridor" : "bundle"),
     });
@@ -617,8 +625,22 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     const diagnosticNodeLabels = import.meta.env.DEV && diagnosticNodeLabelOverrideById
       ? new Map([...result.nodeLabels.entries()].map(([id, label]) => [id, diagnosticNodeLabelOverrideById[id] ?? label] as const))
       : result.nodeLabels;
-    return { ...result, nodeLabels: diagnosticNodeLabels, derivationPhase, routeDecisions: routeDecisions ?? [] };
-  }, [diagnosticFeedbackEnabled, diagnosticIgnoreNodeLabelMovementCost, diagnosticNodeLabelOverrideById, diagnosticPreviousNodeLabelPlacements, edgeCurveOffsets, graph, manualLabelRevision, nodeLabelAngularEscapeById, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, relationLabelWrapPolicy, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+    return {
+      ...result,
+      nodeLabels: diagnosticNodeLabels,
+      derivationPhase,
+      routeDecisions: routeDecisions ?? [],
+      nodeLabelLifecycle: {
+        previousSnapshotSize: previousNodeLabelInput.size,
+        previousSnapshotSource: diagnosticIgnoreNodeLabelMovementCost
+          ? ("diagnostic-ablation-empty" as const)
+          : diagnosticPreviousNodeLabelPlacements
+            ? ("diagnostic-provided" as const)
+            : ("normal-effect-ref" as const),
+        recoveryTraces: nodeLabelRecoveryTraces,
+      },
+    };
+  }, [diagnosticFeedbackEnabled, diagnosticIgnoreNodeLabelMovementCost, diagnosticNodeLabelOverrideById, diagnosticNodeLabelRecoveryEnabled, diagnosticPreviousNodeLabelPlacements, edgeCurveOffsets, graph, manualLabelRevision, nodeLabelAngularEscapeById, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, relationLabelWrapPolicy, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {
@@ -640,13 +662,25 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const nodeLabelPlacements = presentation.nodeLabels;
 
   useEffect(() => {
+    publishNodeLabelLifecycleDiagnostic({
+      phase: presentationPhase,
+      derivationPhase: presentation.derivationPhase,
+      presentationRevision,
+      draggedNodeId: presentationDraggedNodeId,
+      activeNodeDrag,
+      feedbackApplied: presentation.feedbackApplied,
+      previousSnapshotSize: presentation.nodeLabelLifecycle?.previousSnapshotSize ?? previousNodeLabelPlacements.current.size,
+      previousSnapshotSource: presentation.nodeLabelLifecycle?.previousSnapshotSource ?? "normal-effect-ref",
+      nextSnapshotSize: nodeLabelPlacements.size,
+      recoveryTraces: presentation.nodeLabelLifecycle?.recoveryTraces ?? [],
+    });
     previousNodeLabelPlacements.current = new Map(nodeLabelPlacements);
     previousEdgeLabelPlacements.current = new Map(edgeLabelPlacements);
     previousAutomaticRoutes.current = new Map(routedEdges.map((route) => [route.id, route]));
     // A queued active-drag render may commit after pointer-up. It must not
     // consume the next finalizing presentation's continuity identity.
     if (presentationPhase === "node-drag-finalizing") finalizingNodeDragIdRef.current = null;
-  }, [edgeLabelPlacements, nodeLabelPlacements, presentationPhase, routedEdges]);
+  }, [activeNodeDrag, edgeLabelPlacements, nodeLabelPlacements, presentation, presentationDraggedNodeId, presentationPhase, presentationRevision, routedEdges]);
   useEffect(() => {
     if (!dataset) return;
     publishPresentationDiagnostic({

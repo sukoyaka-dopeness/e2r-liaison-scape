@@ -93,6 +93,34 @@ export type AutomaticNodeLabelCandidateTrace = {
   candidates: readonly NodeLabelCandidateDiagnostic[];
 };
 
+/** Development-only bounded recovery trace; normal Product callers omit it. */
+export type AutomaticNodeLabelRecoveryTrace = {
+  pass: AutomaticRouteDecision["pass"];
+  nodeId: string;
+  processingIndex: number;
+  previousPlacementPresent: boolean;
+  activeDragged: boolean;
+  manualOffsetAuthoritative: boolean;
+  freshBestFingerprint: string;
+  continuitySelectedFingerprint: string;
+  previousCandidateFingerprint: string;
+  selectedFingerprint: string;
+  recoveryTriggered: boolean;
+  recoveryReason:
+    | "no-previous-placement"
+    | "active-drag-suppressed"
+    | "manual-offset-authoritative"
+    | "previous-selected-hard-conflict"
+    | "fresh-strict-presentation-gain"
+    | "first-pass-continuity"
+    | "fresh-best-not-hard-safe"
+    | "continuity-retained"
+    | "continuity-tie-or-unknown";
+  freshQualityGain: number;
+  candidateCount: number;
+  finalPlacementFingerprint: string;
+};
+
 export type AutomaticPresentationPassProfile = {
   elapsedMs: number;
   route: RouteArbitrationProfile;
@@ -681,6 +709,10 @@ export type AutomaticNodeLabelInput = {
   placementTraceSink?: (trace: AutomaticNodeLabelTrace) => void;
   /** Development-only expanded candidate trace; omitted by normal Product callers. */
   candidateTraceSink?: (trace: AutomaticNodeLabelCandidateTrace) => void;
+  /** Development-only bounded recovery mode; normal Product callers omit it. */
+  nodeLabelRecoveryMode?: "diagnostic-bounded";
+  /** Development-only bounded recovery trace; normal Product callers omit it. */
+  recoveryTraceSink?: (trace: AutomaticNodeLabelRecoveryTrace) => void;
 };
 
 export type AutomaticNodeLabelAccumulator = {
@@ -851,7 +883,7 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
   }
   const processingIndex = state.nextIndex;
   state.nextIndex += 1;
-  const { previousPlacements, manualOffsets, activelyDraggedNodeId, nodeLabelAngularEscapeById, profile, placementTraceSink, candidateTraceSink } = state.input;
+  const { previousPlacements, manualOffsets, activelyDraggedNodeId, nodeLabelAngularEscapeById, profile, placementTraceSink, candidateTraceSink, nodeLabelRecoveryMode, recoveryTraceSink } = state.input;
   const position = state.positions[node.id] ?? node;
   const otherNodes = state.orderedNodes.filter(({ id }) => id !== node.id).map((other) => state.positions[other.id] ?? other);
   const occupiedLabelPrefixFingerprint = placementTraceSink ? JSON.stringify(state.occupiedLabels) : "";
@@ -860,6 +892,7 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
   const inputFingerprint = placementTraceSink ? JSON.stringify({ node: { x: position.x, y: position.y }, name: node.label, description: node.description, occupiedLabels: state.occupiedLabels, otherNodes, edgePaths: state.edgePaths, previousPlacement: activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id), yieldingRoutes: state.input.yieldingRoutes, manualOffset: manualOffsets.get(node.id) }) : "";
   let placementTrace: LabelPlacementTrace | undefined;
   let candidateDiagnostics: readonly NodeLabelCandidateDiagnostic[] | undefined;
+  const collectCandidateDiagnostics = candidateTraceSink !== undefined || nodeLabelRecoveryMode === "diagnostic-bounded";
   const automaticPlacement = placeNodeLabel(
     position,
     node.label,
@@ -873,13 +906,37 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
     placementTraceSink ? (trace) => { placementTrace = trace; } : undefined,
     state.edgePathBounds,
     state.yieldingRouteBounds,
-    candidateTraceSink ? (candidates) => { candidateDiagnostics = candidates; } : undefined,
+    collectCandidateDiagnostics ? (candidates) => { candidateDiagnostics = candidates; } : undefined,
     nodeLabelAngularEscapeById?.[node.id],
   );
+  const activeDragged = activelyDraggedNodeId === node.id;
   const manualOffset = manualOffsets.get(node.id);
+  const freshCandidate = candidateDiagnostics?.find((candidate) => candidate.freshBest);
+  const continuitySelected = candidateDiagnostics?.find((candidate) => candidate.selected);
+  const previousCandidate = candidateDiagnostics?.find((candidate) => candidate.previousCandidate);
+  const previousPlacementPresent = !activeDragged && previousPlacements.has(node.id);
+  const recoveryEligible = nodeLabelRecoveryMode === "diagnostic-bounded" && state.input.pass === "feedback";
+  const freshQualityGain = freshCandidate && continuitySelected
+    ? continuitySelected.freshScore - freshCandidate.freshScore
+    : 0;
+  let recoveryTriggered = false;
+  let recoveryReason: AutomaticNodeLabelRecoveryTrace["recoveryReason"] = "continuity-tie-or-unknown";
+  if (activeDragged) recoveryReason = "active-drag-suppressed";
+  else if (manualOffset) recoveryReason = "manual-offset-authoritative";
+  else if (!recoveryEligible) recoveryReason = "first-pass-continuity";
+  else if (!previousPlacementPresent) recoveryReason = "no-previous-placement";
+  else if (continuitySelected && freshCandidate && !continuitySelected.hardSafe && freshCandidate.hardSafe) {
+    recoveryTriggered = true;
+    recoveryReason = "previous-selected-hard-conflict";
+  } else if (continuitySelected && freshCandidate && continuitySelected.hardSafe && freshCandidate.hardSafe && freshCandidate.freshScore < continuitySelected.freshScore) {
+    recoveryTriggered = true;
+    recoveryReason = "fresh-strict-presentation-gain";
+  } else if (freshCandidate && !freshCandidate.hardSafe) recoveryReason = "fresh-best-not-hard-safe";
+  else if (freshCandidate && continuitySelected && freshCandidate.freshScore >= continuitySelected.freshScore) recoveryReason = "continuity-retained";
+  const recoveredAutomaticPlacement = recoveryTriggered && freshCandidate ? freshCandidate.candidate : automaticPlacement;
   const placement = manualOffset
-    ? { ...automaticPlacement, x: position.x + manualOffset.x, y: position.y + manualOffset.y }
-    : automaticPlacement;
+    ? { ...recoveredAutomaticPlacement, x: position.x + manualOffset.x, y: position.y + manualOffset.y }
+    : recoveredAutomaticPlacement;
   placementTraceSink?.({
     pass: state.input.pass ?? "first",
     nodeId: node.id,
@@ -898,6 +955,26 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
     processingIndex,
     candidates: candidateDiagnostics ?? [],
   });
+  if (nodeLabelRecoveryMode === "diagnostic-bounded") {
+    const fingerprint = (candidate: NodeLabelCandidateDiagnostic | undefined) => candidate ? JSON.stringify(candidate.candidate) : "";
+    recoveryTraceSink?.({
+      pass: state.input.pass ?? "first",
+      nodeId: node.id,
+      processingIndex,
+      previousPlacementPresent,
+      activeDragged,
+      manualOffsetAuthoritative: manualOffset !== undefined,
+      freshBestFingerprint: fingerprint(freshCandidate),
+      continuitySelectedFingerprint: fingerprint(continuitySelected),
+      previousCandidateFingerprint: fingerprint(previousCandidate),
+      selectedFingerprint: JSON.stringify(recoveredAutomaticPlacement),
+      recoveryTriggered,
+      recoveryReason,
+      freshQualityGain,
+      candidateCount: candidateDiagnostics?.length ?? 0,
+      finalPlacementFingerprint: JSON.stringify(placement),
+    });
+  }
   state.occupiedLabels.push(placement);
   state.acceptedNodeLabels.push(placement);
   state.result.set(node.id, placement);
@@ -950,6 +1027,10 @@ export type BoundedAutomaticPresentationInput = {
   nodeLabelTraceSink?: (trace: AutomaticNodeLabelTrace) => void;
   /** Development-only expanded candidate trace; omitted by normal Product callers. */
   nodeLabelCandidateTraceSink?: (trace: AutomaticNodeLabelCandidateTrace) => void;
+  /** Development-only bounded recovery mode; omitted by normal Product callers. */
+  nodeLabelRecoveryMode?: "diagnostic-bounded";
+  /** Development-only bounded recovery trace; omitted by normal Product callers. */
+  nodeLabelRecoveryTraceSink?: (trace: AutomaticNodeLabelRecoveryTrace) => void;
   /** Opt-in exact input/output dependency fingerprints; omitted by Product callers. */
   presentationDependencySink?: (trace: PresentationDependencyTrace) => void;
   /** Opt-in candidate-generation cache; arbitration remains uncached. */
@@ -1169,6 +1250,8 @@ function verificationNodeLabelInput(
     placementTraceSink: input.nodeLabelTraceSink,
     nodeLabelAngularEscapeById: input.nodeLabelAngularEscapeById,
     candidateTraceSink: input.nodeLabelCandidateTraceSink,
+    nodeLabelRecoveryMode: input.nodeLabelRecoveryMode,
+    recoveryTraceSink: input.nodeLabelRecoveryTraceSink,
   };
 }
 
@@ -1612,6 +1695,8 @@ export function deriveBoundedAutomaticPresentation({
   relationLabelNormalOffsets,
   relationLabelWrapPolicy,
   nodeLabelAngularEscapeById,
+  nodeLabelRecoveryMode,
+  nodeLabelRecoveryTraceSink,
   parallelBundleMode = "bundle",
   profiler,
   replayPrefix,
@@ -1765,6 +1850,8 @@ export function deriveBoundedAutomaticPresentation({
       placementTraceSink: nodeLabelTraceSink,
       candidateTraceSink: nodeLabelCandidateTraceSink,
       ...(nodeLabelAngularEscapeById === undefined ? {} : { nodeLabelAngularEscapeById }),
+      nodeLabelRecoveryMode,
+      recoveryTraceSink: nodeLabelRecoveryTraceSink,
     });
     reportDependency("node-label", routeDecisionPass, nodeLabelStageInput, { labels: nodeLabels, yieldingRoutes });
     if (passProfile) {

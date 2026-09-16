@@ -1,5 +1,5 @@
 import type { GraphNode } from "./dataset.ts";
-import type { AutomaticPresentationProfiler, AutomaticRouteDecision, DerivedAutomaticRoute, RoutingGraphEdge, SelfLoopOverride } from "./graph-presentation.ts";
+import type { AutomaticNodeLabelRecoveryTrace, AutomaticPresentationProfiler, AutomaticRouteDecision, DerivedAutomaticRoute, RoutingGraphEdge, SelfLoopOverride } from "./graph-presentation.ts";
 import type { LabelRect, Point } from "./viewport.ts";
 
 /**
@@ -46,6 +46,19 @@ export type PresentationTimingSample = {
   profiler?: AutomaticPresentationProfiler;
 };
 
+export type NodeLabelLifecycleDiagnostic = {
+  phase: "idle" | "node-drag-active" | "node-drag-finalizing";
+  derivationPhase: "idle" | "node-drag-active" | "node-drag-finalizing";
+  presentationRevision: number;
+  draggedNodeId?: string;
+  activeNodeDrag: boolean;
+  feedbackApplied: boolean;
+  previousSnapshotSize: number;
+  previousSnapshotSource: "normal-effect-ref" | "diagnostic-provided" | "diagnostic-ablation-empty";
+  nextSnapshotSize: number;
+  recoveryTraces: readonly AutomaticNodeLabelRecoveryTrace[];
+};
+
 export type DragPointerProcessingSample = {
   nodeId: string;
   eventTimeStamp: number;
@@ -74,6 +87,8 @@ declare global {
   interface Window {
     __liaisonScapePresentationDiagnosticSink?: (snapshot: PresentationDiagnosticSnapshot) => void;
     __liaisonScapePresentationTimingSink?: (sample: PresentationTimingSample) => void;
+    __liaisonScapeNodeLabelLifecycleSink?: (sample: NodeLabelLifecycleDiagnostic) => void;
+    __liaisonScapeNodeLabelLifecycleEvents?: NodeLabelLifecycleDiagnostic[];
     __liaisonScapeDragPointerProcessingSink?: (sample: DragPointerProcessingSample) => void;
     __liaisonScapeDatasetOpenTimingSink?: (sample: DatasetOpenTimingSample) => void;
     __liaisonScapeDatasetOpenTimingEvents?: DatasetOpenTimingSample[];
@@ -86,6 +101,13 @@ export function publishPresentationDiagnostic(snapshot: PresentationDiagnosticSn
 
 export function publishPresentationTiming(sample: PresentationTimingSample): void {
   if (import.meta.env.DEV) window.__liaisonScapePresentationTimingSink?.(sample);
+}
+
+export function publishNodeLabelLifecycleDiagnostic(sample: NodeLabelLifecycleDiagnostic): void {
+  if (import.meta.env.DEV) {
+    (window.__liaisonScapeNodeLabelLifecycleEvents ??= []).push(sample);
+    window.__liaisonScapeNodeLabelLifecycleSink?.(sample);
+  }
 }
 
 export function publishDragPointerProcessing(sample: DragPointerProcessingSample): void {
