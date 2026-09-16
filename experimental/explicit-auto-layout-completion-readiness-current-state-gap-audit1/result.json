@@ -1,0 +1,70 @@
+{
+  "checkpoint": "explicit-auto-layout-completion-readiness-current-state-gap-audit1",
+  "date": "2026-09-16",
+  "classification": "AUDIT COMPLETE / EXPLICIT AUTO LAYOUT IMPLEMENTATION READINESS BLOCKED BY LIFECYCLE AND ADOPTION CONTRACT",
+  "sourceRevision": "9b26749281cc4cd8e26e782fc6a85fc7b4e6961e",
+  "executionPath": [
+    "Workspace More -> requestAutoLayout",
+    "if coordinatesDirty, open AutoLayoutConfirmation; Cancel closes it without changing positions",
+    "otherwise or after confirmation -> applyAutoLayout",
+    "solveAutoLayout(graph-visible Entity IDs and graph edges, default 12 iterations) synchronously on the main thread",
+    "compare result with current positions; if changed, merge into working positions, mark all graph nodes adopted, and set coordinatesDirty",
+    "normal Product presentation memo recomputes routing, Relation-label, Node-label, Self-loop, and viewport-derived presentation from the new positions",
+    "Save Coordinates remains the only Dataset persistence step"
+  ],
+  "currentAuthority": {
+    "solver": "src/auto-layout.ts solveAutoLayout owns deterministic structural Node placement only",
+    "routing": "Product presentation pipeline in src/graph-presentation.ts and downstream routing services",
+    "relationLabels": "Product presentation pipeline",
+    "nodeLabels": "Product presentation pipeline",
+    "selfLoops": "Product presentation/self-loop state; Auto Layout does not clear manual self-loop overrides",
+    "viewport": "App fit/viewport state; explicit Auto Layout does not call fitGraphView",
+    "coordinates": "working positions are temporary until existing Save Coordinates; Dataset remains unchanged before Save",
+    "manualAuthority": "manual route, label, and Self-loop state is retained; all graph-visible Entity positions are marked adopted after Auto Layout"
+  },
+  "poorLayoutAttribution": {
+    "structuralSolver": "Primary source-backed cause: the solver seeds a degree-ranked center/ring arrangement and performs only bounded node repulsion plus neighbor attraction. It does not score or reject edge crossings, route occupancy, Relation-label placement, Node-label placement, Self-loop pressure, or viewport quality.",
+    "productPresentation": "Downstream presentation recomputes after the Node positions change, but current applyAutoLayout has no candidate-set evaluation or Product-authoritative selection loop. Therefore routing/label feedback can expose the structural solver's misses rather than repair them globally.",
+    "lifecycle": "No partial async result is involved in the current explicit operation, so stale delivery is not the current source of the messy layout. There is no running operation state, mid-run Cancel, snapshot identity, or rollback state in App.",
+    "authorityMismatch": "The current operation is structurally deterministic but not a complete Product-quality placement operation; the mismatch is solver quality plus absent proposal/selection lifecycle, not a Dataset or routing authority violation."
+  },
+  "frontierReuse": {
+    "reusable": [
+      "shared Frontier structural candidate generator",
+      "pure Product presentation evaluation and ranking machinery, with an explicit snapshot extension",
+      "Worker transport and complete-finite result validation patterns"
+    ],
+    "notDirectlyReusable": [
+      "FrontierAutomaticDisplayAdapter rejects stored/mixed Coordinates and is coordinate-less automatic-display specific",
+      "current Worker evaluation creates empty manual/presentation history state and cannot preserve Explicit Auto Layout manual-authority inputs as-is",
+      "Initial Display fallback/cancel semantics are settleInitialPlacement fallback, whereas Explicit Auto Layout must preserve the pre-operation displayed positions",
+      "Initial Display success is render-only adoption, whereas current Explicit Auto Layout directly changes working positions and coordinatesDirty"
+    ],
+    "boundary": "Reuse should be through a separate explicit-operation adapter over shared computation, not by wiring the Initial Automatic Display adapter into the Auto Layout button."
+  },
+  "explicitLifecycleGap": {
+    "current": "synchronous main-thread direct working-position replacement; pre-start dirty confirmation only",
+    "requiredBeforeHighQualityOperation": [
+      "immutable snapshot of Dataset/graph identity, current session positions, coordinate ownership/dirty state, manual route/label/Self-loop inputs, locale, algorithm/config",
+      "candidate-only result until explicit accept, or an explicit product decision to retain direct adoption",
+      "Cancel preserves the pre-operation display and publishes no candidate",
+      "stale/replacement/mutation/unmount rejection and no partial publish",
+      "bounded one-step revert or an explicit decision that direct adoption has no revert",
+      "preserve manual presentation authority while evaluating a candidate",
+      "explicit separation between candidate render-only preview and accepted working-position transaction"
+    ],
+    "currentContractConflict": "Existing semantic/lifecycle research defines a candidate preview/accept/reject/revert operation, while current App production behavior directly applies the synchronous result. The source-backed current contract is direct apply; the higher-quality operation contract is not yet wired."
+  },
+  "decision": {
+    "initialAutomaticDisplayChanged": false,
+    "frontierChanged": false,
+    "productionImplementationStarted": false,
+    "nextSafeStep": "bounded Explicit Auto Layout lifecycle/authority implementation decision and focused contract tests",
+    "blockedStep": "Frontier/Worker quality solver integration or production behavior change before the proposal-vs-direct-adoption contract is explicitly resolved"
+  },
+  "validation": {
+    "focusedTests": "20/20 PASS: auto-layout, initial-layout-provider, initial-layout-adoption-readiness",
+    "priorBaselineGates": "LiaisonScape 588/588 tests, lint, build PASS; E2R-SPEC validate PASS",
+    "sourceChanged": false
+  }
+}
