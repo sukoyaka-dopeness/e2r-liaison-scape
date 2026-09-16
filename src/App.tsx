@@ -69,9 +69,15 @@ type AppProps = {
   nodeLabelAngularEscapeById?: Readonly<Record<string, NodeLabelAngularEscapeInput>>;
   /** Development-only fixed-relation diagnostic switch. */
   diagnosticFeedbackEnabled?: boolean;
+  /** Development-only previous automatic Node-label snapshot for lifecycle diagnostics. */
+  diagnosticPreviousNodeLabelPlacements?: Readonly<Record<string, LabelRect>>;
+  /** Development-only final Node-label diagnostic override; never used by normal Product callers. */
+  diagnosticNodeLabelOverrideById?: Readonly<Record<string, LabelRect>>;
+  /** Development-only hysteresis ablation; never used by normal Product callers. */
+  diagnosticIgnoreNodeLabelMovementCost?: boolean;
 };
 
-export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, relationLabelNormalOffsets, relationLabelWrapPolicy, operationLocalPreview, diagnosticDataset, nodeLabelAngularEscapeById, diagnosticFeedbackEnabled }: AppProps = {}) {
+export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, relationLabelNormalOffsets, relationLabelWrapPolicy, operationLocalPreview, diagnosticDataset, nodeLabelAngularEscapeById, diagnosticFeedbackEnabled, diagnosticPreviousNodeLabelPlacements, diagnosticNodeLabelOverrideById, diagnosticIgnoreNodeLabelMovementCost }: AppProps = {}) {
   const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
     window.localStorage,
     window.navigator.language,
@@ -542,7 +548,11 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       edgeCurveOffsets,
       selfLoopOverrides,
       provisionalNodeLabels,
-      previousNodeLabelPlacements: new Map(previousNodeLabelPlacements.current),
+      previousNodeLabelPlacements: import.meta.env.DEV && diagnosticIgnoreNodeLabelMovementCost
+        ? new Map()
+        : import.meta.env.DEV && diagnosticPreviousNodeLabelPlacements
+          ? new Map(Object.entries(diagnosticPreviousNodeLabelPlacements))
+          : new Map(previousNodeLabelPlacements.current),
       previousRelationLabelPlacements: new Map(previousEdgeLabelPlacements.current),
       manualNodeLabelOffsets: new Map(manualNodeLabelOffsets.current),
       manualRelationLabelAnchors: new Map(manualRelationLabelAnchors.current),
@@ -604,8 +614,11 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       feedbackApplied: result.feedbackApplied,
       profiler: presentationProfiler,
     });
-    return { ...result, derivationPhase, routeDecisions: routeDecisions ?? [] };
-  }, [diagnosticFeedbackEnabled, edgeCurveOffsets, graph, manualLabelRevision, nodeLabelAngularEscapeById, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, relationLabelWrapPolicy, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+    const diagnosticNodeLabels = import.meta.env.DEV && diagnosticNodeLabelOverrideById
+      ? new Map([...result.nodeLabels.entries()].map(([id, label]) => [id, diagnosticNodeLabelOverrideById[id] ?? label] as const))
+      : result.nodeLabels;
+    return { ...result, nodeLabels: diagnosticNodeLabels, derivationPhase, routeDecisions: routeDecisions ?? [] };
+  }, [diagnosticFeedbackEnabled, diagnosticIgnoreNodeLabelMovementCost, diagnosticNodeLabelOverrideById, diagnosticPreviousNodeLabelPlacements, edgeCurveOffsets, graph, manualLabelRevision, nodeLabelAngularEscapeById, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, relationLabelWrapPolicy, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {

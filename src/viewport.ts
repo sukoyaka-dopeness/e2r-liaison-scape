@@ -375,6 +375,13 @@ export type NodeLabelCandidateDiagnostic = Readonly<{
   routeHaloPressure: number;
   yieldingRoutePressure: number;
   movementCost: number;
+  freshScore: number;
+  freshRank: number;
+  continuityRank: number;
+  freshBest: boolean;
+  previousCandidate: boolean;
+  hardSafe: boolean;
+  yieldingRouteHardPressure: number;
   incidentAngularPressure: number;
   relationLabelAngularPressure: number;
   score: number;
@@ -920,6 +927,7 @@ export function placeNodeLabel(
     let routeHardPressure = 0;
     let routeHaloPressure = 0;
     let yieldingRoutePressure = 0;
+    let yieldingRouteHardPressure = 0;
     let score = index * 0.01 + cardinalPreferencePenalty + incidentAngularPressure + relationLabelAngularPressure;
 
     for (const occupied of occupiedLabels) {
@@ -963,6 +971,7 @@ export function placeNodeLabel(
       if (profile) profile.yieldingRoutePointChecks += yieldingRoute.samples.length;
       const routeDistance = minimumPathToLabelRectDistance(yieldingRoute.samples, candidate);
       if (routeDistance === 0) {
+        yieldingRouteHardPressure += 1;
         const contribution = 1600 + Math.min(6400, yieldingRoute.deviation * 8);
         yieldingRoutePressure += contribution;
         score += contribution;
@@ -984,12 +993,24 @@ export function placeNodeLabel(
       routeHardPressure,
       routeHaloPressure,
       yieldingRoutePressure,
+      yieldingRouteHardPressure,
       movementCost,
       incidentAngularPressure,
       relationLabelAngularPressure,
       score: score + movementCost,
     };
   });
+  const orderedByFreshScore = scoredCandidates
+    .map((candidate, index) => ({ candidate, index }))
+    .sort((left, right) => left.candidate.score - left.candidate.movementCost - (right.candidate.score - right.candidate.movementCost) || left.index - right.index);
+  const orderedByContinuityScore = scoredCandidates
+    .map((candidate, index) => ({ candidate, index }))
+    .sort((left, right) => left.candidate.score - right.candidate.score || left.index - right.index);
+  const freshRankByCandidate = new Map(orderedByFreshScore.map(({ candidate }, rank) => [candidate.candidate, rank + 1]));
+  const continuityRankByCandidate = new Map(orderedByContinuityScore.map(({ candidate }, rank) => [candidate.candidate, rank + 1]));
+  const previousCandidate = previousPlacement
+    ? scoredCandidates.reduce((best, current) => current.movementCost < best.movementCost ? current : best)
+    : undefined;
   const selected = scoredCandidates.reduce((best, current) => current.score < best.score ? current : best).candidate;
   if (profile) profile.elapsedMs += performance.now() - startedAt;
   traceSink?.({
@@ -999,6 +1020,15 @@ export function placeNodeLabel(
   candidateTraceSink?.(scoredCandidates.map(({ candidate, ...diagnostic }) => ({
     candidate,
     ...diagnostic,
+    freshScore: diagnostic.score - diagnostic.movementCost,
+    freshRank: freshRankByCandidate.get(candidate) ?? scoredCandidates.length,
+    continuityRank: continuityRankByCandidate.get(candidate) ?? scoredCandidates.length,
+    freshBest: freshRankByCandidate.get(candidate) === 1,
+    previousCandidate: previousCandidate?.candidate === candidate,
+    hardSafe: diagnostic.occupiedLabelOverlap === 0
+      && diagnostic.otherNodePressure === 0
+      && diagnostic.routeHardPressure === 0
+      && diagnostic.yieldingRouteHardPressure === 0,
     selected: candidate === selected,
   })));
   return selected;
