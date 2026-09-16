@@ -1,0 +1,713 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-NODE-LABEL-RECOVERY-DENSE-BROWSER-FEASIBILITY-v1",
+  "diagnosticOnly": true,
+  "generatedAt": "2026-09-16T05:33:35.041Z",
+  "purpose": "Measure production-shaped Node-label recovery cost before browser-main-thread evidence; no Product default or provider adoption.",
+  "boundary": {
+    "recoverySemantics": "unchanged",
+    "movementCoefficient": "distance * 4",
+    "firstPass": "continuity-only",
+    "settledPass": "hard-safe or strict fresh non-movement gain",
+    "activeDrag": "recovery suppressed",
+    "ordinaryRouting": "unchanged",
+    "relationLabel": "unchanged",
+    "selfLoop": "unchanged"
+  },
+  "campaign": {
+    "fixtureCount": 7,
+    "fixtureFamilies": [
+      "lighthouse-ish",
+      "medium-dense",
+      "large-dense",
+      "high-degree-heavy",
+      "label-heavy-en",
+      "label-heavy-ja",
+      "parallel-self-loop"
+    ],
+    "repeatedStableSamples": 6,
+    "browserEvidenceRequired": true,
+    "memoryStudy": "allocation counters only; not a heap profile"
+  },
+  "rows": [
+    {
+      "fixture": "lighthouse",
+      "family": "lighthouse-ish",
+      "locale": "en",
+      "graph": {
+        "nodes": 10,
+        "edges": 14
+      },
+      "pressure": {
+        "parallelGroups": 0,
+        "maxParallelBundle": 0,
+        "selfLoops": 0,
+        "nodeLabelChars": 59,
+        "relationLabelChars": 379
+      },
+      "exact": {
+        "cleanBaselineCandidateParity": true,
+        "recoveryChangesOutputAsExpected": true,
+        "candidateRecoveryStableOnReuse": true,
+        "recoveryFingerprintCount": 1,
+        "routeCount": 14,
+        "relationLabelCount": 14,
+        "nodeLabelCount": 10
+      },
+      "clean": {
+        "baseline": {
+          "fullDeriveMs": 69.3715,
+          "routeProfileCounters": 1833735,
+          "relationLabelMs": 7.631800000000027,
+          "nodeLabelMs": 8.539100000000019,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 640
+        },
+        "candidate": {
+          "fullDeriveMs": 41.20160000000001,
+          "routeProfileCounters": 1833735,
+          "relationLabelMs": 3.8006999999999778,
+          "nodeLabelMs": 5.925699999999978,
+          "recoveryComparisonMs": 0.05750000000006139,
+          "recoveryCandidateRows": 640,
+          "candidateEvaluations": 640
+        },
+        "fullDeriveDeltaMs": -28.169899999999984
+      },
+      "settled": {
+        "baseline": {
+          "medianMs": 32.013,
+          "maxMs": 35.438,
+          "samples": [
+            32.013,
+            32.06,
+            30.712,
+            30.238,
+            30.737,
+            35.438
+          ]
+        },
+        "candidate": {
+          "medianMs": 28.675,
+          "maxMs": 30.677,
+          "samples": [
+            27.641,
+            28.885,
+            30.677,
+            27.716,
+            27.096,
+            28.675
+          ]
+        },
+        "candidateNodeLabelMedianMs": 2.913,
+        "candidateRecoveryComparisonMedianMs": 0.015,
+        "candidateRows": 640
+      },
+      "recoveryTrigger": {
+        "baseline": {
+          "fullDeriveMs": 28.68520000000001,
+          "routeProfileCounters": 1751749,
+          "relationLabelMs": 2.726600000000076,
+          "nodeLabelMs": 2.1099000000001524,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 640
+        },
+        "candidate": {
+          "fullDeriveMs": 27.704799999999977,
+          "routeProfileCounters": 1751749,
+          "relationLabelMs": 2.1598999999999933,
+          "nodeLabelMs": 2.6814000000000533,
+          "recoveryComparisonMs": 0.017100000000255022,
+          "recoveryCandidateRows": 640,
+          "candidateEvaluations": 640
+        },
+        "outputDifference": true
+      }
+    },
+    {
+      "fixture": "medium-dense",
+      "family": "medium-dense",
+      "locale": "en",
+      "graph": {
+        "nodes": 16,
+        "edges": 64
+      },
+      "pressure": {
+        "parallelGroups": 5,
+        "maxParallelBundle": 9,
+        "selfLoops": 4,
+        "nodeLabelChars": 102,
+        "relationLabelChars": 2566
+      },
+      "exact": {
+        "cleanBaselineCandidateParity": true,
+        "recoveryChangesOutputAsExpected": true,
+        "candidateRecoveryStableOnReuse": true,
+        "recoveryFingerprintCount": 1,
+        "routeCount": 64,
+        "relationLabelCount": 64,
+        "nodeLabelCount": 16
+      },
+      "clean": {
+        "baseline": {
+          "fullDeriveMs": 302.3395999999999,
+          "routeProfileCounters": 35144358,
+          "relationLabelMs": 29.89869999999985,
+          "nodeLabelMs": 11.834499999999935,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 1024
+        },
+        "candidate": {
+          "fullDeriveMs": 287.2158999999999,
+          "routeProfileCounters": 35144358,
+          "relationLabelMs": 29.261099999999942,
+          "nodeLabelMs": 12.36239999999998,
+          "recoveryComparisonMs": 0.03329999999982647,
+          "recoveryCandidateRows": 1024,
+          "candidateEvaluations": 1024
+        },
+        "fullDeriveDeltaMs": -15.123699999999985
+      },
+      "settled": {
+        "baseline": {
+          "medianMs": 279.133,
+          "maxMs": 299.138,
+          "samples": [
+            272.536,
+            275.81,
+            279.133,
+            299.138,
+            273.372,
+            279.518
+          ]
+        },
+        "candidate": {
+          "medianMs": 282.781,
+          "maxMs": 293.576,
+          "samples": [
+            279.058,
+            280.226,
+            293.576,
+            282.781,
+            286.698,
+            282.632
+          ]
+        },
+        "candidateNodeLabelMedianMs": 13.304,
+        "candidateRecoveryComparisonMedianMs": 0.034,
+        "candidateRows": 1024
+      },
+      "recoveryTrigger": {
+        "baseline": {
+          "fullDeriveMs": 294.6868000000004,
+          "routeProfileCounters": 32965505,
+          "relationLabelMs": 32.65060000000085,
+          "nodeLabelMs": 23.948500000000422,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 1024
+        },
+        "candidate": {
+          "fullDeriveMs": 272.5736999999999,
+          "routeProfileCounters": 32965505,
+          "relationLabelMs": 26.569899999999507,
+          "nodeLabelMs": 12.862700000000586,
+          "recoveryComparisonMs": 0.024400000001151056,
+          "recoveryCandidateRows": 1024,
+          "candidateEvaluations": 1024
+        },
+        "outputDifference": true
+      }
+    },
+    {
+      "fixture": "large-dense",
+      "family": "large-dense",
+      "locale": "en",
+      "graph": {
+        "nodes": 28,
+        "edges": 200
+      },
+      "pressure": {
+        "parallelGroups": 2,
+        "maxParallelBundle": 17,
+        "selfLoops": 8,
+        "nodeLabelChars": 186,
+        "relationLabelChars": 6002
+      },
+      "exact": {
+        "cleanBaselineCandidateParity": true,
+        "recoveryChangesOutputAsExpected": false,
+        "candidateRecoveryStableOnReuse": true,
+        "recoveryFingerprintCount": 1,
+        "routeCount": 200,
+        "relationLabelCount": 200,
+        "nodeLabelCount": 28
+      },
+      "clean": {
+        "baseline": {
+          "fullDeriveMs": 1953.2176000000009,
+          "routeProfileCounters": 348346006,
+          "relationLabelMs": 277.6221000000005,
+          "nodeLabelMs": 57.925600000000486,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 1792
+        },
+        "candidate": {
+          "fullDeriveMs": 1998.2157000000007,
+          "routeProfileCounters": 348346006,
+          "relationLabelMs": 285.0167000000001,
+          "nodeLabelMs": 62.40380000000005,
+          "recoveryComparisonMs": 0.05940000000009604,
+          "recoveryCandidateRows": 1792,
+          "candidateEvaluations": 1792
+        },
+        "fullDeriveDeltaMs": 44.998099999999795
+      },
+      "settled": {
+        "baseline": {
+          "medianMs": 1923.002,
+          "maxMs": 2035.829,
+          "samples": [
+            1968.021,
+            2035.829,
+            1923.002,
+            1917.72,
+            1902.356,
+            1913.712
+          ]
+        },
+        "candidate": {
+          "medianMs": 1967.043,
+          "maxMs": 2177.953,
+          "samples": [
+            2045.517,
+            1936.465,
+            1967.043,
+            2177.953,
+            1911.859,
+            1925.257
+          ]
+        },
+        "candidateNodeLabelMedianMs": 63.9,
+        "candidateRecoveryComparisonMedianMs": 0.062,
+        "candidateRows": 1792
+      },
+      "recoveryTrigger": {
+        "baseline": {
+          "fullDeriveMs": 2078.565300000002,
+          "routeProfileCounters": 353228303,
+          "relationLabelMs": 294.81499999999505,
+          "nodeLabelMs": 62.52370000000519,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 1792
+        },
+        "candidate": {
+          "fullDeriveMs": 2063.553200000002,
+          "routeProfileCounters": 353228303,
+          "relationLabelMs": 284.479800000001,
+          "nodeLabelMs": 65.73609999999462,
+          "recoveryComparisonMs": 0.05859999996027909,
+          "recoveryCandidateRows": 1792,
+          "candidateEvaluations": 1792
+        },
+        "outputDifference": false
+      }
+    },
+    {
+      "fixture": "high-degree",
+      "family": "high-degree-heavy",
+      "locale": "en",
+      "graph": {
+        "nodes": 22,
+        "edges": 62
+      },
+      "pressure": {
+        "parallelGroups": 4,
+        "maxParallelBundle": 6,
+        "selfLoops": 0,
+        "nodeLabelChars": 144,
+        "relationLabelChars": 3012
+      },
+      "exact": {
+        "cleanBaselineCandidateParity": true,
+        "recoveryChangesOutputAsExpected": true,
+        "candidateRecoveryStableOnReuse": false,
+        "recoveryFingerprintCount": 3,
+        "routeCount": 62,
+        "relationLabelCount": 62,
+        "nodeLabelCount": 22
+      },
+      "clean": {
+        "baseline": {
+          "fullDeriveMs": 335.1941999999981,
+          "routeProfileCounters": 41153724,
+          "relationLabelMs": 36.93839999999909,
+          "nodeLabelMs": 11.211300000009942,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 1408
+        },
+        "candidate": {
+          "fullDeriveMs": 329.4886999999944,
+          "routeProfileCounters": 41153724,
+          "relationLabelMs": 38.50010000000475,
+          "nodeLabelMs": 13.719399999994494,
+          "recoveryComparisonMs": 0.06179999997402774,
+          "recoveryCandidateRows": 1408,
+          "candidateEvaluations": 1408
+        },
+        "fullDeriveDeltaMs": -5.705500000003667
+      },
+      "settled": {
+        "baseline": {
+          "medianMs": 329.04,
+          "maxMs": 342.619,
+          "samples": [
+            341.363,
+            319.195,
+            342.619,
+            318.632,
+            321.498,
+            329.04
+          ]
+        },
+        "candidate": {
+          "medianMs": 323.068,
+          "maxMs": 329.786,
+          "samples": [
+            320.111,
+            323.068,
+            320.774,
+            329.786,
+            322.324,
+            324.499
+          ]
+        },
+        "candidateNodeLabelMedianMs": 14.129,
+        "candidateRecoveryComparisonMedianMs": 0.038,
+        "candidateRows": 1408
+      },
+      "recoveryTrigger": {
+        "baseline": {
+          "fullDeriveMs": 363.0286000000051,
+          "routeProfileCounters": 54817787,
+          "relationLabelMs": 43.16660000000411,
+          "nodeLabelMs": 11.25,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 1408
+        },
+        "candidate": {
+          "fullDeriveMs": 366.9745000000039,
+          "routeProfileCounters": 54817787,
+          "relationLabelMs": 42.42240000000311,
+          "nodeLabelMs": 13.011300000005576,
+          "recoveryComparisonMs": 0.055100000026868656,
+          "recoveryCandidateRows": 1408,
+          "candidateEvaluations": 1408
+        },
+        "outputDifference": true
+      }
+    },
+    {
+      "fixture": "label-heavy-en",
+      "family": "label-heavy-en",
+      "locale": "en",
+      "graph": {
+        "nodes": 18,
+        "edges": 54
+      },
+      "pressure": {
+        "parallelGroups": 0,
+        "maxParallelBundle": 0,
+        "selfLoops": 0,
+        "nodeLabelChars": 2808,
+        "relationLabelChars": 6912
+      },
+      "exact": {
+        "cleanBaselineCandidateParity": true,
+        "recoveryChangesOutputAsExpected": true,
+        "candidateRecoveryStableOnReuse": false,
+        "recoveryFingerprintCount": 2,
+        "routeCount": 54,
+        "relationLabelCount": 54,
+        "nodeLabelCount": 18
+      },
+      "clean": {
+        "baseline": {
+          "fullDeriveMs": 197.3486000000048,
+          "routeProfileCounters": 22133340,
+          "relationLabelMs": 24.534099999997125,
+          "nodeLabelMs": 15.462500000001455,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 1152
+        },
+        "candidate": {
+          "fullDeriveMs": 195.47810000000027,
+          "routeProfileCounters": 22133340,
+          "relationLabelMs": 24.008099999991828,
+          "nodeLabelMs": 14.433700000001409,
+          "recoveryComparisonMs": 0.027299999972456135,
+          "recoveryCandidateRows": 1152,
+          "candidateEvaluations": 1152
+        },
+        "fullDeriveDeltaMs": -1.8705000000045402
+      },
+      "settled": {
+        "baseline": {
+          "medianMs": 200.799,
+          "maxMs": 204.666,
+          "samples": [
+            204.666,
+            199.772,
+            198.442,
+            200.799,
+            200.311,
+            201.096
+          ]
+        },
+        "candidate": {
+          "medianMs": 204.381,
+          "maxMs": 206.458,
+          "samples": [
+            198.204,
+            204.391,
+            204.381,
+            198.053,
+            199.276,
+            206.458
+          ]
+        },
+        "candidateNodeLabelMedianMs": 16.047,
+        "candidateRecoveryComparisonMedianMs": 0.036,
+        "candidateRows": 1152
+      },
+      "recoveryTrigger": {
+        "baseline": {
+          "fullDeriveMs": 203.09369999999763,
+          "routeProfileCounters": 21878510,
+          "relationLabelMs": 23.726199999997334,
+          "nodeLabelMs": 16.12890000000334,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 1152
+        },
+        "candidate": {
+          "fullDeriveMs": 204.5847999999969,
+          "routeProfileCounters": 21878510,
+          "relationLabelMs": 23.178099999997357,
+          "nodeLabelMs": 15.682099999998172,
+          "recoveryComparisonMs": 0.04900000001362059,
+          "recoveryCandidateRows": 1152,
+          "candidateEvaluations": 1152
+        },
+        "outputDifference": true
+      }
+    },
+    {
+      "fixture": "label-heavy-ja",
+      "family": "label-heavy-ja",
+      "locale": "ja",
+      "graph": {
+        "nodes": 18,
+        "edges": 54
+      },
+      "pressure": {
+        "parallelGroups": 0,
+        "maxParallelBundle": 0,
+        "selfLoops": 0,
+        "nodeLabelChars": 2808,
+        "relationLabelChars": 6912
+      },
+      "exact": {
+        "cleanBaselineCandidateParity": true,
+        "recoveryChangesOutputAsExpected": false,
+        "candidateRecoveryStableOnReuse": true,
+        "recoveryFingerprintCount": 1,
+        "routeCount": 54,
+        "relationLabelCount": 54,
+        "nodeLabelCount": 18
+      },
+      "clean": {
+        "baseline": {
+          "fullDeriveMs": 194.9982999999993,
+          "routeProfileCounters": 22110814,
+          "relationLabelMs": 23.569599999995262,
+          "nodeLabelMs": 13.002999999996973,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 1152
+        },
+        "candidate": {
+          "fullDeriveMs": 208.2867000000042,
+          "routeProfileCounters": 22110814,
+          "relationLabelMs": 25.3495000000039,
+          "nodeLabelMs": 15.031000000002678,
+          "recoveryComparisonMs": 0.02790000002278248,
+          "recoveryCandidateRows": 1152,
+          "candidateEvaluations": 1152
+        },
+        "fullDeriveDeltaMs": 13.288400000004913
+      },
+      "settled": {
+        "baseline": {
+          "medianMs": 198.507,
+          "maxMs": 204.287,
+          "samples": [
+            197.426,
+            197.888,
+            198.851,
+            204.287,
+            198.507,
+            197.453
+          ]
+        },
+        "candidate": {
+          "medianMs": 204.156,
+          "maxMs": 211.056,
+          "samples": [
+            206.377,
+            198.448,
+            198.567,
+            195.339,
+            211.056,
+            204.156
+          ]
+        },
+        "candidateNodeLabelMedianMs": 17.186,
+        "candidateRecoveryComparisonMedianMs": 0.037,
+        "candidateRows": 1152
+      },
+      "recoveryTrigger": {
+        "baseline": {
+          "fullDeriveMs": 198.02969999999914,
+          "routeProfileCounters": 21883454,
+          "relationLabelMs": 25.04629999998724,
+          "nodeLabelMs": 13.034599999999045,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 1152
+        },
+        "candidate": {
+          "fullDeriveMs": 196.2661999999982,
+          "routeProfileCounters": 21883454,
+          "relationLabelMs": 23.84429999999702,
+          "nodeLabelMs": 14.990399999995134,
+          "recoveryComparisonMs": 0.02569999999832362,
+          "recoveryCandidateRows": 1152,
+          "candidateEvaluations": 1152
+        },
+        "outputDifference": false
+      }
+    },
+    {
+      "fixture": "parallel-self-loop",
+      "family": "parallel-self-loop",
+      "locale": "ja",
+      "graph": {
+        "nodes": 14,
+        "edges": 38
+      },
+      "pressure": {
+        "parallelGroups": 2,
+        "maxParallelBundle": 13,
+        "selfLoops": 8,
+        "nodeLabelChars": 60,
+        "relationLabelChars": 3255
+      },
+      "exact": {
+        "cleanBaselineCandidateParity": true,
+        "recoveryChangesOutputAsExpected": true,
+        "candidateRecoveryStableOnReuse": false,
+        "recoveryFingerprintCount": 3,
+        "routeCount": 38,
+        "relationLabelCount": 38,
+        "nodeLabelCount": 14
+      },
+      "clean": {
+        "baseline": {
+          "fullDeriveMs": 233.908500000005,
+          "routeProfileCounters": 36220459,
+          "relationLabelMs": 14.472600000008242,
+          "nodeLabelMs": 6.660100000008242,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 896
+        },
+        "candidate": {
+          "fullDeriveMs": 214.6640999999945,
+          "routeProfileCounters": 36220459,
+          "relationLabelMs": 15.999100000000908,
+          "nodeLabelMs": 5.919299999994109,
+          "recoveryComparisonMs": 0.014600000053178519,
+          "recoveryCandidateRows": 896,
+          "candidateEvaluations": 896
+        },
+        "fullDeriveDeltaMs": -19.2444000000105
+      },
+      "settled": {
+        "baseline": {
+          "medianMs": 222.09,
+          "maxMs": 246.241,
+          "samples": [
+            210.598,
+            207.3,
+            212.911,
+            222.09,
+            233.418,
+            246.241
+          ]
+        },
+        "candidate": {
+          "medianMs": 218.618,
+          "maxMs": 223.41,
+          "samples": [
+            218.618,
+            223.41,
+            214.117,
+            211.143,
+            210.959,
+            221.091
+          ]
+        },
+        "candidateNodeLabelMedianMs": 6.525,
+        "candidateRecoveryComparisonMedianMs": 0.02,
+        "candidateRows": 896
+      },
+      "recoveryTrigger": {
+        "baseline": {
+          "fullDeriveMs": 178.09940000000643,
+          "routeProfileCounters": 25488129,
+          "relationLabelMs": 14.873300000006566,
+          "nodeLabelMs": 5.927200000005541,
+          "recoveryComparisonMs": 0,
+          "recoveryCandidateRows": 0,
+          "candidateEvaluations": 896
+        },
+        "candidate": {
+          "fullDeriveMs": 175.44770000000426,
+          "routeProfileCounters": 25488129,
+          "relationLabelMs": 13.5509999999922,
+          "nodeLabelMs": 7.997700000007171,
+          "recoveryComparisonMs": 0.02119999995920807,
+          "recoveryCandidateRows": 896,
+          "candidateEvaluations": 896
+        },
+        "outputDifference": true
+      }
+    }
+  ],
+  "status": {
+    "browserNativeFeasibility": "NOT ESTABLISHED",
+    "productDefault": "HOLD",
+    "productionProvider": "NOT ESTABLISHED",
+    "humanReview": "NOT READY",
+    "initialLayoutReleaseBlocker": "OPEN",
+    "adaptiveCascade": "NOT ENTERED"
+  }
+}

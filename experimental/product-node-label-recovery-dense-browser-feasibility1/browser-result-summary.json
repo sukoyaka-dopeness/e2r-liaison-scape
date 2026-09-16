@@ -1,0 +1,48 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-NODE-LABEL-RECOVERY-DENSE-BROWSER-FEASIBILITY-v1",
+  "diagnosticOnly": true,
+  "browser": "Edge",
+  "measurement": {
+    "fullDerive": "actual Product presentation timing sink",
+    "nodeLabelStage": "profiler nodeLabelMs",
+    "mainThreadLongestTask": "PerformanceObserver longtask",
+    "frameResponsiveness": "maximum rAF gap; diagnostic proxy, not React commit timing",
+    "renderCommit": "not directly instrumented; DOM mutation count is recorded as a non-authoritative proxy",
+    "consoleErrors": "zero in smoke campaign"
+  },
+  "rows": [
+    { "fixture": "lighthouse", "mode": "baseline", "deriveMs": [78.2, 55.6, 47.6, 44.9], "nodeLabelMs": [7.5, 3.5, 4.6, 3.1], "longTaskMaxMs": 292, "rafGapMaxMs": 283.3 },
+    { "fixture": "lighthouse", "mode": "product-candidate", "deriveMs": [137, 55.2, 49.8, 44.4], "nodeLabelMs": [15.4, 3.4, 5.8, 4.2], "longTaskMaxMs": 352, "rafGapMaxMs": 333.4 },
+    { "fixture": "medium-dense", "mode": "baseline", "deriveMs": [490.4, 435.9, 436, 421.5], "nodeLabelMs": [17.1, 10.6, 14.4, 10.7], "longTaskMaxMs": 1949, "rafGapMaxMs": 1933.3 },
+    { "fixture": "medium-dense", "mode": "product-candidate", "deriveMs": [476.1, 419.3, 418.2, 418.3], "nodeLabelMs": [19.6, 10.6, 16.1, 12], "longTaskMaxMs": 1894, "rafGapMaxMs": 1883.2 },
+    { "fixture": "large-dense", "mode": "baseline", "deriveMs": [2770.8, 2649.5, 2578.6, 2626], "nodeLabelMs": [68.3, 50.3, 59.2, 49.2], "longTaskMaxMs": 11050, "rafGapMaxMs": 11050 },
+    { "fixture": "large-dense", "mode": "product-candidate", "deriveMs": [2769, 2653.5, 2698.2, 2717.3], "nodeLabelMs": [66.7, 52.4, 61.9, 53.1], "longTaskMaxMs": 11268, "rafGapMaxMs": 11249.6 },
+    { "fixture": "high-degree", "mode": "baseline", "deriveMs": [578, 479.9, 472, 467.3], "nodeLabelMs": [16.1, 11.3, 14.9, 11.1], "longTaskMaxMs": 2169, "rafGapMaxMs": 2150 },
+    { "fixture": "high-degree", "mode": "product-candidate", "deriveMs": [551.1, 488.3, 481.6, 477.9], "nodeLabelMs": [22.9, 12.5, 17.7, 13.5], "longTaskMaxMs": 2170, "rafGapMaxMs": 1066.7 },
+    { "fixture": "label-heavy-en", "mode": "baseline", "deriveMs": [305.3, 271.8, 275.6, 270.6], "nodeLabelMs": [16.6, 12.8, 17.9, 13.4], "longTaskMaxMs": 1285, "rafGapMaxMs": 1266.6 },
+    { "fixture": "label-heavy-en", "mode": "product-candidate", "deriveMs": [319.1, 276.9, 283.6, 284.3], "nodeLabelMs": [22.1, 14.5, 18.3, 14.4], "longTaskMaxMs": 1328, "rafGapMaxMs": 1316.6 },
+    { "fixture": "label-heavy-ja", "mode": "baseline", "deriveMs": [309.1, 271.8, 275, 269], "nodeLabelMs": [17.4, 12.8, 17.8, 14.2], "longTaskMaxMs": 1290, "rafGapMaxMs": 1283.3 },
+    { "fixture": "label-heavy-ja", "mode": "product-candidate", "deriveMs": [314.3, 278.1, 292.4, 294.8], "nodeLabelMs": [19.6, 13.8, 20, 16.8], "longTaskMaxMs": 1346, "rafGapMaxMs": 1333.3 },
+    { "fixture": "parallel-self-loop", "mode": "baseline", "deriveMs": [376.5, 322.5, 316.9, 306.1], "nodeLabelMs": [11.4, 6.2, 10.2, 6.2], "longTaskMaxMs": 1437, "rafGapMaxMs": 1433.5 },
+    { "fixture": "parallel-self-loop", "mode": "product-candidate", "deriveMs": [349.9, 320.4, 326.5, 311.2], "nodeLabelMs": [9.8, 6.8, 11.2, 7.8], "longTaskMaxMs": 1429, "rafGapMaxMs": 716.8 }
+  ],
+  "lifecycleActionSmoke": { "fixture": "lighthouse", "actions": ["recompute-same", "relation-change"], "timingEventsAfterActions": 2, "consoleErrors": 0 },
+  "actualProductSmoke": [
+    { "fixture": "lighthouse", "nodes": 10, "edges": 14, "graphRendered": true, "graphStable": true, "consoleErrors": 0 },
+    { "fixture": "medium-dense", "nodes": 16, "edges": 64, "graphRendered": true, "graphStable": true, "consoleErrors": 0 },
+    { "fixture": "large-dense", "nodes": 28, "edges": 200, "graphRendered": true, "graphStable": true, "consoleErrors": 0 },
+    { "fixture": "high-degree", "nodes": 22, "edges": 62, "graphRendered": true, "graphStable": true, "consoleErrors": 0 },
+    { "fixture": "label-heavy-en", "nodes": 18, "edges": 54, "graphRendered": true, "graphStable": true, "consoleErrors": 0 },
+    { "fixture": "label-heavy-ja", "nodes": 18, "edges": 54, "graphRendered": true, "graphStable": true, "consoleErrors": 0 },
+    { "fixture": "parallel-self-loop", "nodes": 14, "edges": 38, "graphRendered": true, "graphStable": true, "consoleErrors": 0 }
+  ],
+  "smokeObservation": "Medium dense Actual Product output was visibly congested by long Relation labels and was not advanced to formal visual evidence. This is a smoke observation, not acceptance.",
+  "classification": {
+    "overall": "F: browser feasibility not established",
+    "qualityLifecycle": "C: quality/lifecycle mostly sound, with difficult-fixture recovery reuse instability requiring a separate boundary checkpoint",
+    "primaryRuntimeAttribution": "E: full presentation pipeline dominates large-dense main-thread cost; recovery comparison itself is sub-millisecond in source probes",
+    "candidateMaterialization": "not primary bottleneck in this envelope; rows scale at 64 per node across two passes, but measured recovery comparison remains small",
+    "largeDenseDecision": "do not treat this as a browser-native initial-layout path; Worker/cooperative execution is a later checkpoint, not adopted here"
+  },
+  "status": { "productDefault": "HOLD", "productionProvider": "NOT ESTABLISHED", "humanReview": "NOT READY", "initialLayoutReleaseBlocker": "OPEN", "adaptiveCascade": "NOT ENTERED" }
+}
