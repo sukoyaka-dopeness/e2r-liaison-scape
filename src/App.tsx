@@ -96,6 +96,16 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const [datasetLoading, setDatasetLoading] = useState(false);
   const [datasetLoadingVisible, setDatasetLoadingVisible] = useState(false);
   const timingDiagnosticsEnabled = new URLSearchParams(window.location.search).get("diagnostic") === "timing";
+  // A bounded development/test switch for the production-shaped recovery
+  // integration. Normal Product callers do not pass a Node-label override or
+  // diagnostic prop; the candidate is enabled only for an explicit dev URL.
+  const nodeLabelRecoveryCandidateEnabled = import.meta.env.DEV
+    && new URLSearchParams(window.location.search).get("node-label-recovery") === "candidate";
+  const nodeLabelRecoveryMode = import.meta.env.DEV && nodeLabelRecoveryCandidateEnabled
+    ? "product-candidate" as const
+    : import.meta.env.DEV && diagnosticNodeLabelRecoveryEnabled
+      ? "diagnostic-bounded" as const
+      : undefined;
   const acceptanceFixture = import.meta.env.DEV
     ? parseAcceptanceFixture(new URLSearchParams(window.location.search).get("acceptance-fixture"), new URLSearchParams(window.location.search).get("acceptance-locale"))
     : null;
@@ -584,8 +594,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       relationLabelNormalOffsets: import.meta.env.DEV ? relationLabelNormalOffsets : undefined,
       relationLabelWrapPolicy: import.meta.env.DEV ? relationLabelWrapPolicy : undefined,
       nodeLabelAngularEscapeById: import.meta.env.DEV ? nodeLabelAngularEscapeById : undefined,
-      nodeLabelRecoveryMode: import.meta.env.DEV && diagnosticNodeLabelRecoveryEnabled ? "diagnostic-bounded" : undefined,
-      nodeLabelRecoveryTraceSink: import.meta.env.DEV && diagnosticNodeLabelRecoveryEnabled
+      nodeLabelRecoveryMode,
+      nodeLabelRecoveryTraceSink: nodeLabelRecoveryMode !== undefined
         ? (trace) => nodeLabelRecoveryTraces.push(trace)
         : undefined,
       parallelBundleMode: parallelBundlePolicy?.mode
@@ -640,7 +650,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         recoveryTraces: nodeLabelRecoveryTraces,
       },
     };
-  }, [diagnosticFeedbackEnabled, diagnosticIgnoreNodeLabelMovementCost, diagnosticNodeLabelOverrideById, diagnosticNodeLabelRecoveryEnabled, diagnosticPreviousNodeLabelPlacements, edgeCurveOffsets, graph, manualLabelRevision, nodeLabelAngularEscapeById, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, relationLabelWrapPolicy, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
+  }, [diagnosticFeedbackEnabled, diagnosticIgnoreNodeLabelMovementCost, diagnosticNodeLabelOverrideById, diagnosticNodeLabelRecoveryEnabled, diagnosticPreviousNodeLabelPlacements, edgeCurveOffsets, graph, manualLabelRevision, nodeLabelAngularEscapeById, nodeLabelRecoveryCandidateEnabled, nodeLabelRecoveryMode, parallelBundleSpacingByKey, parallelBundleVariant, relationLabelNormalOffsets, relationLabelStaggerById, relationLabelWrapPolicy, renderPositions, presentationRevision, provisionalNodeLabels, relationMap, selfLoopOverrides]);
   const routedEdges = presentation.routedEdges;
   const edgeLabelPlacements = presentation.relationLabels;
   const displayedEdgeLabelPlacements = useMemo(() => {

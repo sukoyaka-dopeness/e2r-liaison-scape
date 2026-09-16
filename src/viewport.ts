@@ -1163,6 +1163,9 @@ export type LabelPlacementProfile = {
   yieldingRouteBroadPhaseRejects: number;
   previousPlacementEvaluations: number;
   manualAnchorReconstructions: number;
+  /** Development/test-only bounded recovery comparison work. */
+  recoveryComparisonMs: number;
+  recoveryCandidateRows: number;
 };
 
 /** Opt-in diagnostic trace for one label placement decision. */

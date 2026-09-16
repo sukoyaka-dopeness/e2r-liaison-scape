@@ -173,6 +173,8 @@ function emptyLabelPlacementProfile(): LabelPlacementProfile {
     yieldingRouteBroadPhaseRejects: 0,
     previousPlacementEvaluations: 0,
     manualAnchorReconstructions: 0,
+    recoveryComparisonMs: 0,
+    recoveryCandidateRows: 0,
   };
 }
 
@@ -710,7 +712,7 @@ export type AutomaticNodeLabelInput = {
   /** Development-only expanded candidate trace; omitted by normal Product callers. */
   candidateTraceSink?: (trace: AutomaticNodeLabelCandidateTrace) => void;
   /** Development-only bounded recovery mode; normal Product callers omit it. */
-  nodeLabelRecoveryMode?: "diagnostic-bounded";
+  nodeLabelRecoveryMode?: "diagnostic-bounded" | "product-candidate";
   /** Development-only bounded recovery trace; normal Product callers omit it. */
   recoveryTraceSink?: (trace: AutomaticNodeLabelRecoveryTrace) => void;
 };
@@ -892,7 +894,8 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
   const inputFingerprint = placementTraceSink ? JSON.stringify({ node: { x: position.x, y: position.y }, name: node.label, description: node.description, occupiedLabels: state.occupiedLabels, otherNodes, edgePaths: state.edgePaths, previousPlacement: activelyDraggedNodeId === node.id ? undefined : previousPlacements.get(node.id), yieldingRoutes: state.input.yieldingRoutes, manualOffset: manualOffsets.get(node.id) }) : "";
   let placementTrace: LabelPlacementTrace | undefined;
   let candidateDiagnostics: readonly NodeLabelCandidateDiagnostic[] | undefined;
-  const collectCandidateDiagnostics = candidateTraceSink !== undefined || nodeLabelRecoveryMode === "diagnostic-bounded";
+  const recoveryEnabled = nodeLabelRecoveryMode !== undefined;
+  const collectCandidateDiagnostics = candidateTraceSink !== undefined || recoveryEnabled;
   const automaticPlacement = placeNodeLabel(
     position,
     node.label,
@@ -909,13 +912,14 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
     collectCandidateDiagnostics ? (candidates) => { candidateDiagnostics = candidates; } : undefined,
     nodeLabelAngularEscapeById?.[node.id],
   );
+  const recoveryComparisonStartedAt = performance.now();
   const activeDragged = activelyDraggedNodeId === node.id;
   const manualOffset = manualOffsets.get(node.id);
   const freshCandidate = candidateDiagnostics?.find((candidate) => candidate.freshBest);
   const continuitySelected = candidateDiagnostics?.find((candidate) => candidate.selected);
   const previousCandidate = candidateDiagnostics?.find((candidate) => candidate.previousCandidate);
   const previousPlacementPresent = !activeDragged && previousPlacements.has(node.id);
-  const recoveryEligible = nodeLabelRecoveryMode === "diagnostic-bounded" && state.input.pass === "feedback";
+  const recoveryEligible = recoveryEnabled && state.input.pass === "feedback";
   const freshQualityGain = freshCandidate && continuitySelected
     ? continuitySelected.freshScore - freshCandidate.freshScore
     : 0;
@@ -934,6 +938,10 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
   } else if (freshCandidate && !freshCandidate.hardSafe) recoveryReason = "fresh-best-not-hard-safe";
   else if (freshCandidate && continuitySelected && freshCandidate.freshScore >= continuitySelected.freshScore) recoveryReason = "continuity-retained";
   const recoveredAutomaticPlacement = recoveryTriggered && freshCandidate ? freshCandidate.candidate : automaticPlacement;
+  if (profile && recoveryEnabled) {
+    profile.recoveryComparisonMs += performance.now() - recoveryComparisonStartedAt;
+    profile.recoveryCandidateRows += candidateDiagnostics?.length ?? 0;
+  }
   const placement = manualOffset
     ? { ...recoveredAutomaticPlacement, x: position.x + manualOffset.x, y: position.y + manualOffset.y }
     : recoveredAutomaticPlacement;
@@ -955,7 +963,7 @@ export function stepAutomaticNodeLabelPlacement(state: AutomaticNodeLabelAccumul
     processingIndex,
     candidates: candidateDiagnostics ?? [],
   });
-  if (nodeLabelRecoveryMode === "diagnostic-bounded") {
+  if (recoveryEnabled) {
     const fingerprint = (candidate: NodeLabelCandidateDiagnostic | undefined) => candidate ? JSON.stringify(candidate.candidate) : "";
     recoveryTraceSink?.({
       pass: state.input.pass ?? "first",
@@ -1028,7 +1036,7 @@ export type BoundedAutomaticPresentationInput = {
   /** Development-only expanded candidate trace; omitted by normal Product callers. */
   nodeLabelCandidateTraceSink?: (trace: AutomaticNodeLabelCandidateTrace) => void;
   /** Development-only bounded recovery mode; omitted by normal Product callers. */
-  nodeLabelRecoveryMode?: "diagnostic-bounded";
+  nodeLabelRecoveryMode?: "diagnostic-bounded" | "product-candidate";
   /** Development-only bounded recovery trace; omitted by normal Product callers. */
   nodeLabelRecoveryTraceSink?: (trace: AutomaticNodeLabelRecoveryTrace) => void;
   /** Opt-in exact input/output dependency fingerprints; omitted by Product callers. */
