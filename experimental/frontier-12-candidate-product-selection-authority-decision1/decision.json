@@ -1,0 +1,16 @@
+{
+  "checkpoint": "frontier-12-candidate-product-selection-authority-decision1",
+  "date": "2026-09-16",
+  "classification": "A SELECTED: CANDIDATE GENERATOR WITH PRODUCT-OWNED DOWNSTREAM SELECTION",
+  "selectedArchitecture": "A",
+  "frontierOwns": ["normalized placement input", "deterministic structural candidate generation", "finite derived Node-position candidate set", "candidate identity and structural metadata", "structured failure information"],
+  "productOwns": ["routing", "Relation-label placement", "Node-label placement", "Self-loop presentation", "viewport fit", "feasibility and quality evaluation", "candidate ranking and final selection", "final canonicalization", "interaction", "persistence", "dirty-state"],
+  "reviewedParityGate": "candidate generation plus Product-authoritative selection and final position fingerprint",
+  "runtimeBoundary": ["Frontier candidate generation", "Product presentation evaluation/selection", "integration/render/viewport"],
+  "humanReviewDisposition": "QUALIFIED",
+  "currentProductionProvider": "current-product / settleInitialPlacement",
+  "productionDefaultChanged": false,
+  "solverExtractionSafeToStart": true,
+  "executionArchitectureSelected": false,
+  "remainingBlocker": "standalone characterization and lifecycle/failure protocol for the separated candidate and Product-selection stages"
+}

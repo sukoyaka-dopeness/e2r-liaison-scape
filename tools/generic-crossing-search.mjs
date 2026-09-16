@@ -10,6 +10,16 @@ import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation
 import { fitGraphView, placeNodeLabel, routeSamplesHaveLabelCollision, routeSamplesHaveNodeInfluence } from "../src/viewport.ts";
 import { INITIAL_ENTITY_CLEARANCE } from "../src/initial-entity-placement.ts";
 import { deriveAutomaticLayoutQualityMetrics } from "../src/automatic-layout-quality.ts";
+import { compareAutomaticLayoutProposals, isAutomaticLayoutPresentationEligible } from "../src/automatic-layout-selection.ts";
+import {
+  exactCircularOrders,
+  ellipsePositions,
+  generateFrontierCandidateSet,
+  genericGridSearch,
+  heuristicCircularOrders,
+  seededFrontierRandom,
+  selectFrontierRepresentatives,
+} from "../src/frontier-candidate-generator.ts";
 
 const fixturePath = process.argv[2] ?? "experimental/product-evaluation-seam/actual-inspection/fixtures/apollo-11-spacing-220.en.e2r.json";
 function syntheticBipartiteDataset(leftSize, rightSize, legacyIds = false) {
@@ -165,7 +175,7 @@ function productionAblationPlan(mode) {
     ] };
     case "bounded-grid-one": {
       const ids = graph.nodes.map((node) => node.id).sort(compareId);
-      const grid = genericGridSearch(ids, 4, 400);
+      const grid = genericGridSearch(ids, edges, 4, 400);
       const finalists = grid.finalists.filter((candidate) => candidate.straightCrossings === 0);
       const selected = finalists[0] ?? grid.finalists[0];
       return {
@@ -175,7 +185,7 @@ function productionAblationPlan(mode) {
     }
     case "bounded-grid-two": {
       const ids = graph.nodes.map((node) => node.id).sort(compareId);
-      const grid = genericGridSearch(ids, 4, 400);
+      const grid = genericGridSearch(ids, edges, 4, 400);
       const finalists = (grid.finalists.filter((candidate) => candidate.straightCrossings === 0).length ? grid.finalists.filter((candidate) => candidate.straightCrossings === 0) : grid.finalists).slice(0, 2);
       return {
         specs: finalists.map((candidate, index) => ({ family: `bounded-grid-anisotropic-${index + 1}`, positions: globallySpacePositions(candidate.positions, globalSpacingScale, globalSpacingY) })),
@@ -746,64 +756,6 @@ function finishProfileStage(name) {
   stage.wallMs = performance.now() - stage.startedAt;
   delete stage.startedAt;
 }
-function chordCrossings(order) {
-  const index = new Map(order.map((id, position) => [id, position])); let crossings = 0;
-  for (let left = 0; left < edges.length; left += 1) for (let right = left + 1; right < edges.length; right += 1) {
-    const first = edges[left]; const second = edges[right];
-    if ([first.sourceId, first.targetId].some((id) => id === second.sourceId || id === second.targetId)) continue;
-    const [a, b] = [index.get(first.sourceId), index.get(first.targetId)].sort((x, y) => x - y);
-    const [c, d] = [index.get(second.sourceId), index.get(second.targetId)].sort((x, y) => x - y);
-    if ((a < c && c < b && b < d) || (c < a && a < d && d < b)) crossings += 1;
-  }
-  return crossings;
-}
-function permutations(items, visitor) {
-  const working = items.slice(); let count = 0;
-  function visit(index) {
-    if (index === working.length) { count += 1; visitor(working.slice()); return; }
-    for (let next = index; next < working.length; next += 1) { [working[index], working[next]] = [working[next], working[index]]; visit(index + 1); [working[index], working[next]] = [working[next], working[index]]; }
-  }
-  visit(0); return count;
-}
-function exactCircularOrders(ids, maximum = 12) {
-  const anchor = ids[0]; const rest = ids.slice(1); const orders = []; let best = Infinity;
-  const evaluated = permutations(rest, (permutation) => {
-    if (compareId(permutation[0], permutation.at(-1)) > 0) return;
-    const order = [anchor, ...permutation]; const crossings = chordCrossings(order);
-    if (crossings < best) { best = crossings; orders.length = 0; }
-    if (crossings === best && orders.length < maximum) orders.push({ order, chordCrossings: crossings });
-  });
-  return { mode: "EXACT_CIRCULAR_ORDER", evaluated, bestChordCrossings: best, orders };
-}
-function seededRandom(seed) { let state = seed >>> 0; return () => { state = (1664525 * state + 1013904223) >>> 0; return state / 0x100000000; }; }
-function heuristicCircularOrders(ids, seeds = 8, rounds = 80) {
-  const results = []; let evaluated = 0;
-  for (let seed = 0; seed < seeds; seed += 1) {
-    const random = seededRandom(9001 + seed); const order = ids.slice();
-    for (let index = order.length - 1; index > 0; index -= 1) { const swap = Math.floor(random() * (index + 1)); [order[index], order[swap]] = [order[swap], order[index]]; }
-    let current = chordCrossings(order); evaluated += 1;
-    for (let round = 0; round < rounds; round += 1) {
-      const left = Math.floor(random() * order.length); const right = Math.floor(random() * order.length);
-      if (left === right) continue;
-      [order[left], order[right]] = [order[right], order[left]];
-      const candidate = chordCrossings(order); evaluated += 1;
-      if (candidate <= current || random() < 0.025) current = candidate;
-      else [order[left], order[right]] = [order[right], order[left]];
-    }
-    results.push({ order: order.slice(), chordCrossings: current });
-  }
-  results.sort((left, right) => left.chordCrossings - right.chordCrossings || left.order.join("\0").localeCompare(right.order.join("\0")));
-  return { mode: "HEURISTIC_CIRCULAR_ORDER", evaluated, bestChordCrossings: results[0]?.chordCrossings ?? Infinity, orders: results.slice(0, 12) };
-}
-function ellipsePositions(order, { aspect, scale, phase }) {
-  const minimumNeighborGap = INITIAL_ENTITY_CLEARANCE * 1.8;
-  const radiusY = Math.max(160, minimumNeighborGap / (2 * Math.sin(Math.PI / Math.max(3, order.length))) * scale);
-  const radiusX = radiusY * aspect;
-  return Object.fromEntries(order.map((id, index) => {
-    const angle = phase + 2 * Math.PI * index / order.length;
-    return [id, { x: radiusX + radiusX * Math.cos(angle), y: radiusY + radiusY * Math.sin(angle) }];
-  }));
-}
 function straightCrossingsForPositions(positions) {
   let crossings = 0;
   for (let left = 0; left < edges.length; left += 1) for (let right = left + 1; right < edges.length; right += 1) {
@@ -906,199 +858,29 @@ function deriveFinalCoordinateCanonicalization(positions, metrics, referencePosi
     canonicalMetrics,
   };
 }
-function gridSlots(nodeCount) {
-  const columns = Math.max(3, Math.ceil(Math.sqrt(nodeCount * 1.35)));
-  const rows = Math.max(2, Math.ceil(nodeCount / columns));
-  const horizontalGap = Math.max(196, INITIAL_ENTITY_CLEARANCE * 2.55);
-  const verticalGap = Math.max(164, INITIAL_ENTITY_CLEARANCE * 2.15);
-  return Array.from({ length: columns * rows }, (_, index) => ({
-    x: (index % columns) * horizontalGap,
-    y: Math.floor(index / columns) * verticalGap,
-  }));
-}
-function makeGridState(ids, random) {
-  const slots = gridSlots(ids.length); const assignment = [...ids];
-  for (let index = assignment.length - 1; index > 0; index -= 1) { const swap = Math.floor(random() * (index + 1)); [assignment[index], assignment[swap]] = [assignment[swap], assignment[index]]; }
-  const occupied = assignment.map((id, index) => ({ id, slot: index }));
-  return { slots, occupied };
-}
-function positionsFromGridState(state) {
-  return Object.fromEntries(state.occupied.map(({ id, slot }) => [id, state.slots[slot]]));
-}
-function cloneGridState(state) { return { slots: state.slots, occupied: state.occupied.map((entry) => ({ ...entry })) }; }
-function mutateGridState(state, random) {
-  const next = cloneGridState(state); const used = new Set(next.occupied.map((entry) => entry.slot));
-  const left = Math.floor(random() * next.occupied.length);
-  const available = next.slots.map((_, slot) => slot).filter((slot) => !used.has(slot));
-  if (available.length > 0 && random() < 0.42) next.occupied[left].slot = available[Math.floor(random() * available.length)];
-  else {
-    const right = Math.floor(random() * next.occupied.length);
-    [next.occupied[left].slot, next.occupied[right].slot] = [next.occupied[right].slot, next.occupied[left].slot];
-  }
-  return next;
-}
-function cheapGridObjective(positions) {
-  const crossings = straightCrossingsForPositions(positions);
-  const hopLengths = edges.map((edge) => Math.hypot(positions[edge.sourceId].x - positions[edge.targetId].x, positions[edge.sourceId].y - positions[edge.targetId].y));
-  const shortEdges = hopLengths.filter((length) => length < INITIAL_ENTITY_CLEARANCE * 1.65).length;
-  const longEdgePenalty = hopLengths.reduce((sum, length) => sum + Math.max(0, length - 480) ** 2, 0);
-  return crossings * 1000000 + shortEdges * 20000 + longEdgePenalty;
-}
-function genericGridSearch(ids, seeds = 16, rounds = 1200) {
-  const finalists = []; let evaluated = 0;
-  for (let seed = 0; seed < seeds; seed += 1) {
-    const random = seededRandom(17041 + seed); let current = makeGridState(ids, random); let currentScore = cheapGridObjective(positionsFromGridState(current)); evaluated += 1;
-    let best = current; let bestScore = currentScore;
-    for (let round = 0; round < rounds; round += 1) {
-      const candidate = mutateGridState(current, random); const candidateScore = cheapGridObjective(positionsFromGridState(candidate)); evaluated += 1;
-      const temperature = Math.max(0.001, 0.04 * (1 - round / rounds));
-      if (candidateScore <= currentScore || random() < temperature) { current = candidate; currentScore = candidateScore; }
-      if (candidateScore < bestScore) { best = candidate; bestScore = candidateScore; }
-    }
-    finalists.push({ positions: positionsFromGridState(best), cheapScore: bestScore, straightCrossings: straightCrossingsForPositions(positionsFromGridState(best)) });
-  }
-  const unique = new Map();
-  for (const candidate of finalists) {
-    const key = Object.entries(candidate.positions).sort(([left], [right]) => compareId(left, right)).map(([id, point]) => `${id}:${point.x},${point.y}`).join("|");
-    if (!unique.has(key) || unique.get(key).cheapScore > candidate.cheapScore) unique.set(key, candidate);
-  }
-  return { mode: "GRID_SWAP_AND_EMPTY_SLOT_SEARCH", evaluated, seeds, rounds, finalists: [...unique.values()].sort((left, right) => left.cheapScore - right.cheapScore).slice(0, 12) };
-}
-function structuralCandidateFeatureVector(positions, structuralCrossings, cheapScore) {
-  const nodeDistances = [];
-  for (let left = 0; left < graph.nodes.length; left += 1) for (let right = left + 1; right < graph.nodes.length; right += 1) {
-    const first = positions[graph.nodes[left].id]; const second = positions[graph.nodes[right].id];
-    nodeDistances.push(Math.hypot(first.x - second.x, first.y - second.y));
-  }
-  const edgeLengths = edges.map((edge) => Math.hypot(positions[edge.sourceId].x - positions[edge.targetId].x, positions[edge.sourceId].y - positions[edge.targetId].y));
-  const xs = Object.values(positions).map(({ x }) => x); const ys = Object.values(positions).map(({ y }) => y);
-  const width = Math.max(...xs) - Math.min(...xs); const height = Math.max(...ys) - Math.min(...ys);
-  const mean = (values) => values.reduce((sum, value) => sum + value, 0) / Math.max(1, values.length);
-  const sortedEdges = edgeLengths.slice().sort((left, right) => left - right);
-  const medianEdge = sortedEdges.length ? sortedEdges[Math.floor(sortedEdges.length / 2)] : 0;
-  const meanNodeSeparation = mean(nodeDistances);
-  const minNodeSeparation = nodeDistances.length ? Math.min(...nodeDistances) : 0;
-  const aspect = height > 0 ? width / height : 0;
-  const crossingSignature = [];
-  for (let left = 0; left < edges.length; left += 1) for (let right = left + 1; right < edges.length; right += 1) {
-    const first = edges[left]; const second = edges[right];
-    crossingSignature.push(
-      ![first.sourceId, first.targetId].some((id) => id === second.sourceId || id === second.targetId)
-      && segmentIntersection(positions[first.sourceId], positions[first.targetId], positions[second.sourceId], positions[second.targetId])
-        ? 1 : 0,
-    );
-  }
-  const topologyFeatureVector = [
-    structuralCrossings,
-    cheapScore / 1000000,
-    minNodeSeparation / 100,
-    meanNodeSeparation / 100,
-    medianEdge / 100,
-    (edgeLengths.length ? Math.max(...edgeLengths) : 0) / 100,
-    width / 100,
-    height / 100,
-    aspect,
-    ...crossingSignature,
-  ];
-  return {
-    fingerprint: createHash("sha256").update(positionsKey(positions)).digest("hex").slice(0, 12),
-    structuralCrossings,
-    cheapScore,
-    minNodeSeparation,
-    meanNodeSeparation,
-    medianEdge,
-    maxEdge: edgeLengths.length ? Math.max(...edgeLengths) : 0,
-    width,
-    height,
-    aspect: height > 0 ? width / height : 0,
-    featureVector: [structuralCrossings, cheapScore / 1000000, minNodeSeparation / 100, meanNodeSeparation / 100, medianEdge / 100, (edgeLengths.length ? Math.max(...edgeLengths) : 0) / 100, width / 100, height / 100, aspect],
-    topologyFeatureVector,
-  };
-}
-function structuralCandidatePool(ids) {
-  const orderSearch = ids.length <= 9 ? exactCircularOrders(ids) : heuristicCircularOrders(ids);
-  const variants = [
-    { aspect: 1.18, scale: 1, phase: -Math.PI / 2 },
-    { aspect: 1.30, scale: 1, phase: -Math.PI / 2 },
-    { aspect: 1.30, scale: 1.1, phase: -Math.PI / 2 },
-    { aspect: 1.18, scale: 1.1, phase: -Math.PI / 2 },
-  ];
-  const candidates = [];
-  for (const orderResult of orderSearch.orders) for (const variant of variants) {
-    const positions = ellipsePositions(orderResult.order, variant);
-    const cheapScore = orderResult.chordCrossings * 1000000;
-    candidates.push({ family: "circular-order", positions, ...structuralCandidateFeatureVector(positions, orderResult.chordCrossings, cheapScore) });
-  }
-  const gridSearch = genericGridSearch(ids);
-  for (const finalist of gridSearch.finalists) {
-    candidates.push({ family: "grid-structural", positions: clonePositions(finalist.positions), ...structuralCandidateFeatureVector(finalist.positions, finalist.straightCrossings, finalist.cheapScore) });
-  }
-  return { candidates, orderSearch, gridSearch };
-}
-function candidateDominates(left, right) {
-  const noWorse = left.structuralCrossings <= right.structuralCrossings
-    && left.cheapScore <= right.cheapScore
-    && left.minNodeSeparation >= right.minNodeSeparation
-    && left.maxEdge <= right.maxEdge;
-  const strict = left.structuralCrossings < right.structuralCrossings
-    || left.cheapScore < right.cheapScore
-    || left.minNodeSeparation > right.minNodeSeparation
-    || left.maxEdge < right.maxEdge;
-  return noWorse && strict;
-}
-function structuralFrontierCandidates(candidates) {
-  return candidates.filter((candidate, index) => !candidates.some((other, otherIndex) => otherIndex !== index && candidateDominates(other, candidate)));
-}
-function normalizedFeatureDistance(left, right, ranges) {
-  return Math.sqrt(left.featureVector.reduce((sum, value, index) => sum + ((value - right.featureVector[index]) / Math.max(1, ranges[index])) ** 2, 0));
-}
-function selectStructuralRepresentatives(candidates, frontier, limit, featureMode = "global") {
-  if (candidates.length <= limit) return candidates.slice();
-  if (featureMode === "adaptive-frontier" && limit === frontier.length) return frontier.slice();
-  const pool = [...frontier, ...candidates.filter((candidate) => !frontier.includes(candidate))];
-  const vectorFor = (candidate) => featureMode === "topology-aware" ? candidate.topologyFeatureVector : candidate.featureVector;
-  const ranges = vectorFor(candidates[0]).map((_, index) => Math.max(1, ...candidates.map((candidate) => Math.abs(vectorFor(candidate)[index]))));
-  const selected = [];
-  const anchor = pool.slice().sort((left, right) => left.structuralCrossings - right.structuralCrossings || left.cheapScore - right.cheapScore || right.minNodeSeparation - left.minNodeSeparation)[0];
-  if (anchor) selected.push(anchor);
-  while (selected.length < limit && selected.length < pool.length) {
-    const available = pool.filter((candidate) => !selected.includes(candidate));
-    available.sort((left, right) => {
-      const leftDistance = Math.min(...selected.map((chosen) => normalizedFeatureDistance({ ...left, featureVector: vectorFor(left) }, { ...chosen, featureVector: vectorFor(chosen) }, ranges)));
-      const rightDistance = Math.min(...selected.map((chosen) => normalizedFeatureDistance({ ...right, featureVector: vectorFor(right) }, { ...chosen, featureVector: vectorFor(chosen) }, ranges)));
-      return rightDistance - leftDistance || left.structuralCrossings - right.structuralCrossings || left.cheapScore - right.cheapScore;
-    });
-    selected.push(available[0]);
-  }
-  return selected;
-}
 function productionStructuralFrontier(limit, featureMode = "global") {
-  const ids = graph.nodes.map((node) => node.id).sort(compareId);
-  const pool = structuralCandidatePool(ids);
-  const frontier = structuralFrontierCandidates(pool.candidates);
-  const representatives = selectStructuralRepresentatives(pool.candidates, frontier, limit, featureMode);
-  const familyCounts = Object.fromEntries([...new Set(pool.candidates.map(({ family }) => family))].map((family) => [family, pool.candidates.filter((candidate) => candidate.family === family).length]));
+  const placementInput = {
+    nodes: graph.nodes.map(({ id }) => ({ id })),
+    edges: edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
+  };
+  const startedAt = performance.now();
+  const result = generateFrontierCandidateSet(placementInput, { limit, featureMode });
+  const withResearchFingerprint = (candidate) => ({
+    ...candidate,
+    fingerprint: createHash("sha256").update(candidate.identity).digest("hex").slice(0, 12),
+  });
+  const frontierCandidates = result.frontierCandidates.map(withResearchFingerprint);
+  const poolCandidates = result.poolCandidates.map(withResearchFingerprint);
+  const representatives = result.representatives.map(withResearchFingerprint);
   return {
+    ...result,
     representatives,
-    poolCandidates: pool.candidates,
-    frontierCandidates: frontier,
+    poolCandidates,
+    frontierCandidates,
     summary: {
-      mode: featureMode === "topology-aware" ? "structural-topology-frontier-farthest-point" : "structural-frontier-farthest-point",
-      evaluated: pool.gridSearch.evaluated,
-      poolCount: pool.candidates.length,
-      frontierCount: frontier.length,
-      representativeCount: representatives.length,
-      limit,
-      familyCounts,
-      featureNames: featureMode === "topology-aware"
-        ? ["structuralCrossings", "cheapScore", "minNodeSeparation", "meanNodeSeparation", "medianEdge", "maxEdge", "width", "height", "aspect", "crossing-relation-pair-signature"]
-        : ["structuralCrossings", "cheapScore", "minNodeSeparation", "meanNodeSeparation", "medianEdge", "maxEdge", "width", "height", "aspect"],
-      featureMode,
-      orderMode: pool.orderSearch.mode,
-      gridMode: pool.gridSearch.mode,
-      gridZeroCrossingFinalistCount: pool.gridSearch.finalists.filter((candidate) => candidate.straightCrossings === 0).length,
-      representativeFamilies: representatives.map(({ family }) => family),
-      frontierSourceFingerprints: frontier.map(({ fingerprint }) => fingerprint),
+      ...result.summary,
+      frontierSourceFingerprints: frontierCandidates.map(({ fingerprint }) => fingerprint),
+      candidateGenerationMs: Math.round((performance.now() - startedAt) * 100) / 100,
     },
   };
 }
@@ -1121,7 +903,7 @@ function progressiveStructuralFrontier(limit) {
   const initialGroup = orderedGroups[0]?.candidates ?? [];
   const selected = initialGroup.length >= limit
     ? initialGroup.slice(0, limit)
-    : [...initialGroup, ...selectStructuralRepresentatives(
+    : [...initialGroup, ...selectFrontierRepresentatives(
       base.frontierCandidates.filter((candidate) => !initialGroup.includes(candidate)),
       orderedGroups.slice(1).flatMap((group) => group.candidates),
       Math.max(0, limit - initialGroup.length),
@@ -1159,7 +941,7 @@ function refineForPresentation(finalists, ids, seedsPerFinalist = 3, rounds = 90
   const refined = []; let evaluated = 0;
   for (let finalistIndex = 0; finalistIndex < finalists.length; finalistIndex += 1) {
     for (let seed = 0; seed < seedsPerFinalist; seed += 1) {
-      const random = seededRandom(26003 + finalistIndex * 131 + seed);
+      const random = seededFrontierRandom(26003 + finalistIndex * 131 + seed);
       let current = clonePositions(finalists[finalistIndex].positions);
       let currentMetrics = presentationMetrics(current); evaluated += 1;
       let currentScore = fullPresentationScore(currentMetrics);
@@ -1817,10 +1599,10 @@ function productionSimplificationSearch(mode) {
       structuralCrossings: straightCrossingsForPositions(positions),
       positions,
       metrics,
-      eligible: metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0,
+      eligible: isAutomaticLayoutPresentationEligible(metrics),
     };
   });
-  candidates.sort((left, right) => Number(right.eligible) - Number(left.eligible) || left.metrics.score - right.metrics.score || left.family.localeCompare(right.family));
+  candidates.sort(compareAutomaticLayoutProposals);
   const floatSelected = candidates[0] ?? null;
   const finalCanonicalization = floatSelected && (relaxationFinalCanonicalizationMode === "audit" || relaxationFinalCanonicalizationMode === "round-once")
     ? {
@@ -1936,7 +1718,8 @@ function genericSearch() {
   if (simplified) return simplified;
   const ids = graph.nodes.map((node) => node.id).sort(compareId);
   startProfileStage("stage1-structural");
-  const orderSearch = ids.length <= 9 ? exactCircularOrders(ids) : heuristicCircularOrders(ids);
+  const placementEdges = edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId }));
+  const orderSearch = ids.length <= 9 ? exactCircularOrders(ids, placementEdges) : heuristicCircularOrders(ids, placementEdges);
   const variants = [
     { aspect: 1.18, scale: 1, phase: -Math.PI / 2 },
     { aspect: 1.30, scale: 1, phase: -Math.PI / 2 },
@@ -1949,7 +1732,7 @@ function genericSearch() {
     const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;
     candidates.push({ family: "circular-order", order: orderResult.order, chordCrossings: orderResult.chordCrossings, structuralCrossings: orderResult.chordCrossings, variant, positions, metrics, eligible });
   }
-  const gridSearch = genericGridSearch(ids);
+  const gridSearch = genericGridSearch(ids, placementEdges);
   for (const finalist of gridSearch.finalists) {
     const metrics = presentationMetrics(finalist.positions);
     const eligible = metrics.crossings === 0 && metrics.overlapPairs === 0 && metrics.labelRouteHits === 0 && metrics.labelOverlap === 0 && metrics.labelNear20 === 0;

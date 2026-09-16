@@ -1,0 +1,59 @@
+{
+  "checkpoint": "frontier-automatic-display-app-async-adapter-lifecycle-staging1",
+  "date": "2026-09-16",
+  "sourceRevision": "942f3f60dda50594d09f48d7c76ffa9bfae56544",
+  "workingTreeNote": "Evidence was produced with the checkpoint changes in the working tree; unrelated pre-existing changes were preserved.",
+  "classification": "STAGED / LIFECYCLE CONTRACT PROVEN / PRODUCTION DEFAULT HOLD",
+  "staging": {
+    "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=lighthouse&acceptance-locale=en&initial-layout=frontier-12-worker&diagnostic=timing",
+    "enablement": "DEV-only initial-layout=frontier-12-worker",
+    "normalProvider": "settleInitialPlacement",
+    "productionDefaultChanged": false
+  },
+  "authority": {
+    "coordinateGate": "Frontier runs only when storedPositionCount is zero and the graph is non-empty.",
+    "frontier": "Worker-side Frontier-12 candidate generation plus the existing pure Product proposal evaluation/selection.",
+    "mainThread": "operation identity, generation and snapshot checks; render-only derived-position adoption; fallback and session authority.",
+    "dataset": "Dataset, stored/authored Coordinates, persistence and dirty-state remain outside the operation.",
+    "productPresentation": "Routing, Relation-label, Node-label and Self-loop presentation remain Product-owned."
+  },
+  "lifecycle": {
+    "snapshot": "immutable cloned WorkerGraph plus explicit config, operationId, generation and semantic Dataset/graph identity",
+    "success": "complete, finite selected positions matching the current operation are adopted into render-only positions and viewport fit",
+    "failure": "partial output is not adopted; the already-published settleInitialPlacement result remains the bounded fallback",
+    "cancel": "termination is performed and the result is not published",
+    "stale": "dataset replacement, dataset/manual mutation, workspace exit, unmount and operation replacement invalidate delivery authority",
+    "lateResult": "late messages cannot reach the cleared handler or pass the App generation/identity guard",
+    "viewport": "viewport state is not included in semantic identity and is not a Dataset mutation"
+  },
+  "automatedEvidence": {
+    "test": "tests/frontier-automatic-display-adapter.test.ts",
+    "cases": [
+      "stored and mixed coordinate gate",
+      "validated current success and complete positions",
+      "invalidation termination and late completion rejection",
+      "cancel-before-completion with no result",
+      "structured Worker failure with bounded fallback"
+    ],
+    "status": "PASS"
+  },
+  "browserEvidence": {
+    "fixture": "Lighthouse EN",
+    "operation": "DEV App Dataset-open lifecycle",
+    "observed": {
+      "graphNodes": 10,
+      "graphRelations": 14,
+      "frontierAsyncState": "completed",
+      "initialPlacementTiming": "current/current-product fallback was published before the async result",
+      "consoleErrors": 0
+    },
+    "reproducible": "Start npm run dev, open the staging URL above, and inspect [data-frontier-async-state] for completed."
+  },
+  "notImplemented": [
+    "production default switch",
+    "visible Cancel UI",
+    "transient preview or fixed timeout",
+    "normal App provider adoption",
+    "Worker/cooperative architecture reselection"
+  ]
+}

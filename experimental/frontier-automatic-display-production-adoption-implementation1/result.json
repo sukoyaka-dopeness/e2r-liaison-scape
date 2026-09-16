@@ -1,0 +1,85 @@
+{
+  "checkpoint": "frontier-automatic-display-production-adoption-implementation1",
+  "date": "2026-09-16",
+  "sourceRevision": "942f3f60dda50594d09f48d7c76ffa9bfae56544",
+  "workingTreeNote": "Evidence was produced with checkpoint changes in the working tree; unrelated pre-existing changes were preserved.",
+  "classification": "PRODUCTION NORMAL-PATH WIRED / BOUNDED FALLBACK PROVEN / PRODUCTION ACCEPTANCE PENDING",
+  "normalPath": {
+    "coordinateLess": "The normal Dataset-open path starts the existing Frontier/Product Worker operation without a DEV query parameter.",
+    "fallback": "settleInitialPlacement is prepared and published first as the usable fallback graph.",
+    "success": "Only a current complete finite Worker result is adopted into render-only positions and viewport fit.",
+    "diagnosticAlias": "DEV initial-layout=frontier-12-worker remains a reproducible explicit seam, but is no longer required for normal operation.",
+    "productionDefaultChanged": true,
+    "normalProvider": "Frontier async operation with settleInitialPlacement fallback"
+  },
+  "authority": {
+    "frontier": "Frontier-12 candidate generation only, using the existing shared implementation.",
+    "product": "Product-owned presentation evaluation/selection, routing, Relation-label, Node-label, and Self-loop semantics remain in the Worker Product computation.",
+    "mainThread": "Operation identity, generation/snapshot/result validation, render-only adoption, viewport fit, and lifecycle invalidation.",
+    "coordinates": "Stored and mixed/partial Coordinates bypass Frontier and retain existing Product authority.",
+    "dataset": "Dataset, stored/authored Coordinates, persistence, dirty-state, Save Coordinates, and manual placement remain unchanged."
+  },
+  "lifecycle": {
+    "pending": "Status, Cancel, and graph-only provisional treatment are active only while the operation is current.",
+    "cancel": "Cancel terminates the Worker and leaves the already published fallback; no result is adopted.",
+    "failure": "Worker error, Worker creation error, invalid result, incomplete result, or non-finite positions resolve to bounded fallback.",
+    "stale": "Replacement, mutation, locale change, workspace exit, unmount, and operation replacement invalidate delivery; stale terminal UI is cleared.",
+    "success": "The success affordance is cleared; no success banner is shown."
+  },
+  "browserEvidence": [
+    {
+      "fixture": "Lighthouse EN coordinate-less normal URL",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=lighthouse&acceptance-locale=en&diagnostic=timing",
+      "observed": {
+        "devInitialLayoutParameter": false,
+        "frontierAsyncStateAtPending": "started",
+        "pendingStatus": "Calculating automatic placement…",
+        "cancel": true,
+        "provisionalGraph": true,
+        "terminalState": "completed",
+        "terminalStatusPresent": false,
+        "terminalProvisionalGraph": false,
+        "consoleErrors": 0
+      }
+    },
+    {
+      "fixture": "Normal URL smoke after completion",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=lighthouse&acceptance-locale=en",
+      "observed": "Graph rendered without the explicit Frontier query parameter; no console errors."
+    }
+  ],
+  "automatedEvidence": {
+    "focusedTest": "tests/frontier-automatic-display-adapter.test.ts plus tests/frontier-product-worker-execution-proof.test.ts",
+    "status": "PASS",
+    "count": "9/9",
+    "coverage": [
+      "stored/mixed coordinate bypass",
+      "current complete finite success and render-only adoption",
+      "cancel and stale late-result rejection",
+      "Worker failure and Worker creation failure fallback",
+      "DEV seam retained, normal production policy enabled, pending UI, status/toolbar separation, and idle cleanup"
+    ]
+  },
+  "provenance": {
+    "implementation": "src/frontier-automatic-display-adapter.ts -> experimental/frontier-product-worker-execution-proof1/worker.ts -> shared current Frontier/Product computation",
+    "productionAppBoundary": "src/App.tsx acceptDataset orchestration only; no solver copy or Product authority move",
+    "sourceRevision": "942f3f60dda50594d09f48d7c76ffa9bfae56544",
+    "artifact": "experimental/frontier-automatic-display-production-adoption-implementation1/result.json"
+  },
+  "safety": {
+    "solverRetuned": false,
+    "routingOrLabelAuthorityChanged": false,
+    "storedMixedAuthorityChanged": false,
+    "datasetPersistenceChanged": false,
+    "dirtyStateChanged": false,
+    "fixedTimeoutAdded": false,
+    "partialGeometryPreviewAdded": false,
+    "workerArchitectureReselected": false,
+    "humanReviewReopened": false
+  },
+  "remaining": {
+    "nextCheckpoint": "Production Acceptance / Closure",
+    "blocker": "Formal production acceptance must confirm the normal-path policy across the existing acceptance matrix and record rollout/default disposition; no source-level lifecycle blocker remains in this bounded implementation.",
+    "qualityBoundary": "Existing Frontier Human Review QUALIFIED residuals and dense runtime/congestion boundaries remain unchanged."
+  }
+}

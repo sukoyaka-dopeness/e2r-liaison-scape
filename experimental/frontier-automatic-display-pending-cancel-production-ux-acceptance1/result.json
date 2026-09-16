@@ -1,0 +1,79 @@
+{
+  "checkpoint": "frontier-automatic-display-pending-cancel-production-ux-acceptance1",
+  "date": "2026-09-16",
+  "sourceRevision": "942f3f60dda50594d09f48d7c76ffa9bfae56544",
+  "workingTreeNote": "Evidence was produced with checkpoint changes in the working tree; unrelated pre-existing changes were preserved.",
+  "classification": "PENDING + CANCEL UX ACCEPTED FOR PRODUCTION POLICY / DEFAULT SWITCH DEFERRED",
+  "decision": {
+    "pendingStatus": "Show while a current Frontier operation is active.",
+    "cancel": "Show while pending; cancellation means keep the already usable current Product layout.",
+    "veryFastCompletion": "No debounce or fixed display delay is adopted. The status is lifecycle-driven and only exists while the operation is active.",
+    "provisionalStyling": "Adopt graph-only opacity/saturation treatment while pending; do not style application chrome or introduce partial geometry.",
+    "terminalStatus": "Keep cancelled/fallback explanation until the next operation or Dataset acceptance; clear stale state during invalidation/replacement.",
+    "successStatus": "No extra success banner; remove pending treatment and return to the ordinary graph presentation after render-only adoption."
+  },
+  "browserMatrix": [
+    {
+      "fixture": "Lighthouse EN",
+      "role": "fast/ordinary control",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=lighthouse&acceptance-locale=en&initial-layout=frontier-12-worker&diagnostic=timing",
+      "observed": "Pending was visible at initial, 120ms, and 620ms observations; later state was completed with no status and graph opacity 1."
+    },
+    {
+      "fixture": "Apollo EN",
+      "role": "ordinary label/topology control",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=apollo-11&acceptance-locale=en&initial-layout=frontier-12-worker",
+      "observed": "Pending status and Cancel were visually understandable; graph-only provisional treatment was visible; status and toolbar had no overlap after the bounded layout fix; console errors 0."
+    },
+    {
+      "fixture": "Titanic EN",
+      "role": "slower/label-heavy control",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=titanic&acceptance-locale=en&initial-layout=frontier-12-worker",
+      "observed": "Fallback graph and application chrome remained usable while pending; visual review caught and then verified removal of the status/viewport-toolbar overlap; console errors 0."
+    },
+    {
+      "fixture": "Ashen Crown JA",
+      "role": "locale/topology control",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=ashen-crown&acceptance-locale=ja&initial-layout=frontier-12-worker",
+      "observed": "Pending lifecycle completed with Japanese status strings available and console errors 0."
+    }
+  ],
+  "timingObservation": {
+    "runs": [
+      { "fixture": "Lighthouse EN", "navigationToCompletedMs": 1239 },
+      { "fixture": "Apollo EN", "navigationToCompletedMs": 969 },
+      { "fixture": "Titanic EN", "navigationToCompletedMs": 1132 },
+      { "fixture": "Ashen Crown JA", "navigationToCompletedMs": 1085 }
+    ],
+    "interpretation": "These browser measurements include fixture navigation/open overhead, so they are not solver runtime. All four controls exposed a visible pending state long enough to inspect; no evidence required a debounce."
+  },
+  "accessibilityAndViewport": {
+    "pendingStatus": "role=status with aria-live=polite",
+    "cancel": "native enabled button, keyboard reachable, focus-visible rules remain global and unchanged",
+    "chrome": "Add Entity and other application controls remained enabled where normally enabled; no global disabled state",
+    "narrowViewport": "Status is responsive and wraps below 720px; existing mobile viewport controls remain the Product path. A browser viewport override was not available in this connected browser, so this point is source-backed responsive evidence rather than a narrow screenshot.",
+    "toolbarSeparation": "Status is outside graph-section flow; pending screenshot and DOM rectangles show status bottom before viewport toolbar top."
+  },
+  "automatedEvidence": {
+    "focusedTest": "tests/frontier-automatic-display-adapter.test.ts",
+    "status": "PASS",
+    "coverage": [
+      "coordinate authority gate",
+      "complete finite success and render-only adoption",
+      "invalidation/stale late-result rejection",
+      "cancel-before-completion with no published result",
+      "failure fallback",
+      "DEV-only seam, status/cancel/provisional styling, status/toolbar separation, and idle cleanup"
+    ]
+  },
+  "safety": {
+    "productionDefaultChanged": false,
+    "normalProvider": "settleInitialPlacement",
+    "solverChanged": false,
+    "workerArchitectureChanged": false,
+    "datasetChanged": false,
+    "persistenceOrDirtyStateChanged": false,
+    "partialGeometryPreviewAdded": false
+  },
+  "adoptionBoundary": "The pending + Cancel UX policy is accepted as the natural production policy, but wiring Frontier into the normal coordinate-less provider and changing production default remain a separate checkpoint. Human Review and provider selection are not reopened."
+}

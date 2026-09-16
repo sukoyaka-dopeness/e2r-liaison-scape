@@ -37,6 +37,7 @@ import { deriveActualProductInitialLayout, type ActualProductInitialLayoutOptIn 
 import { acceptanceFixturePath, acceptanceLayoutPath, parseAcceptanceFixture, type AcceptanceLayoutArm } from "./acceptance-fixture-access";
 import { readAcceptancePayload, storeAcceptancePayload } from "./acceptance-payload-reopen";
 import { validateOperationLocalProductPreview, type OperationLocalProductPreview } from "./operation-local-product-preview";
+import { createBrowserFrontierAutomaticDisplayWorker, createFrontierAutomaticDisplaySnapshot, FrontierAutomaticDisplayAdapter, type FrontierAutomaticDisplayOutcome } from "./frontier-automatic-display-adapter";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
@@ -115,7 +116,13 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const initialLayoutOptIn = initialLayoutParam === "coarse-objective-prototype-v1"
     ? "coarse-objective-prototype-v1" as ActualProductInitialLayoutOptIn
     : undefined;
-  const productInitialLayoutArm: AcceptanceLayoutArm | null = import.meta.env.DEV && initialLayoutParam === "global-placement3" ? "global-placement3" : null;
+  const productInitialLayoutArm: AcceptanceLayoutArm | null = import.meta.env.DEV
+    && (initialLayoutParam === "global-placement3" || initialLayoutParam === "frontier-12")
+    ? initialLayoutParam
+    : null;
+  const frontierAsyncProductionEnabled = true;
+  const frontierAsyncStagingEnabled = import.meta.env.DEV && initialLayoutParam === "frontier-12-worker";
+  const frontierAsyncEnabled = frontierAsyncProductionEnabled || frontierAsyncStagingEnabled;
   const [datasetOpenTimingEvents, setDatasetOpenTimingEvents] = useState<DatasetOpenTimingSample[]>([]);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
@@ -132,8 +139,12 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const [viewportToolbarCollapsed, setViewportToolbarCollapsed] = useState(false);
   const [viewportToolbarPosition, setViewportToolbarPosition] = useState<{ x: number; y: number } | null>(null);
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [frontierAsyncState, setFrontierAsyncState] = useState<"idle" | "started" | "completed" | "fallback" | "cancelled" | "stale">("idle");
   const [activeOperationPreview, setActiveOperationPreview] = useState<OperationLocalProductPreview | null>(null);
   const productInitialLayoutOverrideRef = useRef<ActualProductDiagnosticInitialLayout | null>(null);
+  const frontierAdapterRef = useRef<FrontierAutomaticDisplayAdapter | null>(null);
+  const frontierGenerationRef = useRef(0);
+  const frontierSessionIdentityRef = useRef<string | null>(null);
   const [liveDragPosition, setLiveDragPosition] = useState<{ id: string; position: { x: number; y: number } } | null>(null);
   const [presentationRevision, setPresentationRevision] = useState(0);
   const [coordinatesDirty, setCoordinatesDirty] = useState(false);
@@ -196,6 +207,16 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const datasetLoadingShownAtRef = useRef<number | null>(null);
   const datasetLoadingAwaitingStableRef = useRef(false);
 
+  function invalidateFrontierOperation(reason: string) {
+    frontierAdapterRef.current?.invalidate(reason);
+    setFrontierAsyncState("idle");
+  }
+
+  function cancelFrontierAutomaticDisplay() {
+    frontierSessionIdentityRef.current = null;
+    frontierAdapterRef.current?.cancel("user-cancelled");
+  }
+
   function showDatasetLoading() {
     if (!datasetLoadingRef.current || datasetLoadingVisibleRef.current) return;
     if (datasetLoadingTimerRef.current !== null) window.clearTimeout(datasetLoadingTimerRef.current);
@@ -245,6 +266,11 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
 
   useEffect(() => () => {
     if (datasetLoadingTimerRef.current !== null) window.clearTimeout(datasetLoadingTimerRef.current);
+  }, []);
+
+  useEffect(() => () => {
+    frontierSessionIdentityRef.current = null;
+    frontierAdapterRef.current?.dispose();
   }, []);
 
   function beginDatasetOpenTiming(source: DatasetReplacementSource) {
@@ -356,6 +382,12 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   useEffect(() => {
     saveLocale(window.localStorage, locale);
     applyLocale(locale, document);
+  }, [locale]);
+
+  useEffect(() => {
+    if (!frontierAdapterRef.current) return;
+    frontierSessionIdentityRef.current = null;
+    invalidateFrontierOperation("locale-change");
   }, [locale]);
 
   useEffect(() => {
@@ -488,6 +520,15 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const previewExpected = operationLocalPreview ? { operationId: operationLocalPreview.operationId, generation: operationLocalPreview.generation, snapshotIdentity: operationLocalPreview.snapshotIdentity, entityIds: graph.nodes.map(({ id }) => id) } : null;
   const validatedPreview = import.meta.env.DEV && previewExpected && validateOperationLocalProductPreview(operationLocalPreview, previewExpected) ? operationLocalPreview : null;
   const renderPositions = activeOperationPreview?.positions ?? positions;
+  const readOnlyPreview = activeOperationPreview !== null;
+  const frontierAsyncPending = frontierAsyncEnabled && frontierAsyncState === "started";
+  const frontierAsyncStatusText = frontierAsyncState === "started"
+    ? translate(locale, "automaticPlacementPending")
+      : frontierAsyncState === "cancelled"
+        ? translate(locale, "automaticPlacementCancelled")
+        : frontierAsyncState === "fallback"
+          ? translate(locale, "automaticPlacementFallback")
+          : null;
   useEffect(() => { setActiveOperationPreview(validatedPreview); }, [validatedPreview?.operationId, validatedPreview?.generation, validatedPreview?.snapshotIdentity, validatedPreview?.candidateFingerprint]);
   const nodeMap = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
   const relationMap = useMemo(() => new Map(dataset?.relations.map((relation) => [relation.id, relation]) ?? []), [dataset]);
@@ -1019,6 +1060,10 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }, [dataset, locale, viewportToolbarCollapsed, viewportToolbarPosition]);
 
   function acceptDataset(nextDataset: Dataset, source: DatasetReplacementSource | null = pendingDatasetReplacementSource) {
+    invalidateFrontierOperation("dataset-replacement");
+    frontierGenerationRef.current += 1;
+    const frontierGeneration = frontierGenerationRef.current;
+    frontierSessionIdentityRef.current = null;
     if (source !== "handoff") {
       const nextHash = clearDatasetHandoffFragment(window.location.hash);
       window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}${nextHash}`);
@@ -1052,6 +1097,14 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     const graphStartedAt = preparationStartedAt;
     const openedGraph = buildEntityGraph(nextDataset);
     const graphCompletedAt = performance.now();
+    const frontierSnapshotIdentity = JSON.stringify({
+      dataset: serializeDataset(nextDataset),
+      graph: {
+        nodes: openedGraph.nodes.map(({ id, label, description }) => ({ id, label, description })),
+        edges: openedGraph.edges.map(({ id, sourceId, targetId, parallelIndex, parallelCount }) => ({ id, sourceId, targetId, parallelIndex, parallelCount })),
+      },
+    });
+    frontierSessionIdentityRef.current = frontierSnapshotIdentity;
     const productOverride = productInitialLayoutOverrideRef.current;
     const activeInitialLayoutOverride = initialLayoutOverride ?? productOverride;
     const overrideIds = activeInitialLayoutOverride ? Object.keys(activeInitialLayoutOverride.positions) : [];
@@ -1111,6 +1164,33 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     setPan(fittedView.pan);
     setScale(fittedView.scale);
     enterWorkspace();
+    if (frontierAsyncEnabled && !diagnosticOverride && Object.keys(storedPositions).length === 0) {
+      const relationLabels = new Map(nextDataset.relations.map((relation) => [relation.id, typeof relation.name === "string" ? relation.name : ""]));
+      const snapshotResult = createFrontierAutomaticDisplaySnapshot({
+        operationId: "frontier-automatic-display-" + frontierGeneration,
+        generation: frontierGeneration,
+        snapshotIdentity: frontierSnapshotIdentity,
+        graph: {
+          nodes: openedGraph.nodes.map(({ id, label, description, x, y }) => ({ id, label, description, x, y })),
+          edges: openedGraph.edges.map((edge) => ({ ...edge, label: relationLabels.get(edge.id) ?? "" })),
+        },
+        storedPositionCount: Object.keys(storedPositions).length,
+      });
+      if (snapshotResult.snapshot) {
+        const adapter = frontierAdapterRef.current ?? (frontierAdapterRef.current = new FrontierAutomaticDisplayAdapter({
+          createWorker: createBrowserFrontierAutomaticDisplayWorker,
+          onState: setFrontierAsyncState,
+        }));
+        void adapter.start(snapshotResult.snapshot).then((outcome: FrontierAutomaticDisplayOutcome) => {
+          if (outcome.status !== "success") return;
+          if (frontierGenerationRef.current !== frontierGeneration || frontierSessionIdentityRef.current !== outcome.snapshotIdentity) return;
+          const nextView = fitGraphView(openedGraph.nodes.map((node) => outcome.positions[node.id] ?? node), 800, 500);
+          setPositions(outcome.positions);
+          setPan(nextView.pan);
+          setScale(nextView.scale);
+        });
+      }
+    }
   }
 
   function refreshDatasetBaseline() {
@@ -1120,6 +1200,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }
 
   function updateDataset(nextDataset: Dataset) {
+    invalidateFrontierOperation("dataset-mutation");
+    frontierSessionIdentityRef.current = null;
     setDataset(nextDataset);
     setDatasetModified(isDatasetModified(cleanDatasetBaseline.current ?? nextDataset, nextDataset));
   }
@@ -1273,6 +1355,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   function goHomeFromWorkspace(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
     if (view === "home") return;
+    frontierSessionIdentityRef.current = null;
+    frontierAdapterRef.current?.cancel("workspace-exit");
     setActiveOperationPreview(null);
     setView("home");
     window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href);
@@ -1385,6 +1469,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }
 
   function startRelationCreation(event: React.PointerEvent<SVGCircleElement>, sourceId: string) {
+    if (readOnlyPreview) return;
     if (event.pointerType !== "mouse" || event.button !== 0) return;
     event.preventDefault();
     event.stopPropagation();
@@ -1400,6 +1485,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     longPressRef.current = null;
   }
   function startLongPress(event: React.PointerEvent<SVGSVGElement>) {
+    if (readOnlyPreview) return;
     if (event.pointerType === "mouse") return;
     suppressNextContextMenuRef.current = false;
     if (longPressRef.current || pointersRef.current.size > 0) {
@@ -1493,6 +1579,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     setViewportToolbarCollapsed((value) => !value);
   }
   function applyEdgeCurveDrag(id: string, dx: number, dy: number) {
+    invalidateFrontierOperation("manual-route-mutation");
     const edge = graph.edges.find(({ id: edgeId }) => edgeId === id);
     if (!edge) return;
     if (edge.sourceId === edge.targetId) {
@@ -1558,12 +1645,14 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       if (moved) { dragRef.current = { ...dragRef.current!, kind: "edge-curve" }; applyOriginAnchoredEdgeCurveDrag(dragRef.current!, currentPoint); }
     }
     else if (drag.kind === "node" && drag.id && moved && drag.startNodePosition && drag.startGraphPoint) {
+      invalidateFrontierOperation("manual-node-mutation");
       publishDragPointerProcessing({ nodeId: drag.id, eventTimeStamp: event.timeStamp, processedAt: performance.now(), clientX: event.clientX, clientY: event.clientY });
       setCoordinatesDirty(true);
       adoptedCoordinateEntityIdsRef.current.add(drag.id!);
       queueNodeDragPosition(drag.id, { x: drag.startNodePosition.x + currentPoint.x - drag.startGraphPoint.x, y: drag.startNodePosition.y + currentPoint.y - drag.startGraphPoint.y });
     }
     else if (drag.kind === "node-label" && drag.id && moved) {
+      invalidateFrontierOperation("manual-node-label-mutation");
       const node = nodeMap.get(drag.id);
       const current = nodeLabelPlacements.get(drag.id);
       if (node && current) {
@@ -1575,6 +1664,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       }
     }
     else if (drag.kind === "edge-label" && drag.id && moved) {
+      invalidateFrontierOperation("manual-relation-label-mutation");
       const edge = routedEdges.find(({ id }) => id === drag.id);
       const current = edgeLabelPlacements.get(drag.id);
       if (edge && current) {
@@ -1591,6 +1681,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     event: React.PointerEvent<SVGElement>,
     drag: { kind: "canvas" | "node" | "edge" | "node-label" | "edge-label" | "edge-curve" | "relation-create"; id?: string },
   ) {
+    if (readOnlyPreview && drag.kind !== "canvas") return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     event.preventDefault();
     setHoveredPlacement(null);
@@ -1741,6 +1832,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
 
   function saveCoordinates() {
     if (!dataset || !coordinatesDirty) return;
+    invalidateFrontierOperation("coordinates-saved");
     const storedPositions = getStoredCoordinates(dataset);
     const entityIds = new Set(dataset.entities.map(({ id }) => id));
     const persistablePositions = buildPersistableCoordinatePositions({ storedPositions, currentPositions: positions, adoptedEntityIds: adoptedCoordinateEntityIdsRef.current, entityIds });
@@ -1817,6 +1909,10 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }
 
   function openCanvasContextMenu(event: React.MouseEvent<SVGSVGElement>) {
+    if (readOnlyPreview) {
+      event.preventDefault();
+      return;
+    }
     const target = event.target;
     if (target instanceof Element && target.closest(".node, .edge-group, .edge-label-group")) return;
     event.preventDefault();
@@ -1826,6 +1922,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
 
   function applyAutoLayout() {
     if (!dataset) return;
+    invalidateFrontierOperation("another-auto-layout");
     const result = solveAutoLayout({ entities: graph.nodes.map(({ id }) => ({ id })), relations: graph.edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })) });
     const changed = graph.nodes.some((node) => { const current = positions[node.id] ?? node; const next = result[node.id]; return next !== undefined && (current.x !== next.x || current.y !== next.y); });
     if (!changed) { setAutoLayoutConfirmationOpen(false); return; }
@@ -1901,6 +1998,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   function openObjectContextFromPointer(kind: "entity" | "node-label" | "relation-path" | "relation-label", id: string, event: React.MouseEvent<SVGGElement>) {
     event.preventDefault();
     event.stopPropagation();
+    if (readOnlyPreview) return;
     if (suppressNextContextMenuRef.current) { suppressNextContextMenuRef.current = false; return; }
     openObjectContextMenu(kind, id, event.clientX, event.clientY);
   }
@@ -1958,6 +2056,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
 
   function resetContextMenuPlacement() {
     if (!contextMenu) return;
+    invalidateFrontierOperation("manual-presentation-reset");
     if (contextMenu.kind === "node-label") {
       manualNodeLabelOffsets.current.delete(contextMenu.entityId);
       setManualLabelRevision((value) => value + 1);
@@ -2159,8 +2258,12 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
           ))}
         </ul>
       )}
+      {frontierAsyncStatusText && <div className={"frontier-async-status" + (frontierAsyncPending ? " frontier-async-status--pending" : "")} role="status" aria-live="polite">
+        <span>{frontierAsyncStatusText}</span>
+        {frontierAsyncPending && <button type="button" onClick={cancelFrontierAutomaticDisplay}>{translate(locale, "cancelAutomaticPlacement")}</button>}
+      </div>}
       {dataset && (
-        <section className="graph-section">
+        <section className="graph-section" data-frontier-async-state={frontierAsyncEnabled ? frontierAsyncState : undefined}>
           <h2>Graph</h2>
           {activeOperationPreview && <aside className="status-message" role="status" data-hq-preview-fingerprint={activeOperationPreview.candidateFingerprint}>
             HQ candidate preview · operation {activeOperationPreview.operationId} · read-only
@@ -2178,11 +2281,11 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
           </div>
           <svg
             ref={graphRef}
-            className="graph"
+            className={"graph" + (frontierAsyncPending ? " graph--frontier-provisional" : "")}
             viewBox="0 0 800 500"
             role="img"
             aria-label={translate(locale, "entityRelationshipGraph")}
-            style={activeOperationPreview ? { pointerEvents: "none" } : undefined}
+            style={{ touchAction: "none" }}
             onPointerDown={(event) => { startGraphPointer(event, { kind: "canvas" }); }}
             onPointerDownCapture={startLongPress}
             onPointerMove={onCanvasPointerMove}
@@ -2210,6 +2313,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
                    onContextMenu={(event) => openObjectContextFromPointer("relation-path", edge.id, event)}
                   onPointerDown={(event) => {
                     event.stopPropagation();
+                    if (readOnlyPreview) return;
                     if (event.pointerType === "mouse" && event.button !== 0) return;
                     setEdgeLayerOrder((value) => bringToFront(value, edge.id));
                     if (event.button === 0) {
@@ -2255,7 +2359,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
                    transform={`translate(${manualRelationLabelAnchors.current.has(edge.id) ? 0 : (edgeLabelOffsets[edge.id]?.x ?? 0)} ${manualRelationLabelAnchors.current.has(edge.id) ? 0 : (edgeLabelOffsets[edge.id]?.y ?? 0)})`}
                    onContextMenuCapture={(event) => openObjectContextFromPointer("relation-label", edge.id, event)}
                    onContextMenu={(event) => openObjectContextFromPointer("relation-label", edge.id, event)}
-                  onPointerDown={(event) => { event.stopPropagation(); startGraphPointer(event, { kind: "edge-label", id: edge.id }); }}
+                  onPointerDown={(event) => { event.stopPropagation(); if (readOnlyPreview) return; startGraphPointer(event, { kind: "edge-label", id: edge.id }); }}
                 >
                   <g transform={`translate(${labelPoint.x} ${labelPoint.y})`}>
                     <rect
@@ -2295,7 +2399,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
                   ? nodeLabelConnectorEndpoint({ x: offsetX, y: offsetY }, labelGeometry)
                   : null;
                 return (
-                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}${selectedId === node.id || hoveredEntityId === node.id || relationCreationPreview?.sourceId === node.id ? " handle-visible" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onPointerEnter={(event) => { if (event.pointerType === "mouse") setHoveredEntityId(node.id); }} onPointerLeave={(event) => { if (event.pointerType === "mouse") setHoveredEntityId((value) => value === node.id ? null : value); }} onContextMenu={(event) => openObjectContextFromPointer("entity", node.id, event)} onPointerDown={(event) => { event.stopPropagation(); if (event.pointerType === "mouse" && event.button !== 0) return; setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
+                 <g key={node.id} className={`node ${selectedId === node.id ? "selected" : ""}${selectedId === node.id || hoveredEntityId === node.id || relationCreationPreview?.sourceId === node.id ? " handle-visible" : ""}`} data-entity-id={node.id} transform={`translate(${position.x} ${position.y})`} onPointerEnter={(event) => { if (event.pointerType === "mouse") setHoveredEntityId(node.id); }} onPointerLeave={(event) => { if (event.pointerType === "mouse") setHoveredEntityId((value) => value === node.id ? null : value); }} onContextMenu={(event) => openObjectContextFromPointer("entity", node.id, event)} onPointerDown={(event) => { event.stopPropagation(); if (readOnlyPreview) return; if (event.pointerType === "mouse" && event.button !== 0) return; setNodeLayerOrder((value) => bringToFront(value, node.id)); startGraphPointer(event, { kind: "node", id: node.id }); }}>
                   {showLabelConnector && nodeAttachment && connectorEndpoint && (
                     <line
                       className="node-label-connector"
@@ -2323,7 +2427,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
                       data-entity-id={node.id}
                        onContextMenuCapture={(event) => openObjectContextFromPointer("node-label", node.id, event)}
                        onContextMenu={(event) => openObjectContextFromPointer("node-label", node.id, event)}
-                      onPointerDown={(event) => { event.stopPropagation(); startGraphPointer(event, { kind: "node-label", id: node.id }); }}
+                      onPointerDown={(event) => { event.stopPropagation(); if (readOnlyPreview) return; startGraphPointer(event, { kind: "node-label", id: node.id }); }}
                     >
                       <rect
                         className="label-drag-hit"

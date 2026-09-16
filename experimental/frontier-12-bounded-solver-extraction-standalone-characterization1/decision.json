@@ -1,0 +1,16 @@
+{
+  "checkpoint": "frontier-12-bounded-solver-extraction-standalone-characterization1",
+  "date": "2026-09-16",
+  "classification": "BLOCKED: PRODUCT-AUTHORITATIVE SELECTION DEPENDENCY",
+  "extractedSolver": false,
+  "productionSolver": false,
+  "sourceRevision": "e7d6cbc",
+  "researchEntryPoint": "tools/generic-crossing-search.mjs",
+  "structuralEntryPoint": "productionAblationPlan(frontier-12) -> productionStructuralFrontier(12)",
+  "reviewedResultAlsoRequires": ["productionSimplificationSearch", "presentationMetrics", "Product-authoritative candidate eligibility/sorting", "final coordinate canonicalization"],
+  "pureCompletePositionBoundary": "not established without changing reviewed behavior or moving Product authority",
+  "standaloneSolverRuntimeMeasured": false,
+  "existingReplayEvidence": "10 file-backed + 3 dense synthetic exact family/fingerprint matches",
+  "productionDefaultChanged": false,
+  "nextDecision": "separate candidate-set solver from downstream Product-authoritative selector, or explicitly authorize a shared Product-evaluation contract"
+}

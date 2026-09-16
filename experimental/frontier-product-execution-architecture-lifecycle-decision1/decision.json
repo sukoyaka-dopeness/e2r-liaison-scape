@@ -1,0 +1,75 @@
+{
+  "checkpoint": "frontier-product-execution-architecture-lifecycle-decision1",
+  "date": "2026-09-16",
+  "classification": "ARCHITECTURE DECIDED / IMPLEMENTATION HOLD",
+  "scope": "Frontier-12 automatic-display proposal execution; current normal provider remains unchanged",
+  "currentNormalProvider": "settleInitialPlacement",
+  "humanReview": "QUALIFIED",
+  "authority": {
+    "frontier": ["normalized placement input", "deterministic bounded candidate generation", "candidate identity/order", "structural metadata", "structured failure"],
+    "product": ["presentation evaluation", "routing", "Relation-label", "Node-label", "Self-loop", "eligibility/ranking/final selection", "canonicalization", "viewport/rendering", "persistence/dirty-state"]
+  },
+  "runtimeEvidence": {
+    "source": "experimental/frontier-12-shared-candidate-generator-parity1/result.json",
+    "ordinaryFrontierGenerationMs": [86.75, 218.17],
+    "ordinaryProductPresentationMs": [163.3, 428.41],
+    "denseFrontierGenerationMs": [1223.21, 2228.42],
+    "denseProductPresentationMs": [1946.32, 3167.93],
+    "interpretation": "Both stages exceed a safe single synchronous main-thread assumption on difficult/dense controls; measurements exclude process startup but remain diagnostic rather than browser SLA."
+  },
+  "executionDecision": {
+    "recommended": "hybrid-worker-proposal-main-thread-commit",
+    "strength": "source-backed architecture decision; implementation not performed",
+    "frontierPlacement": "same Worker as Product proposal evaluation, after serializable snapshot/input transfer",
+    "productPlacement": "pure current-source presentation evaluation/ranking/final selection may run in that Worker; main thread retains snapshot validation, adoption decision, viewport/render, and session/Dataset mutation authority",
+    "mainThreadSynchronous": "retain only for current settleInitialPlacement fallback and small internal controls; not the Frontier automatic-display execution path",
+    "cooperativeMainThread": "not selected as the primary path because the shared Frontier generator is currently monolithic and has no natural resumable yield boundary; it would require a separate resumable refactor",
+    "workerIsolation": "recommended to protect browser responsiveness and support responsive termination for the combined pure proposal computation",
+    "sameWorkerMeaning": "yes for computation and transport efficiency; this does not move Product authority into Frontier or make Worker output self-adopting"
+  },
+  "workerBoundary": {
+    "serializableInput": "Dataset/graph identity and revision, coordinate authority, session positions, manual route/label/Self-loop snapshots, locale, algorithm version, and explicit budget/config",
+    "serializableOutput": "complete finite candidate/proposal and, if evaluated in Worker, complete Product presentation/metrics snapshot plus operation envelope",
+    "nonTransferableCurrentAppState": "App refs, React state setters, diagnostic callback sinks, DOM/SVG elements, and live viewport objects stay main-thread adapters; diagnostics are not required for the production message",
+    "verification": "main thread checks operationId/generation, semantic snapshot identity, complete finite positions/presentation, and current coordinate authority before publishing"
+  },
+  "lifecycleContract": {
+    "operationIdentity": "monotonic operationId plus generation token and immutable semantic snapshot identity",
+    "datasetReplacement": "invalidate the active operation before staging/replacing the Dataset; never accept a result from the replaced identity",
+    "repeatedOpen": "each open gets a new operation identity; prior work is cancelled/invalidated and cannot displace the newer operation",
+    "unmountRemount": "unmount requests cancellation and removes delivery authority; remount starts from a new snapshot/operation",
+    "staleResultRejection": "reject messages whose operationId, generation, Dataset/graph/revision, coordinate authority, manual presentation fingerprints, locale, or algorithm/budget identity differs",
+    "completionCancelRace": "cancellation wins when observed before delivery/commit; Worker termination is best effort and token validation remains authoritative",
+    "technicalFailure": "discard partial output, record failure, and use the existing bounded settleInitialPlacement fallback for coordinate-less initial display",
+    "fallbackThenLateResult": "fallback does not reopen the old operation; late output is stale and discarded",
+    "storedCoordinates": "do not run Frontier; stored/authored coordinates remain authoritative",
+    "mixedCoordinates": "retain existing mixed-completion authority; do not replace explicit positions with a Frontier proposal",
+    "publication": "no partial candidate, intermediate presentation, or failed result is published or persisted"
+  },
+  "cancel": {
+    "responsive": "not possible for current synchronous generator on the main thread; Worker termination provides the appropriate interruption primitive for the recommended path",
+    "requiredGuards": ["operation token", "cancel-requested state", "no partial publication", "late-message stale rejection"],
+    "workerTerminate": "useful for resource release but insufficient without lifecycle identity checks",
+    "cooperativeCancellation": "not required for the selected primary path; remains an alternative only if a future non-Worker fallback is intentionally supported"
+  },
+  "transientPreview": {
+    "naturalBoundary": "completed candidate set plus completed Product-selected presentation as an operation-local snapshot",
+    "intermediateGeometry": "not a safe natural publication point; the generator does not expose a semantically complete intermediate candidate",
+    "cost": "do not rerun high-cost Product presentation merely to animate progress",
+    "contract": "preview remains disposable and isolated from current session/Dataset until a separate explicit acceptance design"
+  },
+  "appResponsibility": ["coordinate authority gate", "immutable input snapshot", "operation start and token ownership", "Worker transport", "stale/failure/cancel handling", "fallback", "main-thread validation and render-only derived-position adoption"],
+  "proofEvidence": {
+    "artifact": "experimental/frontier-product-worker-execution-proof1/browser-result.json",
+    "status": "diagnostic actual Worker execution, parity, dense responsiveness, and cancellation established",
+    "productionImplementation": false
+  },
+  "remainingBlockers": ["promote the DEV-staged App async adapter through a separate production-integration checkpoint", "production failure/fallback acceptance matrix", "pending-operation visibility policy"],
+  "productionDefaultChanged": false,
+  "frontierProductionWired": false,
+  "workerImplemented": false,
+  "cancelUiImplemented": false,
+  "transientPreviewImplemented": false,
+  "providerReselected": false,
+  "nextCheckpoint": "evaluate production integration of the DEV-staged App async adapter; keep the normal provider/default unchanged until explicit adoption"
+}

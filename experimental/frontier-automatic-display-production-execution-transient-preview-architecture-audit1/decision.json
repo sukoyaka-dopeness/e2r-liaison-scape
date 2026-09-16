@@ -1,0 +1,26 @@
+{
+  "checkpoint": "frontier-automatic-display-production-execution-transient-preview-architecture-audit1",
+  "date": "2026-09-16",
+  "classification": "NOT READY FOR EXECUTION-ARCHITECTURE IMPLEMENTATION; SOLVER EXTRACTION IS THE PREREQUISITE",
+  "frontierProductionSolverPresent": false,
+  "frontierProductionWired": false,
+  "currentFrontierMode": "precomputed artifact fetched by DEV acceptance seam",
+  "currentNormalProvider": "current-product / settleInitialPlacement",
+  "currentInterruptibleBoundary": false,
+  "currentTransientPreviewState": false,
+  "architectureOptions": {
+    "mainThreadSynchronous": "current model; no responsive cancel for long work",
+    "mainThreadCooperative": "possible only after explicit solver phase/yield extraction",
+    "workerIsolation": "safer candidate if arbitrary/dense browser execution is required; not implemented or selected",
+    "precomputedArtifact": "valid review seam, not arbitrary-Dataset production provider"
+  },
+  "requiredBeforeImplementation": [
+    "serializable deterministic Frontier solver boundary",
+    "operation identity and stale-result rejection",
+    "success/technical-failure/user-cancel/budget outcome separation",
+    "partial snapshot discard and fallback contract",
+    "transient preview ownership contract"
+  ],
+  "productionDefaultChanged": false,
+  "implementationPerformed": false
+}

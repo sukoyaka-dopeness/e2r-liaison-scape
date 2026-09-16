@@ -4,8 +4,9 @@
 
 The central workspace knowledge base is `C:\Users\extra\E2R\ai-knowledge`.
 Before routing, layout, geometry, labels, placement, Dataset safety, or
-Handoff work, search its `INDEX.md` by topic. Apply entries only within their
-stated scope; hypotheses are not accepted decisions.
+Handoff work, search its `INDEX.md` by topic and read only matching entries.
+Apply entries only within their stated scope; hypotheses are not accepted
+decisions.
 
 LiaisonScape is an E2R application for relationship-oriented exploration and
 editing. Preserve compatibility with the sibling `../e2r-spec` repository and
@@ -53,3 +54,10 @@ Prefer exact-path staging such as:
 
 or precise hunk staging when required. Push, release, deployment, and
 publication always require explicit authorization.
+
+Choose source tracing, diagnostics, implementation shape, and validation scope
+from the task and diff. Preserve Product/Dataset authority, destructive-action
+boundaries, external-effect approvals, and stop at material architecture
+decisions. Research promoted toward production must retain replayable
+executable provenance from normalized input through current-source execution to
+the reviewed result.

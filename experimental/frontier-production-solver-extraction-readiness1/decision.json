@@ -1,0 +1,17 @@
+{
+  "checkpoint": "frontier-production-solver-extraction-readiness1",
+  "date": "2026-09-16",
+  "classification": "BLOCKED: FRONTIER LINEAGE NOT REPRODUCIBLE FROM CURRENT SOURCE",
+  "frontier12LineageIdentified": true,
+  "frontier12ReproducibleFromCurrentSource": false,
+  "frontierProductionSolverPresent": false,
+  "frontierProductionWired": false,
+  "currentNormalProvider": "current-product / settleInitialPlacement",
+  "currentAcceptanceMode": "precomputed artifact fetch and synchronous application",
+  "extractableContract": "normalized serializable placement input -> deterministic Frontier computation -> complete finite derived Node positions",
+  "parityGateRequired": ["Node ID set", "coordinate tolerance", "deterministic fingerprint", "artifact hash or normalized signature", "fixture binding"],
+  "productOwned": ["routing", "Parallel routing", "Relation-label", "Node-label", "Self-loop", "viewport", "manual placement", "stored Coordinates", "persistence", "dirty-state", "interaction"],
+  "implementationPerformed": false,
+  "productionDefaultChanged": false,
+  "nextCheckpoint": "recover/recreate current-source Frontier-12 implementation and standalone parity characterization before choosing execution architecture"
+}

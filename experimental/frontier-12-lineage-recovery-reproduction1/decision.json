@@ -1,0 +1,29 @@
+{
+  "checkpoint": "frontier-12-lineage-recovery-reproduction1",
+  "date": "2026-09-16",
+  "classification": "B. LINEAGE RECONSTRUCTABLE WITH BOUNDED EVIDENCE",
+  "sourceRevision": "e7d6cbc",
+  "orchestrationEntryPoint": "tools/frontier-actual-product-visual-sweep1.ts",
+  "solverEntryPoint": "tools/generic-crossing-search.mjs",
+  "artifact": "experimental/frontier-actual-product-visual-sweep1/result-summary.json",
+  "reproductionMethod": "node --experimental-strip-types tools/frontier-actual-product-visual-sweep1.ts",
+  "frontierEnvironment": {
+    "E2R_PRESENTATION_GEOMETRY_CACHE": "1",
+    "E2R_PRESENTATION_EXACT_CANDIDATE_REUSE": "1",
+    "E2R_RELAXATION_FINAL_CANONICALIZATION": "round-once",
+    "E2R_GLOBAL_PLACEMENT_ABLATION": "frontier-12",
+    "E2R_GLOBAL_PLACEMENT_MODE": "viewport-anisotropic",
+    "E2R_GLOBAL_SPACING_SCALE": ".88",
+    "E2R_GLOBAL_SPACING_Y": "1.12",
+    "E2R_GLOBAL_SPACING_STAGE2": "off"
+  },
+  "parity": {
+    "fileBackedRows": "10/10 exact selected family and fingerprint",
+    "denseSyntheticRows": "3/3 exact selected family and fingerprint",
+    "notIndependentlyReplayed": ["label-heavy-ja-10", "parallel-self-loop-control"]
+  },
+  "productionSolver": false,
+  "productionDefaultChanged": false,
+  "humanReviewDisposition": "QUALIFIED",
+  "nextEligibleCheckpoint": "standalone solver characterization or bounded extraction planning"
+}

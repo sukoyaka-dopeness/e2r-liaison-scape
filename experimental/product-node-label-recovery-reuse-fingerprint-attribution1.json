@@ -1,0 +1,922 @@
+{
+  "contract": "LIAISONSCAPE-PRODUCT-NODE-LABEL-RECOVERY-REUSE-FINGERPRINT-ATTRIBUTION-v1",
+  "diagnosticOnly": true,
+  "generatedAt": "2026-09-16T06:10:01.832Z",
+  "sourceParity": {
+    "appStoresAndReuses": [
+      "previousNodeLabelPlacements",
+      "previousEdgeLabelPlacements",
+      "previousAutomaticRoutes"
+    ],
+    "harnessPriorArm": [
+      "previousNodeLabelPlacements"
+    ],
+    "currentArm": "all-three-snapshots"
+  },
+  "rows": [
+    {
+      "fixture": "lighthouse",
+      "family": "lighthouse-ish",
+      "nodeOnly": {
+        "mode": "node-only",
+        "cleanStage": {
+          "routes": "6fe880eb",
+          "relationLabels": "60fb5ed7",
+          "nodeLabels": "238685a2",
+          "output": "0a6658d5",
+          "recovery": "c15f2c42"
+        },
+        "sequence": [
+          {
+            "routes": "e0231529",
+            "relationLabels": "5014557d",
+            "nodeLabels": "f9b0fd25",
+            "output": "09d16a0a",
+            "recovery": "1a38210c"
+          },
+          {
+            "routes": "06a85248",
+            "relationLabels": "5014557d",
+            "nodeLabels": "758c558e",
+            "output": "09d16a0a",
+            "recovery": "53ac31ae"
+          },
+          {
+            "routes": "06a85248",
+            "relationLabels": "5014557d",
+            "nodeLabels": "758c558e",
+            "output": "09d16a0a",
+            "recovery": "53ac31ae"
+          },
+          {
+            "routes": "06a85248",
+            "relationLabels": "5014557d",
+            "nodeLabels": "758c558e",
+            "output": "09d16a0a",
+            "recovery": "53ac31ae"
+          },
+          {
+            "routes": "06a85248",
+            "relationLabels": "5014557d",
+            "nodeLabels": "758c558e",
+            "output": "09d16a0a",
+            "recovery": "53ac31ae"
+          },
+          {
+            "routes": "06a85248",
+            "relationLabels": "5014557d",
+            "nodeLabels": "758c558e",
+            "output": "09d16a0a",
+            "recovery": "53ac31ae"
+          }
+        ],
+        "distinct": {
+          "routes": 2,
+          "relationLabels": 1,
+          "nodeLabels": 2,
+          "output": 1,
+          "recovery": 2
+        },
+        "finalOutput": "09d16a0a"
+      },
+      "productSnapshots": {
+        "mode": "product-snapshots",
+        "cleanStage": {
+          "routes": "6fe880eb",
+          "relationLabels": "60fb5ed7",
+          "nodeLabels": "238685a2",
+          "output": "0a6658d5",
+          "recovery": "c15f2c42"
+        },
+        "sequence": [
+          {
+            "routes": "a18164b4",
+            "relationLabels": "0ce9ed96",
+            "nodeLabels": "a4514ab6",
+            "output": "124bf235",
+            "recovery": "02d24815"
+          },
+          {
+            "routes": "533f00bf",
+            "relationLabels": "07bddec2",
+            "nodeLabels": "29d23dde",
+            "output": "105c88f6",
+            "recovery": "1c84773e"
+          },
+          {
+            "routes": "c16fd42f",
+            "relationLabels": "58f537ef",
+            "nodeLabels": "ee818926",
+            "output": "588e693c",
+            "recovery": "98a41483"
+          },
+          {
+            "routes": "533f00bf",
+            "relationLabels": "07bddec2",
+            "nodeLabels": "ca8fd28a",
+            "output": "f8951f4a",
+            "recovery": "eb0f2326"
+          },
+          {
+            "routes": "c16fd42f",
+            "relationLabels": "58f537ef",
+            "nodeLabels": "563102f2",
+            "output": "588e693c",
+            "recovery": "b82a9646"
+          },
+          {
+            "routes": "533f00bf",
+            "relationLabels": "07bddec2",
+            "nodeLabels": "ca8fd28a",
+            "output": "f8951f4a",
+            "recovery": "eb0f2326"
+          }
+        ],
+        "distinct": {
+          "routes": 3,
+          "relationLabels": 3,
+          "nodeLabels": 5,
+          "output": 4,
+          "recovery": 5
+        },
+        "finalOutput": "f8951f4a"
+      }
+    },
+    {
+      "fixture": "medium-dense",
+      "family": "medium-dense",
+      "nodeOnly": {
+        "mode": "node-only",
+        "cleanStage": {
+          "routes": "3138683b",
+          "relationLabels": "78fce46e",
+          "nodeLabels": "5cac8707",
+          "output": "fa2f8b3e",
+          "recovery": "4fd81f85"
+        },
+        "sequence": [
+          {
+            "routes": "d2d805e5",
+            "relationLabels": "fe7c81ab",
+            "nodeLabels": "16e7cc91",
+            "output": "52a16d70",
+            "recovery": "2a4651be"
+          },
+          {
+            "routes": "baf29f89",
+            "relationLabels": "fe7c81ab",
+            "nodeLabels": "d59e8800",
+            "output": "52a16d70",
+            "recovery": "fa7c9c88"
+          },
+          {
+            "routes": "baf29f89",
+            "relationLabels": "fe7c81ab",
+            "nodeLabels": "d59e8800",
+            "output": "52a16d70",
+            "recovery": "fa7c9c88"
+          },
+          {
+            "routes": "baf29f89",
+            "relationLabels": "fe7c81ab",
+            "nodeLabels": "d59e8800",
+            "output": "52a16d70",
+            "recovery": "fa7c9c88"
+          },
+          {
+            "routes": "baf29f89",
+            "relationLabels": "fe7c81ab",
+            "nodeLabels": "d59e8800",
+            "output": "52a16d70",
+            "recovery": "fa7c9c88"
+          },
+          {
+            "routes": "baf29f89",
+            "relationLabels": "fe7c81ab",
+            "nodeLabels": "d59e8800",
+            "output": "52a16d70",
+            "recovery": "fa7c9c88"
+          }
+        ],
+        "distinct": {
+          "routes": 2,
+          "relationLabels": 1,
+          "nodeLabels": 2,
+          "output": 1,
+          "recovery": 2
+        },
+        "finalOutput": "52a16d70"
+      },
+      "productSnapshots": {
+        "mode": "product-snapshots",
+        "cleanStage": {
+          "routes": "3138683b",
+          "relationLabels": "78fce46e",
+          "nodeLabels": "5cac8707",
+          "output": "fa2f8b3e",
+          "recovery": "4fd81f85"
+        },
+        "sequence": [
+          {
+            "routes": "b22815e5",
+            "relationLabels": "14d6d6a5",
+            "nodeLabels": "113b544b",
+            "output": "7d214c05",
+            "recovery": "2a4651be"
+          },
+          {
+            "routes": "285f5f70",
+            "relationLabels": "8ee2257d",
+            "nodeLabels": "ba7c0db7",
+            "output": "7d214c05",
+            "recovery": "fa7c9c88"
+          },
+          {
+            "routes": "285f5f70",
+            "relationLabels": "8ee2257d",
+            "nodeLabels": "ba7c0db7",
+            "output": "7d214c05",
+            "recovery": "fa7c9c88"
+          },
+          {
+            "routes": "285f5f70",
+            "relationLabels": "8ee2257d",
+            "nodeLabels": "ba7c0db7",
+            "output": "7d214c05",
+            "recovery": "fa7c9c88"
+          },
+          {
+            "routes": "285f5f70",
+            "relationLabels": "8ee2257d",
+            "nodeLabels": "ba7c0db7",
+            "output": "7d214c05",
+            "recovery": "fa7c9c88"
+          },
+          {
+            "routes": "285f5f70",
+            "relationLabels": "8ee2257d",
+            "nodeLabels": "ba7c0db7",
+            "output": "7d214c05",
+            "recovery": "fa7c9c88"
+          }
+        ],
+        "distinct": {
+          "routes": 2,
+          "relationLabels": 2,
+          "nodeLabels": 2,
+          "output": 1,
+          "recovery": 2
+        },
+        "finalOutput": "7d214c05"
+      }
+    },
+    {
+      "fixture": "large-dense",
+      "family": "large-dense",
+      "nodeOnly": {
+        "mode": "node-only",
+        "cleanStage": {
+          "routes": "b338166e",
+          "relationLabels": "94ad44d9",
+          "nodeLabels": "e07049b0",
+          "output": "2643143b",
+          "recovery": "36000379"
+        },
+        "sequence": [
+          {
+            "routes": "b0c5b3c7",
+            "relationLabels": "035aaf09",
+            "nodeLabels": "c7932c0a",
+            "output": "9cd02d24",
+            "recovery": "d502dd50"
+          },
+          {
+            "routes": "b0c5b3c7",
+            "relationLabels": "035aaf09",
+            "nodeLabels": "c7ef5fc7",
+            "output": "9cd02d24",
+            "recovery": "f227115e"
+          },
+          {
+            "routes": "b0c5b3c7",
+            "relationLabels": "035aaf09",
+            "nodeLabels": "c7ef5fc7",
+            "output": "9cd02d24",
+            "recovery": "f227115e"
+          },
+          {
+            "routes": "b0c5b3c7",
+            "relationLabels": "035aaf09",
+            "nodeLabels": "c7ef5fc7",
+            "output": "9cd02d24",
+            "recovery": "f227115e"
+          },
+          {
+            "routes": "b0c5b3c7",
+            "relationLabels": "035aaf09",
+            "nodeLabels": "c7ef5fc7",
+            "output": "9cd02d24",
+            "recovery": "f227115e"
+          },
+          {
+            "routes": "b0c5b3c7",
+            "relationLabels": "035aaf09",
+            "nodeLabels": "c7ef5fc7",
+            "output": "9cd02d24",
+            "recovery": "f227115e"
+          }
+        ],
+        "distinct": {
+          "routes": 1,
+          "relationLabels": 1,
+          "nodeLabels": 2,
+          "output": 1,
+          "recovery": 2
+        },
+        "finalOutput": "9cd02d24"
+      },
+      "productSnapshots": {
+        "mode": "product-snapshots",
+        "cleanStage": {
+          "routes": "b338166e",
+          "relationLabels": "94ad44d9",
+          "nodeLabels": "e07049b0",
+          "output": "2643143b",
+          "recovery": "36000379"
+        },
+        "sequence": [
+          {
+            "routes": "6d6fa09b",
+            "relationLabels": "7cfc6063",
+            "nodeLabels": "ee3c94e1",
+            "output": "946180bc",
+            "recovery": "58778f5e"
+          },
+          {
+            "routes": "d9c2d87f",
+            "relationLabels": "090077c1",
+            "nodeLabels": "e81a7617",
+            "output": "5ab2e1f0",
+            "recovery": "ed529d9e"
+          },
+          {
+            "routes": "58bfcc70",
+            "relationLabels": "a6a32203",
+            "nodeLabels": "deb8efc8",
+            "output": "4f37995f",
+            "recovery": "cc39fbc5"
+          },
+          {
+            "routes": "02d9d389",
+            "relationLabels": "1598af7a",
+            "nodeLabels": "e14b4ada",
+            "output": "7e3a6db2",
+            "recovery": "322937c0"
+          },
+          {
+            "routes": "f20b2cbe",
+            "relationLabels": "5238dbff",
+            "nodeLabels": "b837b211",
+            "output": "c517e5ca",
+            "recovery": "e788f46c"
+          },
+          {
+            "routes": "3aaaf280",
+            "relationLabels": "03ed54e1",
+            "nodeLabels": "644dacc2",
+            "output": "c517e5ca",
+            "recovery": "599919e1"
+          }
+        ],
+        "distinct": {
+          "routes": 6,
+          "relationLabels": 6,
+          "nodeLabels": 6,
+          "output": 5,
+          "recovery": 6
+        },
+        "finalOutput": "c517e5ca"
+      }
+    },
+    {
+      "fixture": "high-degree",
+      "family": "high-degree-heavy",
+      "nodeOnly": {
+        "mode": "node-only",
+        "cleanStage": {
+          "routes": "db9517d7",
+          "relationLabels": "932c81b8",
+          "nodeLabels": "04fc7513",
+          "output": "f9ebf75b",
+          "recovery": "6e4bbb9d"
+        },
+        "sequence": [
+          {
+            "routes": "8f2cffc1",
+            "relationLabels": "11e76d36",
+            "nodeLabels": "b1320813",
+            "output": "96c04161",
+            "recovery": "60e06b1b"
+          },
+          {
+            "routes": "1adcdd2d",
+            "relationLabels": "a3f56373",
+            "nodeLabels": "3e01fd80",
+            "output": "09f7e82f",
+            "recovery": "a48c8eef"
+          },
+          {
+            "routes": "3aaafc01",
+            "relationLabels": "11e76d36",
+            "nodeLabels": "df7e6c88",
+            "output": "8c1476d8",
+            "recovery": "e3094f8b"
+          },
+          {
+            "routes": "1adcdd2d",
+            "relationLabels": "a3f56373",
+            "nodeLabels": "cf93a23d",
+            "output": "09f7e82f",
+            "recovery": "0b1e5841"
+          },
+          {
+            "routes": "3aaafc01",
+            "relationLabels": "11e76d36",
+            "nodeLabels": "df7e6c88",
+            "output": "8c1476d8",
+            "recovery": "e3094f8b"
+          },
+          {
+            "routes": "1adcdd2d",
+            "relationLabels": "a3f56373",
+            "nodeLabels": "cf93a23d",
+            "output": "09f7e82f",
+            "recovery": "0b1e5841"
+          }
+        ],
+        "distinct": {
+          "routes": 3,
+          "relationLabels": 2,
+          "nodeLabels": 4,
+          "output": 3,
+          "recovery": 4
+        },
+        "finalOutput": "09f7e82f"
+      },
+      "productSnapshots": {
+        "mode": "product-snapshots",
+        "cleanStage": {
+          "routes": "db9517d7",
+          "relationLabels": "932c81b8",
+          "nodeLabels": "04fc7513",
+          "output": "f9ebf75b",
+          "recovery": "6e4bbb9d"
+        },
+        "sequence": [
+          {
+            "routes": "16cfdd8f",
+            "relationLabels": "c665ec75",
+            "nodeLabels": "f2f3fe4c",
+            "output": "8031623e",
+            "recovery": "bcf9f96f"
+          },
+          {
+            "routes": "f779abd6",
+            "relationLabels": "4dc20aaf",
+            "nodeLabels": "b2b387cb",
+            "output": "b7efa381",
+            "recovery": "d928a45c"
+          },
+          {
+            "routes": "cebfdca7",
+            "relationLabels": "283312e1",
+            "nodeLabels": "465c400a",
+            "output": "8188d76f",
+            "recovery": "c3382824"
+          },
+          {
+            "routes": "edb42331",
+            "relationLabels": "ae7d6e31",
+            "nodeLabels": "786b16b6",
+            "output": "b7efa381",
+            "recovery": "c9852a22"
+          },
+          {
+            "routes": "cebfdca7",
+            "relationLabels": "283312e1",
+            "nodeLabels": "465c400a",
+            "output": "8188d76f",
+            "recovery": "c3382824"
+          },
+          {
+            "routes": "edb42331",
+            "relationLabels": "ae7d6e31",
+            "nodeLabels": "786b16b6",
+            "output": "b7efa381",
+            "recovery": "c9852a22"
+          }
+        ],
+        "distinct": {
+          "routes": 4,
+          "relationLabels": 4,
+          "nodeLabels": 4,
+          "output": 3,
+          "recovery": 4
+        },
+        "finalOutput": "b7efa381"
+      }
+    },
+    {
+      "fixture": "label-heavy-en",
+      "family": "label-heavy-en",
+      "nodeOnly": {
+        "mode": "node-only",
+        "cleanStage": {
+          "routes": "11a076a1",
+          "relationLabels": "ca85baa5",
+          "nodeLabels": "a3db7d15",
+          "output": "8c5dd962",
+          "recovery": "f6febe97"
+        },
+        "sequence": [
+          {
+            "routes": "3bbc49bc",
+            "relationLabels": "3998ae9a",
+            "nodeLabels": "5beeb446",
+            "output": "56fe769f",
+            "recovery": "28b28cb2"
+          },
+          {
+            "routes": "1f024e4a",
+            "relationLabels": "1cfafeee",
+            "nodeLabels": "0981d8ab",
+            "output": "61803be1",
+            "recovery": "2eaa5376"
+          },
+          {
+            "routes": "1f024e4a",
+            "relationLabels": "1cfafeee",
+            "nodeLabels": "0981d8ab",
+            "output": "61803be1",
+            "recovery": "2eaa5376"
+          },
+          {
+            "routes": "1f024e4a",
+            "relationLabels": "1cfafeee",
+            "nodeLabels": "0981d8ab",
+            "output": "61803be1",
+            "recovery": "2eaa5376"
+          },
+          {
+            "routes": "1f024e4a",
+            "relationLabels": "1cfafeee",
+            "nodeLabels": "0981d8ab",
+            "output": "61803be1",
+            "recovery": "2eaa5376"
+          },
+          {
+            "routes": "1f024e4a",
+            "relationLabels": "1cfafeee",
+            "nodeLabels": "0981d8ab",
+            "output": "61803be1",
+            "recovery": "2eaa5376"
+          }
+        ],
+        "distinct": {
+          "routes": 2,
+          "relationLabels": 2,
+          "nodeLabels": 2,
+          "output": 2,
+          "recovery": 2
+        },
+        "finalOutput": "61803be1"
+      },
+      "productSnapshots": {
+        "mode": "product-snapshots",
+        "cleanStage": {
+          "routes": "11a076a1",
+          "relationLabels": "ca85baa5",
+          "nodeLabels": "a3db7d15",
+          "output": "8c5dd962",
+          "recovery": "f6febe97"
+        },
+        "sequence": [
+          {
+            "routes": "509e4123",
+            "relationLabels": "94afe674",
+            "nodeLabels": "550cc358",
+            "output": "103a5861",
+            "recovery": "28b28cb2"
+          },
+          {
+            "routes": "86618e44",
+            "relationLabels": "e88402b8",
+            "nodeLabels": "14aafbdc",
+            "output": "3b82f1b5",
+            "recovery": "fa615cc9"
+          },
+          {
+            "routes": "e1de2f19",
+            "relationLabels": "b27471b7",
+            "nodeLabels": "978ea9ab",
+            "output": "b55c2f8a",
+            "recovery": "7fd41077"
+          },
+          {
+            "routes": "bbb7a6ab",
+            "relationLabels": "5f8c1139",
+            "nodeLabels": "fbe06d52",
+            "output": "9cb2777c",
+            "recovery": "9a066e37"
+          },
+          {
+            "routes": "c5df2fa3",
+            "relationLabels": "3dedab4a",
+            "nodeLabels": "bcbec6f7",
+            "output": "dc600ef2",
+            "recovery": "d49cbbda"
+          },
+          {
+            "routes": "9217e7c6",
+            "relationLabels": "a968991f",
+            "nodeLabels": "27d4db22",
+            "output": "67463ebb",
+            "recovery": "f1a71da7"
+          }
+        ],
+        "distinct": {
+          "routes": 6,
+          "relationLabels": 6,
+          "nodeLabels": 6,
+          "output": 6,
+          "recovery": 6
+        },
+        "finalOutput": "67463ebb"
+      }
+    },
+    {
+      "fixture": "label-heavy-ja",
+      "family": "label-heavy-ja",
+      "nodeOnly": {
+        "mode": "node-only",
+        "cleanStage": {
+          "routes": "23744952",
+          "relationLabels": "19efdef6",
+          "nodeLabels": "2c415195",
+          "output": "9833db80",
+          "recovery": "8f597884"
+        },
+        "sequence": [
+          {
+            "routes": "86b653b1",
+            "relationLabels": "00282e45",
+            "nodeLabels": "abf45eba",
+            "output": "c08282da",
+            "recovery": "42692eb4"
+          },
+          {
+            "routes": "86b653b1",
+            "relationLabels": "00282e45",
+            "nodeLabels": "7eacb8ca",
+            "output": "c08282da",
+            "recovery": "74f1736c"
+          },
+          {
+            "routes": "86b653b1",
+            "relationLabels": "00282e45",
+            "nodeLabels": "7eacb8ca",
+            "output": "c08282da",
+            "recovery": "74f1736c"
+          },
+          {
+            "routes": "86b653b1",
+            "relationLabels": "00282e45",
+            "nodeLabels": "7eacb8ca",
+            "output": "c08282da",
+            "recovery": "74f1736c"
+          },
+          {
+            "routes": "86b653b1",
+            "relationLabels": "00282e45",
+            "nodeLabels": "7eacb8ca",
+            "output": "c08282da",
+            "recovery": "74f1736c"
+          },
+          {
+            "routes": "86b653b1",
+            "relationLabels": "00282e45",
+            "nodeLabels": "7eacb8ca",
+            "output": "c08282da",
+            "recovery": "74f1736c"
+          }
+        ],
+        "distinct": {
+          "routes": 1,
+          "relationLabels": 1,
+          "nodeLabels": 2,
+          "output": 1,
+          "recovery": 2
+        },
+        "finalOutput": "c08282da"
+      },
+      "productSnapshots": {
+        "mode": "product-snapshots",
+        "cleanStage": {
+          "routes": "23744952",
+          "relationLabels": "19efdef6",
+          "nodeLabels": "2c415195",
+          "output": "9833db80",
+          "recovery": "8f597884"
+        },
+        "sequence": [
+          {
+            "routes": "f9c3959b",
+            "relationLabels": "ef5d53da",
+            "nodeLabels": "c7b36333",
+            "output": "4325624e",
+            "recovery": "8a604f41"
+          },
+          {
+            "routes": "1c717e6e",
+            "relationLabels": "02bc4a9d",
+            "nodeLabels": "b515f3cc",
+            "output": "91ba22ad",
+            "recovery": "235359a0"
+          },
+          {
+            "routes": "d7e11175",
+            "relationLabels": "f0a62856",
+            "nodeLabels": "cfdda47b",
+            "output": "b9015df1",
+            "recovery": "24b44226"
+          },
+          {
+            "routes": "f467d889",
+            "relationLabels": "730877b7",
+            "nodeLabels": "846ee1a7",
+            "output": "22917dde",
+            "recovery": "21f69aed"
+          },
+          {
+            "routes": "43b5b4a1",
+            "relationLabels": "3ef4fa72",
+            "nodeLabels": "29aba573",
+            "output": "325429ea",
+            "recovery": "ba2a6e00"
+          },
+          {
+            "routes": "e4856746",
+            "relationLabels": "499f534b",
+            "nodeLabels": "454f3126",
+            "output": "92c072f0",
+            "recovery": "061c0b1f"
+          }
+        ],
+        "distinct": {
+          "routes": 6,
+          "relationLabels": 6,
+          "nodeLabels": 6,
+          "output": 6,
+          "recovery": 6
+        },
+        "finalOutput": "92c072f0"
+      }
+    },
+    {
+      "fixture": "parallel-self-loop",
+      "family": "parallel-self-loop",
+      "nodeOnly": {
+        "mode": "node-only",
+        "cleanStage": {
+          "routes": "b1338858",
+          "relationLabels": "2bd2e621",
+          "nodeLabels": "b0d16d09",
+          "output": "79dce129",
+          "recovery": "92d8f65e"
+        },
+        "sequence": [
+          {
+            "routes": "7847ad0f",
+            "relationLabels": "8e57488c",
+            "nodeLabels": "caca9b6f",
+            "output": "f27bde6a",
+            "recovery": "49ec3a3e"
+          },
+          {
+            "routes": "2af3d988",
+            "relationLabels": "e2589c1c",
+            "nodeLabels": "6eea9da2",
+            "output": "fbeafc0c",
+            "recovery": "43070d86"
+          },
+          {
+            "routes": "e92dc7f3",
+            "relationLabels": "6ab0220e",
+            "nodeLabels": "af8df3d3",
+            "output": "84544b2e",
+            "recovery": "6a4bb068"
+          },
+          {
+            "routes": "e92dc7f3",
+            "relationLabels": "6ab0220e",
+            "nodeLabels": "192172c0",
+            "output": "84544b2e",
+            "recovery": "7056a94f"
+          },
+          {
+            "routes": "e92dc7f3",
+            "relationLabels": "6ab0220e",
+            "nodeLabels": "192172c0",
+            "output": "84544b2e",
+            "recovery": "7056a94f"
+          },
+          {
+            "routes": "e92dc7f3",
+            "relationLabels": "6ab0220e",
+            "nodeLabels": "192172c0",
+            "output": "84544b2e",
+            "recovery": "7056a94f"
+          }
+        ],
+        "distinct": {
+          "routes": 3,
+          "relationLabels": 3,
+          "nodeLabels": 4,
+          "output": 3,
+          "recovery": 4
+        },
+        "finalOutput": "84544b2e"
+      },
+      "productSnapshots": {
+        "mode": "product-snapshots",
+        "cleanStage": {
+          "routes": "b1338858",
+          "relationLabels": "2bd2e621",
+          "nodeLabels": "b0d16d09",
+          "output": "79dce129",
+          "recovery": "92d8f65e"
+        },
+        "sequence": [
+          {
+            "routes": "dbd1efd1",
+            "relationLabels": "73f83a1e",
+            "nodeLabels": "0a1e4bcc",
+            "output": "1aebbb81",
+            "recovery": "00bf879e"
+          },
+          {
+            "routes": "365893fd",
+            "relationLabels": "61c72711",
+            "nodeLabels": "1e4359ef",
+            "output": "dc4301e0",
+            "recovery": "95c372bf"
+          },
+          {
+            "routes": "6820167c",
+            "relationLabels": "ca0c2756",
+            "nodeLabels": "49ab18c2",
+            "output": "99a441cd",
+            "recovery": "7bbc2263"
+          },
+          {
+            "routes": "e0d65a1a",
+            "relationLabels": "f443fb9c",
+            "nodeLabels": "468708a9",
+            "output": "9999e37e",
+            "recovery": "70dc91d0"
+          },
+          {
+            "routes": "3448b921",
+            "relationLabels": "1e70c7a3",
+            "nodeLabels": "4b1b649f",
+            "output": "bef70e0d",
+            "recovery": "ab7bc3e6"
+          },
+          {
+            "routes": "6a3335a4",
+            "relationLabels": "637ca54e",
+            "nodeLabels": "11fd577d",
+            "output": "bef70e0d",
+            "recovery": "ce9f80e8"
+          }
+        ],
+        "distinct": {
+          "routes": 6,
+          "relationLabels": 6,
+          "nodeLabels": 6,
+          "output": 5,
+          "recovery": 6
+        },
+        "finalOutput": "bef70e0d"
+      }
+    }
+  ],
+  "disposition": {
+    "recoverySemantics": "unchanged",
+    "movementCoefficient": "distance * 4",
+    "productDefault": "HOLD",
+    "productionProvider": "NOT ESTABLISHED",
+    "humanReview": "NOT READY",
+    "adaptiveCascade": "NOT ENTERED"
+  }
+}

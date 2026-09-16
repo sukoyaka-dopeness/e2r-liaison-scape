@@ -1,0 +1,34 @@
+{
+  "id": "frontier-automatic-display-production-adoption-readiness1",
+  "date": "2026-09-16",
+  "classification": "READY WITH EXPLICIT OPERATIONAL BOUNDARY",
+  "productionDefaultChanged": false,
+  "currentProductionProvider": "current-product / settleInitialPlacement",
+  "frontierProductionWired": false,
+  "frontierRole": "DEV acceptance and operation-local review candidate",
+  "humanReview": {
+    "overall": "QUALIFIED",
+    "perUnitCoverage": "incomplete; no unconfirmed unit promoted",
+    "acceptedResidual": "small ordinary Edge crossing residual",
+    "providerSelectionReopened": false
+  },
+  "authorityContract": {
+    "coordinateLess": "Frontier may be considered in a separate adoption path",
+    "completeStored": "stored Coordinates remain authoritative",
+    "mixedPartial": "existing mixed-completion authority remains",
+    "derivedPersistence": "no automatic Coordinate persistence or dirty-state mutation",
+    "downstreamPresentation": "existing Product routing and label/Self-loop authorities remain"
+  },
+  "failureBoundary": {
+    "currentProductionFrontierFailurePath": "not applicable; Frontier is not wired",
+    "requiredBeforeDefaultSwitch": ["request/materialization failure", "invalid or incomplete result", "hard-infeasible result", "timeout/budget exhaustion", "deterministic bounded fallback", "discard partial output"],
+    "fastFallback": "internal/emergency only; not a quality competitor"
+  },
+  "operationalBoundary": {
+    "denseRuntimeAndCongestion": "explicit boundary; no unrestricted latency guarantee",
+    "ordinaryDisplay": "eligible for separate bounded adoption implementation",
+    "largeDenseSla": "not established"
+  },
+  "nextCheckpoint": "bounded production-adoption implementation/design with acceptance matrix",
+  "outOfScope": ["default switch", "solver retune", "routing/label/Self-loop authority change", "workerization", "scheduler", "new fallback architecture"]
+}

@@ -1,0 +1,19 @@
+{
+  "checkpoint": "frontier-12-single-implementation-structural-refactor-candidate-boundary1",
+  "date": "2026-09-16",
+  "classification": "COMPLETED: SHARED CANDIDATE BOUNDARY / PARITY GATE PASSED",
+  "canonicalArchitecture": "A: candidate generator with Product-owned downstream selection",
+  "extractionPerformed": true,
+  "singleImplementationMaintained": true,
+  "reason": "Behavior-preserving structural move into an explicit normalized input/config generator boundary",
+  "duplicationIntroduced": false,
+  "candidateParityAdded": true,
+  "solverOnlyRuntimeMeasured": true,
+  "candidateGenerator": "src/frontier-candidate-generator.ts::generateFrontierCandidateSet",
+  "parityArtifact": "experimental/frontier-12-shared-candidate-generator-parity1/result.json",
+  "existingLineageParity": "13-row independent replay: 10 file-backed + 3 dense synthetic exact family/fingerprint parity; custom synthetic constructors remain sweep-only",
+  "candidateSetParity": "deterministic complete finite output; Apollo EN 60-pool/5-frontier/12-representative signature gate",
+  "runtimeCharacterization": "generator and Product presentation timings separated in parity artifact; no execution architecture decision",
+  "productionDefaultChanged": false,
+  "nextCheckpoint": "bounded production integration contract and operation-local execution lifecycle; no App wiring in this checkpoint"
+}

@@ -1,0 +1,22 @@
+{
+  "checkpoint": "frontier-automatic-display-user-abort-cancellation-feasibility-audit1",
+  "date": "2026-09-16",
+  "classification": "D. USER-ABORT NOT JUSTIFIED FOR INITIAL ADOPTION",
+  "frontierProductionWired": false,
+  "currentAutomaticDisplayProvider": "current-product / settleInitialPlacement",
+  "currentAcceptanceModel": "fetch precomputed frontier artifact, then synchronously open and fit the graph",
+  "currentAbortControl": false,
+  "currentInterruptibleSolverBoundary": false,
+  "currentWorkerIsolation": false,
+  "currentCooperativeYield": false,
+  "fallbackContract": {
+    "coordinateLessInitialDisplay": "existing settleInitialPlacement Product path",
+    "storedCoordinates": "stored coordinates remain authoritative",
+    "mixedCoordinates": "existing mixed-completion authority remains authoritative",
+    "partialFrontierResult": "discard; never publish or persist partial output"
+  },
+  "outcomes": ["success", "technical-failure", "user-abort", "future-budget-or-timeout-exhaustion"],
+  "productionDefaultChanged": false,
+  "implementationPerformed": false,
+  "nextDecision": "If Frontier becomes browser-side computation, choose bounded cooperative execution or worker isolation before adding responsive user abort; keep Explicit Auto Layout separate."
+}

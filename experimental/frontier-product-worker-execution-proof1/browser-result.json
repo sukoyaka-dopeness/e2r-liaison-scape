@@ -1,0 +1,128 @@
+{
+  "contract": "LIAISONSCAPE-FRONTIER-PRODUCT-WORKER-EXECUTION-PROOF-1",
+  "diagnosticOnly": true,
+  "observedAt": "2026-09-16",
+  "sourceRevision": "942f3f60dda50594d09f48d7c76ffa9bfae56544 + working tree",
+  "reproUrl": "http://127.0.0.1:5173/e2r-liaison-scape/experimental/frontier-product-worker-execution-proof1/",
+  "actualWorker": true,
+  "sourceBoundary": {
+    "worker": "src/frontier-candidate-generator.ts -> src/graph-presentation.ts -> src/automatic-layout-quality.ts -> src/automatic-layout-selection.ts",
+    "mainThread": "operation/generation/snapshot validation and adoption decision only",
+    "appWiring": false
+  },
+  "config": {
+    "limit": 12,
+    "featureMode": "global",
+    "globalSpacingScale": 0.88,
+    "globalSpacingY": 1.12,
+    "finalCanonicalization": "round-once"
+  },
+  "environment": {
+    "browser": "Edge 153.0.0.0",
+    "hardwareConcurrency": 16,
+    "workerApi": true,
+    "crossOriginIsolated": false
+  },
+  "rows": [
+    {
+      "fixture": "lighthouse-en",
+      "category": "canonical-public",
+      "graph": { "nodes": 10, "edges": 14 },
+      "directMs": 763.8,
+      "workerComputeMs": 477.8,
+      "candidateGenerationMs": 103.3,
+      "productPresentationMs": 350.4,
+      "workerWallMs": 501.1,
+      "transportOverheadMs": 23.3,
+      "payloadBytes": 3386,
+      "selectedFamily": "structural-frontier-9-circular-order",
+      "selectedPositionFingerprint": "4cc6d8ae2c92",
+      "candidateSetParity": true,
+      "productProposalParity": true,
+      "selectedParity": true,
+      "reviewedArtifactParity": true,
+      "datasetUnchanged": true
+    },
+    {
+      "fixture": "apollo-en",
+      "category": "canonical-public",
+      "graph": { "nodes": 9, "edges": 11 },
+      "directMs": 550.1,
+      "workerComputeMs": 365.3,
+      "candidateGenerationMs": 118.7,
+      "productPresentationMs": 230.4,
+      "workerWallMs": 385.9,
+      "transportOverheadMs": 20.6,
+      "payloadBytes": 2639,
+      "selectedFamily": "structural-frontier-4-grid-structural",
+      "selectedPositionFingerprint": "9e821a079aee",
+      "candidateSetParity": true,
+      "productProposalParity": true,
+      "selectedParity": true,
+      "reviewedArtifactParity": true,
+      "datasetUnchanged": true
+    },
+    {
+      "fixture": "dense-k7-7",
+      "category": "dense-control",
+      "graph": { "nodes": 14, "edges": 49 },
+      "directMs": 4262.0,
+      "workerComputeMs": 3025.7,
+      "candidateGenerationMs": 1211.9,
+      "productPresentationMs": 1695.5,
+      "workerWallMs": 3050.4,
+      "transportOverheadMs": 24.7,
+      "payloadBytes": 7180,
+      "selectedFamily": "structural-frontier-1-grid-structural",
+      "selectedPositionFingerprint": "bdd252c1b045",
+      "candidateSetParity": true,
+      "productProposalParity": true,
+      "selectedParity": true,
+      "reviewedArtifactParity": true,
+      "datasetUnchanged": true
+    }
+  ],
+  "responsiveness": {
+    "fixture": "dense-k7-7",
+    "workerCompleted": true,
+    "workerWallMs": 3047.0,
+    "maxIntervalGapMs": 14.1,
+    "maxRafGapMs": 16.9,
+    "maxWorkerCampaignLongTaskMs": 0
+  },
+  "cancellation": {
+    "fixture": "dense-k7-7",
+    "status": "cancelled",
+    "workerStarted": true,
+    "resultReceived": false,
+    "partialResultPublished": false,
+    "elapsedBeforeCancelMs": 44.7,
+    "terminateCallLatencyMs": 0,
+    "operationInvalidated": true
+  },
+  "failureEnvelope": {
+    "status": "failed",
+    "failure": { "code": "INVALID_CONFIG", "message": "Frontier candidate limit must be a positive finite number" },
+    "partialResultPublished": false
+  },
+  "staleResult": {
+    "accepted": false,
+    "disposition": "stale",
+    "reason": "operation/generation/snapshot identity mismatch"
+  },
+  "determinism": {
+    "directWorkerCandidateProductParity": true,
+    "persistedReviewedFamilyFingerprintParity": true,
+    "repeatedCoreInvocation": true,
+    "repeatedBrowserRun": "not measured in this proof run"
+  },
+  "lifecycle": {
+    "success": true,
+    "technicalFailure": true,
+    "cancel": true,
+    "stale": true,
+    "incompleteOrNonFinite": "validated fail-closed; no such result emitted",
+    "partialPublish": false
+  },
+  "classification": "WORKER EXECUTION / PARITY / NON-BLOCKING / CANCELLATION PROOF ESTABLISHED; PRODUCTION INTEGRATION HOLD"
+}

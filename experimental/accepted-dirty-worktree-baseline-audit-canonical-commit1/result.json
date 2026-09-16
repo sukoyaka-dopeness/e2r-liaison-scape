@@ -1,0 +1,52 @@
+{
+  "checkpoint": "accepted-dirty-worktree-baseline-audit-canonical-commit1",
+  "date": "2026-09-16",
+  "classification": "BASELINE COMMIT BLOCKED / UNRESOLVED DIRTY OWNERSHIP REMAINS",
+  "commitsCreated": false,
+  "repositories": {
+    "e2r-liaison-scape": {
+      "head": "942f3f60dda50594d09f48d7c76ffa9bfae56544",
+      "acceptedBaselineCandidates": [
+        "Frontier normal-path adoption in src/App.tsx, src/i18n.ts, and src/styles.css, together with the shared generator, adapter, Worker proof, focused tests, and related experiment artifacts",
+        "The current research-runner structural refactor and Product selection support in tools/generic-crossing-search.mjs and src/automatic-layout-selection.ts",
+        "LiaisonScape AGENTS.md instruction-economy and executable-provenance guidance"
+      ],
+      "evidence": "Current Production Acceptance result, Worker/lifecycle artifacts, Frontier parity artifacts, and roadmap entries support retaining the candidate implementation and its evidence as current source-level accepted state.",
+      "unresolved": [
+        ".tmp-normal-offset-output.json is a temporary diagnostic output and has no accepted-result ownership",
+        "experimental/product-evaluation-seam/spacing-inspection2/ is a pre-existing untracked research surface explicitly preserved by earlier session records, but its current adoption/retention status is not established by this checkpoint",
+        "tests/graph-presentation.test.ts has a worktree modification marker but its worktree blob equals HEAD; no content change was identified"
+      ],
+      "safeCommitBoundary": false
+    },
+    "e2r-spec": {
+      "head": "c3b09f081ffc4a2c0ec46ce7f3e86823dd55d642",
+      "acceptedBaselineCandidates": [
+        "E2R-SPEC AGENTS.md instruction-economy and proportional-validation guidance",
+        "Frontier, initial-placement, Product-presentation, and lifecycle result documents whose paths and links are recorded in the current roadmap",
+        "Current roadmap entries recording accepted/deferred decisions and the Frontier production-adoption provenance audit"
+      ],
+      "evidence": "Current roadmap and result-document links establish a coherent accepted/deferred research and adoption record, but the tracked dirty paths are cumulative rather than a clean latest-checkpoint delta.",
+      "unresolved": [
+        "sessions/E2R-Session-0052.md contains accumulated historical session material and is not attributable as a single current baseline unit",
+        "work/ contains pre-existing browser/diagnostic outputs explicitly recorded as preserved, without a current accepted-baseline decision",
+        "docs/roadmap.md contains both earlier cumulative entries and the latest entries; no clean commit ownership boundary was proven for the whole file"
+      ],
+      "safeCommitBoundary": false
+    }
+  },
+  "canonicalReferences": {
+    "e2r-liaison-scape": "942f3f60dda50594d09f48d7c76ffa9bfae56544 + working tree",
+    "e2r-spec": "c3b09f081ffc4a2c0ec46ce7f3e86823dd55d642 + working tree",
+    "frontierProvenanceChain": "normalized Dataset input -> shared Frontier candidate generator -> Worker Product evaluation/selection -> App async lifecycle adapter -> normal-path render-only adoption -> Production Acceptance evidence"
+  },
+  "safety": {
+    "runtimeChanged": false,
+    "datasetOrCoordinateSemanticsChanged": false,
+    "unrelatedWorkDiscarded": false,
+    "resetRestoreStashUsed": false,
+    "pushDeployRelease": false
+  },
+  "nextSafeBoundary": "Use a fresh worktree or an explicit ownership map that leaves the three pre-existing ambiguous areas outside the baseline before creating canonical commits.",
+  "rollout": "source-level production adoption remains accepted; deployment, release, and public rollout remain deferred"
+}

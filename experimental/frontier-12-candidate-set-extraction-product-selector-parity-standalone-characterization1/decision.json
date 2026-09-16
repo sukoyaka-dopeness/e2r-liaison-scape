@@ -1,0 +1,14 @@
+{
+  "checkpoint": "frontier-12-candidate-set-extraction-product-selector-parity-standalone-characterization1",
+  "date": "2026-09-16",
+  "classification": "BLOCKED: CURRENT RESEARCH RUNNER IS NOT A BOUNDED EXTRACTABLE MODULE",
+  "canonicalArchitecture": "A: candidate-set generator with Product-owned downstream selection",
+  "extractionPerformed": false,
+  "reason": "structural generator is private and coupled to runner graph/config globals; bounded extraction would require substantial refactor",
+  "duplicationRejected": true,
+  "productSelectorMoved": false,
+  "solverOnlyRuntimeMeasured": false,
+  "existingLineageParity": "10 file-backed + 3 dense synthetic exact family/fingerprint replay through complete research runner",
+  "productionDefaultChanged": false,
+  "nextCheckpoint": "single-implementation structural refactor with normalized input/config boundary and candidate-set parity"
+}

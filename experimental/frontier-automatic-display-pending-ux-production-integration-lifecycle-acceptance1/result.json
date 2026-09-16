@@ -1,0 +1,85 @@
+{
+  "checkpoint": "frontier-automatic-display-pending-ux-production-integration-lifecycle-acceptance1",
+  "date": "2026-09-16",
+  "sourceRevision": "942f3f60dda50594d09f48d7c76ffa9bfae56544",
+  "workingTreeNote": "Evidence was produced with checkpoint changes in the working tree; unrelated pre-existing changes were preserved.",
+  "classification": "PENDING UX STAGED / LIFECYCLE ACCEPTANCE BOUNDED / PRODUCTION DEFAULT HOLD",
+  "scope": {
+    "normalProvider": "settleInitialPlacement",
+    "stagingSeam": "DEV-only initial-layout=frontier-12-worker",
+    "productionDefaultChanged": false,
+    "solverChanged": false,
+    "datasetPersistenceChanged": false
+  },
+  "pendingUx": {
+    "fallback": "The existing settleInitialPlacement graph is published first and remains usable while the Worker operation runs.",
+    "provisionalGraph": "Only the graph surface receives graph--frontier-provisional opacity/saturation styling while the operation is pending.",
+    "status": "A polite live status exposes pending, cancelled, stale, and bounded-fallback outcomes.",
+    "cancel": "A DEV staging-only Cancel action invalidates and terminates the active operation; it does not mutate Dataset or coordinates.",
+    "chrome": "Application chrome is not globally disabled; existing focus-visible styling remains available.",
+    "locale": "Pending and terminal status/cancel labels are provided for EN and JA."
+  },
+  "lifecycle": {
+    "snapshot": "The adapter receives an immutable semantic graph/config snapshot with operationId, generation, and session identity.",
+    "success": "Only a current complete finite selected-position result is adopted into render-only positions and viewport fit.",
+    "cancel": "Cancellation terminates the Worker and publishes no result; the usable fallback remains.",
+    "failure": "Worker failure or invalid/partial output resolves to bounded fallback without partial adoption.",
+    "stale": "Replacement, mutation, workspace exit, unmount, and operation invalidation prevent late publication.",
+    "authority": "Stored/mixed Coordinates, Dataset, persistence, dirty-state, routing, labels, and Self-loop authority remain outside the staged operation."
+  },
+  "automatedEvidence": {
+    "test": "tests/frontier-automatic-display-adapter.test.ts",
+    "status": "PASS",
+    "cases": [
+      "stored and mixed coordinate authority gate",
+      "complete finite success with render-only positions",
+      "invalidation and late completion rejection",
+      "cancel-before-completion with no published result",
+      "structured Worker failure with bounded fallback",
+      "DEV-only App seam, pending/cancel/provisional styling, and unchanged normal provider"
+    ]
+  },
+  "browserEvidence": [
+    {
+      "fixture": "Apollo EN",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=apollo-11&acceptance-locale=en&initial-layout=frontier-12-worker&diagnostic=timing",
+      "observed": {
+        "frontierAsyncState": "started",
+        "pendingStatus": "Calculating automatic placement…",
+        "cancelButton": true,
+        "provisionalGraphClass": true,
+        "consoleErrors": 0
+      }
+    },
+    {
+      "fixture": "Titanic JA",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=titanic&acceptance-locale=ja&initial-layout=frontier-12-worker",
+      "observed": {
+        "frontierAsyncState": "started",
+        "pendingStatus": "自動配置を計算中…",
+        "cancelButton": true,
+        "provisionalGraphClass": true,
+        "consoleErrors": 0
+      }
+    },
+    {
+      "fixture": "Lighthouse EN normal path",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=lighthouse&acceptance-locale=en",
+      "observed": {
+        "frontierAsyncStateAttribute": false,
+        "provisionalGraphClass": false,
+        "consoleErrors": 0
+      }
+    }
+  ],
+  "manualEvidenceBoundary": "The Worker completes quickly in the browser, so the deterministic focused cancellation test is the authoritative cancellation/race evidence; a browser click was not treated as proof of cancellation.",
+  "notImplemented": [
+    "production default switch",
+    "generic job framework",
+    "fixed timeout",
+    "solver or Product presentation changes",
+    "Dataset/persistence/dirty-state changes",
+    "Human Review disposition"
+  ],
+  "nextGate": "Separate production adoption/integration checkpoint after this staging seam is reviewed; automatic-display quality and Human Review remain unchanged."
+}

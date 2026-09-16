@@ -1,0 +1,56 @@
+{
+  "checkpoint": "frontier-automatic-display-production-adoption-provenance-freeze-commit-boundary1",
+  "date": "2026-09-16",
+  "classification": "PROVENANCE FREEZE BLOCKED / DIRTY-WORKTREE OWNERSHIP NOT SAFELY SEPARABLE",
+  "requestedCommit": false,
+  "repositories": {
+    "e2r-liaison-scape": {
+      "head": "942f3f60dda50594d09f48d7c76ffa9bfae56544",
+      "ownershipFinding": "The accepted Frontier normal-path adoption requires the tracked src/App.tsx, src/i18n.ts, and src/styles.css changes. Those paths also contain earlier preview/read-only, presentation, and lifecycle work, so path-only staging would risk including unrelated hunks. The shared generator, adapter, Worker proof, tests, and experiment artifacts are present, but committing only those untracked paths would not freeze the accepted App behavior.",
+      "acceptedChainPaths": [
+        "src/frontier-candidate-generator.ts",
+        "experimental/frontier-product-worker-execution-proof1/worker.ts",
+        "src/frontier-automatic-display-adapter.ts",
+        "src/App.tsx",
+        "src/i18n.ts",
+        "src/styles.css"
+      ],
+      "mixedTrackedPaths": [
+        "src/App.tsx",
+        "src/i18n.ts",
+        "src/styles.css"
+      ],
+      "otherDirtyPathsPreserved": true
+    },
+    "e2r-spec": {
+      "head": "c3b09f0",
+      "ownershipFinding": "The tracked docs/roadmap.md and sessions/E2R-Session-0052.md paths contain accumulated prior checkpoint entries and session material. The accepted result documents are untracked alongside other historical checkpoint documents. No exact committed provenance boundary can be established from the current dirty state without hunk-level ownership that has not been proven.",
+      "mixedTrackedPaths": [
+        "docs/roadmap.md",
+        "sessions/E2R-Session-0052.md",
+        "AGENTS.md"
+      ],
+      "otherDirtyPathsPreserved": true
+    }
+  },
+  "canonicalProvenance": {
+    "status": "not frozen",
+    "value": "e2r-liaison-scape 942f3f60dda50594d09f48d7c76ffa9bfae56544 + working tree; e2r-spec c3b09f0 + working tree",
+    "chain": "normalized Dataset input -> shared Frontier candidate generator -> Worker Product evaluation/selection -> App async lifecycle adapter -> normal-path render-only adoption -> Production Acceptance evidence",
+    "sourceOfTruth": "Current source and the Production Acceptance artifact remain the evidence; neither is represented by a new commit in this checkpoint."
+  },
+  "safety": {
+    "runtimeChanged": false,
+    "acceptedBehaviorChanged": false,
+    "resetOrRestoreUsed": false,
+    "stashUsed": false,
+    "unrelatedWorkDiscarded": false,
+    "pushDeployRelease": false
+  },
+  "validation": {
+    "priorAcceptanceEvidence": "focused 9/9 PASS; full 588/588 PASS; lint/build/spec validate/diff-check PASS",
+    "freezeCheckpointScope": "ownership audit and provenance record only; no runtime source changes",
+    "requiredNextStep": "Create a clean, explicitly owned commit boundary (or obtain an exact hunk ownership map) before treating a revision as canonical."
+  },
+  "rollout": "still deferred; no deployment, release, or public rollout"
+}

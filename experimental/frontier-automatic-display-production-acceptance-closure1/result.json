@@ -1,0 +1,85 @@
+{
+  "checkpoint": "frontier-automatic-display-production-acceptance-closure1",
+  "date": "2026-09-16",
+  "sourceRevision": "942f3f60dda50594d09f48d7c76ffa9bfae56544",
+  "workingTreeNote": "Acceptance evidence was produced with the existing checkpoint changes in the working tree; unrelated pre-existing changes were preserved and no commit was created because the owned changes are not safely separable by path.",
+  "acceptance": "PASS",
+  "classification": "PRODUCTION ACCEPTED / SOURCE-LEVEL ADOPTION CLOSED / ROLLOUT DEFERRED",
+  "canonicalPolicy": {
+    "coordinateLess": "Frontier async operation is the normal Automatic Display path.",
+    "fallback": "settleInitialPlacement is immediately published as the usable fallback.",
+    "pending": "Pending status and Cancel are shown while the current operation is active.",
+    "provisional": "Only the Graph surface receives provisional treatment.",
+    "success": "Only a current complete finite result is adopted into render-only positions; the pending affordance is cleared without a success banner.",
+    "cancelFailureStale": "Cancel, technical failure, invalid output, and stale output preserve the fallback and do not publish partial positions."
+  },
+  "browserEvidence": [
+    {
+      "fixture": "Lighthouse EN",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=lighthouse&acceptance-locale=en&diagnostic=timing",
+      "path": "normal coordinate-less URL; no initial-layout parameter",
+      "observed": "started -> pending status/Cancel/provisional Graph -> completed; terminal status and provisional class removed; console errors 0"
+    },
+    {
+      "fixture": "Apollo EN",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=apollo-11&acceptance-locale=en",
+      "path": "normal coordinate-less URL",
+      "observed": "started -> pending -> completed; EN copy and Cancel visible; terminal cleanup complete; console errors 0"
+    },
+    {
+      "fixture": "Titanic EN",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=titanic&acceptance-locale=en",
+      "path": "normal slower/label-heavy control",
+      "observed": "fallback Graph and application chrome usable while pending; status/toolbar disjoint; started -> completed; console errors 0"
+    },
+    {
+      "fixture": "Titanic JA",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=titanic&acceptance-locale=ja",
+      "path": "normal coordinate-less Japanese URL",
+      "observed": "Japanese pending status and Cancel visible; started -> completed; terminal cleanup complete; console errors 0"
+    },
+    {
+      "fixture": "Ashen Crown JA",
+      "url": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=ashen-crown&acceptance-locale=ja",
+      "path": "normal topology/locale control",
+      "observed": "Japanese lifecycle completed with no console errors"
+    }
+  ],
+  "automatedEvidence": {
+    "focused": "tests/frontier-automatic-display-adapter.test.ts and tests/frontier-product-worker-execution-proof.test.ts",
+    "focusedCount": "9/9 PASS",
+    "covered": [
+      "coordinate-less success and complete finite render-only adoption",
+      "stored and mixed/partial Coordinate bypass",
+      "Cancel before completion and late-result rejection",
+      "Worker failure and Worker construction failure fallback",
+      "DEV alias retained and normal production policy enabled",
+      "pending UX, accessibility attributes, status/toolbar separation, and stale idle cleanup"
+    ],
+    "fullSuite": "588/588 PASS"
+  },
+  "authoritySafety": {
+    "frontier": "Shared Frontier-12 candidate generation only.",
+    "product": "Product-owned presentation evaluation/selection, routing, Relation-label, Node-label, and Self-loop remain unchanged.",
+    "mainThread": "Snapshot/operation/result validation, lifecycle invalidation, render-only adoption, and viewport fit.",
+    "dataset": "Dataset, stored/authored Coordinates, Save Coordinates, persistence, dirty-state, and manual placement remain unchanged.",
+    "repeatedOpenReplacementMutationExitUnmount": "Old operations are invalidated and cannot publish late output; the deterministic adapter tests are the authority for races and cancellation.",
+    "focusKeyboardViewport": "Pending uses role=status/aria-live=polite, Cancel is a native keyboard-reachable button, graph-only styling leaves chrome usable, and status is separated from the viewport toolbar."
+  },
+  "provenance": {
+    "chain": "normalized Dataset input -> shared Frontier candidate generator -> Worker Product evaluation/selection -> App async lifecycle adapter -> normal-path render-only adoption -> acceptance evidence",
+    "sourceRevision": "942f3f60dda50594d09f48d7c76ffa9bfae56544",
+    "entryPoints": ["src/App.tsx acceptDataset", "src/frontier-automatic-display-adapter.ts", "experimental/frontier-product-worker-execution-proof1/worker.ts"],
+    "replay": "Run the normal coordinate-less acceptance URL with npm run dev, or open any coordinate-less Dataset through the built application; inspect data-frontier-async-state and the Graph/status lifecycle."
+  },
+  "acceptedResiduals": [
+    "Frontier Human Review QUALIFIED ordinary crossing residual",
+    "dense runtime/congestion boundary",
+    "deployment/public rollout and any operational monitoring policy"
+  ],
+  "rollout": {
+    "deployed": false,
+    "released": false,
+    "nextCheckpoint": "deployment/public rollout, if separately authorized"
+  }
+}

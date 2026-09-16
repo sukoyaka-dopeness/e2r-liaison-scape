@@ -1,0 +1,47 @@
+{
+  "id": "frontier-automatic-display-formal-visual-review1",
+  "status": "HUMAN_REVIEW_CLOSED_QUALIFIED",
+  "diagnosticOnly": true,
+  "candidate": "frontier-12",
+  "productionDefaultChanged": false,
+  "finalHumanDisposition": "QUALIFIED",
+  "reviewSurface": {
+    "baseUrl": "http://127.0.0.1:5173/e2r-liaison-scape/experimental/product-evaluation-seam/frontier-actual-product-visual-sweep1/",
+    "launch": "npm.cmd run dev -- --host 127.0.0.1",
+    "query": "?fixture=<reviewUnit>",
+    "notes": "Read-only Actual Product presentation surface; candidate snapshot is operation-local and graph-validated."
+  },
+  "acceptanceSeam": {
+    "urlTemplate": "http://127.0.0.1:5173/e2r-liaison-scape/?acceptance-fixture=<fixture>&acceptance-locale=<en|ja>&initial-layout=frontier-12&diagnostic=timing",
+    "requiresAcceptanceMiddleware": true,
+    "coordinateLessOnly": true,
+    "storedOrMixedCoordinatesPreserveExistingAuthority": true
+  },
+  "reviewUnits": [
+    "lighthouse-en", "lighthouse-ja", "apollo-en", "apollo-ja", "titanic-en", "titanic-ja",
+    "ashen-crown-en", "ashen-crown-ja", "berlin-wall-en", "berlin-wall-ja",
+    "label-heavy-ja-10", "dense-k7-7", "dense-k6-8", "dense-k8-8", "parallel-self-loop-control"
+  ],
+  "humanRecord": {
+    "reviewer": "user",
+    "reviewedAt": "2026-09-16",
+    "overall": "QUALIFIED",
+    "coverage": "Overall disposition is explicitly user-confirmed; per-unit dispositions are recorded only where explicitly judged and remain absent for unconfirmed units.",
+    "userJudgmentSummary": "Automatic Displayとしてはこれでよい。瞬時に出てくる初期表示として十分。Titanic / Ashen Crown等に少数のavoid-able-looking ordinary Edge crossingが残るが、採用を止めるほどではない。",
+    "observedResidual": "少数のordinary Edge crossing residual。gross defectではなく、現行Automatic Display採用を阻害しない。",
+    "explicitBoundary": "Frontier-12のprovider selectionは再開しない。crossing residualはpresentation-quality follow-upとして扱い、dense runtime / congestion等の既存boundaryも維持する。",
+    "productionDefaultProposal": "eligible for a separate production-adoption checkpoint; no production default change in this checkpoint.",
+    "units": {},
+    "issueCategories": ["Frontier structural geometry", "ordinary routing", "Relation-label placement", "Node-label placement", "Self-loop presentation", "viewport/fit", "broader Product settling/lifecycle", "dense runtime"]
+  },
+  "supplementalEvidence": "../frontier-actual-product-visual-sweep1/result-summary.json",
+  "humanJudgmentRequired": false,
+  "interactionContract": {
+    "canvasPan": "enabled",
+    "ctrlWheelZoom": "enabled",
+    "toolbarZoomAndReset": "enabled",
+    "graphEditing": "disabled",
+    "contextMenuAndLongPress": "disabled",
+    "candidateAndDatasetMutation": "disabled"
+  }
+}
