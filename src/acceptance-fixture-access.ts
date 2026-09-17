@@ -1,9 +1,9 @@
-export type AcceptanceFixtureName = "titanic" | "apollo-11" | "lighthouse" | "ashen-crown";
+export type AcceptanceFixtureName = "titanic" | "apollo-11" | "lighthouse" | "ashen-crown" | "reference-regression" | "reference-regression-no-coordinates";
 export type AcceptanceFixtureLocale = "en" | "ja";
 export type AcceptanceLayoutArm = "global-placement3" | "frontier-12";
 export const ACCEPTANCE_FIXTURE_ENDPOINT = "/__acceptance-fixtures";
 export const ACCEPTANCE_LAYOUT_ENDPOINT = "/__acceptance-layouts";
-const FIXTURE_NAMES: ReadonlySet<string> = new Set(["titanic", "apollo-11", "lighthouse", "ashen-crown"]);
+const FIXTURE_NAMES: ReadonlySet<string> = new Set(["titanic", "apollo-11", "lighthouse", "ashen-crown", "reference-regression", "reference-regression-no-coordinates"]);
 const LOCALES: ReadonlySet<string> = new Set(["en", "ja"]);
 export function parseAcceptanceFixture(value: string | null, locale: string | null): { name: AcceptanceFixtureName; locale: AcceptanceFixtureLocale } | null {
   if (!value || !FIXTURE_NAMES.has(value) || !locale || !LOCALES.has(locale)) return null;

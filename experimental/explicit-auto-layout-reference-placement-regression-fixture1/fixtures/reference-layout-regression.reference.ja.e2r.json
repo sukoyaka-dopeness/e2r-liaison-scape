@@ -1,0 +1,44 @@
+{
+  "version": "1.0",
+  "entities": [
+    { "id": "north-hub", "name": "北港の調整拠点", "description": "北側クラスターと長距離の依存関係を調整する拠点です。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 140, "y": 140 } } ] } } },
+    { "id": "north-shore", "name": "北岸の記録保管所", "description": "北側にある記録保管所です。長い説明ラベルを含みます。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 340, "y": 80 } } ] } } },
+    { "id": "north-lab", "name": "北部フィールド研究所", "description": "北側のローカルクラスターにある研究所です。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 340, "y": 220 } } ] } } },
+    { "id": "north-archive", "name": "北部記録事務局", "description": "記録とクラスター間の長い依存関係を管理します。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 580, "y": 110 } } ] } } },
+    { "id": "north-market", "name": "北部交流センター", "description": "橋の経路につながる北側の交流拠点です。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 580, "y": 250 } } ] } } },
+    { "id": "south-hub", "name": "南港の調整拠点", "description": "南側クラスターと地域サービスを調整する拠点です。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 140, "y": 660 } } ] } } },
+    { "id": "south-clinic", "name": "南部地域クリニック", "description": "クラスター間の関係を持つ南側のサービス拠点です。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 340, "y": 580 } } ] } } },
+    { "id": "south-school", "name": "南部ラーニングセンター", "description": "南側クラスターの地域教育サービスです。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 340, "y": 740 } } ] } } },
+    { "id": "south-works", "name": "南部作業デポ", "description": "橋への長い関係を持つデポ拠点です。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 580, "y": 620 } } ] } } },
+    { "id": "south-garden", "name": "南部コミュニティ庭園", "description": "参照レイアウトの下端にある地域拠点です。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 580, "y": 780 } } ] } } },
+    { "id": "central-bridge", "name": "中央連絡橋", "description": "クラスター間の依存関係を運ぶ橋の拠点です。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 820, "y": 400 } } ] } } },
+    { "id": "east-observatory", "name": "東部観測所", "description": "複数の長い関係が集まる終端の観測拠点です。", "extensions": { "experimental.github.sukoyaka-dopeness.coordinate": { "coordinates": [ { "spaceId": "liaisonscape-graph", "values": { "x": 980, "y": 400 } } ] } } }
+  ],
+  "events": [],
+  "relations": [
+    { "id": "north-hub-shore", "sourceId": "north-hub", "targetId": "north-shore", "name": "北側の記録アクセスを調整" },
+    { "id": "north-hub-lab", "sourceId": "north-hub", "targetId": "north-lab", "name": "北部の現地作業を調整" },
+    { "id": "north-hub-archive", "sourceId": "north-hub", "targetId": "north-archive", "name": "北部の記録を管理" },
+    { "id": "north-hub-market", "sourceId": "north-hub", "targetId": "north-market", "name": "北部の交流を支援" },
+    { "id": "north-shore-lab", "sourceId": "north-shore", "targetId": "north-lab", "name": "地域の記録情報を共有" },
+    { "id": "north-lab-market", "sourceId": "north-lab", "targetId": "north-market", "name": "現地調査の結果を共有" },
+    { "id": "south-hub-clinic", "sourceId": "south-hub", "targetId": "south-clinic", "name": "地域ケアを調整" },
+    { "id": "south-hub-school", "sourceId": "south-hub", "targetId": "south-school", "name": "地域の学習を支援" },
+    { "id": "south-hub-works", "sourceId": "south-hub", "targetId": "south-works", "name": "デポ業務を案内" },
+    { "id": "south-hub-garden", "sourceId": "south-hub", "targetId": "south-garden", "name": "地域空間を支援" },
+    { "id": "south-clinic-works", "sourceId": "south-clinic", "targetId": "south-works", "name": "物資配送を調整" },
+    { "id": "south-school-garden", "sourceId": "south-school", "targetId": "south-garden", "name": "庭園学習を企画" },
+    { "id": "north-lab-south-clinic", "sourceId": "north-lab", "targetId": "south-clinic", "name": "クラスター間で健康研究を共有" },
+    { "id": "north-market-bridge", "sourceId": "north-market", "targetId": "central-bridge", "name": "交流報告を橋へ送る" },
+    { "id": "north-archive-bridge", "sourceId": "north-archive", "targetId": "central-bridge", "name": "記録を橋へ届ける" },
+    { "id": "south-works-bridge", "sourceId": "south-works", "targetId": "central-bridge", "name": "デポの交通を橋へ案内" },
+    { "id": "central-bridge-observatory", "sourceId": "central-bridge", "targetId": "east-observatory", "name": "クラスター間の観測を転送" },
+    { "id": "south-garden-observatory", "sourceId": "south-garden", "targetId": "east-observatory", "name": "地域の観測結果を報告" },
+    { "id": "north-hub-bridge", "sourceId": "north-hub", "targetId": "central-bridge", "name": "広域の長距離接続を調整" }
+  ],
+  "extensions": {
+    "metadata": { "datasetId": "diagnostic-reference-layout-regression1", "title": "地域調整ネットワークの参照レイアウト" },
+    "draft.github.sukoyaka-dopeness.specification": { "specVersion": "0.1.0", "uses": [ { "extension": "metadata", "version": "1.0.0" }, { "extension": "experimental.github.sukoyaka-dopeness.coordinate", "version": "0.1.0" } ] },
+    "experimental.github.sukoyaka-dopeness.coordinate": { "formatVersion": "0.1.0", "spaces": [ { "id": "liaisonscape-graph", "name": "LiaisonScape graph coordinates", "kind": "cartesian-2d", "components": { "x": { "unit": "liaisonscape-user-unit", "positiveDirection": "display-right" }, "y": { "unit": "liaisonscape-user-unit", "positiveDirection": "display-down" } } } ] }
+  }
+}

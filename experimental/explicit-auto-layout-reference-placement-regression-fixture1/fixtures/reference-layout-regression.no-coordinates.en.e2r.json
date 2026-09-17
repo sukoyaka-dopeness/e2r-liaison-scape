@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "entities": [
+    { "id": "north-hub", "name": "North Harbor Hub", "description": "Coordinates the northern cluster and its long-distance dependencies." },
+    { "id": "north-shore", "name": "North Shore Archive", "description": "A northern archive node with a deliberately long descriptive label." },
+    { "id": "north-lab", "name": "North Field Laboratory", "description": "A laboratory node in the northern local cluster." },
+    { "id": "north-archive", "name": "North Records Office", "description": "Maintains records and a long cross-cluster dependency." },
+    { "id": "north-market", "name": "North Exchange", "description": "A northern exchange node connected to the bridge corridor." },
+    { "id": "south-hub", "name": "South Harbor Hub", "description": "Coordinates the southern cluster and its local services." },
+    { "id": "south-clinic", "name": "South Community Clinic", "description": "A southern service node with a cross-cluster relation." },
+    { "id": "south-school", "name": "South Learning Center", "description": "A local education service in the southern cluster." },
+    { "id": "south-works", "name": "South Works Depot", "description": "A depot node with a long relation to the bridge." },
+    { "id": "south-garden", "name": "South Community Garden", "description": "A community node at the lower edge of the reference layout." },
+    { "id": "central-bridge", "name": "Central Bridge", "description": "A bridge node carrying cross-cluster dependencies." },
+    { "id": "east-observatory", "name": "East Observatory", "description": "The terminal observation node for several long relations." }
+  ],
+  "events": [],
+  "relations": [
+    { "id": "north-hub-shore", "sourceId": "north-hub", "targetId": "north-shore", "name": "coordinates northern archive access" }, { "id": "north-hub-lab", "sourceId": "north-hub", "targetId": "north-lab", "name": "coordinates northern field work" }, { "id": "north-hub-archive", "sourceId": "north-hub", "targetId": "north-archive", "name": "maintains northern records" }, { "id": "north-hub-market", "sourceId": "north-hub", "targetId": "north-market", "name": "supports northern exchange" }, { "id": "north-shore-lab", "sourceId": "north-shore", "targetId": "north-lab", "name": "shares local archive context" }, { "id": "north-lab-market", "sourceId": "north-lab", "targetId": "north-market", "name": "transfers field findings" },
+    { "id": "south-hub-clinic", "sourceId": "south-hub", "targetId": "south-clinic", "name": "coordinates community care" }, { "id": "south-hub-school", "sourceId": "south-hub", "targetId": "south-school", "name": "supports local learning" }, { "id": "south-hub-works", "sourceId": "south-hub", "targetId": "south-works", "name": "routes depot operations" }, { "id": "south-hub-garden", "sourceId": "south-hub", "targetId": "south-garden", "name": "supports community space" }, { "id": "south-clinic-works", "sourceId": "south-clinic", "targetId": "south-works", "name": "coordinates supply delivery" }, { "id": "south-school-garden", "sourceId": "south-school", "targetId": "south-garden", "name": "organizes garden learning" },
+    { "id": "north-lab-south-clinic", "sourceId": "north-lab", "targetId": "south-clinic", "name": "shares health research across clusters" }, { "id": "north-market-bridge", "sourceId": "north-market", "targetId": "central-bridge", "name": "sends exchange reports across the bridge" }, { "id": "north-archive-bridge", "sourceId": "north-archive", "targetId": "central-bridge", "name": "delivers archival records to the bridge" }, { "id": "south-works-bridge", "sourceId": "south-works", "targetId": "central-bridge", "name": "routes depot traffic to the bridge" }, { "id": "central-bridge-observatory", "sourceId": "central-bridge", "targetId": "east-observatory", "name": "forwards cross-cluster observations" }, { "id": "south-garden-observatory", "sourceId": "south-garden", "targetId": "east-observatory", "name": "reports community observations" }, { "id": "north-hub-bridge", "sourceId": "north-hub", "targetId": "central-bridge", "name": "coordinates the long-range regional connection" }
+  ],
+  "extensions": { "metadata": { "datasetId": "diagnostic-reference-layout-regression1", "title": "Regional Coordination Reference Layout" }, "draft.github.sukoyaka-dopeness.specification": { "specVersion": "0.1.0", "uses": [ { "extension": "metadata", "version": "1.0.0" } ] } }
+}

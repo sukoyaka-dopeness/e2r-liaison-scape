@@ -14,6 +14,10 @@ const canonicalFixtureFiles = {
   lighthouse: "lighthouse-restoration-demo",
   "ashen-crown": "ashen-crown",
 };
+const diagnosticFixtureFiles = {
+  "reference-regression": "reference-layout-regression.reference",
+  "reference-regression-no-coordinates": "reference-layout-regression.no-coordinates",
+};
 const ecr3Arms = new Set(["full-post", "adaptive-post", "global-placement3", "frontier-12"]);
 
 function runEcr3Search(fixturePath: string, arm: string): Promise<Record<string, { x: number; y: number }>> {
@@ -62,9 +66,12 @@ export default defineConfig({
     name: "dev-only-canonical-acceptance-fixtures",
     configureServer(server) {
       server.middlewares.use(`/e2r-liaison-scape${ACCEPTANCE_FIXTURE_ENDPOINT}`, (request, response, next) => {
-        const match = /^\/(titanic|apollo-11|lighthouse|ashen-crown)\.(en|ja)\.e2r\.json$/.exec(request.url ?? "");
+        const match = /^\/(titanic|apollo-11|lighthouse|ashen-crown|reference-regression|reference-regression-no-coordinates)\.(en|ja)\.e2r\.json$/.exec(request.url ?? "");
         if (!match || request.method !== "GET") return next();
-        const filePath = path.join(canonicalExamples, `${canonicalFixtureFiles[match[1]]}.${match[2]}.e2r.json`);
+        const fixtureBase = match[1] in diagnosticFixtureFiles
+          ? path.resolve(process.cwd(), "experimental", "explicit-auto-layout-reference-placement-regression-fixture1", "fixtures", diagnosticFixtureFiles[match[1] as keyof typeof diagnosticFixtureFiles])
+          : path.join(canonicalExamples, `${canonicalFixtureFiles[match[1] as keyof typeof canonicalFixtureFiles]}.${match[2]}.e2r.json`);
+        const filePath = `${fixtureBase}.${match[2]}.e2r.json`;
         if (!fs.existsSync(filePath)) { response.statusCode = 404; response.end("Not found"); return; }
         response.setHeader("Content-Type", "application/json; charset=utf-8");
         response.end(fs.readFileSync(filePath));

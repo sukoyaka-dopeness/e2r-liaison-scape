@@ -1,0 +1,45 @@
+{
+  "checkpoint": "E2R-LIAISONSCAPE-EXPLICIT-AUTO-LAYOUT-REFERENCE-PLACEMENT-REGRESSION-FIXTURE1",
+  "classification": "B. REGRESSION REPRODUCED / RESPONSIBILITY STILL MIXED",
+  "sourceRevision": "3c383c67c8e3c599be9de7f99d6785261e147479 + checkpoint working tree",
+  "purpose": "Controlled comparison of a readable saved/reference layout with the current Explicit Auto Layout Preview on the same moderate graph.",
+  "fixturePair": {
+    "reference": "fixtures/reference-layout-regression.reference.{en,ja}.e2r.json",
+    "coordinateLess": "fixtures/reference-layout-regression.no-coordinates.{en,ja}.e2r.json",
+    "entities": 12,
+    "relations": 19,
+    "shape": "two local clusters, two high-degree hubs, bridge/observatory corridor, cross-cluster relations, long EN/JA-shaped labels",
+    "referenceCoordinateSpace": "liaisonscape-graph",
+    "referenceCoordinateCount": 12,
+    "coordinateLessCoordinateCount": 0
+  },
+  "reproduction": {
+    "command": "node --experimental-strip-types tools/explicit-auto-layout-reference-placement-regression-fixture1.mjs",
+    "explicitEntryPoint": "src/explicit-auto-layout-operation.ts:runExplicitAutoLayoutOperation",
+    "productPresentationEntryPoint": "src/graph-presentation.ts:deriveBoundedAutomaticPresentation",
+    "initialAutomaticEntryPoint": "src/auto-layout.ts:settleInitialPlacement",
+    "previewPath": "More -> Auto Layout -> Review Auto Layout",
+    "deterministicSnapshotIdentity": "4ca0ed628aa428e9",
+    "selectedFamily": "structural-frontier-11-circular-order",
+    "selectedCandidateFingerprint": "central-bridge:378,616|east-observatory:212,573|north-archive:544,573|north-hub:666,453|north-lab:666,128|north-market:544,9|north-shore:710,291|south-clinic:378,-35|south-garden:90,453|south-hub:90,128|south-school:45,291|south-works:212,9"
+  },
+  "machineComparison": {
+    "reference": { "overlapPairs": 0, "crossings": 3, "labelRouteHits": 2, "labelOverlap": 0, "extent": [840, 700], "fitScale": 0.4031413613, "score": 643483.9863 },
+    "coordinateLessInitial": { "overlapPairs": 0, "crossings": 22, "labelRouteHits": 8, "labelOverlap": 0, "extent": [460, 452], "fitScale": 0.5968992248, "score": 3332827.4745 },
+    "explicitPreview": { "complete": true, "finite": true, "productEvaluationComplete": true, "overlapPairs": 0, "crossings": 3, "labelRouteHits": 0, "labelOverlap": 0, "extent": [665, 651], "fitScale": 0.4307692308, "score": 695279.0285, "eligible": false, "warnings": ["strict-product-eligibility-false; structural-preview-policy-required"] },
+    "interpretation": "The current metrics do not establish a broad numeric regression from reference to Preview: crossings are equal and Preview has stronger minimum separation/label-route-hit signals, while reference has a wider intended cluster span and lower aggregate score. The visible rearrangement is real; the quality attribution remains mixed rather than a solver-only finding."
+  },
+  "actualProductEvidence": {
+    "server": "http://127.0.0.1:5176/e2r-liaison-scape/",
+    "referenceEnglishUrl": "http://127.0.0.1:5176/e2r-liaison-scape/?acceptance-fixture=reference-regression&acceptance-locale=en",
+    "referenceJapaneseUrl": "http://127.0.0.1:5176/e2r-liaison-scape/?acceptance-fixture=reference-regression&acceptance-locale=ja",
+    "coordinateLessEnglishUrl": "http://127.0.0.1:5176/e2r-liaison-scape/?acceptance-fixture=reference-regression-no-coordinates&acceptance-locale=en",
+    "coordinateLessJapaneseUrl": "http://127.0.0.1:5176/e2r-liaison-scape/?acceptance-fixture=reference-regression-no-coordinates&acceptance-locale=ja",
+    "observed": "Reference EN loaded with 12 entities/19 relations and saved coordinates. More -> Auto Layout reached Running and then Review Auto Layout Preview. Reference retained separated upper/lower cluster structure; Preview visibly rearranged the same graph into a compact circular/central arrangement and exposed the existing presentation-quality warning. No lifecycle failure was observed.",
+    "humanReviewStatus": "READY_TO_REVIEW_NOT_JUDGED"
+  },
+  "boundary": {
+    "notChanged": ["Frontier solver", "Product routing", "Relation-label", "Node-label", "Self-loop", "Pin/Preview/Save lifecycle", "Dataset persistence", "quality heuristics"],
+    "followUp": "Keep this fixture in the Explicit Auto Layout quality track. A future review may decide whether the reference-vs-preview difference is acceptable; do not infer PASS/FAIL or attribute the defect solely to candidate generation from this checkpoint."
+  }
+}
