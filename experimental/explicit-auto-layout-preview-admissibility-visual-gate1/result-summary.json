@@ -1,0 +1,92 @@
+{
+  "contract": "E2R-LIAISONSCAPE-EXPLICIT-AUTO-LAYOUT-PREVIEW-ADMISSIBILITY-VISUAL-GATE1",
+  "diagnosticOnly": true,
+  "sourceRevision": "3c383c67c8e3c599be9de7f99d6785261e147479 + working-tree diagnostic additions",
+  "objective": "Assess a bounded two-tier Explicit Auto Layout Preview policy without changing solver, strict eligibility, or production UI behavior.",
+  "selectedPolicy": {
+    "name": "two-tier-preview",
+    "catastrophic": "structural-invalid or catastrophic Product presentation failure blocks Preview and preserves the pre-operation display",
+    "nonCatastrophicResidual": "structurally valid, non-catastrophic residuals may be shown as the best available candidate with warnings/evidence",
+    "metricRule": "No single crossing or label-nearness count is a catastrophic decision by itself."
+  },
+  "structuralGate": {
+    "inputArtifact": "experimental/explicit-auto-layout-product-eligibility-semantics1/result-summary.json",
+    "cases": 15,
+    "structuralValidCases": 15,
+    "structuralInvalidCases": 0,
+    "candidateNoneCases": 0,
+    "candidateNoneRate": 0,
+    "strictEligibleBestByScoreCases": 0,
+    "strictEligibilityIsNotPreviewPolicy": true
+  },
+  "productEvidence": {
+    "coveredFixtures": [
+      "lighthouse-en",
+      "lighthouse-ja",
+      "apollo-11-en",
+      "label-heavy-ja-10",
+      "dense-k7x7-bipartite",
+      "parallel-self-loop-control"
+    ],
+    "coveredCases": "5 fixture families × no/few/all-pinned = 15 diagnostic cases; browser capture adds Lighthouse EN/JA, Titanic EN, label-heavy JA, and dense Product-faithful surfaces.",
+    "failureCountsOnBestScoreCandidate": {
+      "crossings": 8,
+      "overlapPairs": 3,
+      "labelRouteHits": 10,
+      "labelOverlap": 2,
+      "labelNear20": 15
+    },
+    "interpretation": "The covered candidates are complete and finite, while strict eligibility is frequently false because of mixed presentation residuals. This evidence supports advisory treatment for non-catastrophic residuals, not an automatic catastrophic classifier."
+  },
+  "browserEvidence": [
+    {
+      "surface": "Actual Product normal path",
+      "fixture": "lighthouse-en",
+      "url": "http://192.168.0.11:5175/e2r-liaison-scape/?acceptance-fixture=lighthouse&acceptance-locale=en",
+      "observed": "Pending banner and Cancel were visible; after completion the status cleared, Graph remained usable, Save Coordinates stayed disabled, and viewport controls showed a fitted view."
+    },
+    {
+      "surface": "Actual Product normal path",
+      "fixture": "lighthouse-ja",
+      "url": "http://192.168.0.11:5175/e2r-liaison-scape/?acceptance-fixture=lighthouse&acceptance-locale=ja",
+      "observed": "Japanese pending/cancel copy appeared and cleared; translated toolbar, labels, and fitted Graph remained visible after completion."
+    },
+    {
+      "surface": "Actual Product normal path",
+      "fixture": "titanic-en",
+      "url": "http://192.168.0.11:5175/e2r-liaison-scape/?acceptance-fixture=titanic&acceptance-locale=en",
+      "observed": "Pending state was observed during the slower open; it cleared to a finite fitted Graph with ordinary controls still available."
+    },
+    {
+      "surface": "Product-faithful read-only preview seam",
+      "fixture": "label-heavy-ja-10",
+      "url": "http://192.168.0.11:5175/e2r-liaison-scape/experimental/product-evaluation-seam/cross-family-product-authoritative-auto-layout-portfolio-selector1/?fixture=label-heavy-ja-10&candidate=selected",
+      "observed": "Long Japanese Relation labels were rendered in the read-only candidate surface; the candidate-ready view supported local toolbar zoom from 55% to 61%."
+    },
+    {
+      "surface": "Product-faithful read-only preview seam",
+      "fixture": "dense-k7-7 (source alias dense-k7x7-bipartite)",
+      "url": "http://192.168.0.11:5175/e2r-liaison-scape/experimental/product-evaluation-seam/cross-family-product-authoritative-auto-layout-portfolio-selector1/?fixture=dense-k7-7&candidate=selected",
+      "observed": "Dense 14-node/49-relation Graph stayed usable during pending and became candidate-ready after more than 9 seconds; the fitted 71% view exposed substantial line/label congestion for human inspection."
+    }
+  ],
+  "visualBoundary": {
+    "sameZoomVsOverview": "Overview/fit and local zoom are separate observations; fit scale or aspect is not treated as a structural failure.",
+    "preOperationVsCandidate": "The normal-path fallback is the pre-operation display; candidate evidence is read-only and operation-local. Relative improvement does not waive a catastrophic failure.",
+    "candidateNoneAndCatastrophic": "No candidate-none case occurred in the 15 covered diagnostic cases. Catastrophic presentation remains a policy boundary, not a new threshold or automated classifier in this checkpoint.",
+    "humanReviewStatus": "Unchanged; no Human Review disposition was opened or recorded."
+  },
+  "provenance": {
+    "replayCommand": "node tools/explicit-auto-layout-preview-admissibility-visual-gate1.mjs",
+    "input": "current-source diagnostic result from explicit-auto-layout-product-eligibility-semantics1",
+    "sourceEvidence": [
+      "src/automatic-layout-selection.ts",
+      "src/automatic-layout-quality.ts",
+      "src/App.tsx",
+      "src/auto-layout.ts"
+    ],
+    "output": "experimental/explicit-auto-layout-preview-admissibility-visual-gate1/result-summary.json"
+  },
+  "classification": "B. TWO-TIER PREVIEW POLICY SUPPORTED / CATASTROPHIC CLASSIFIER REMAINS OPEN",
+  "productionChanges": false
+}

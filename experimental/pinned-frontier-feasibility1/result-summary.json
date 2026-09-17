@@ -1,0 +1,1025 @@
+{
+  "contract": "E2R-LIAISONSCAPE-PINNED-FRONTIER-FEASIBILITY-1",
+  "diagnosticOnly": true,
+  "sourceRevision": "3c383c67c8e3c599be9de7f99d6785261e147479 + working-tree diagnostic additions",
+  "classification": "C. PINNED FRONTIER HARD CONSTRAINT ESTABLISHED / PRODUCT QUALITY INSUFFICIENT ON DENSE CONTROL; EXPLICIT AUTO LAYOUT QUALITY GATE REMAINS OPEN",
+  "generator": "experimental/pinned-frontier-feasibility1/core.ts::generatePinnedFrontierCandidateSet",
+  "productEvaluator": "src/graph-presentation.ts::deriveBoundedAutomaticPresentation",
+  "workerBoundary": "experimental/pinned-frontier-feasibility1/worker.mjs",
+  "inputContract": "graph + complete finite initialPositions + fixedAnchors[id]={x,y,source:saved|staged} + serializable Product presentation snapshot",
+  "hardConstraint": "fixed anchors are installed before bounded movable-node relaxation and are never translated/scaled/overwritten; final validation requires exact coordinate equality",
+  "pinnedAlgorithm": "anchor-aware-relaxation-v1 diagnostic candidate construction; no-pin cases delegate to the current shared Frontier generator; pinned cases are not claimed to be the reviewed Frontier-12 lineage",
+  "noPinParity": "shared generateFrontierCandidateSet plus existing Product selection/finalization; no-pin selected fingerprint and representative identities are compared to the accepted Worker core",
+  "productBoundary": "routing, Relation-label, Node-label, Self-loop, previous routes and manual presentation state remain Product-owned and are supplied as an operation-local snapshot",
+  "rows": [
+    {
+      "fixture": "apollo-11-en",
+      "graph": {
+        "nodes": 9,
+        "edges": 11,
+        "selfLoops": 0,
+        "parallelEdges": 0
+      },
+      "presentationSnapshot": {
+        "fingerprint": "{\"edgeCurveOffsets\":{\"entity-1\":24},\"selfLoopOverrides\":{},\"previousNodeLabelPlacements\":{\"armstrong\":{\"x\":413.71545420256683,\"y\":268.43212032734044,\"width\":142,\"height\":34,\"directionX\":0.38268343236509,\"directionY\":-0.9238795325112866},\"aldrin\":{\"x\":194.52038813347028,\"y\":417.79392456725895,\"width\":109.5,\"height\":48,\"directionX\":-0.1950903220161282,\"directionY\":0.9807852804032304},\"collins\":{\"x\":382,\"y\":226,\"width\":122.5,\"height\":48,\"directionX\":6.123233995736766e-17,\"directionY\":1},\"nasa\":{\"x\":37.00000000000001,\"y\":409,\"width\":122.5,\"height\":48,\"directionX\":6.123233995736766e-17,\"directionY\":1},\"columbia\":{\"x\":382,\"y\":-86.00000000000001,\"width\":155,\"height\":48,\"directionX\":-1.8369701987210297e-16,\"directionY\":-1},\"eagle\":{\"x\":658.5,\"y\":345,\"width\":129,\"height\":48,\"directionX\":1,\"directionY\":-2.4492935982947064e-16},\"saturn-v\":{\"x\":-70.75,\"y\":162,\"width\":135.5,\"height\":48,\"directionX\":-1,\"directionY\":1.2246467991473532e-16},\"moon\":{\"x\":554,\"y\":-86.00000000000001,\"width\":129,\"height\":48,\"directionX\":-1.8369701987210297e-16,\"directionY\":-1},\"hornet\":{\"x\":104.5,\"y\":-21.999999999999986,\"width\":129,\"height\":48,\"directionX\":-1,\"directionY\":1.2246467991473532e-16}},\"previousRelationLabelPlacements\":{\"entity-1\":{\"x\":293.8000301910458,\"y\":296.816369248603,\"width\":64,\"height\":22,\"directionX\":0.35165863327973385,\"directionY\":-0.9361283061844832},\"entity-2\":{\"x\":123,\"y\":345,\"width\":64,\"height\":22,\"directionX\":0,\"directionY\":-1},\"entity-3\":{\"x\":197.7384354198577,\"y\":227.63116216034388,\"width\":64,\"height\":22,\"directionX\":-0.4638791989719354,\"directionY\":-0.8858984641374854},\"entity-4\":{\"x\":468,\"y\":345,\"width\":64,\"height\":22,\"directionX\":0,\"directionY\":1},\"entity-5\":{\"x\":297.19996980895434,\"y\":393.1836307513972,\"width\":64,\"height\":22,\"directionX\":-0.3516586332797368,\"directionY\":0.9361283061844823},\"entity-6\":{\"x\":382,\"y\":70,\"width\":64,\"height\":22,\"directionX\":1,\"directionY\":0},\"entity-7\":{\"x\":487.7471955921179,\"y\":153.80119716891255,\"width\":64,\"height\":22,\"directionX\":-0.9067549460731076,\"directionY\":0.42165799858647957},\"entity-8\":{\"x\":37,\"y\":253.5,\"width\":64,\"height\":22,\"directionX\":1,\"directionY\":0},\"entity-9\":{\"x\":554,\"y\":161.5,\"width\":64,\"height\":22,\"directionX\":1,\"directionY\":0},\"entity-10\":{\"x\":209.5,\"y\":70,\"width\":70.5,\"height\":22,\"directionX\":0.47058823529411764,\"directionY\":0.8823529411764706},\"entity-11\":{\"x\":295.5,\"y\":-22,\"width\":70.5,\"height\":22,\"directionX\":0,\"directionY\":1}},\"manualNodeLabelOffsets\":{\"armstrong\":{\"x\":12,\"y\":-16}},\"manualRelationLabelAnchors\":{\"entity-1\":{\"fraction\":0.21099024979114311,\"tangentOffset\":0,\"normalOffset\":0}},\"previousAutomaticRoutes\":{\"entity-1\":{\"id\":\"entity-1\",\"sourceId\":\"armstrong\",\"targetId\":\"nasa\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-1\",\"sourcePosition\":{\"x\":382,\"y\":345},\"targetPosition\":{\"x\":37,\"y\":345},\"path\":\"M 350.0000503184096 324.96524889500427 Q 209.5 237 68.99994968159044 324.96524889500427\",\"samples\":[{\"x\":350.0000503184096,\"y\":324.96524889500427},{\"x\":342.9750478024891,\"y\":320.67694301137277},{\"x\":335.95004528656864,\"y\":316.6085502499788},{\"x\":328.9250427706482,\"y\":312.7600706108225},{\"x\":321.9000402547277,\"y\":309.1315040939036},{\"x\":314.8750377388072,\"y\":305.7228506992221},{\"x\":307.8500352228867,\"y\":302.5341104267781},{\"x\":300.82503270696617,\"y\":299.56528327657173},{\"x\":293.8000301910458,\"y\":296.816369248603},{\"x\":286.77502767512533,\"y\":294.28736834287156},{\"x\":279.7500251592048,\"y\":291.97828055937765},{\"x\":272.7250226432843,\"y\":289.88910589812133},{\"x\":265.7000201273638,\"y\":288.0198443591024},{\"x\":258.67501761144337,\"y\":286.37049594232116},{\"x\":251.6500150955229,\"y\":284.9410606477773},{\"x\":244.62501257960238,\"y\":283.731538475471},{\"x\":237.6000100636819,\"y\":282.74192942540225},{\"x\":230.57500754776143,\"y\":281.97223349757087},{\"x\":223.550005031841,\"y\":281.4224506919772},{\"x\":216.5250025159205,\"y\":281.09258100862087},{\"x\":209.50000000000003,\"y\":280.98262444750213},{\"x\":202.47499748407952,\"y\":281.09258100862087},{\"x\":195.44999496815905,\"y\":281.42245069197713},{\"x\":188.42499245223857,\"y\":281.9722334975709},{\"x\":181.39998993631812,\"y\":282.74192942540225},{\"x\":174.37498742039762,\"y\":283.731538475471},{\"x\":167.34998490447714,\"y\":284.9410606477773},{\"x\":160.32498238855663,\"y\":286.37049594232116},{\"x\":153.2999798726362,\"y\":288.0198443591025},{\"x\":146.27497735671568,\"y\":289.88910589812133},{\"x\":139.24997484079523,\"y\":291.97828055937765},{\"x\":132.22497232487473,\"y\":294.28736834287156},{\"x\":125.19996980895425,\"y\":296.81636924860294},{\"x\":118.1749672930338,\"y\":299.5652832765718},{\"x\":111.1499647771133,\"y\":302.53411042677817},{\"x\":104.12496226119282,\"y\":305.7228506992221},{\"x\":97.09995974527234,\"y\":309.1315040939035},{\"x\":90.07495722935187,\"y\":312.7600706108225},{\"x\":83.0499547134314,\"y\":316.60855024997886},{\"x\":76.02495219751091,\"y\":320.67694301137277},{\"x\":68.99994968159044,\"y\":324.96524889500427}],\"labelPoint\":{\"x\":209.50000000000003,\"y\":280.98262444750213},\"controlPoint\":{\"x\":209.5,\"y\":237},\"parallelSolverEligible\":false},\"entity-2\":{\"id\":\"entity-2\",\"sourceId\":\"aldrin\",\"targetId\":\"nasa\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-2\",\"sourcePosition\":{\"x\":209,\"y\":345},\"targetPosition\":{\"x\":37,\"y\":345},\"path\":\"M 177 345 L 69 345\",\"samples\":[{\"x\":177,\"y\":345},{\"x\":174.3,\"y\":345},{\"x\":171.6,\"y\":345},{\"x\":168.9,\"y\":345},{\"x\":166.2,\"y\":345},{\"x\":163.5,\"y\":345},{\"x\":160.8,\"y\":345},{\"x\":158.1,\"y\":345},{\"x\":155.4,\"y\":345},{\"x\":152.7,\"y\":345},{\"x\":150,\"y\":345},{\"x\":147.3,\"y\":345},{\"x\":144.6,\"y\":345},{\"x\":141.9,\"y\":345},{\"x\":139.2,\"y\":345},{\"x\":136.5,\"y\":345},{\"x\":133.8,\"y\":345},{\"x\":131.1,\"y\":345},{\"x\":128.4,\"y\":345},{\"x\":125.7,\"y\":345},{\"x\":123,\"y\":345},{\"x\":120.3,\"y\":345},{\"x\":117.6,\"y\":345},{\"x\":114.9,\"y\":345},{\"x\":112.2,\"y\":345},{\"x\":109.5,\"y\":345},{\"x\":106.8,\"y\":345},{\"x\":104.1,\"y\":345},{\"x\":101.4,\"y\":345},{\"x\":98.7,\"y\":345},{\"x\":96,\"y\":345},{\"x\":93.3,\"y\":345},{\"x\":90.6,\"y\":345},{\"x\":87.9,\"y\":345},{\"x\":85.2,\"y\":345},{\"x\":82.5,\"y\":345},{\"x\":79.8,\"y\":345},{\"x\":77.1,\"y\":345},{\"x\":74.4,\"y\":345},{\"x\":71.7,\"y\":345},{\"x\":69,\"y\":345}],\"labelPoint\":{\"x\":123,\"y\":345},\"controlPoint\":{\"x\":123,\"y\":345},\"parallelSolverEligible\":false},\"entity-3\":{\"id\":\"entity-3\",\"sourceId\":\"collins\",\"targetId\":\"nasa\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-3\",\"sourcePosition\":{\"x\":382,\"y\":162},\"targetPosition\":{\"x\":37,\"y\":345},\"path\":\"M 350 170.05711154476262 Q 187.00751335170463 211.09613172862345 66.93871497602147 318.27527363936593\",\"samples\":[{\"x\":350,\"y\":170.05711154476262},{\"x\":341.8772029727556,\"y\":172.15040013003494},{\"x\":333.808060555852,\"y\":174.32636386746591},{\"x\":325.79257274928915,\"y\":176.58500275705546},{\"x\":317.8307395530671,\"y\":178.9263167988036},{\"x\":309.92256096718575,\"y\":181.35030599271036},{\"x\":302.06803699164516,\"y\":183.8569703387757},{\"x\":294.2671676264453,\"y\":186.44630983699966},{\"x\":286.5199528715864,\"y\":189.11832448738224},{\"x\":278.8263927270681,\"y\":191.8730142899234},{\"x\":271.1864871928906,\"y\":194.71037924462314},{\"x\":263.6002362690538,\"y\":197.63041935148152},{\"x\":256.0676399555578,\"y\":200.63313461049847},{\"x\":248.5886982524027,\"y\":203.71852502167405},{\"x\":241.16341115958826,\"y\":206.8865905850082},{\"x\":233.79177867711456,\"y\":210.137331300501},{\"x\":226.47380080498166,\"y\":213.47074716815234},{\"x\":219.2094775431895,\"y\":216.88683818796227},{\"x\":211.99880889173818,\"y\":220.38560435993094},{\"x\":204.84179485062754,\"y\":223.96704568405806},{\"x\":197.7384354198577,\"y\":227.63116216034388},{\"x\":190.6887305994286,\"y\":231.37795378878823},{\"x\":183.69268038934027,\"y\":235.20742056939122},{\"x\":176.75028478959274,\"y\":239.1195625021528},{\"x\":169.86154380018598,\"y\":243.11437958707302},{\"x\":163.02645742111991,\"y\":247.1918718241518},{\"x\":156.24502565239467,\"y\":251.3520392133892},{\"x\":149.51724849401018,\"y\":255.5948817547852},{\"x\":142.84312594596648,\"y\":259.9203994483398},{\"x\":136.22265800826352,\"y\":264.328592294053},{\"x\":129.65584468090134,\"y\":268.81946029192477},{\"x\":123.14268596387987,\"y\":273.3930034419552},{\"x\":116.68318185719922,\"y\":278.04922174414423},{\"x\":110.27733236085933,\"y\":282.7881151984918},{\"x\":103.9251374748602,\"y\":287.609683804998},{\"x\":97.62659719920183,\"y\":292.51392756366283},{\"x\":91.38171153388423,\"y\":297.50084647448625},{\"x\":85.19048047890738,\"y\":302.57044053746824},{\"x\":79.05290403427134,\"y\":307.7227097526089},{\"x\":72.96898219997601,\"y\":312.9576541199081},{\"x\":66.93871497602147,\"y\":318.27527363936593}],\"labelPoint\":{\"x\":197.7384354198577,\"y\":227.63116216034388},\"controlPoint\":{\"x\":187.00751335170463,\"y\":211.09613172862345},\"parallelSolverEligible\":false},\"entity-4\":{\"id\":\"entity-4\",\"sourceId\":\"armstrong\",\"targetId\":\"eagle\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-4\",\"sourcePosition\":{\"x\":382,\"y\":345},\"targetPosition\":{\"x\":554,\"y\":345},\"path\":\"M 414 345 L 522 345\",\"samples\":[{\"x\":414,\"y\":345},{\"x\":416.7,\"y\":345},{\"x\":419.4,\"y\":345},{\"x\":422.1,\"y\":345},{\"x\":424.8,\"y\":345},{\"x\":427.5,\"y\":345},{\"x\":430.2,\"y\":345},{\"x\":432.9,\"y\":345},{\"x\":435.6,\"y\":345},{\"x\":438.3,\"y\":345},{\"x\":441,\"y\":345},{\"x\":443.7,\"y\":345},{\"x\":446.4,\"y\":345},{\"x\":449.1,\"y\":345},{\"x\":451.8,\"y\":345},{\"x\":454.5,\"y\":345},{\"x\":457.2,\"y\":345},{\"x\":459.9,\"y\":345},{\"x\":462.6,\"y\":345},{\"x\":465.3,\"y\":345},{\"x\":468,\"y\":345},{\"x\":470.7,\"y\":345},{\"x\":473.4,\"y\":345},{\"x\":476.1,\"y\":345},{\"x\":478.8,\"y\":345},{\"x\":481.5,\"y\":345},{\"x\":484.2,\"y\":345},{\"x\":486.9,\"y\":345},{\"x\":489.6,\"y\":345},{\"x\":492.3,\"y\":345},{\"x\":495,\"y\":345},{\"x\":497.7,\"y\":345},{\"x\":500.4,\"y\":345},{\"x\":503.1,\"y\":345},{\"x\":505.8,\"y\":345},{\"x\":508.5,\"y\":345},{\"x\":511.2,\"y\":345},{\"x\":513.9,\"y\":345},{\"x\":516.6,\"y\":345},{\"x\":519.3,\"y\":345},{\"x\":522,\"y\":345}],\"labelPoint\":{\"x\":468,\"y\":345},\"controlPoint\":{\"x\":468,\"y\":345},\"parallelSolverEligible\":false},\"entity-5\":{\"id\":\"entity-5\",\"sourceId\":\"aldrin\",\"targetId\":\"eagle\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-5\",\"sourcePosition\":{\"x\":209,\"y\":345},\"targetPosition\":{\"x\":554,\"y\":345},\"path\":\"M 240.99994968159044 365.03475110499573 Q 381.5 453 522.0000503184095 365.03475110499573\",\"samples\":[{\"x\":240.99994968159044,\"y\":365.03475110499573},{\"x\":248.0249521975109,\"y\":369.32305698862723},{\"x\":255.0499547134314,\"y\":373.39144975002114},{\"x\":262.07495722935187,\"y\":377.2399293891776},{\"x\":269.0999597452724,\"y\":380.86849590609654},{\"x\":276.1249622611928,\"y\":384.2771493007779},{\"x\":283.14996477711327,\"y\":387.4658895732218},{\"x\":290.1749672930338,\"y\":390.4347167234282},{\"x\":297.19996980895434,\"y\":393.1836307513972},{\"x\":304.2249723248748,\"y\":395.7126316571285},{\"x\":311.2499748407952,\"y\":398.02171944062235},{\"x\":318.2749773567157,\"y\":400.11089410187867},{\"x\":325.2999798726362,\"y\":401.9801556408975},{\"x\":332.3249823885567,\"y\":403.6295040576789},{\"x\":339.34998490447714,\"y\":405.0589393522227},{\"x\":346.3749874203976,\"y\":406.26846152452896},{\"x\":353.3999899363181,\"y\":407.2580705745978},{\"x\":360.4249924522385,\"y\":408.027766502429},{\"x\":367.4499949681591,\"y\":408.57754930802287},{\"x\":374.4749974840795,\"y\":408.90741899137913},{\"x\":381.5,\"y\":409.0173755524979},{\"x\":388.5250025159205,\"y\":408.90741899137913},{\"x\":395.55000503184095,\"y\":408.5775493080228},{\"x\":402.5750075477614,\"y\":408.0277665024291},{\"x\":409.6000100636819,\"y\":407.2580705745978},{\"x\":416.6250125796024,\"y\":406.268461524529},{\"x\":423.65001509552286,\"y\":405.0589393522227},{\"x\":430.6750176114433,\"y\":403.62950405767884},{\"x\":437.7000201273638,\"y\":401.9801556408976},{\"x\":444.7250226432843,\"y\":400.11089410187867},{\"x\":451.7500251592047,\"y\":398.02171944062235},{\"x\":458.7750276751253,\"y\":395.71263165712844},{\"x\":465.8000301910458,\"y\":393.1836307513971},{\"x\":472.82503270696617,\"y\":390.4347167234282},{\"x\":479.8500352228866,\"y\":387.4658895732218},{\"x\":486.8750377388072,\"y\":384.2771493007779},{\"x\":493.9000402547276,\"y\":380.8684959060965},{\"x\":500.92504277064813,\"y\":377.2399293891776},{\"x\":507.9500452865686,\"y\":373.3914497500212},{\"x\":514.975047802489,\"y\":369.32305698862723},{\"x\":522.0000503184095,\"y\":365.03475110499573}],\"labelPoint\":{\"x\":381.5,\"y\":409.0173755524979},\"controlPoint\":{\"x\":381.5,\"y\":453},\"parallelSolverEligible\":false},\"entity-6\":{\"id\":\"entity-6\",\"sourceId\":\"collins\",\"targetId\":\"columbia\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-6\",\"sourcePosition\":{\"x\":382,\"y\":162},\"targetPosition\":{\"x\":382,\"y\":-22},\"path\":\"M 382 130 L 382 10\",\"samples\":[{\"x\":382,\"y\":130},{\"x\":382,\"y\":127},{\"x\":382,\"y\":124},{\"x\":382,\"y\":121},{\"x\":382,\"y\":118},{\"x\":382,\"y\":115},{\"x\":382,\"y\":112},{\"x\":382,\"y\":109},{\"x\":382,\"y\":106},{\"x\":382,\"y\":103},{\"x\":382,\"y\":100},{\"x\":382,\"y\":97},{\"x\":382,\"y\":94},{\"x\":382,\"y\":91},{\"x\":382,\"y\":88},{\"x\":382,\"y\":85},{\"x\":382,\"y\":82},{\"x\":382,\"y\":79},{\"x\":382,\"y\":76},{\"x\":382,\"y\":73},{\"x\":382,\"y\":70},{\"x\":382,\"y\":67},{\"x\":382,\"y\":64},{\"x\":382,\"y\":61},{\"x\":382,\"y\":58},{\"x\":382,\"y\":55},{\"x\":382,\"y\":52},{\"x\":382,\"y\":49},{\"x\":382,\"y\":46},{\"x\":382,\"y\":43},{\"x\":382,\"y\":40},{\"x\":382,\"y\":37},{\"x\":382,\"y\":34},{\"x\":382,\"y\":31},{\"x\":382,\"y\":28},{\"x\":382,\"y\":25},{\"x\":382,\"y\":22},{\"x\":382,\"y\":19},{\"x\":382,\"y\":16},{\"x\":382,\"y\":13},{\"x\":382,\"y\":10}],\"labelPoint\":{\"x\":382,\"y\":70},\"controlPoint\":{\"x\":382,\"y\":70},\"parallelSolverEligible\":false},\"entity-7\":{\"id\":\"entity-7\",\"sourceId\":\"columbia\",\"targetId\":\"eagle\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-7\",\"sourcePosition\":{\"x\":382,\"y\":-22},\"targetPosition\":{\"x\":554,\"y\":345},\"path\":\"M 404.39054709271596 9.75947637429098 Q 500.59758832965457 146.2226561506796 545.4030586164465 313\",\"samples\":[{\"x\":404.39054709271596,\"y\":9.75947637429098},{\"x\":409.16877317271906,\"y\":16.601581715655993},{\"x\":413.8827472890344,\"y\":23.48157976211217},{\"x\":418.5324694416622,\"y\":30.39947051365952},{\"x\":423.1179396306023,\"y\":37.35525397029803},{\"x\":427.63915785585465,\"y\":44.3489301320277},{\"x\":432.0961241174192,\"y\":51.38049899884853},{\"x\":436.4888384152962,\"y\":58.449960570760524},{\"x\":440.8173007494856,\"y\":65.5573148477637},{\"x\":445.08151111998717,\"y\":72.70256182985803},{\"x\":449.28146952680106,\"y\":79.88570151704353},{\"x\":453.41717596992737,\"y\":87.1067339093202},{\"x\":457.4886304493659,\"y\":94.365659006688},{\"x\":461.49583296511685,\"y\":101.66247680914701},{\"x\":465.43878351717996,\"y\":108.99718731669714},{\"x\":469.31748210555554,\"y\":116.36979052933847},{\"x\":473.1319287302433,\"y\":123.78028644707098},{\"x\":476.8821233912435,\"y\":131.2286750698946},{\"x\":480.56806608855607,\"y\":138.71495639780943},{\"x\":484.1897568221808,\"y\":146.2391304308154},{\"x\":487.7471955921179,\"y\":153.80119716891255},{\"x\":491.2403823983673,\"y\":161.40115661210086},{\"x\":494.66931724092905,\"y\":169.03900876038034},{\"x\":498.03400011980307,\"y\":176.71475361375093},{\"x\":501.3344310349895,\"y\":184.42839117221274},{\"x\":504.5706099864882,\"y\":192.17992143576572},{\"x\":507.74253697429924,\"y\":199.96934440440987},{\"x\":510.85021199842254,\"y\":207.79666007814518},{\"x\":513.8936350588581,\"y\":215.6618684569716},{\"x\":516.8728061556061,\"y\":223.56496954088925},{\"x\":519.7877252886664,\"y\":231.50596332989804},{\"x\":522.638392458039,\"y\":239.484849823998},{\"x\":525.4248076637239,\"y\":247.50162902318914},{\"x\":528.1469709057211,\"y\":255.5563009274714},{\"x\":530.8048821840306,\"y\":263.6488655368448},{\"x\":533.3985414986525,\"y\":271.7793228513095},{\"x\":535.9279488495866,\"y\":279.9476728708653},{\"x\":538.3931042368331,\"y\":288.1539155955122},{\"x\":540.794007660392,\"y\":296.3980510252503},{\"x\":543.130659120263,\"y\":304.6800791600795},{\"x\":545.4030586164465,\"y\":313}],\"labelPoint\":{\"x\":487.7471955921179,\"y\":153.80119716891255},\"controlPoint\":{\"x\":500.59758832965457,\"y\":146.2226561506796},\"parallelSolverEligible\":false},\"entity-8\":{\"id\":\"entity-8\",\"sourceId\":\"nasa\",\"targetId\":\"saturn-v\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-8\",\"sourcePosition\":{\"x\":37,\"y\":345},\"targetPosition\":{\"x\":37,\"y\":162},\"path\":\"M 37 313 L 37 194\",\"samples\":[{\"x\":37,\"y\":313},{\"x\":37,\"y\":310.025},{\"x\":37,\"y\":307.05},{\"x\":37,\"y\":304.075},{\"x\":37,\"y\":301.1},{\"x\":37,\"y\":298.125},{\"x\":37,\"y\":295.15},{\"x\":37,\"y\":292.175},{\"x\":37,\"y\":289.2},{\"x\":37,\"y\":286.225},{\"x\":37,\"y\":283.25},{\"x\":37,\"y\":280.275},{\"x\":37,\"y\":277.3},{\"x\":37,\"y\":274.325},{\"x\":37,\"y\":271.35},{\"x\":37,\"y\":268.375},{\"x\":37,\"y\":265.4},{\"x\":37,\"y\":262.425},{\"x\":37,\"y\":259.45},{\"x\":37,\"y\":256.475},{\"x\":37,\"y\":253.5},{\"x\":37,\"y\":250.525},{\"x\":37,\"y\":247.55},{\"x\":37,\"y\":244.575},{\"x\":37,\"y\":241.60000000000002},{\"x\":37,\"y\":238.625},{\"x\":37,\"y\":235.64999999999998},{\"x\":37,\"y\":232.675},{\"x\":37,\"y\":229.7},{\"x\":37,\"y\":226.72500000000002},{\"x\":37,\"y\":223.75},{\"x\":37,\"y\":220.77499999999998},{\"x\":37,\"y\":217.8},{\"x\":37,\"y\":214.825},{\"x\":37,\"y\":211.85000000000002},{\"x\":37,\"y\":208.875},{\"x\":37,\"y\":205.89999999999998},{\"x\":37,\"y\":202.925},{\"x\":37,\"y\":199.95},{\"x\":37,\"y\":196.97500000000002},{\"x\":37,\"y\":194}],\"labelPoint\":{\"x\":37,\"y\":253.5},\"controlPoint\":{\"x\":37,\"y\":253.5},\"parallelSolverEligible\":false},\"entity-9\":{\"id\":\"entity-9\",\"sourceId\":\"eagle\",\"targetId\":\"moon\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-9\",\"sourcePosition\":{\"x\":554,\"y\":345},\"targetPosition\":{\"x\":554,\"y\":-22},\"path\":\"M 554 313 L 554 10\",\"samples\":[{\"x\":554,\"y\":313},{\"x\":554,\"y\":305.425},{\"x\":554,\"y\":297.85},{\"x\":554,\"y\":290.275},{\"x\":554,\"y\":282.7},{\"x\":554,\"y\":275.125},{\"x\":554,\"y\":267.55},{\"x\":554,\"y\":259.975},{\"x\":554,\"y\":252.4},{\"x\":554,\"y\":244.825},{\"x\":554,\"y\":237.25},{\"x\":554,\"y\":229.675},{\"x\":554,\"y\":222.10000000000002},{\"x\":554,\"y\":214.52499999999998},{\"x\":554,\"y\":206.95},{\"x\":554,\"y\":199.375},{\"x\":554,\"y\":191.8},{\"x\":554,\"y\":184.225},{\"x\":554,\"y\":176.65},{\"x\":554,\"y\":169.07500000000002},{\"x\":554,\"y\":161.5},{\"x\":554,\"y\":153.92499999999998},{\"x\":554,\"y\":146.35},{\"x\":554,\"y\":138.775},{\"x\":554,\"y\":131.20000000000002},{\"x\":554,\"y\":123.625},{\"x\":554,\"y\":116.04999999999998},{\"x\":554,\"y\":108.475},{\"x\":554,\"y\":100.9},{\"x\":554,\"y\":93.32500000000002},{\"x\":554,\"y\":85.75},{\"x\":554,\"y\":78.17499999999998},{\"x\":554,\"y\":70.6},{\"x\":554,\"y\":63.025000000000006},{\"x\":554,\"y\":55.44999999999999},{\"x\":554,\"y\":47.875},{\"x\":554,\"y\":40.30000000000001},{\"x\":554,\"y\":32.724999999999966},{\"x\":554,\"y\":25.150000000000034},{\"x\":554,\"y\":17.57499999999999},{\"x\":554,\"y\":10}],\"labelPoint\":{\"x\":554,\"y\":161.5},\"controlPoint\":{\"x\":554,\"y\":161.5},\"parallelSolverEligible\":false},\"entity-10\":{\"id\":\"entity-10\",\"sourceId\":\"saturn-v\",\"targetId\":\"columbia\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-10\",\"sourcePosition\":{\"x\":37,\"y\":162},\"targetPosition\":{\"x\":382,\"y\":-22},\"path\":\"M 69 144.93333333333334 L 350 -4.933333333333334\",\"samples\":[{\"x\":69,\"y\":144.93333333333334},{\"x\":76.025,\"y\":141.18666666666667},{\"x\":83.05,\"y\":137.44},{\"x\":90.075,\"y\":133.69333333333333},{\"x\":97.1,\"y\":129.94666666666666},{\"x\":104.125,\"y\":126.2},{\"x\":111.15,\"y\":122.45333333333333},{\"x\":118.175,\"y\":118.70666666666668},{\"x\":125.2,\"y\":114.96000000000001},{\"x\":132.225,\"y\":111.21333333333334},{\"x\":139.25,\"y\":107.46666666666667},{\"x\":146.275,\"y\":103.72},{\"x\":153.3,\"y\":99.97333333333333},{\"x\":160.325,\"y\":96.22666666666666},{\"x\":167.35,\"y\":92.48},{\"x\":174.375,\"y\":88.73333333333333},{\"x\":181.4,\"y\":84.98666666666666},{\"x\":188.425,\"y\":81.24000000000001},{\"x\":195.45,\"y\":77.49333333333333},{\"x\":202.475,\"y\":73.74666666666667},{\"x\":209.5,\"y\":70},{\"x\":216.525,\"y\":66.25333333333333},{\"x\":223.55,\"y\":62.50666666666666},{\"x\":230.575,\"y\":58.760000000000005},{\"x\":237.6,\"y\":55.013333333333335},{\"x\":244.625,\"y\":51.266666666666666},{\"x\":251.65,\"y\":47.519999999999996},{\"x\":258.675,\"y\":43.773333333333326},{\"x\":265.7,\"y\":40.02666666666667},{\"x\":272.725,\"y\":36.28},{\"x\":279.75,\"y\":32.53333333333333},{\"x\":286.775,\"y\":28.78666666666666},{\"x\":293.8,\"y\":25.039999999999992},{\"x\":300.825,\"y\":21.293333333333337},{\"x\":307.85,\"y\":17.546666666666667},{\"x\":314.875,\"y\":13.800000000000011},{\"x\":321.9,\"y\":10.053333333333313},{\"x\":328.925,\"y\":6.3066666666666436},{\"x\":335.95,\"y\":2.5600000000000023},{\"x\":342.97499999999997,\"y\":-1.1866666666666674},{\"x\":350,\"y\":-4.933333333333337}],\"labelPoint\":{\"x\":209.5,\"y\":70},\"controlPoint\":{\"x\":209.5,\"y\":70},\"parallelSolverEligible\":false},\"entity-11\":{\"id\":\"entity-11\",\"sourceId\":\"hornet\",\"targetId\":\"columbia\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"entity-11\",\"sourcePosition\":{\"x\":209,\"y\":-22},\"targetPosition\":{\"x\":382,\"y\":-22},\"path\":\"M 241 -22 L 350 -22\",\"samples\":[{\"x\":241,\"y\":-22},{\"x\":243.725,\"y\":-22},{\"x\":246.45,\"y\":-22},{\"x\":249.175,\"y\":-22},{\"x\":251.9,\"y\":-22},{\"x\":254.625,\"y\":-22},{\"x\":257.35,\"y\":-22},{\"x\":260.075,\"y\":-22},{\"x\":262.8,\"y\":-22},{\"x\":265.525,\"y\":-22},{\"x\":268.25,\"y\":-22},{\"x\":270.975,\"y\":-22},{\"x\":273.7,\"y\":-22},{\"x\":276.425,\"y\":-22},{\"x\":279.15,\"y\":-22},{\"x\":281.875,\"y\":-22},{\"x\":284.6,\"y\":-22},{\"x\":287.325,\"y\":-22},{\"x\":290.05,\"y\":-22},{\"x\":292.775,\"y\":-22},{\"x\":295.5,\"y\":-22},{\"x\":298.225,\"y\":-22},{\"x\":300.95,\"y\":-22},{\"x\":303.675,\"y\":-22},{\"x\":306.4,\"y\":-22},{\"x\":309.125,\"y\":-22},{\"x\":311.85,\"y\":-22},{\"x\":314.575,\"y\":-22},{\"x\":317.3,\"y\":-22},{\"x\":320.025,\"y\":-22},{\"x\":322.75,\"y\":-22},{\"x\":325.475,\"y\":-22},{\"x\":328.2,\"y\":-22},{\"x\":330.925,\"y\":-22},{\"x\":333.65,\"y\":-22},{\"x\":336.375,\"y\":-22},{\"x\":339.1,\"y\":-22},{\"x\":341.825,\"y\":-22},{\"x\":344.55,\"y\":-22},{\"x\":347.275,\"y\":-22},{\"x\":350,\"y\":-22}],\"labelPoint\":{\"x\":295.5,\"y\":-22},\"controlPoint\":{\"x\":295.5,\"y\":-22},\"parallelSolverEligible\":false}}}",
+        "nonEmpty": true,
+        "edgeCurveOffsets": 1,
+        "selfLoopOverrides": 0,
+        "previousNodeLabels": 9,
+        "previousRelationLabels": 11,
+        "manualNodeLabels": 1,
+        "manualRelationLabels": 1,
+        "previousRoutes": 11
+      },
+      "noPinParity": true,
+      "baselineSelectedPositionFingerprint": "aldrin:209,345|armstrong:382,345|collins:382,162|columbia:382,-22|eagle:554,345|hornet:209,-22|moon:554,-22|nasa:37,345|saturn-v:37,162",
+      "experimentNoPinSelectedPositionFingerprint": "aldrin:209,345|armstrong:382,345|collins:382,162|columbia:382,-22|eagle:554,345|hornet:209,-22|moon:554,-22|nasa:37,345|saturn-v:37,162",
+      "rows": [
+        {
+          "fixture": "apollo-11-en",
+          "pinCase": "no-pins",
+          "fixedAnchorCount": 0,
+          "movableNodeCount": 9,
+          "anchorSources": {},
+          "status": "completed",
+          "candidateCount": 12,
+          "selectedFamily": "structural-frontier-4-grid-structural",
+          "selectedPositionFingerprint": "aldrin:209,345|armstrong:382,345|collins:382,162|columbia:382,-22|eagle:554,345|hornet:209,-22|moon:554,-22|nasa:37,345|saturn-v:37,162",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 406.086,
+          "selectedMetrics": {
+            "score": 41604.888288858296,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              517,
+              367
+            ],
+            "aspectRatio": 1.4087193460490464,
+            "fitScale": 0.7146171693735499,
+            "routeMedian": 281.90339037864624,
+            "routeMax": 334.6259818269074,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 1,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 154.39061357829445,
+            "labelCorridorConflictPairs": 10,
+            "labelCorridorMinimumClearance": 1.099999999999966,
+            "labelCorridorMaximumIntrusion": 46.900000000000034,
+            "usableSpanPenalty": 121.36388156852294,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "d271847fd942fa794eaed332a99bc27c708de41daa78739ed4899ddbfe8f4e26",
+          "structuredClone": true
+        },
+        {
+          "fixture": "apollo-11-en",
+          "pinCase": "one-saved",
+          "fixedAnchorCount": 1,
+          "movableNodeCount": 8,
+          "anchorSources": {
+            "aldrin": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-4",
+          "selectedPositionFingerprint": "aldrin:389,409|armstrong:367,299|collins:369,160|columbia:389,-23|eagle:561,332|hornet:190,-14|moon:561,-13|nasa:58,351|saturn-v:51,141",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 78.443,
+          "selectedMetrics": {
+            "score": 36089.20047067295,
+            "overlapPairs": 0,
+            "minimumSeparation": 112.17842929904127,
+            "extent": [
+              510,
+              432
+            ],
+            "aspectRatio": 1.1805555555555556,
+            "fitScale": 0.6209677419354839,
+            "routeMedian": 249.36936862324174,
+            "routeMax": 323.3567951548613,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 1,
+            "labelNear20": 1,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 137.10100114912356,
+            "labelCorridorConflictPairs": 8,
+            "labelCorridorMinimumClearance": 0.21583771151745168,
+            "labelCorridorMaximumIntrusion": 47.78416228848255,
+            "usableSpanPenalty": 7.901234567901179,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "d271847fd942fa794eaed332a99bc27c708de41daa78739ed4899ddbfe8f4e26",
+          "structuredClone": true
+        },
+        {
+          "fixture": "apollo-11-en",
+          "pinCase": "few-staged",
+          "fixedAnchorCount": 2,
+          "movableNodeCount": 7,
+          "anchorSources": {
+            "aldrin": "staged",
+            "eagle": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-1",
+          "selectedPositionFingerprint": "aldrin:389,409|armstrong:369,304|collins:369,170|columbia:389,-3|eagle:734,409|hornet:202,-17|moon:568,-15|nasa:61,342|saturn-v:37,152",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 77.75,
+          "selectedMetrics": {
+            "score": 46297.235201044416,
+            "overlapPairs": 0,
+            "minimumSeparation": 106.88779163215976,
+            "extent": [
+              697,
+              426
+            ],
+            "aspectRatio": 1.636150234741784,
+            "fitScale": 0.6285714285714286,
+            "routeMedian": 279.4686329727396,
+            "routeMax": 457.54793509893244,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 1,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 195.81139678030394,
+            "labelCorridorConflictPairs": 9,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 0,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "d271847fd942fa794eaed332a99bc27c708de41daa78739ed4899ddbfe8f4e26",
+          "structuredClone": true
+        },
+        {
+          "fixture": "apollo-11-en",
+          "pinCase": "many-mixed",
+          "fixedAnchorCount": 7,
+          "movableNodeCount": 2,
+          "anchorSources": {
+            "aldrin": "saved",
+            "armstrong": "staged",
+            "collins": "saved",
+            "columbia": "staged",
+            "eagle": "saved",
+            "hornet": "staged",
+            "moon": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-4",
+          "selectedPositionFingerprint": "aldrin:389,409|armstrong:562,409|collins:562,226|columbia:562,42|eagle:734,409|hornet:389,42|moon:734,42|nasa:86,352|saturn-v:64,141",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 71.689,
+          "selectedMetrics": {
+            "score": 76756.32371689909,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              670,
+              367
+            ],
+            "aspectRatio": 1.8256130790190737,
+            "fitScale": 0.7146171693735499,
+            "routeMedian": 298.39644264387385,
+            "routeMax": 446.4302436088427,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 2,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 160.14522292737456,
+            "labelCorridorConflictPairs": 8,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 113.46264700062187,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "d271847fd942fa794eaed332a99bc27c708de41daa78739ed4899ddbfe8f4e26",
+          "structuredClone": true
+        },
+        {
+          "fixture": "apollo-11-en",
+          "pinCase": "one-movable",
+          "fixedAnchorCount": 8,
+          "movableNodeCount": 1,
+          "anchorSources": {
+            "aldrin": "saved",
+            "armstrong": "staged",
+            "collins": "saved",
+            "columbia": "staged",
+            "eagle": "saved",
+            "hornet": "staged",
+            "moon": "saved",
+            "nasa": "staged"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-4",
+          "selectedPositionFingerprint": "aldrin:389,409|armstrong:562,409|collins:562,226|columbia:562,42|eagle:734,409|hornet:389,42|moon:734,42|nasa:217,409|saturn-v:65,150",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 70.125,
+          "selectedMetrics": {
+            "score": 76753.87251141097,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              669,
+              367
+            ],
+            "aspectRatio": 1.8228882833787465,
+            "fitScale": 0.7146171693735499,
+            "routeMedian": 281.9033903786461,
+            "routeMax": 445.61020437958615,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 2,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 189.65781355055657,
+            "labelCorridorConflictPairs": 8,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 121.36388156852308,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "d271847fd942fa794eaed332a99bc27c708de41daa78739ed4899ddbfe8f4e26",
+          "structuredClone": true
+        },
+        {
+          "fixture": "apollo-11-en",
+          "pinCase": "all-pinned",
+          "fixedAnchorCount": 9,
+          "movableNodeCount": 0,
+          "anchorSources": {
+            "aldrin": "saved",
+            "armstrong": "staged",
+            "collins": "saved",
+            "columbia": "staged",
+            "eagle": "saved",
+            "hornet": "staged",
+            "moon": "saved",
+            "nasa": "staged",
+            "saturn-v": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "pinned-fixed-1",
+          "selectedPositionFingerprint": "aldrin:389,409|armstrong:562,409|collins:562,226|columbia:562,42|eagle:734,409|hornet:389,42|moon:734,42|nasa:217,409|saturn-v:217,226",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 70.198,
+          "selectedMetrics": {
+            "score": 81604.88828885829,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              517,
+              367
+            ],
+            "aspectRatio": 1.4087193460490464,
+            "fitScale": 0.7146171693735499,
+            "routeMedian": 281.9033903786461,
+            "routeMax": 334.6259818269074,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 2,
+            "labelNear20": 4,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 184.29723908623657,
+            "labelCorridorConflictPairs": 9,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 121.36388156852308,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "d271847fd942fa794eaed332a99bc27c708de41daa78739ed4899ddbfe8f4e26",
+          "structuredClone": true
+        }
+      ],
+      "runtime": {
+        "repetitions": 3,
+        "candidateGenerationMsMedian": 0.35190000000011423,
+        "productEvaluationMsMedian": 65.96969999999965,
+        "candidateGenerationMs": [
+          0.5338999999999032,
+          0.34209999999984575,
+          0.35190000000011423
+        ],
+        "productEvaluationMs": [
+          86.88959999999997,
+          64.90910000000031,
+          65.96969999999965
+        ]
+      },
+      "worker": {
+        "messages": [
+          {
+            "kind": "started",
+            "operationId": "pinned-feasibility-apollo-11-en",
+            "generation": 1,
+            "snapshotIdentity": "d271847fd942fa794eaed332a99bc27c708de41daa78739ed4899ddbfe8f4e26"
+          },
+          {
+            "kind": "completed",
+            "operationId": "pinned-feasibility-apollo-11-en",
+            "generation": 1,
+            "snapshotIdentity": "d271847fd942fa794eaed332a99bc27c708de41daa78739ed4899ddbfe8f4e26"
+          }
+        ],
+        "terminal": {
+          "kind": "completed",
+          "validation": {
+            "ok": true
+          }
+        }
+      }
+    },
+    {
+      "fixture": "dense-k7-7",
+      "graph": {
+        "nodes": 7,
+        "edges": 21,
+        "selfLoops": 0,
+        "parallelEdges": 0
+      },
+      "presentationSnapshot": {
+        "fingerprint": "{\"edgeCurveOffsets\":{\"dense-1-dense-2\":24},\"selfLoopOverrides\":{},\"previousNodeLabelPlacements\":{\"dense-1\":{\"x\":137.96962481405916,\"y\":-34.93646336822747,\"width\":57.5,\"height\":20,\"directionX\":-0.9238795325112868,\"directionY\":-0.38268343236508967},\"dense-2\":{\"x\":616.75,\"y\":-8.000000000000016,\"width\":57.5,\"height\":20,\"directionX\":1,\"directionY\":-2.4492935982947064e-16},\"dense-3\":{\"x\":-38.75,\"y\":-7.999999999999992,\"width\":57.5,\"height\":20,\"directionX\":-1,\"directionY\":1.2246467991473532e-16},\"dense-4\":{\"x\":443.8005966578044,\"y\":5.685289558336862,\"width\":57.5,\"height\":20,\"directionX\":0.9807852804032304,\"directionY\":0.19509032201612825},\"dense-5\":{\"x\":30.000000000000004,\"y\":225,\"width\":57.5,\"height\":20,\"directionX\":6.123233995736766e-17,\"directionY\":1},\"dense-6\":{\"x\":375,\"y\":225,\"width\":57.5,\"height\":20,\"directionX\":6.123233995736766e-17,\"directionY\":1},\"dense-7\":{\"x\":203,\"y\":225,\"width\":57.5,\"height\":20,\"directionX\":6.123233995736766e-17,\"directionY\":1}},\"previousRelationLabelPlacements\":{\"dense-1-dense-2\":{\"x\":347.3999899363181,\"y\":-70.2580705745978,\"width\":109.5,\"height\":22,\"directionX\":0.12424711998726386,\"directionY\":0.9922513054538503},\"dense-1-dense-3\":{\"x\":124.75267006847962,\"y\":0.42021148829674715,\"width\":109.5,\"height\":22,\"directionX\":-0.11030541381334875,\"directionY\":-0.9938977390473659},\"dense-1-dense-4\":{\"x\":289,\"y\":-48,\"width\":109.5,\"height\":22,\"directionX\":0,\"directionY\":1},\"dense-1-dense-5\":{\"x\":52.1217813358096,\"y\":93.37307355349041,\"width\":109.5,\"height\":22,\"directionX\":-0.7266826962436217,\"directionY\":-0.6869732592904182},\"dense-1-dense-6\":{\"x\":289,\"y\":83.5,\"width\":109.5,\"height\":22,\"directionX\":-0.7286674094653334,\"directionY\":0.6848677291149584},\"dense-1-dense-7\":{\"x\":179,\"y\":71.6,\"width\":109.5,\"height\":22,\"directionX\":-1,\"directionY\":0},\"dense-2-dense-3\":{\"x\":289,\"y\":-109.05475457938388,\"width\":109.5,\"height\":22,\"directionX\":0,\"directionY\":-1},\"dense-2-dense-4\":{\"x\":461.5,\"y\":-40.21965317919075,\"width\":109.5,\"height\":22,\"directionX\":0,\"directionY\":-1},\"dense-2-dense-5\":{\"x\":383.15770587623643,\"y\":62.790955094914885,\"width\":109.5,\"height\":22,\"directionX\":-0.36553753045288545,\"directionY\":-0.9307966017505683},\"dense-2-dense-6\":{\"x\":478.94038470984697,\"y\":99.98735822296997,\"width\":109.5,\"height\":22,\"directionX\":-0.7266826962436241,\"directionY\":-0.6869732592904157},\"dense-2-dense-7\":{\"x\":505.88127295342986,\"y\":55.21756262844854,\"width\":109.5,\"height\":22,\"directionX\":-0.5914799138295156,\"directionY\":-0.8063197328208138},\"dense-3-dense-4\":{\"x\":248.982717993335,\"y\":10.178428369602003,\"width\":109.5,\"height\":22,\"directionX\":0.24293255335072012,\"directionY\":0.9700431817823884},\"dense-3-dense-5\":{\"x\":6,\"y\":59.699999999999996,\"width\":109.5,\"height\":22,\"directionX\":-1,\"directionY\":0},\"dense-3-dense-6\":{\"x\":283.1929142080465,\"y\":138.2381456534349,\"width\":109.5,\"height\":22,\"directionX\":-0.4013493238118811,\"directionY\":0.9159250625874075},\"dense-3-dense-7\":{\"x\":99.20299575507035,\"y\":123.42959834665248,\"width\":109.5,\"height\":22,\"directionX\":-0.7266826962436209,\"directionY\":0.6869732592904192},\"dense-4-dense-5\":{\"x\":92.12639578040314,\"y\":150.82201736693344,\"width\":109.5,\"height\":22,\"directionX\":-0.37933095918648396,\"directionY\":-0.9252610568929517},\"dense-4-dense-6\":{\"x\":351,\"y\":107.3,\"width\":109.5,\"height\":22,\"directionX\":-1,\"directionY\":0},\"dense-4-dense-7\":{\"x\":290.30051195521565,\"y\":36.51673045072701,\"width\":109.5,\"height\":22,\"directionX\":-0.7021638598915474,\"directionY\":-0.7120153887818742},\"dense-5-dense-6\":{\"x\":174.2648609079718,\"y\":99.17565064570485,\"width\":109.5,\"height\":22,\"directionX\":0.15128204556657013,\"directionY\":0.9884906386451994},\"dense-5-dense-7\":{\"x\":116.5,\"y\":215,\"width\":109.5,\"height\":22,\"directionX\":0,\"directionY\":1},\"dense-6-dense-7\":{\"x\":289,\"y\":215,\"width\":109.5,\"height\":22,\"directionX\":0,\"directionY\":-1}},\"manualNodeLabelOffsets\":{\"dense-1\":{\"x\":12,\"y\":-16}},\"manualRelationLabelAnchors\":{\"dense-1-dense-2\":{\"fraction\":0.40558824578498776,\"tangentOffset\":0,\"normalOffset\":0}},\"previousAutomaticRoutes\":{\"dense-1-dense-2\":{\"id\":\"dense-1-dense-2\",\"sourceId\":\"dense-1\",\"targetId\":\"dense-2\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-1-dense-2\",\"sourcePosition\":{\"x\":203,\"y\":-8},\"targetPosition\":{\"x\":548,\"y\":-8},\"path\":\"M 234.99994968159044 -28.034751104995745 Q 375.5 -116 516.0000503184095 -28.034751104995745\",\"samples\":[{\"x\":234.99994968159044,\"y\":-28.034751104995745},{\"x\":242.02495219751088,\"y\":-32.3230569886272},{\"x\":249.0499547134314,\"y\":-36.39144975002115},{\"x\":256.07495722935187,\"y\":-40.23992938917759},{\"x\":263.0999597452724,\"y\":-43.86849590609652},{\"x\":270.1249622611928,\"y\":-47.27714930077793},{\"x\":277.14996477711327,\"y\":-50.46588957322183},{\"x\":284.1749672930337,\"y\":-53.434716723428224},{\"x\":291.19996980895434,\"y\":-56.18363075139712},{\"x\":298.2249723248747,\"y\":-58.712631657128476},{\"x\":305.2499748407952,\"y\":-61.02171944062234},{\"x\":312.2749773567157,\"y\":-63.11089410187869},{\"x\":319.29997987263613,\"y\":-64.98015564089754},{\"x\":326.3249823885567,\"y\":-66.62950405767887},{\"x\":333.34998490447714,\"y\":-68.05893935222268},{\"x\":340.3749874203976,\"y\":-69.26846152452899},{\"x\":347.3999899363181,\"y\":-70.2580705745978},{\"x\":354.42499245223854,\"y\":-71.02776650242906},{\"x\":361.4499949681591,\"y\":-71.57754930802287},{\"x\":368.4749974840795,\"y\":-71.90741899137912},{\"x\":375.5,\"y\":-72.01737555249787},{\"x\":382.5250025159205,\"y\":-71.9074189913791},{\"x\":389.55000503184095,\"y\":-71.57754930802285},{\"x\":396.5750075477614,\"y\":-71.02776650242907},{\"x\":403.6000100636819,\"y\":-70.25807057459778},{\"x\":410.6250125796024,\"y\":-69.26846152452899},{\"x\":417.65001509552286,\"y\":-68.05893935222268},{\"x\":424.6750176114433,\"y\":-66.62950405767886},{\"x\":431.7000201273638,\"y\":-64.98015564089754},{\"x\":438.7250226432843,\"y\":-63.11089410187869},{\"x\":445.7500251592047,\"y\":-61.02171944062234},{\"x\":452.7750276751252,\"y\":-58.71263165712847},{\"x\":459.8000301910457,\"y\":-56.183630751397104},{\"x\":466.82503270696617,\"y\":-53.434716723428224},{\"x\":473.8500352228866,\"y\":-50.46588957322183},{\"x\":480.8750377388072,\"y\":-47.27714930077793},{\"x\":487.9000402547276,\"y\":-43.86849590609651},{\"x\":494.9250427706481,\"y\":-40.239929389177576},{\"x\":501.95004528656864,\"y\":-36.39144975002116},{\"x\":508.97504780248903,\"y\":-32.32305698862721},{\"x\":516.0000503184095,\"y\":-28.034751104995745}],\"labelPoint\":{\"x\":375.5,\"y\":-72.01737555249787},\"controlPoint\":{\"x\":375.5,\"y\":-116},\"parallelSolverEligible\":false},\"dense-1-dense-3\":{\"id\":\"dense-1-dense-3\",\"sourceId\":\"dense-1\",\"targetId\":\"dense-3\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-1-dense-3\",\"sourcePosition\":{\"x\":203,\"y\":-8},\"targetPosition\":{\"x\":30,\"y\":-8},\"path\":\"M 171 9.757225433526013 Q 116.5 40 62 9.757225433526013\",\"samples\":[{\"x\":171,\"y\":9.757225433526013},{\"x\":168.27499999999998,\"y\":11.231560693641619},{\"x\":165.54999999999998,\"y\":12.630289017341042},{\"x\":162.82500000000002,\"y\":13.953410404624279},{\"x\":160.10000000000002,\"y\":15.200924855491332},{\"x\":157.375,\"y\":16.372832369942195},{\"x\":154.65,\"y\":17.469132947976878},{\"x\":151.92499999999998,\"y\":18.489826589595374},{\"x\":149.20000000000002,\"y\":19.434913294797692},{\"x\":146.475,\"y\":20.304393063583817},{\"x\":143.75,\"y\":21.09826589595376},{\"x\":141.025,\"y\":21.816531791907515},{\"x\":138.3,\"y\":22.45919075144509},{\"x\":135.57500000000002,\"y\":23.026242774566477},{\"x\":132.85,\"y\":23.517687861271675},{\"x\":130.125,\"y\":23.933526011560694},{\"x\":127.39999999999999,\"y\":24.273757225433528},{\"x\":124.675,\"y\":24.53838150289017},{\"x\":121.95000000000002,\"y\":24.72739884393064},{\"x\":119.225,\"y\":24.840809248554915},{\"x\":116.5,\"y\":24.87861271676301},{\"x\":113.775,\"y\":24.840809248554915},{\"x\":111.04999999999998,\"y\":24.727398843930636},{\"x\":108.32500000000002,\"y\":24.538381502890175},{\"x\":105.6,\"y\":24.273757225433528},{\"x\":102.875,\"y\":23.933526011560694},{\"x\":100.14999999999999,\"y\":23.517687861271675},{\"x\":97.42499999999998,\"y\":23.026242774566473},{\"x\":94.7,\"y\":22.45919075144509},{\"x\":91.975,\"y\":21.816531791907515},{\"x\":89.25,\"y\":21.09826589595376},{\"x\":86.525,\"y\":20.304393063583813},{\"x\":83.8,\"y\":19.43491329479769},{\"x\":81.07500000000002,\"y\":18.489826589595378},{\"x\":78.35,\"y\":17.469132947976878},{\"x\":75.625,\"y\":16.3728323699422},{\"x\":72.9,\"y\":15.20092485549133},{\"x\":70.175,\"y\":13.953410404624275},{\"x\":67.45,\"y\":12.630289017341045},{\"x\":64.72500000000001,\"y\":11.23156069364162},{\"x\":62,\"y\":9.757225433526013}],\"labelPoint\":{\"x\":116.5,\"y\":24.87861271676301},\"controlPoint\":{\"x\":116.5,\"y\":40},\"parallelSolverEligible\":false},\"dense-1-dense-4\":{\"id\":\"dense-1-dense-4\",\"sourceId\":\"dense-1\",\"targetId\":\"dense-4\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-1-dense-4\",\"sourcePosition\":{\"x\":203,\"y\":-8},\"targetPosition\":{\"x\":375,\"y\":-8},\"path\":\"M 235 -8 L 343 -8\",\"samples\":[{\"x\":235,\"y\":-8},{\"x\":237.7,\"y\":-8},{\"x\":240.4,\"y\":-8},{\"x\":243.1,\"y\":-8},{\"x\":245.8,\"y\":-8},{\"x\":248.5,\"y\":-8},{\"x\":251.2,\"y\":-8},{\"x\":253.9,\"y\":-8},{\"x\":256.6,\"y\":-8},{\"x\":259.3,\"y\":-8},{\"x\":262,\"y\":-8},{\"x\":264.7,\"y\":-8},{\"x\":267.4,\"y\":-8},{\"x\":270.1,\"y\":-8},{\"x\":272.8,\"y\":-8},{\"x\":275.5,\"y\":-8},{\"x\":278.2,\"y\":-8},{\"x\":280.9,\"y\":-8},{\"x\":283.6,\"y\":-8},{\"x\":286.3,\"y\":-8},{\"x\":289,\"y\":-8},{\"x\":291.7,\"y\":-8},{\"x\":294.4,\"y\":-8},{\"x\":297.1,\"y\":-8},{\"x\":299.8,\"y\":-8},{\"x\":302.5,\"y\":-8},{\"x\":305.2,\"y\":-8},{\"x\":307.9,\"y\":-8},{\"x\":310.6,\"y\":-8},{\"x\":313.3,\"y\":-8},{\"x\":316,\"y\":-8},{\"x\":318.7,\"y\":-8},{\"x\":321.4,\"y\":-8},{\"x\":324.1,\"y\":-8},{\"x\":326.8,\"y\":-8},{\"x\":329.5,\"y\":-8},{\"x\":332.2,\"y\":-8},{\"x\":334.9,\"y\":-8},{\"x\":337.6,\"y\":-8},{\"x\":340.3,\"y\":-8},{\"x\":343,\"y\":-8}],\"labelPoint\":{\"x\":289,\"y\":-8},\"controlPoint\":{\"x\":289,\"y\":-8},\"parallelSolverEligible\":false},\"dense-1-dense-5\":{\"id\":\"dense-1-dense-5\",\"sourceId\":\"dense-1\",\"targetId\":\"dense-5\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-1-dense-5\",\"sourcePosition\":{\"x\":203,\"y\":-8},\"targetPosition\":{\"x\":30,\"y\":175},\"path\":\"M 175.3515180240759 21.246660124821467 L 57.64848197592412 145.75333987517854\",\"samples\":[{\"x\":175.3515180240759,\"y\":21.246660124821467},{\"x\":172.4089421228721,\"y\":24.359327118580396},{\"x\":169.4663662216683,\"y\":27.47199411233932},{\"x\":166.5237903204645,\"y\":30.584661106098245},{\"x\":163.5812144192607,\"y\":33.697328099857174},{\"x\":160.63863851805692,\"y\":36.8099950936161},{\"x\":157.6960626168531,\"y\":39.92266208737503},{\"x\":154.75348671564933,\"y\":43.03532908113395},{\"x\":151.81091081444552,\"y\":46.14799607489289},{\"x\":148.86833491324174,\"y\":49.26066306865181},{\"x\":145.92575901203793,\"y\":52.37333006241074},{\"x\":142.98318311083415,\"y\":55.485997056169666},{\"x\":140.04060720963037,\"y\":58.59866404992859},{\"x\":137.09803130842656,\"y\":61.71133104368752},{\"x\":134.15545540722277,\"y\":64.82399803744644},{\"x\":131.21287950601896,\"y\":67.93666503120537},{\"x\":128.27030360481518,\"y\":71.0493320249643},{\"x\":125.32772770361139,\"y\":74.16199901872322},{\"x\":122.38515180240759,\"y\":77.27466601248216},{\"x\":119.4425759012038,\"y\":80.38733300624108},{\"x\":116.5,\"y\":83.5},{\"x\":113.5574240987962,\"y\":86.61266699375895},{\"x\":110.61484819759241,\"y\":89.72533398751787},{\"x\":107.67227229638863,\"y\":92.83800098127679},{\"x\":104.72969639518483,\"y\":95.95066797503571},{\"x\":101.78712049398104,\"y\":99.06333496879463},{\"x\":98.84454459277723,\"y\":102.17600196255358},{\"x\":95.90196869157343,\"y\":105.2886689563125},{\"x\":92.95939279036965,\"y\":108.40133595007143},{\"x\":90.01681688916585,\"y\":111.51400294383035},{\"x\":87.07424098796206,\"y\":114.62666993758927},{\"x\":84.13166508675826,\"y\":117.73933693134822},{\"x\":81.18908918555447,\"y\":120.85200392510714},{\"x\":78.24651328435068,\"y\":123.96467091886606},{\"x\":75.30393738314689,\"y\":127.07733791262498},{\"x\":72.36136148194308,\"y\":130.1900049063839},{\"x\":69.41878558073928,\"y\":133.30267190014285},{\"x\":66.47620967953549,\"y\":136.41533889390178},{\"x\":63.533633778331705,\"y\":139.5280058876607},{\"x\":60.59105787712791,\"y\":142.64067288141962},{\"x\":57.64848197592411,\"y\":145.75333987517854}],\"labelPoint\":{\"x\":116.5,\"y\":83.5},\"controlPoint\":{\"x\":116.5,\"y\":83.5},\"parallelSolverEligible\":false},\"dense-1-dense-6\":{\"id\":\"dense-1-dense-6\",\"sourceId\":\"dense-1\",\"targetId\":\"dense-6\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-1-dense-6\",\"sourcePosition\":{\"x\":203,\"y\":-8},\"targetPosition\":{\"x\":375,\"y\":175},\"path\":\"M 230.5581778652051 21.32061947286357 L 347.4418221347949 145.67938052713643\",\"samples\":[{\"x\":230.5581778652051,\"y\":21.32061947286357},{\"x\":233.48026897194484,\"y\":24.42958849922039},{\"x\":236.40236007868458,\"y\":27.53855752557721},{\"x\":239.32445118542432,\"y\":30.647526551934035},{\"x\":242.24654229216407,\"y\":33.75649557829085},{\"x\":245.1686333989038,\"y\":36.86546460464768},{\"x\":248.09072450564358,\"y\":39.9744336310045},{\"x\":251.01281561238332,\"y\":43.08340265736132},{\"x\":253.93490671912306,\"y\":46.19237168371814},{\"x\":256.8569978258628,\"y\":49.30134071007497},{\"x\":259.7790889326026,\"y\":52.410309736431785},{\"x\":262.7011800393423,\"y\":55.51927876278861},{\"x\":265.62327114608206,\"y\":58.628247789145426},{\"x\":268.5453622528218,\"y\":61.73721681550225},{\"x\":271.46745335956155,\"y\":64.84618584185907},{\"x\":274.3895444663013,\"y\":67.95515486821589},{\"x\":277.31163557304103,\"y\":71.06412389457272},{\"x\":280.2337266797808,\"y\":74.17309292092953},{\"x\":283.1558177865205,\"y\":77.28206194728637},{\"x\":286.07790889326026,\"y\":80.39103097364318},{\"x\":289,\"y\":83.5},{\"x\":291.92209110673974,\"y\":86.60896902635682},{\"x\":294.8441822134795,\"y\":89.71793805271365},{\"x\":297.7662733202192,\"y\":92.82690707907047},{\"x\":300.68836442695897,\"y\":95.93587610542728},{\"x\":303.6104555336987,\"y\":99.04484513178411},{\"x\":306.53254664043845,\"y\":102.15381415814093},{\"x\":309.45463774717825,\"y\":105.26278318449775},{\"x\":312.37672885391794,\"y\":108.37175221085457},{\"x\":315.29881996065774,\"y\":111.4807212372114},{\"x\":318.2209110673974,\"y\":114.58969026356822},{\"x\":321.1430021741372,\"y\":117.69865928992503},{\"x\":324.06509328087697,\"y\":120.80762831628186},{\"x\":326.9871843876167,\"y\":123.91659734263868},{\"x\":329.90927549435645,\"y\":127.0255663689955},{\"x\":332.8313666010962,\"y\":130.13453539535232},{\"x\":335.75345770783593,\"y\":133.24350442170913},{\"x\":338.6755488145757,\"y\":136.35247344806595},{\"x\":341.5976399213154,\"y\":139.46144247442277},{\"x\":344.51973102805516,\"y\":142.5704115007796},{\"x\":347.4418221347949,\"y\":145.67938052713643}],\"labelPoint\":{\"x\":289,\"y\":83.5},\"controlPoint\":{\"x\":289,\"y\":83.5},\"parallelSolverEligible\":false},\"dense-1-dense-7\":{\"id\":\"dense-1-dense-7\",\"sourceId\":\"dense-1\",\"targetId\":\"dense-7\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-1-dense-7\",\"sourcePosition\":{\"x\":203,\"y\":-8},\"targetPosition\":{\"x\":203,\"y\":175},\"path\":\"M 203 24 L 203 143\",\"samples\":[{\"x\":203,\"y\":24},{\"x\":203,\"y\":26.975},{\"x\":203,\"y\":29.95},{\"x\":203,\"y\":32.925},{\"x\":203,\"y\":35.9},{\"x\":203,\"y\":38.875},{\"x\":203,\"y\":41.849999999999994},{\"x\":203,\"y\":44.825},{\"x\":203,\"y\":47.8},{\"x\":203,\"y\":50.775000000000006},{\"x\":203,\"y\":53.75},{\"x\":203,\"y\":56.725},{\"x\":203,\"y\":59.699999999999996},{\"x\":203,\"y\":62.675000000000004},{\"x\":203,\"y\":65.65},{\"x\":203,\"y\":68.625},{\"x\":203,\"y\":71.6},{\"x\":203,\"y\":74.57499999999999},{\"x\":203,\"y\":77.55000000000001},{\"x\":203,\"y\":80.525},{\"x\":203,\"y\":83.5},{\"x\":203,\"y\":86.475},{\"x\":203,\"y\":89.45},{\"x\":203,\"y\":92.425},{\"x\":203,\"y\":95.39999999999999},{\"x\":203,\"y\":98.375},{\"x\":203,\"y\":101.35000000000001},{\"x\":203,\"y\":104.325},{\"x\":203,\"y\":107.3},{\"x\":203,\"y\":110.27499999999999},{\"x\":203,\"y\":113.25},{\"x\":203,\"y\":116.22500000000001},{\"x\":203,\"y\":119.2},{\"x\":203,\"y\":122.175},{\"x\":203,\"y\":125.14999999999999},{\"x\":203,\"y\":128.125},{\"x\":203,\"y\":131.10000000000002},{\"x\":203,\"y\":134.075},{\"x\":203,\"y\":137.05},{\"x\":203,\"y\":140.02499999999998},{\"x\":203,\"y\":143}],\"labelPoint\":{\"x\":203,\"y\":83.5},\"controlPoint\":{\"x\":203,\"y\":83.5},\"parallelSolverEligible\":false},\"dense-2-dense-3\":{\"id\":\"dense-2-dense-3\",\"sourceId\":\"dense-2\",\"targetId\":\"dense-3\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-2-dense-3\",\"sourcePosition\":{\"x\":548,\"y\":-8},\"targetPosition\":{\"x\":30,\"y\":-8},\"path\":\"M 516.1868729326619 -30.10950915876776 Q 289 -188 61.81312706733806 -30.10950915876776\",\"samples\":[{\"x\":516.1868729326619,\"y\":-30.10950915876776},{\"x\":504.8275292860288,\"y\":-37.80667058727783},{\"x\":493.46818563939564,\"y\":-45.10910578868482},{\"x\":482.1088419927627,\"y\":-52.01681476298874},{\"x\":470.74949834612954,\"y\":-58.52979751018957},{\"x\":459.3901546994964,\"y\":-64.64805403028731},{\"x\":448.03081105286327,\"y\":-70.37158432328198},{\"x\":436.6714674062302,\"y\":-75.70038838917357},{\"x\":425.3121237595973,\"y\":-80.6344662279621},{\"x\":413.9527801129641,\"y\":-85.17381783964751},{\"x\":402.59343646633096,\"y\":-89.31844322422984},{\"x\":391.2340928196979,\"y\":-93.06834238170913},{\"x\":379.87474917306474,\"y\":-96.42351531208529},{\"x\":368.5154055264317,\"y\":-99.3839620153584},{\"x\":357.1560618797986,\"y\":-101.94968249152842},{\"x\":345.7967182331655,\"y\":-104.12067674059537},{\"x\":334.43737458653237,\"y\":-105.89694476255923},{\"x\":323.07803093989924,\"y\":-107.27848655742},{\"x\":311.7186872932662,\"y\":-108.26530212517774},{\"x\":300.3593436466331,\"y\":-108.85739146583235},{\"x\":289,\"y\":-109.05475457938388},{\"x\":277.64065635336686,\"y\":-108.85739146583235},{\"x\":266.2813127067338,\"y\":-108.26530212517773},{\"x\":254.9219690601007,\"y\":-107.27848655742002},{\"x\":243.56262541346763,\"y\":-105.89694476255923},{\"x\":232.2032817668345,\"y\":-104.12067674059537},{\"x\":220.8439381202014,\"y\":-101.94968249152842},{\"x\":209.4845944735683,\"y\":-99.3839620153584},{\"x\":198.12525082693526,\"y\":-96.4235153120853},{\"x\":186.76590718030212,\"y\":-93.06834238170913},{\"x\":175.40656353366904,\"y\":-89.31844322422984},{\"x\":164.0472198870359,\"y\":-85.1738178396475},{\"x\":152.68787624040283,\"y\":-80.63446622796206},{\"x\":141.32853259376975,\"y\":-75.70038838917358},{\"x\":129.96918894713664,\"y\":-70.37158432328198},{\"x\":118.60984530050354,\"y\":-64.64805403028731},{\"x\":107.25050165387043,\"y\":-58.52979751018956},{\"x\":95.89115800723734,\"y\":-52.01681476298872},{\"x\":84.53181436060427,\"y\":-45.10910578868484},{\"x\":73.17247071397117,\"y\":-37.806670587277836},{\"x\":61.81312706733806,\"y\":-30.10950915876776}],\"labelPoint\":{\"x\":289,\"y\":-109.05475457938388},\"controlPoint\":{\"x\":289,\"y\":-188},\"parallelSolverEligible\":false},\"dense-2-dense-4\":{\"id\":\"dense-2-dense-4\",\"sourceId\":\"dense-2\",\"targetId\":\"dense-4\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-2-dense-4\",\"sourcePosition\":{\"x\":548,\"y\":-8},\"targetPosition\":{\"x\":375,\"y\":-8},\"path\":\"M 516 -12.439306358381502 Q 461.5 -20 407 -12.439306358381502\",\"samples\":[{\"x\":516,\"y\":-12.439306358381502},{\"x\":513.275,\"y\":-12.807890173410403},{\"x\":510.55,\"y\":-13.15757225433526},{\"x\":507.8250000000001,\"y\":-13.48835260115607},{\"x\":505.1,\"y\":-13.800231213872832},{\"x\":502.375,\"y\":-14.093208092485549},{\"x\":499.65,\"y\":-14.367283236994218},{\"x\":496.92499999999995,\"y\":-14.622456647398842},{\"x\":494.2000000000001,\"y\":-14.858728323699424},{\"x\":491.475,\"y\":-15.076098265895954},{\"x\":488.75,\"y\":-15.27456647398844},{\"x\":486.02500000000003,\"y\":-15.454132947976879},{\"x\":483.29999999999995,\"y\":-15.614797687861271},{\"x\":480.57500000000005,\"y\":-15.75656069364162},{\"x\":477.85,\"y\":-15.879421965317919},{\"x\":475.125,\"y\":-15.983381502890172},{\"x\":472.4,\"y\":-16.068439306358382},{\"x\":469.67499999999995,\"y\":-16.13459537572254},{\"x\":466.95000000000005,\"y\":-16.18184971098266},{\"x\":464.225,\"y\":-16.21020231213873},{\"x\":461.5,\"y\":-16.21965317919075},{\"x\":458.775,\"y\":-16.210202312138726},{\"x\":456.05,\"y\":-16.18184971098266},{\"x\":453.325,\"y\":-16.134595375722544},{\"x\":450.59999999999997,\"y\":-16.068439306358382},{\"x\":447.875,\"y\":-15.983381502890172},{\"x\":445.15,\"y\":-15.879421965317919},{\"x\":442.42499999999995,\"y\":-15.756560693641617},{\"x\":439.70000000000005,\"y\":-15.614797687861271},{\"x\":436.975,\"y\":-15.454132947976877},{\"x\":434.25,\"y\":-15.27456647398844},{\"x\":431.525,\"y\":-15.076098265895954},{\"x\":428.80000000000007,\"y\":-14.858728323699422},{\"x\":426.07500000000005,\"y\":-14.622456647398844},{\"x\":423.34999999999997,\"y\":-14.367283236994218},{\"x\":420.625,\"y\":-14.093208092485549},{\"x\":417.9,\"y\":-13.800231213872832},{\"x\":415.175,\"y\":-13.488352601156068},{\"x\":412.45000000000005,\"y\":-13.15757225433526},{\"x\":409.72499999999997,\"y\":-12.807890173410403},{\"x\":407,\"y\":-12.439306358381502}],\"labelPoint\":{\"x\":461.5,\"y\":-16.21965317919075},\"controlPoint\":{\"x\":461.5,\"y\":-20},\"parallelSolverEligible\":false},\"dense-2-dense-5\":{\"id\":\"dense-2-dense-5\",\"sourceId\":\"dense-2\",\"targetId\":\"dense-5\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-2-dense-5\",\"sourcePosition\":{\"x\":548,\"y\":-8},\"targetPosition\":{\"x\":30,\"y\":175},\"path\":\"M 516 6.5500384172251 Q 296.994537800563 106.12934743547345 62 166.7456705286193\",\"samples\":[{\"x\":516,\"y\":6.5500384172251},{\"x\":505.03973371777744,\"y\":11.504652001934327},{\"x\":494.05948109105344,\"y\":16.41056185423718},{\"x\":483.0592421198282,\"y\":21.26776797413365},{\"x\":472.0390168041014,\"y\":26.07627036162375},{\"x\":460.99880514387314,\"y\":30.836069016707462},{\"x\":449.9386071391435,\"y\":35.547163939384795},{\"x\":438.85842278991254,\"y\":40.20955512965575},{\"x\":427.7582520961803,\"y\":44.82324258752035},{\"x\":416.6380950579464,\"y\":49.388226312978546},{\"x\":405.49795167521114,\"y\":53.90450630603037},{\"x\":394.3378219479746,\"y\":58.372082566675815},{\"x\":383.15770587623643,\"y\":62.790955094914885},{\"x\":371.9576034599971,\"y\":67.16112389074758},{\"x\":360.73751469925617,\"y\":71.48258895417389},{\"x\":349.49743959401394,\"y\":75.75535028519383},{\"x\":338.2373781442703,\"y\":79.9794078838074},{\"x\":326.95733035002513,\"y\":84.15476175001456},{\"x\":315.6572962112787,\"y\":88.28141188381537},{\"x\":304.3372757280308,\"y\":92.35935828520978},{\"x\":292.9972689002815,\"y\":96.38860095419783},{\"x\":281.63727572803083,\"y\":100.36913989077948},{\"x\":270.2572962112787,\"y\":104.3009750949548},{\"x\":258.85733035002517,\"y\":108.18410656672368},{\"x\":247.43737814427027,\"y\":112.01853430608622},{\"x\":235.9974395940139,\"y\":115.80425831304237},{\"x\":224.53751469925618,\"y\":119.54127858759216},{\"x\":213.057603459997,\"y\":123.22959512973556},{\"x\":201.55770587623647,\"y\":126.86920793947257},{\"x\":190.03782194797452,\"y\":130.46011701680322},{\"x\":178.49795167521114,\"y\":134.00232236172747},{\"x\":166.93809505794636,\"y\":137.49582397424538},{\"x\":155.35825209618014,\"y\":140.9406218543569},{\"x\":143.7584227899126,\"y\":144.336716002062},{\"x\":132.13860713914357,\"y\":147.68410641736074},{\"x\":120.49880514387316,\"y\":150.98279310025313},{\"x\":108.83901680410133,\"y\":154.23277605073912},{\"x\":97.1592421198281,\"y\":157.43405526881872},{\"x\":85.4594810910535,\"y\":160.58663075449198},{\"x\":73.73973371777745,\"y\":163.69050250775885},{\"x\":62,\"y\":166.7456705286193}],\"labelPoint\":{\"x\":292.9972689002815,\"y\":96.38860095419783},\"controlPoint\":{\"x\":296.994537800563,\"y\":106.12934743547345},\"parallelSolverEligible\":false},\"dense-2-dense-6\":{\"id\":\"dense-2-dense-6\",\"sourceId\":\"dense-2\",\"targetId\":\"dense-6\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-2-dense-6\",\"sourcePosition\":{\"x\":548,\"y\":-8},\"targetPosition\":{\"x\":375,\"y\":175},\"path\":\"M 520.3515180240759 21.246660124821467 L 402.64848197592414 145.75333987517854\",\"samples\":[{\"x\":520.3515180240759,\"y\":21.246660124821467},{\"x\":517.4089421228721,\"y\":24.359327118580396},{\"x\":514.4663662216683,\"y\":27.47199411233932},{\"x\":511.52379032046446,\"y\":30.584661106098245},{\"x\":508.5812144192607,\"y\":33.697328099857174},{\"x\":505.6386385180569,\"y\":36.8099950936161},{\"x\":502.6960626168531,\"y\":39.92266208737503},{\"x\":499.75348671564933,\"y\":43.03532908113395},{\"x\":496.8109108144455,\"y\":46.14799607489289},{\"x\":493.8683349132417,\"y\":49.26066306865181},{\"x\":490.92575901203793,\"y\":52.37333006241074},{\"x\":487.98318311083415,\"y\":55.485997056169666},{\"x\":485.04060720963037,\"y\":58.59866404992859},{\"x\":482.0980313084265,\"y\":61.71133104368752},{\"x\":479.15545540722275,\"y\":64.82399803744644},{\"x\":476.21287950601896,\"y\":67.93666503120537},{\"x\":473.2703036048152,\"y\":71.0493320249643},{\"x\":470.3277277036114,\"y\":74.16199901872322},{\"x\":467.38515180240756,\"y\":77.27466601248216},{\"x\":464.4425759012038,\"y\":80.38733300624108},{\"x\":461.5,\"y\":83.5},{\"x\":458.5574240987962,\"y\":86.61266699375895},{\"x\":455.61484819759244,\"y\":89.72533398751787},{\"x\":452.67227229638866,\"y\":92.83800098127679},{\"x\":449.7296963951848,\"y\":95.95066797503571},{\"x\":446.78712049398104,\"y\":99.06333496879463},{\"x\":443.84454459277725,\"y\":102.17600196255358},{\"x\":440.9019686915734,\"y\":105.2886689563125},{\"x\":437.95939279036963,\"y\":108.40133595007143},{\"x\":435.01681688916585,\"y\":111.51400294383035},{\"x\":432.07424098796207,\"y\":114.62666993758927},{\"x\":429.1316650867583,\"y\":117.73933693134822},{\"x\":426.1890891855545,\"y\":120.85200392510714},{\"x\":423.2465132843507,\"y\":123.96467091886606},{\"x\":420.3039373831469,\"y\":127.07733791262498},{\"x\":417.3613614819431,\"y\":130.1900049063839},{\"x\":414.4187855807393,\"y\":133.30267190014285},{\"x\":411.4762096795355,\"y\":136.41533889390178},{\"x\":408.5336337783317,\"y\":139.5280058876607},{\"x\":405.5910578771279,\"y\":142.64067288141962},{\"x\":402.64848197592414,\"y\":145.75333987517854}],\"labelPoint\":{\"x\":461.5,\"y\":83.5},\"controlPoint\":{\"x\":461.5,\"y\":83.5},\"parallelSolverEligible\":false},\"dense-2-dense-7\":{\"id\":\"dense-2-dense-7\",\"sourceId\":\"dense-2\",\"targetId\":\"dense-7\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-2-dense-7\",\"sourcePosition\":{\"x\":548,\"y\":-8},\"targetPosition\":{\"x\":203,\"y\":175},\"path\":\"M 516.925023856792 16.620054483160605 Q 392.3693649862215 115.3029012035324 235 164.91226927530778\",\"samples\":[{\"x\":516.925023856792,\"y\":16.620054483160605},{\"x\":510.6767323469412,\"y\":21.52352589502382},{\"x\":504.3874237044457,\"y\":26.365655458576292},{\"x\":498.05709792930594,\"y\":31.14644317381802},{\"x\":491.68575502152146,\"y\":35.86588904074901},{\"x\":485.27339498109234,\"y\":40.52399305936923},{\"x\":478.82001780801875,\"y\":45.12075522967872},{\"x\":472.32562350230046,\"y\":49.656175551677464},{\"x\":465.7902120639378,\"y\":54.130254025365474},{\"x\":459.2137834929305,\"y\":58.54299065074272},{\"x\":452.59633778927855,\"y\":62.894385427809226},{\"x\":445.93787495298216,\"y\":67.184438356565},{\"x\":439.23839498404107,\"y\":71.41314943701},{\"x\":432.49789788245556,\"y\":75.58051866914428},{\"x\":425.7163836482255,\"y\":79.6865460529678},{\"x\":418.8938522813507,\"y\":83.73123158848058},{\"x\":412.03030378183144,\"y\":87.71457527568262},{\"x\":405.12573814966754,\"y\":91.6365771145739},{\"x\":398.1801553848593,\"y\":95.49723710515445},{\"x\":391.1935554874063,\"y\":99.29655524742424},{\"x\":384.16593845730876,\"y\":103.0345315413833},{\"x\":377.0973042945667,\"y\":106.71116598703159},{\"x\":369.98765299918,\"y\":110.32645858436916},{\"x\":362.83698457114883,\"y\":113.88040933339596},{\"x\":355.6452990104731,\"y\":117.37301823411204},{\"x\":348.4125963171527,\"y\":120.80428528651737},{\"x\":341.13887649118783,\"y\":124.17421049061196},{\"x\":333.82413953257833,\"y\":127.4827938463958},{\"x\":326.46838544132436,\"y\":130.73003535386889},{\"x\":319.07161421742575,\"y\":133.91593501303123},{\"x\":311.63382586088255,\"y\":137.0404928238828},{\"x\":304.15502037169483,\"y\":140.10370878642368},{\"x\":296.6351977498625,\"y\":143.1055829006538},{\"x\":289.07435799538575,\"y\":146.04611516657312},{\"x\":281.4725011082643,\"y\":148.92530558418173},{\"x\":273.82962708849834,\"y\":151.74315415347962},{\"x\":266.1457359360878,\"y\":154.49966087446674},{\"x\":258.42082765103265,\"y\":157.19482574714314},{\"x\":250.65490223333308,\"y\":159.82864877150874},{\"x\":242.8479596829888,\"y\":162.40112994756365},{\"x\":235,\"y\":164.91226927530778}],\"labelPoint\":{\"x\":384.16593845730876,\"y\":103.0345315413833},\"controlPoint\":{\"x\":392.3693649862215,\"y\":115.3029012035324},\"parallelSolverEligible\":false},\"dense-3-dense-4\":{\"id\":\"dense-3-dense-4\",\"sourceId\":\"dense-3\",\"targetId\":\"dense-4\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-3-dense-4\",\"sourcePosition\":{\"x\":30,\"y\":-8},\"targetPosition\":{\"x\":375,\"y\":-8},\"path\":\"M 61.99994968159043 12.034751104995745 Q 202.5 100 343.0000503184096 12.034751104995745\",\"samples\":[{\"x\":61.99994968159043,\"y\":12.034751104995745},{\"x\":69.02495219751091,\"y\":16.3230569886272},{\"x\":76.04995471343139,\"y\":20.39144975002115},{\"x\":83.07495722935187,\"y\":24.239929389177586},{\"x\":90.09995974527234,\"y\":27.868495906096513},{\"x\":97.12496226119282,\"y\":31.27714930077793},{\"x\":104.1499647771133,\"y\":34.46588957322183},{\"x\":111.17496729303376,\"y\":37.43471672342822},{\"x\":118.19996980895428,\"y\":40.18363075139711},{\"x\":125.22497232487476,\"y\":42.712631657128476},{\"x\":132.2499748407952,\"y\":45.02171944062234},{\"x\":139.2749773567157,\"y\":47.11089410187869},{\"x\":146.2999798726362,\"y\":48.98015564089753},{\"x\":153.32498238855666,\"y\":50.629504057678865},{\"x\":160.3499849044771,\"y\":52.05893935222268},{\"x\":167.37498742039762,\"y\":53.26846152452899},{\"x\":174.3999899363181,\"y\":54.25807057459779},{\"x\":181.42499245223854,\"y\":55.02776650242907},{\"x\":188.44999496815905,\"y\":55.57754930802285},{\"x\":195.4749974840795,\"y\":55.90741899137912},{\"x\":202.5,\"y\":56.01737555249787},{\"x\":209.52500251592048,\"y\":55.90741899137912},{\"x\":216.55000503184095,\"y\":55.577549308022846},{\"x\":223.5750075477614,\"y\":55.027766502429074},{\"x\":230.60001006368194,\"y\":54.25807057459779},{\"x\":237.62501257960238,\"y\":53.26846152452899},{\"x\":244.65001509552286,\"y\":52.05893935222268},{\"x\":251.67501761144337,\"y\":50.629504057678865},{\"x\":258.7000201273638,\"y\":48.980155640897536},{\"x\":265.7250226432843,\"y\":47.11089410187869},{\"x\":272.7500251592048,\"y\":45.02171944062234},{\"x\":279.7750276751253,\"y\":42.71263165712847},{\"x\":286.80003019104583,\"y\":40.183630751397104},{\"x\":293.8250327069662,\"y\":37.43471672342823},{\"x\":300.8500352228867,\"y\":34.46588957322183},{\"x\":307.8750377388072,\"y\":31.27714930077793},{\"x\":314.9000402547277,\"y\":27.868495906096506},{\"x\":321.9250427706482,\"y\":24.239929389177583},{\"x\":328.95004528656864,\"y\":20.39144975002116},{\"x\":335.97504780248914,\"y\":16.323056988627208},{\"x\":343.0000503184096,\"y\":12.034751104995745}],\"labelPoint\":{\"x\":202.5,\"y\":56.01737555249787},\"controlPoint\":{\"x\":202.5,\"y\":100},\"parallelSolverEligible\":false},\"dense-3-dense-5\":{\"id\":\"dense-3-dense-5\",\"sourceId\":\"dense-3\",\"targetId\":\"dense-5\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-3-dense-5\",\"sourcePosition\":{\"x\":30,\"y\":-8},\"targetPosition\":{\"x\":30,\"y\":175},\"path\":\"M 30 24 L 30 143\",\"samples\":[{\"x\":30,\"y\":24},{\"x\":30,\"y\":26.975},{\"x\":30,\"y\":29.95},{\"x\":30,\"y\":32.925},{\"x\":30,\"y\":35.9},{\"x\":30,\"y\":38.875},{\"x\":30,\"y\":41.849999999999994},{\"x\":30,\"y\":44.825},{\"x\":30,\"y\":47.8},{\"x\":30,\"y\":50.775000000000006},{\"x\":30,\"y\":53.75},{\"x\":30,\"y\":56.725},{\"x\":30,\"y\":59.699999999999996},{\"x\":30,\"y\":62.675000000000004},{\"x\":30,\"y\":65.65},{\"x\":30,\"y\":68.625},{\"x\":30,\"y\":71.6},{\"x\":30,\"y\":74.57499999999999},{\"x\":30,\"y\":77.55000000000001},{\"x\":30,\"y\":80.525},{\"x\":30,\"y\":83.5},{\"x\":30,\"y\":86.475},{\"x\":30,\"y\":89.45},{\"x\":30,\"y\":92.425},{\"x\":30,\"y\":95.39999999999999},{\"x\":30,\"y\":98.375},{\"x\":30,\"y\":101.35000000000001},{\"x\":30,\"y\":104.325},{\"x\":30,\"y\":107.3},{\"x\":30,\"y\":110.27499999999999},{\"x\":30,\"y\":113.25},{\"x\":30,\"y\":116.22500000000001},{\"x\":30,\"y\":119.2},{\"x\":30,\"y\":122.175},{\"x\":30,\"y\":125.14999999999999},{\"x\":30,\"y\":128.125},{\"x\":30,\"y\":131.10000000000002},{\"x\":30,\"y\":134.075},{\"x\":30,\"y\":137.05},{\"x\":30,\"y\":140.02499999999998},{\"x\":30,\"y\":143}],\"labelPoint\":{\"x\":30,\"y\":83.5},\"controlPoint\":{\"x\":30,\"y\":83.5},\"parallelSolverEligible\":false},\"dense-3-dense-6\":{\"id\":\"dense-3-dense-6\",\"sourceId\":\"dense-3\",\"targetId\":\"dense-6\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-3-dense-6\",\"sourcePosition\":{\"x\":30,\"y\":-8},\"targetPosition\":{\"x\":375,\"y\":175},\"path\":\"M 61.79280179434352 14.220321111760278 Q 191.25375667585232 104.70193413568828 343 162.75736544616288\",\"samples\":[{\"x\":61.79280179434352,\"y\":14.220321111760278},{\"x\":68.27977784369561,\"y\":18.72413539938577},{\"x\":74.79461050360099,\"y\":23.187416959869445},{\"x\":81.33729977405969,\"y\":27.610165793211305},{\"x\":87.90784565507168,\"y\":31.992381899411345},{\"x\":94.50624814663695,\"y\":36.33406527846957},{\"x\":101.13250724875553,\"y\":40.635215930385975},{\"x\":107.7866229614274,\"y\":44.89583385516056},{\"x\":114.46859528465262,\"y\":49.11591905279335},{\"x\":121.17842421843108,\"y\":53.295471523284306},{\"x\":127.91610976276286,\"y\":57.434491266633444},{\"x\":134.68165191764794,\"y\":61.532978282840766},{\"x\":141.4750506830863,\"y\":65.59093257190628},{\"x\":148.29630605907798,\"y\":69.60835413382996},{\"x\":155.14541804562293,\"y\":73.58524296861182},{\"x\":162.02238664272122,\"y\":77.52159907625189},{\"x\":168.92721185037277,\"y\":81.41742245675013},{\"x\":175.85989366857763,\"y\":85.27271311010655},{\"x\":182.8204320973358,\"y\":89.08747103632118},{\"x\":189.80882713664727,\"y\":92.86169623539395},{\"x\":196.82507878651205,\"y\":96.59538870732493},{\"x\":203.8691870469301,\"y\":100.28854845211407},{\"x\":210.9411519179015,\"y\":103.94117546976143},{\"x\":218.0409733994261,\"y\":107.55326976026694},{\"x\":225.16865149150408,\"y\":111.12483132363064},{\"x\":232.32418619413534,\"y\":114.65586015985254},{\"x\":239.5075775073199,\"y\":118.14635626893262},{\"x\":246.71882543105772,\"y\":121.59631965087088},{\"x\":253.95792996534885,\"y\":125.0057503056673},{\"x\":261.22489111019337,\"y\":128.37464823332192},{\"x\":268.5197088655911,\"y\":131.70301343383474},{\"x\":275.84238323154216,\"y\":134.99084590720574},{\"x\":283.1929142080465,\"y\":138.2381456534349},{\"x\":290.5713017951041,\"y\":141.44491267252226},{\"x\":297.977545992715,\"y\":144.61114696446776},{\"x\":305.41164680087934,\"y\":147.73684852927153},{\"x\":312.87360421959687,\"y\":150.82201736693344},{\"x\":320.3634182488677,\"y\":153.86665347745353},{\"x\":327.88108888869186,\"y\":156.8707568608318},{\"x\":335.42661613906927,\"y\":159.83432751706823},{\"x\":343,\"y\":162.75736544616288}],\"labelPoint\":{\"x\":196.82507878651205,\"y\":96.59538870732493},\"controlPoint\":{\"x\":191.25375667585232,\"y\":104.70193413568828},\"parallelSolverEligible\":false},\"dense-3-dense-7\":{\"id\":\"dense-3-dense-7\",\"sourceId\":\"dense-3\",\"targetId\":\"dense-7\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-3-dense-7\",\"sourcePosition\":{\"x\":30,\"y\":-8},\"targetPosition\":{\"x\":203,\"y\":175},\"path\":\"M 57.64848197592412 21.246660124821467 L 175.3515180240759 145.75333987517854\",\"samples\":[{\"x\":57.64848197592412,\"y\":21.246660124821467},{\"x\":60.591057877127916,\"y\":24.359327118580396},{\"x\":63.53363377833171,\"y\":27.47199411233932},{\"x\":66.4762096795355,\"y\":30.584661106098245},{\"x\":69.4187855807393,\"y\":33.697328099857174},{\"x\":72.36136148194309,\"y\":36.8099950936161},{\"x\":75.30393738314689,\"y\":39.92266208737503},{\"x\":78.24651328435068,\"y\":43.03532908113395},{\"x\":81.18908918555448,\"y\":46.14799607489289},{\"x\":84.13166508675828,\"y\":49.26066306865181},{\"x\":87.07424098796207,\"y\":52.37333006241074},{\"x\":90.01681688916585,\"y\":55.485997056169666},{\"x\":92.95939279036965,\"y\":58.59866404992859},{\"x\":95.90196869157344,\"y\":61.71133104368752},{\"x\":98.84454459277724,\"y\":64.82399803744644},{\"x\":101.78712049398104,\"y\":67.93666503120537},{\"x\":104.72969639518483,\"y\":71.0493320249643},{\"x\":107.67227229638863,\"y\":74.16199901872322},{\"x\":110.61484819759242,\"y\":77.27466601248216},{\"x\":113.55742409879622,\"y\":80.38733300624108},{\"x\":116.5,\"y\":83.5},{\"x\":119.44257590120381,\"y\":86.61266699375895},{\"x\":122.38515180240759,\"y\":89.72533398751787},{\"x\":125.32772770361137,\"y\":92.83800098127679},{\"x\":128.27030360481518,\"y\":95.95066797503571},{\"x\":131.21287950601896,\"y\":99.06333496879463},{\"x\":134.15545540722277,\"y\":102.17600196255358},{\"x\":137.09803130842658,\"y\":105.2886689563125},{\"x\":140.04060720963037,\"y\":108.40133595007143},{\"x\":142.98318311083415,\"y\":111.51400294383035},{\"x\":145.92575901203796,\"y\":114.62666993758927},{\"x\":148.86833491324174,\"y\":117.73933693134822},{\"x\":151.81091081444555,\"y\":120.85200392510714},{\"x\":154.75348671564933,\"y\":123.96467091886606},{\"x\":157.6960626168531,\"y\":127.07733791262498},{\"x\":160.63863851805692,\"y\":130.1900049063839},{\"x\":163.58121441926073,\"y\":133.30267190014285},{\"x\":166.5237903204645,\"y\":136.41533889390178},{\"x\":169.4663662216683,\"y\":139.5280058876607},{\"x\":172.4089421228721,\"y\":142.64067288141962},{\"x\":175.3515180240759,\"y\":145.75333987517854}],\"labelPoint\":{\"x\":116.5,\"y\":83.5},\"controlPoint\":{\"x\":116.5,\"y\":83.5},\"parallelSolverEligible\":false},\"dense-4-dense-5\":{\"id\":\"dense-4-dense-5\",\"sourceId\":\"dense-4\",\"targetId\":\"dense-5\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-4-dense-5\",\"sourcePosition\":{\"x\":375,\"y\":-8},\"targetPosition\":{\"x\":30,\"y\":175},\"path\":\"M 343.2071982056565 14.220321111760278 Q 213.74624332414768 104.70193413568828 62 162.75736544616288\",\"samples\":[{\"x\":343.2071982056565,\"y\":14.220321111760278},{\"x\":336.7202221563044,\"y\":18.72413539938577},{\"x\":330.205389496399,\"y\":23.187416959869445},{\"x\":323.66270022594034,\"y\":27.610165793211305},{\"x\":317.09215434492836,\"y\":31.992381899411345},{\"x\":310.49375185336305,\"y\":36.33406527846957},{\"x\":303.8674927512444,\"y\":40.635215930385975},{\"x\":297.21337703857256,\"y\":44.89583385516056},{\"x\":290.5314047153475,\"y\":49.11591905279335},{\"x\":283.821575781569,\"y\":53.295471523284306},{\"x\":277.08389023723714,\"y\":57.434491266633444},{\"x\":270.3183480823521,\"y\":61.532978282840766},{\"x\":263.52494931691365,\"y\":65.59093257190628},{\"x\":256.70369394092205,\"y\":69.60835413382996},{\"x\":249.85458195437704,\"y\":73.58524296861182},{\"x\":242.97761335727878,\"y\":77.52159907625189},{\"x\":236.07278814962723,\"y\":81.41742245675013},{\"x\":229.14010633142232,\"y\":85.27271311010655},{\"x\":222.17956790266422,\"y\":89.08747103632118},{\"x\":215.1911728633527,\"y\":92.86169623539395},{\"x\":208.17492121348795,\"y\":96.59538870732493},{\"x\":201.1308129530699,\"y\":100.28854845211407},{\"x\":194.0588480820985,\"y\":103.94117546976143},{\"x\":186.95902660057388,\"y\":107.55326976026694},{\"x\":179.83134850849592,\"y\":111.12483132363064},{\"x\":172.67581380586466,\"y\":114.65586015985254},{\"x\":165.49242249268008,\"y\":118.14635626893262},{\"x\":158.28117456894225,\"y\":121.59631965087088},{\"x\":151.04207003465112,\"y\":125.0057503056673},{\"x\":143.77510888980666,\"y\":128.37464823332192},{\"x\":136.4802911344089,\"y\":131.70301343383474},{\"x\":129.15761676845787,\"y\":134.99084590720574},{\"x\":121.80708579195351,\"y\":138.2381456534349},{\"x\":114.42869820489588,\"y\":141.44491267252226},{\"x\":107.02245400728492,\"y\":144.61114696446776},{\"x\":99.58835319912069,\"y\":147.73684852927153},{\"x\":92.12639578040314,\"y\":150.82201736693344},{\"x\":84.6365817511323,\"y\":153.86665347745353},{\"x\":77.1189111113082,\"y\":156.8707568608318},{\"x\":69.57338386093075,\"y\":159.83432751706823},{\"x\":62,\"y\":162.75736544616288}],\"labelPoint\":{\"x\":208.17492121348795,\"y\":96.59538870732493},\"controlPoint\":{\"x\":213.74624332414768,\"y\":104.70193413568828},\"parallelSolverEligible\":false},\"dense-4-dense-6\":{\"id\":\"dense-4-dense-6\",\"sourceId\":\"dense-4\",\"targetId\":\"dense-6\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-4-dense-6\",\"sourcePosition\":{\"x\":375,\"y\":-8},\"targetPosition\":{\"x\":375,\"y\":175},\"path\":\"M 375 24 L 375 143\",\"samples\":[{\"x\":375,\"y\":24},{\"x\":375,\"y\":26.975},{\"x\":375,\"y\":29.95},{\"x\":375,\"y\":32.925},{\"x\":375,\"y\":35.9},{\"x\":375,\"y\":38.875},{\"x\":375,\"y\":41.849999999999994},{\"x\":375,\"y\":44.825},{\"x\":375,\"y\":47.8},{\"x\":375,\"y\":50.775000000000006},{\"x\":375,\"y\":53.75},{\"x\":375,\"y\":56.725},{\"x\":375,\"y\":59.699999999999996},{\"x\":375,\"y\":62.675000000000004},{\"x\":375,\"y\":65.65},{\"x\":375,\"y\":68.625},{\"x\":375,\"y\":71.6},{\"x\":375,\"y\":74.57499999999999},{\"x\":375,\"y\":77.55000000000001},{\"x\":375,\"y\":80.525},{\"x\":375,\"y\":83.5},{\"x\":375,\"y\":86.475},{\"x\":375,\"y\":89.45},{\"x\":375,\"y\":92.425},{\"x\":375,\"y\":95.39999999999999},{\"x\":375,\"y\":98.375},{\"x\":375,\"y\":101.35000000000001},{\"x\":375,\"y\":104.325},{\"x\":375,\"y\":107.3},{\"x\":375,\"y\":110.27499999999999},{\"x\":375,\"y\":113.25},{\"x\":375,\"y\":116.22500000000001},{\"x\":375,\"y\":119.2},{\"x\":375,\"y\":122.175},{\"x\":375,\"y\":125.14999999999999},{\"x\":375,\"y\":128.125},{\"x\":375,\"y\":131.10000000000002},{\"x\":375,\"y\":134.075},{\"x\":375,\"y\":137.05},{\"x\":375,\"y\":140.02499999999998},{\"x\":375,\"y\":143}],\"labelPoint\":{\"x\":375,\"y\":83.5},\"controlPoint\":{\"x\":375,\"y\":83.5},\"parallelSolverEligible\":false},\"dense-4-dense-7\":{\"id\":\"dense-4-dense-7\",\"sourceId\":\"dense-4\",\"targetId\":\"dense-7\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-4-dense-7\",\"sourcePosition\":{\"x\":375,\"y\":-8},\"targetPosition\":{\"x\":203,\"y\":175},\"path\":\"M 344.8911640777578 18.466176327412207 Q 280.255991086416 75.2815872506205 227.20286598018595 143.76007484221554\",\"samples\":[{\"x\":344.8911640777578,\"y\":18.466176327412207},{\"x\":341.6666442081189,\"y\":21.31423629649036},{\"x\":338.45660189833643,\"y\":24.176875111404},{\"x\":335.2610371484103,\"y\":27.054092772153126},{\"x\":332.0799499583406,\"y\":29.945889278737738},{\"x\":328.9133403281273,\"y\":32.85226463115782},{\"x\":325.76120825777025,\"y\":35.773218829413395},{\"x\":322.6235537472697,\"y\":38.70875187350445},{\"x\":319.50037679662563,\"y\":41.658863763431},{\"x\":316.3916774058378,\"y\":44.62355449919302},{\"x\":313.2974555749064,\"y\":47.602824080790526},{\"x\":310.2177113038314,\"y\":50.59667250822352},{\"x\":307.15244459261277,\"y\":53.60509978149199},{\"x\":304.1016554412506,\"y\":56.628105900595955},{\"x\":301.0653438497447,\"y\":59.66569086553538},{\"x\":298.0435098180953,\"y\":62.71785467631032},{\"x\":295.0361533463023,\"y\":65.78459733292073},{\"x\":292.04327443436557,\"y\":68.86591883536661},{\"x\":289.0648730822853,\"y\":71.96181918364799},{\"x\":286.1009492900614,\"y\":75.07229837776484},{\"x\":283.15150305769396,\"y\":78.19735641771719},{\"x\":280.21653438518285,\"y\":81.33699330350501},{\"x\":277.2960432725281,\"y\":84.49120903512832},{\"x\":274.3900297197298,\"y\":87.6600036125871},{\"x\":271.49849372678784,\"y\":90.84337703588139},{\"x\":268.62143529370235,\"y\":94.04132930501115},{\"x\":265.75885442047314,\"y\":97.2538604199764},{\"x\":262.9107511071004,\"y\":100.48097038077712},{\"x\":260.07712535358405,\"y\":103.72265918741331},{\"x\":257.25797715992405,\"y\":106.97892683988502},{\"x\":254.45330652612046,\"y\":110.2497733381922},{\"x\":251.66311345217326,\"y\":113.53519868233487},{\"x\":248.88739793808244,\"y\":116.83520287231302},{\"x\":246.12615998384803,\"y\":120.14978590812662},{\"x\":243.37939958946995,\"y\":123.47894778977573},{\"x\":240.6471167549483,\"y\":126.82268851726033},{\"x\":237.92931148028308,\"y\":130.1810080905804},{\"x\":235.2259837654742,\"y\":133.55390650973595},{\"x\":232.53713361052175,\"y\":136.941383774727},{\"x\":229.86276101542563,\"y\":140.34343988555355},{\"x\":227.20286598018595,\"y\":143.76007484221554}],\"labelPoint\":{\"x\":283.15150305769396,\"y\":78.19735641771719},\"controlPoint\":{\"x\":280.255991086416,\"y\":75.2815872506205},\"parallelSolverEligible\":false},\"dense-5-dense-6\":{\"id\":\"dense-5-dense-6\",\"sourceId\":\"dense-5\",\"targetId\":\"dense-6\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-5-dense-6\",\"sourcePosition\":{\"x\":30,\"y\":175},\"targetPosition\":{\"x\":375,\"y\":175},\"path\":\"M 61.3243045398589 151.03009739558624 Q 202.5 43 343.6756954601411 151.03009739558624\",\"samples\":[{\"x\":61.3243045398589,\"y\":151.03009739558624},{\"x\":68.38308931286595,\"y\":145.7636301475514},{\"x\":75.44187408587301,\"y\":140.76723814300556},{\"x\":82.50065885888007,\"y\":136.04092138194866},{\"x\":89.55944363188712,\"y\":131.58467986438072},{\"x\":96.61822840489418,\"y\":127.39851359030175},{\"x\":103.67701317790123,\"y\":123.48242255971174},{\"x\":110.73579795090828,\"y\":119.8364067726107},{\"x\":117.79458272391537,\"y\":116.46046622899865},{\"x\":124.85336749692242,\"y\":113.35460092887556},{\"x\":131.91215226992944,\"y\":110.51881087224139},{\"x\":138.9709370429365,\"y\":107.95309605909623},{\"x\":146.02972181594356,\"y\":105.65745648944001},{\"x\":153.08850658895062,\"y\":103.63189216327278},{\"x\":160.14729136195766,\"y\":101.8764030805945},{\"x\":167.20607613496472,\"y\":100.39098924140518},{\"x\":174.2648609079718,\"y\":99.17565064570485},{\"x\":181.3236456809788,\"y\":98.23038729349345},{\"x\":188.38243045398593,\"y\":97.55519918477106},{\"x\":195.44121522699294,\"y\":97.1500863195376},{\"x\":202.5,\"y\":97.01504869779312},{\"x\":209.55878477300706,\"y\":97.1500863195376},{\"x\":216.61756954601412,\"y\":97.55519918477106},{\"x\":223.67635431902113,\"y\":98.23038729349346},{\"x\":230.73513909202825,\"y\":99.17565064570485},{\"x\":237.7939238650353,\"y\":100.39098924140518},{\"x\":244.85270863804237,\"y\":101.8764030805945},{\"x\":251.9114934110494,\"y\":103.63189216327277},{\"x\":258.97027818405644,\"y\":105.65745648944001},{\"x\":266.0290629570635,\"y\":107.95309605909623},{\"x\":273.08784773007056,\"y\":110.5188108722414},{\"x\":280.1466325030776,\"y\":113.35460092887556},{\"x\":287.20541727608475,\"y\":116.46046622899865},{\"x\":294.26420204909175,\"y\":119.8364067726107},{\"x\":301.32298682209876,\"y\":123.48242255971174},{\"x\":308.3817715951059,\"y\":127.39851359030175},{\"x\":315.4405563681129,\"y\":131.58467986438072},{\"x\":322.49934114111994,\"y\":136.04092138194866},{\"x\":329.558125914127,\"y\":140.76723814300556},{\"x\":336.61691068713407,\"y\":145.7636301475514},{\"x\":343.6756954601411,\"y\":151.03009739558624}],\"labelPoint\":{\"x\":202.5,\"y\":97.01504869779312},\"controlPoint\":{\"x\":202.5,\"y\":43},\"parallelSolverEligible\":false},\"dense-5-dense-7\":{\"id\":\"dense-5-dense-7\",\"sourceId\":\"dense-5\",\"targetId\":\"dense-7\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-5-dense-7\",\"sourcePosition\":{\"x\":30,\"y\":175},\"targetPosition\":{\"x\":203,\"y\":175},\"path\":\"M 62 175 L 171 175\",\"samples\":[{\"x\":62,\"y\":175},{\"x\":64.725,\"y\":175},{\"x\":67.45,\"y\":175},{\"x\":70.175,\"y\":175},{\"x\":72.9,\"y\":175},{\"x\":75.625,\"y\":175},{\"x\":78.35,\"y\":175},{\"x\":81.075,\"y\":175},{\"x\":83.8,\"y\":175},{\"x\":86.525,\"y\":175},{\"x\":89.25,\"y\":175},{\"x\":91.975,\"y\":175},{\"x\":94.69999999999999,\"y\":175},{\"x\":97.42500000000001,\"y\":175},{\"x\":100.15,\"y\":175},{\"x\":102.875,\"y\":175},{\"x\":105.6,\"y\":175},{\"x\":108.32499999999999,\"y\":175},{\"x\":111.05000000000001,\"y\":175},{\"x\":113.775,\"y\":175},{\"x\":116.5,\"y\":175},{\"x\":119.225,\"y\":175},{\"x\":121.95,\"y\":175},{\"x\":124.675,\"y\":175},{\"x\":127.39999999999999,\"y\":175},{\"x\":130.125,\"y\":175},{\"x\":132.85000000000002,\"y\":175},{\"x\":135.575,\"y\":175},{\"x\":138.3,\"y\":175},{\"x\":141.02499999999998,\"y\":175},{\"x\":143.75,\"y\":175},{\"x\":146.47500000000002,\"y\":175},{\"x\":149.2,\"y\":175},{\"x\":151.925,\"y\":175},{\"x\":154.64999999999998,\"y\":175},{\"x\":157.375,\"y\":175},{\"x\":160.10000000000002,\"y\":175},{\"x\":162.825,\"y\":175},{\"x\":165.55,\"y\":175},{\"x\":168.27499999999998,\"y\":175},{\"x\":171,\"y\":175}],\"labelPoint\":{\"x\":116.5,\"y\":175},\"controlPoint\":{\"x\":116.5,\"y\":175},\"parallelSolverEligible\":false},\"dense-6-dense-7\":{\"id\":\"dense-6-dense-7\",\"sourceId\":\"dense-6\",\"targetId\":\"dense-7\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"dense-6-dense-7\",\"sourcePosition\":{\"x\":375,\"y\":175},\"targetPosition\":{\"x\":203,\"y\":175},\"path\":\"M 343 175 L 235 175\",\"samples\":[{\"x\":343,\"y\":175},{\"x\":340.3,\"y\":175},{\"x\":337.6,\"y\":175},{\"x\":334.9,\"y\":175},{\"x\":332.2,\"y\":175},{\"x\":329.5,\"y\":175},{\"x\":326.8,\"y\":175},{\"x\":324.1,\"y\":175},{\"x\":321.4,\"y\":175},{\"x\":318.7,\"y\":175},{\"x\":316,\"y\":175},{\"x\":313.3,\"y\":175},{\"x\":310.6,\"y\":175},{\"x\":307.9,\"y\":175},{\"x\":305.2,\"y\":175},{\"x\":302.5,\"y\":175},{\"x\":299.8,\"y\":175},{\"x\":297.1,\"y\":175},{\"x\":294.4,\"y\":175},{\"x\":291.7,\"y\":175},{\"x\":289,\"y\":175},{\"x\":286.3,\"y\":175},{\"x\":283.6,\"y\":175},{\"x\":280.9,\"y\":175},{\"x\":278.2,\"y\":175},{\"x\":275.5,\"y\":175},{\"x\":272.8,\"y\":175},{\"x\":270.1,\"y\":175},{\"x\":267.4,\"y\":175},{\"x\":264.7,\"y\":175},{\"x\":262,\"y\":175},{\"x\":259.3,\"y\":175},{\"x\":256.6,\"y\":175},{\"x\":253.9,\"y\":175},{\"x\":251.2,\"y\":175},{\"x\":248.5,\"y\":175},{\"x\":245.8,\"y\":175},{\"x\":243.1,\"y\":175},{\"x\":240.4,\"y\":175},{\"x\":237.7,\"y\":175},{\"x\":235,\"y\":175}],\"labelPoint\":{\"x\":289,\"y\":175},\"controlPoint\":{\"x\":289,\"y\":175},\"parallelSolverEligible\":false}}}",
+        "nonEmpty": true,
+        "edgeCurveOffsets": 1,
+        "selfLoopOverrides": 0,
+        "previousNodeLabels": 7,
+        "previousRelationLabels": 21,
+        "manualNodeLabels": 1,
+        "manualRelationLabels": 1,
+        "previousRoutes": 21
+      },
+      "noPinParity": true,
+      "baselineSelectedPositionFingerprint": "dense-1:203,-8|dense-2:548,-8|dense-3:30,-8|dense-4:375,-8|dense-5:30,175|dense-6:375,175|dense-7:203,175",
+      "experimentNoPinSelectedPositionFingerprint": "dense-1:203,-8|dense-2:548,-8|dense-3:30,-8|dense-4:375,-8|dense-5:30,175|dense-6:375,175|dense-7:203,175",
+      "rows": [
+        {
+          "fixture": "dense-k7-7",
+          "pinCase": "no-pins",
+          "fixedAnchorCount": 0,
+          "movableNodeCount": 7,
+          "anchorSources": {},
+          "status": "completed",
+          "candidateCount": 12,
+          "selectedFamily": "structural-frontier-12-grid-structural",
+          "selectedPositionFingerprint": "dense-1:203,175|dense-2:30,175|dense-3:548,-8|dense-4:375,-8|dense-5:203,-8|dense-6:375,175|dense-7:30,-8",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 678.583,
+          "selectedMetrics": {
+            "score": 3396196.268291232,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              518,
+              183
+            ],
+            "aspectRatio": 2.830601092896175,
+            "fitScale": 1,
+            "routeMedian": 183.19071474445147,
+            "routeMax": 484.11133473923184,
+            "crossings": 29,
+            "crossingRelationLabelNear": 28,
+            "labelRouteHits": 0,
+            "labelNear20": 7,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 327.0418687716592,
+            "labelCorridorConflictPairs": 17,
+            "labelCorridorMinimumClearance": 15.768011978692867,
+            "labelCorridorMaximumIntrusion": 32.23198802130713,
+            "usableSpanPenalty": 10042.631381751087,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "10d981de041faf8725c78050fdff134646c9dfd2084f5975d499a2fcbbd10a20",
+          "structuredClone": true
+        },
+        {
+          "fixture": "dense-k7-7",
+          "pinCase": "one-saved",
+          "fixedAnchorCount": 1,
+          "movableNodeCount": 6,
+          "anchorSources": {
+            "dense-1": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-3",
+          "selectedPositionFingerprint": "dense-1:383,56|dense-2:538,-1|dense-3:59,-21|dense-4:315,-76|dense-5:30,186|dense-6:382,234|dense-7:203,180",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 207.643,
+          "selectedMetrics": {
+            "score": 2892590.4502353477,
+            "overlapPairs": 0,
+            "minimumSeparation": 148.48568954616468,
+            "extent": [
+              508,
+              310
+            ],
+            "aspectRatio": 1.6387096774193548,
+            "fitScale": 0.8235294117647058,
+            "routeMedian": 209.46932791259914,
+            "routeMax": 494.4789594432392,
+            "crossings": 25,
+            "crossingRelationLabelNear": 23,
+            "labelRouteHits": 0,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 169.76174290958775,
+            "labelCorridorConflictPairs": 14,
+            "labelCorridorMinimumClearance": 3.3383096961204517,
+            "labelCorridorMaximumIntrusion": 44.661690303879546,
+            "usableSpanPenalty": 7868.133155019848,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "10d981de041faf8725c78050fdff134646c9dfd2084f5975d499a2fcbbd10a20",
+          "structuredClone": true
+        },
+        {
+          "fixture": "dense-k7-7",
+          "pinCase": "few-staged",
+          "fixedAnchorCount": 2,
+          "movableNodeCount": 5,
+          "anchorSources": {
+            "dense-1": "staged",
+            "dense-4": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-2",
+          "selectedPositionFingerprint": "dense-1:383,56|dense-2:493,-68|dense-3:73,-12|dense-4:555,56|dense-5:47,182|dense-6:376,227|dense-7:211,178",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 205.376,
+          "selectedMetrics": {
+            "score": 2719424.948906913,
+            "overlapPairs": 0,
+            "minimumSeparation": 138.63621460498698,
+            "extent": [
+              508,
+              295
+            ],
+            "aspectRatio": 1.7220338983050847,
+            "fitScale": 0.8579387186629527,
+            "routeMedian": 248.6793553830779,
+            "routeMax": 502.0463070871109,
+            "crossings": 23,
+            "crossingRelationLabelNear": 18,
+            "labelRouteHits": 2,
+            "labelNear20": 7,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 264.87429115346214,
+            "labelCorridorConflictPairs": 12,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 13306.198472264958,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "10d981de041faf8725c78050fdff134646c9dfd2084f5975d499a2fcbbd10a20",
+          "structuredClone": true
+        },
+        {
+          "fixture": "dense-k7-7",
+          "pinCase": "many-mixed",
+          "fixedAnchorCount": 5,
+          "movableNodeCount": 2,
+          "anchorSources": {
+            "dense-1": "saved",
+            "dense-2": "staged",
+            "dense-3": "saved",
+            "dense-4": "staged",
+            "dense-5": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-4",
+          "selectedPositionFingerprint": "dense-1:383,56|dense-2:728,56|dense-3:210,56|dense-4:555,56|dense-5:210,239|dense-6:397,215|dense-7:201,151",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 198.003,
+          "selectedMetrics": {
+            "score": 3149385.783313055,
+            "overlapPairs": 0,
+            "minimumSeparation": 88.45903006477066,
+            "extent": [
+              527,
+              183
+            ],
+            "aspectRatio": 2.879781420765027,
+            "fitScale": 1,
+            "routeMedian": 143.58636733815683,
+            "routeMax": 527.6031316874428,
+            "crossings": 27,
+            "crossingRelationLabelNear": 26,
+            "labelRouteHits": 0,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 161.71062608294807,
+            "labelCorridorConflictPairs": 12,
+            "labelCorridorMinimumClearance": 12.900961193531277,
+            "labelCorridorMaximumIntrusion": 35.09903880646873,
+            "usableSpanPenalty": 8348.376861672818,
+            "shortHopCount": 2,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "10d981de041faf8725c78050fdff134646c9dfd2084f5975d499a2fcbbd10a20",
+          "structuredClone": true
+        },
+        {
+          "fixture": "dense-k7-7",
+          "pinCase": "one-movable",
+          "fixedAnchorCount": 6,
+          "movableNodeCount": 1,
+          "anchorSources": {
+            "dense-1": "saved",
+            "dense-2": "staged",
+            "dense-3": "saved",
+            "dense-4": "staged",
+            "dense-5": "saved",
+            "dense-6": "staged"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-4",
+          "selectedPositionFingerprint": "dense-1:383,56|dense-2:728,56|dense-3:210,56|dense-4:555,56|dense-5:210,239|dense-6:555,239|dense-7:233,153",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 193.383,
+          "selectedMetrics": {
+            "score": 2835411.4670875925,
+            "overlapPairs": 0,
+            "minimumSeparation": 89.02246907382428,
+            "extent": [
+              518,
+              183
+            ],
+            "aspectRatio": 2.830601092896175,
+            "fitScale": 1,
+            "routeMedian": 220.64214380044467,
+            "routeMax": 483.6758024412525,
+            "crossings": 24,
+            "crossingRelationLabelNear": 23,
+            "labelRouteHits": 1,
+            "labelNear20": 3,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 257.22390262726054,
+            "labelCorridorConflictPairs": 14,
+            "labelCorridorMinimumClearance": 0,
+            "labelCorridorMaximumIntrusion": 48,
+            "usableSpanPenalty": 8577.814249387538,
+            "shortHopCount": 2,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "10d981de041faf8725c78050fdff134646c9dfd2084f5975d499a2fcbbd10a20",
+          "structuredClone": true
+        },
+        {
+          "fixture": "dense-k7-7",
+          "pinCase": "all-pinned",
+          "fixedAnchorCount": 7,
+          "movableNodeCount": 0,
+          "anchorSources": {
+            "dense-1": "saved",
+            "dense-2": "staged",
+            "dense-3": "saved",
+            "dense-4": "staged",
+            "dense-5": "saved",
+            "dense-6": "staged",
+            "dense-7": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "pinned-fixed-1",
+          "selectedPositionFingerprint": "dense-1:383,56|dense-2:728,56|dense-3:210,56|dense-4:555,56|dense-5:210,239|dense-6:555,239|dense-7:383,239",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 189.987,
+          "selectedMetrics": {
+            "score": 3351456.661206406,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              518,
+              183
+            ],
+            "aspectRatio": 2.830601092896175,
+            "fitScale": 1,
+            "routeMedian": 171.335688043707,
+            "routeMax": 481.4986393694935,
+            "crossings": 29,
+            "crossingRelationLabelNear": 27,
+            "labelRouteHits": 0,
+            "labelNear20": 1,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 94.0585689516701,
+            "labelCorridorConflictPairs": 10,
+            "labelCorridorMinimumClearance": 23.86640456163085,
+            "labelCorridorMaximumIntrusion": 24.13359543836915,
+            "usableSpanPenalty": 10114.31029773742,
+            "shortHopCount": 0,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "10d981de041faf8725c78050fdff134646c9dfd2084f5975d499a2fcbbd10a20",
+          "structuredClone": true
+        }
+      ],
+      "runtime": {
+        "repetitions": 3,
+        "candidateGenerationMsMedian": 0.3813000000000102,
+        "productEvaluationMsMedian": 165.26479999999992,
+        "candidateGenerationMs": [
+          0.4606999999996333,
+          0.3813000000000102,
+          0.3242000000000189
+        ],
+        "productEvaluationMs": [
+          196.95190000000002,
+          165.26479999999992,
+          158.82960000000003
+        ]
+      },
+      "worker": {
+        "messages": [
+          {
+            "kind": "started",
+            "operationId": "pinned-feasibility-dense-k7-7",
+            "generation": 1,
+            "snapshotIdentity": "10d981de041faf8725c78050fdff134646c9dfd2084f5975d499a2fcbbd10a20"
+          },
+          {
+            "kind": "completed",
+            "operationId": "pinned-feasibility-dense-k7-7",
+            "generation": 1,
+            "snapshotIdentity": "10d981de041faf8725c78050fdff134646c9dfd2084f5975d499a2fcbbd10a20"
+          }
+        ],
+        "terminal": {
+          "kind": "completed",
+          "validation": {
+            "ok": true
+          }
+        }
+      }
+    },
+    {
+      "fixture": "parallel-self-loop-control",
+      "graph": {
+        "nodes": 5,
+        "edges": 7,
+        "selfLoops": 1,
+        "parallelEdges": 2
+      },
+      "presentationSnapshot": {
+        "fingerprint": "{\"edgeCurveOffsets\":{\"ab-1\":24},\"selfLoopOverrides\":{\"self-a\":{\"orientation\":-1.5707963267948966,\"radius\":72}},\"previousNodeLabelPlacements\":{\"a\":{\"x\":429.5,\"y\":-8.000000000000016,\"width\":51,\"height\":20,\"directionX\":1,\"directionY\":-2.4492935982947064e-16},\"b\":{\"x\":191,\"y\":42,\"width\":51,\"height\":20,\"directionX\":6.123233995736766e-17,\"directionY\":1},\"c\":{\"x\":-46.5,\"y\":-7.999999999999992,\"width\":51,\"height\":20,\"directionX\":-1,\"directionY\":1.2246467991473532e-16},\"d\":{\"x\":19.000000000000004,\"y\":226,\"width\":51,\"height\":20,\"directionX\":6.123233995736766e-17,\"directionY\":1},\"e\":{\"x\":191,\"y\":226,\"width\":51,\"height\":20,\"directionX\":6.123233995736766e-17,\"directionY\":1}},\"previousRelationLabelPlacements\":{\"self-a\":{\"x\":364,\"y\":-99.636598338375,\"width\":51,\"height\":22,\"directionX\":0,\"directionY\":-1},\"ab-1\":{\"x\":277.5,\"y\":-35.398843930635834,\"width\":48,\"height\":22,\"directionX\":0,\"directionY\":-1},\"ab-2\":{\"x\":277.5,\"y\":19.398843930635834,\"width\":48,\"height\":22,\"directionX\":0,\"directionY\":-1},\"bc\":{\"x\":105,\"y\":-8,\"width\":48,\"height\":22,\"directionX\":0,\"directionY\":-1},\"cd\":{\"x\":19,\"y\":84,\"width\":48,\"height\":22,\"directionX\":-1,\"directionY\":0},\"de\":{\"x\":105,\"y\":176,\"width\":48,\"height\":22,\"directionX\":0,\"directionY\":1},\"ea\":{\"x\":277.5,\"y\":84,\"width\":48,\"height\":22,\"directionX\":0.7285486253331332,\"directionY\":0.6849940879490871}},\"manualNodeLabelOffsets\":{\"a\":{\"x\":12,\"y\":-16}},\"manualRelationLabelAnchors\":{\"self-a\":{\"fraction\":0.5,\"tangentOffset\":0,\"normalOffset\":0}},\"previousAutomaticRoutes\":{\"self-a\":{\"id\":\"self-a\",\"sourceId\":\"a\",\"targetId\":\"a\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"self-a\",\"sourcePosition\":{\"x\":364,\"y\":-8},\"targetPosition\":{\"x\":364,\"y\":-8},\"path\":\"M 392.4852813742386 -36.48528137423858 A 38 38 0 1 0 335.5147186257614 -36.48528137423858\",\"samples\":[{\"x\":392.4852813742386,\"y\":-36.48528137423858},{\"x\":395.1767698747284,\"y\":-39.91082976328823},{\"x\":397.45850208629355,\"y\":-43.62191993043527},{\"x\":399.30048920229734,\"y\":-47.569777017319936},{\"x\":400.6785219859287,\"y\":-51.70251433793767},{\"x\":401.5744889522036,\"y\":-55.965815325357354},{\"x\":401.97661440721356,\"y\":-60.303647414364775},{\"x\":401.8796132160716,\"y\":-64.6589984774717},{\"x\":401.28476026544064,\"y\":-68.97462613531187},{\"x\":400.19987370769775,\"y\":-73.19381009323764},{\"x\":398.6392122069569,\"y\":-77.26109761615693},{\"x\":396.6232875374456,\"y\":-81.12303234383494},{\"x\":394.17859499725444,\"y\":-84.7288568678409},{\"x\":391.337265180632,\"y\":-88.0311798361712},{\"x\":388.1366416855825,\"y\":-90.98659881779238},{\"x\":384.6187903069541,\"y\":-93.55627074079568},{\"x\":380.8299461656937,\"y\":-95.70642240689423},{\"x\":376.8199060406491,\"y\":-97.40879437257075},{\"x\":372.64137388950013,\"y\":-98.64101236294599},{\"x\":368.3492681606394,\"y\":-99.38688133687515},{\"x\":364,\"y\":-99.636598338375},{\"x\":359.6507318393606,\"y\":-99.38688133687515},{\"x\":355.35862611049987,\"y\":-98.64101236294599},{\"x\":351.180093959351,\"y\":-97.40879437257075},{\"x\":347.1700538343063,\"y\":-95.70642240689423},{\"x\":343.38120969304595,\"y\":-93.5562707407957},{\"x\":339.8633583144175,\"y\":-90.98659881779238},{\"x\":336.662734819368,\"y\":-88.0311798361712},{\"x\":333.82140500274556,\"y\":-84.72885686784092},{\"x\":331.3767124625544,\"y\":-81.12303234383494},{\"x\":329.3607877930431,\"y\":-77.26109761615695},{\"x\":327.80012629230225,\"y\":-73.19381009323764},{\"x\":326.71523973455936,\"y\":-68.97462613531188},{\"x\":326.1203867839284,\"y\":-64.65899847747171},{\"x\":326.02338559278644,\"y\":-60.30364741436479},{\"x\":326.4255110477964,\"y\":-55.96581532535737},{\"x\":327.3214780140713,\"y\":-51.70251433793767},{\"x\":328.69951079770266,\"y\":-47.56977701731992},{\"x\":330.54149791370645,\"y\":-43.62191993043527},{\"x\":332.8232301252716,\"y\":-39.91082976328824},{\"x\":335.5147186257614,\"y\":-36.48528137423859}],\"labelPoint\":{\"x\":364,\"y\":-99.636598338375},\"controlPoint\":{\"x\":364,\"y\":-99.636598338375},\"parallelSolverEligible\":false},\"ab-1\":{\"id\":\"ab-1\",\"sourceId\":\"a\",\"targetId\":\"b\",\"parallelIndex\":0,\"parallelCount\":2,\"label\":\"ab-1\",\"sourcePosition\":{\"x\":364,\"y\":-8},\"targetPosition\":{\"x\":191,\"y\":-8},\"path\":\"M 332 -22.797687861271676 Q 277.5 -48 223 -22.797687861271676\",\"samples\":[{\"x\":332,\"y\":-22.797687861271676},{\"x\":329.2749999999999,\"y\":-24.02630057803468},{\"x\":326.55,\"y\":-25.191907514450865},{\"x\":323.82500000000005,\"y\":-26.29450867052023},{\"x\":321.1,\"y\":-27.33410404624278},{\"x\":318.375,\"y\":-28.310693641618496},{\"x\":315.65,\"y\":-29.2242774566474},{\"x\":312.92499999999995,\"y\":-30.074855491329476},{\"x\":310.2000000000001,\"y\":-30.862427745664746},{\"x\":307.475,\"y\":-31.58699421965318},{\"x\":304.75,\"y\":-32.2485549132948},{\"x\":302.025,\"y\":-32.8471098265896},{\"x\":299.29999999999995,\"y\":-33.38265895953757},{\"x\":296.575,\"y\":-33.85520231213873},{\"x\":293.85,\"y\":-34.26473988439306},{\"x\":291.125,\"y\":-34.61127167630058},{\"x\":288.4,\"y\":-34.89479768786127},{\"x\":285.67499999999995,\"y\":-35.11531791907514},{\"x\":282.95000000000005,\"y\":-35.2728323699422},{\"x\":280.22499999999997,\"y\":-35.36734104046243},{\"x\":277.5,\"y\":-35.398843930635834},{\"x\":274.775,\"y\":-35.36734104046242},{\"x\":272.05,\"y\":-35.27283236994219},{\"x\":269.32500000000005,\"y\":-35.115317919075146},{\"x\":266.6,\"y\":-34.89479768786127},{\"x\":263.875,\"y\":-34.611271676300575},{\"x\":261.15,\"y\":-34.26473988439306},{\"x\":258.425,\"y\":-33.85520231213873},{\"x\":255.7,\"y\":-33.38265895953758},{\"x\":252.97500000000002,\"y\":-32.847109826589595},{\"x\":250.25,\"y\":-32.2485549132948},{\"x\":247.525,\"y\":-31.586994219653178},{\"x\":244.8,\"y\":-30.86242774566474},{\"x\":242.075,\"y\":-30.07485549132948},{\"x\":239.34999999999997,\"y\":-29.224277456647396},{\"x\":236.625,\"y\":-28.310693641618496},{\"x\":233.9,\"y\":-27.334104046242775},{\"x\":231.175,\"y\":-26.294508670520226},{\"x\":228.45000000000002,\"y\":-25.191907514450868},{\"x\":225.725,\"y\":-24.026300578034682},{\"x\":223,\"y\":-22.797687861271676}],\"labelPoint\":{\"x\":277.5,\"y\":-35.398843930635834},\"controlPoint\":{\"x\":277.5,\"y\":-48},\"parallelSolverEligible\":true},\"ab-2\":{\"id\":\"ab-2\",\"sourceId\":\"a\",\"targetId\":\"b\",\"parallelIndex\":1,\"parallelCount\":2,\"label\":\"ab-2\",\"sourcePosition\":{\"x\":364,\"y\":-8},\"targetPosition\":{\"x\":191,\"y\":-8},\"path\":\"M 332 6.797687861271676 Q 277.5 32 223 6.797687861271676\",\"samples\":[{\"x\":332,\"y\":6.797687861271676},{\"x\":329.2749999999999,\"y\":8.02630057803468},{\"x\":326.55,\"y\":9.191907514450866},{\"x\":323.82500000000005,\"y\":10.294508670520232},{\"x\":321.1,\"y\":11.334104046242775},{\"x\":318.375,\"y\":12.310693641618498},{\"x\":315.65,\"y\":13.224277456647398},{\"x\":312.92499999999995,\"y\":14.074855491329476},{\"x\":310.2000000000001,\"y\":14.862427745664743},{\"x\":307.475,\"y\":15.58699421965318},{\"x\":304.75,\"y\":16.248554913294797},{\"x\":302.025,\"y\":16.847109826589595},{\"x\":299.29999999999995,\"y\":17.382658959537572},{\"x\":296.575,\"y\":17.85520231213873},{\"x\":293.85,\"y\":18.264739884393062},{\"x\":291.125,\"y\":18.61127167630058},{\"x\":288.4,\"y\":18.89479768786127},{\"x\":285.67499999999995,\"y\":19.115317919075142},{\"x\":282.95000000000005,\"y\":19.272832369942197},{\"x\":280.22499999999997,\"y\":19.367341040462424},{\"x\":277.5,\"y\":19.398843930635834},{\"x\":274.775,\"y\":19.367341040462428},{\"x\":272.05,\"y\":19.272832369942197},{\"x\":269.32500000000005,\"y\":19.115317919075142},{\"x\":266.6,\"y\":18.89479768786127},{\"x\":263.875,\"y\":18.61127167630058},{\"x\":261.15,\"y\":18.264739884393062},{\"x\":258.425,\"y\":17.855202312138726},{\"x\":255.7,\"y\":17.382658959537572},{\"x\":252.97500000000002,\"y\":16.847109826589595},{\"x\":250.25,\"y\":16.248554913294797},{\"x\":247.525,\"y\":15.586994219653178},{\"x\":244.8,\"y\":14.86242774566474},{\"x\":242.075,\"y\":14.07485549132948},{\"x\":239.34999999999997,\"y\":13.224277456647398},{\"x\":236.625,\"y\":12.310693641618498},{\"x\":233.9,\"y\":11.334104046242773},{\"x\":231.175,\"y\":10.29450867052023},{\"x\":228.45000000000002,\"y\":9.19190751445087},{\"x\":225.725,\"y\":8.026300578034682},{\"x\":223,\"y\":6.797687861271676}],\"labelPoint\":{\"x\":277.5,\"y\":19.398843930635834},\"controlPoint\":{\"x\":277.5,\"y\":32},\"parallelSolverEligible\":true},\"bc\":{\"id\":\"bc\",\"sourceId\":\"b\",\"targetId\":\"c\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"bc\",\"sourcePosition\":{\"x\":191,\"y\":-8},\"targetPosition\":{\"x\":19,\"y\":-8},\"path\":\"M 159 -8 L 51 -8\",\"samples\":[{\"x\":159,\"y\":-8},{\"x\":156.3,\"y\":-8},{\"x\":153.6,\"y\":-8},{\"x\":150.9,\"y\":-8},{\"x\":148.2,\"y\":-8},{\"x\":145.5,\"y\":-8},{\"x\":142.8,\"y\":-8},{\"x\":140.1,\"y\":-8},{\"x\":137.4,\"y\":-8},{\"x\":134.7,\"y\":-8},{\"x\":132,\"y\":-8},{\"x\":129.3,\"y\":-8},{\"x\":126.6,\"y\":-8},{\"x\":123.9,\"y\":-8},{\"x\":121.2,\"y\":-8},{\"x\":118.5,\"y\":-8},{\"x\":115.8,\"y\":-8},{\"x\":113.1,\"y\":-8},{\"x\":110.4,\"y\":-8},{\"x\":107.7,\"y\":-8},{\"x\":105,\"y\":-8},{\"x\":102.3,\"y\":-8},{\"x\":99.6,\"y\":-8},{\"x\":96.9,\"y\":-8},{\"x\":94.2,\"y\":-8},{\"x\":91.5,\"y\":-8},{\"x\":88.8,\"y\":-8},{\"x\":86.1,\"y\":-8},{\"x\":83.4,\"y\":-8},{\"x\":80.7,\"y\":-8},{\"x\":78,\"y\":-8},{\"x\":75.3,\"y\":-8},{\"x\":72.6,\"y\":-8},{\"x\":69.9,\"y\":-8},{\"x\":67.2,\"y\":-8},{\"x\":64.5,\"y\":-8},{\"x\":61.8,\"y\":-8},{\"x\":59.099999999999994,\"y\":-8},{\"x\":56.400000000000006,\"y\":-8},{\"x\":53.7,\"y\":-8},{\"x\":51,\"y\":-8}],\"labelPoint\":{\"x\":105,\"y\":-8},\"controlPoint\":{\"x\":105,\"y\":-8},\"parallelSolverEligible\":false},\"cd\":{\"id\":\"cd\",\"sourceId\":\"c\",\"targetId\":\"d\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"cd\",\"sourcePosition\":{\"x\":19,\"y\":-8},\"targetPosition\":{\"x\":19,\"y\":176},\"path\":\"M 19 24 L 19 144\",\"samples\":[{\"x\":19,\"y\":24},{\"x\":19,\"y\":27},{\"x\":19,\"y\":30},{\"x\":19,\"y\":33},{\"x\":19,\"y\":36},{\"x\":19,\"y\":39},{\"x\":19,\"y\":42},{\"x\":19,\"y\":45},{\"x\":19,\"y\":48},{\"x\":19,\"y\":51},{\"x\":19,\"y\":54},{\"x\":19,\"y\":57},{\"x\":19,\"y\":60},{\"x\":19,\"y\":63},{\"x\":19,\"y\":66},{\"x\":19,\"y\":69},{\"x\":19,\"y\":72},{\"x\":19,\"y\":75},{\"x\":19,\"y\":78},{\"x\":19,\"y\":81},{\"x\":19,\"y\":84},{\"x\":19,\"y\":87},{\"x\":19,\"y\":90},{\"x\":19,\"y\":93},{\"x\":19,\"y\":96},{\"x\":19,\"y\":99},{\"x\":19,\"y\":102},{\"x\":19,\"y\":105},{\"x\":19,\"y\":108},{\"x\":19,\"y\":111},{\"x\":19,\"y\":114},{\"x\":19,\"y\":117},{\"x\":19,\"y\":120},{\"x\":19,\"y\":123},{\"x\":19,\"y\":126},{\"x\":19,\"y\":129},{\"x\":19,\"y\":132},{\"x\":19,\"y\":135},{\"x\":19,\"y\":138},{\"x\":19,\"y\":141},{\"x\":19,\"y\":144}],\"labelPoint\":{\"x\":19,\"y\":84},\"controlPoint\":{\"x\":19,\"y\":84},\"parallelSolverEligible\":false},\"de\":{\"id\":\"de\",\"sourceId\":\"d\",\"targetId\":\"e\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"de\",\"sourcePosition\":{\"x\":19,\"y\":176},\"targetPosition\":{\"x\":191,\"y\":176},\"path\":\"M 51 176 L 159 176\",\"samples\":[{\"x\":51,\"y\":176},{\"x\":53.7,\"y\":176},{\"x\":56.4,\"y\":176},{\"x\":59.1,\"y\":176},{\"x\":61.8,\"y\":176},{\"x\":64.5,\"y\":176},{\"x\":67.2,\"y\":176},{\"x\":69.9,\"y\":176},{\"x\":72.6,\"y\":176},{\"x\":75.3,\"y\":176},{\"x\":78,\"y\":176},{\"x\":80.7,\"y\":176},{\"x\":83.4,\"y\":176},{\"x\":86.1,\"y\":176},{\"x\":88.8,\"y\":176},{\"x\":91.5,\"y\":176},{\"x\":94.2,\"y\":176},{\"x\":96.9,\"y\":176},{\"x\":99.6,\"y\":176},{\"x\":102.3,\"y\":176},{\"x\":105,\"y\":176},{\"x\":107.7,\"y\":176},{\"x\":110.4,\"y\":176},{\"x\":113.1,\"y\":176},{\"x\":115.8,\"y\":176},{\"x\":118.5,\"y\":176},{\"x\":121.2,\"y\":176},{\"x\":123.9,\"y\":176},{\"x\":126.6,\"y\":176},{\"x\":129.3,\"y\":176},{\"x\":132,\"y\":176},{\"x\":134.7,\"y\":176},{\"x\":137.4,\"y\":176},{\"x\":140.1,\"y\":176},{\"x\":142.8,\"y\":176},{\"x\":145.5,\"y\":176},{\"x\":148.2,\"y\":176},{\"x\":150.9,\"y\":176},{\"x\":153.6,\"y\":176},{\"x\":156.3,\"y\":176},{\"x\":159,\"y\":176}],\"labelPoint\":{\"x\":105,\"y\":176},\"controlPoint\":{\"x\":105,\"y\":176},\"parallelSolverEligible\":false},\"ea\":{\"id\":\"ea\",\"sourceId\":\"e\",\"targetId\":\"a\",\"parallelIndex\":0,\"parallelCount\":1,\"label\":\"ea\",\"sourcePosition\":{\"x\":191,\"y\":176},\"targetPosition\":{\"x\":364,\"y\":-8},\"path\":\"M 218.56361127908949 146.68378915981233 L 336.4363887209105 21.31621084018767\",\"samples\":[{\"x\":218.56361127908949,\"y\":146.68378915981233},{\"x\":221.51043071513502,\"y\":143.5495997018217},{\"x\":224.45725015118055,\"y\":140.4154102438311},{\"x\":227.40406958722605,\"y\":137.28122078584047},{\"x\":230.35088902327158,\"y\":134.14703132784987},{\"x\":233.2977084593171,\"y\":131.01284186985924},{\"x\":236.24452789536264,\"y\":127.87865241186864},{\"x\":239.19134733140817,\"y\":124.74446295387801},{\"x\":242.1381667674537,\"y\":121.6102734958874},{\"x\":245.08498620349923,\"y\":118.47608403789678},{\"x\":248.03180563954473,\"y\":115.34189457990617},{\"x\":250.97862507559026,\"y\":112.20770512191555},{\"x\":253.9254445116358,\"y\":109.07351566392494},{\"x\":256.8722639476813,\"y\":105.93932620593432},{\"x\":259.8190833837268,\"y\":102.8051367479437},{\"x\":262.76590281977235,\"y\":99.67094728995309},{\"x\":265.7127222558179,\"y\":96.53675783196246},{\"x\":268.6595416918634,\"y\":93.40256837397186},{\"x\":271.60636112790894,\"y\":90.26837891598123},{\"x\":274.55318056395447,\"y\":87.13418945799063},{\"x\":277.5,\"y\":84},{\"x\":280.44681943604553,\"y\":80.86581054200938},{\"x\":283.39363887209106,\"y\":77.73162108401876},{\"x\":286.3404583081366,\"y\":74.59743162602815},{\"x\":289.28727774418206,\"y\":71.46324216803754},{\"x\":292.2340971802276,\"y\":68.32905271004691},{\"x\":295.1809166162731,\"y\":65.1948632520563},{\"x\":298.12773605231865,\"y\":62.06067379406568},{\"x\":301.0745554883642,\"y\":58.92648433607508},{\"x\":304.0213749244097,\"y\":55.79229487808445},{\"x\":306.96819436045524,\"y\":52.65810542009383},{\"x\":309.9150137965008,\"y\":49.52391596210322},{\"x\":312.8618332325463,\"y\":46.38972650411259},{\"x\":315.8086526685918,\"y\":43.25553704612199},{\"x\":318.7554721046373,\"y\":40.12134758813137},{\"x\":321.70229154068284,\"y\":36.987158130140756},{\"x\":324.64911097672837,\"y\":33.852968672150126},{\"x\":327.5959304127739,\"y\":30.71877921415951},{\"x\":330.5427498488194,\"y\":27.58458975616891},{\"x\":333.48956928486496,\"y\":24.45040029817828},{\"x\":336.4363887209105,\"y\":21.316210840187665}],\"labelPoint\":{\"x\":277.5,\"y\":84},\"controlPoint\":{\"x\":277.5,\"y\":84},\"parallelSolverEligible\":false}}}",
+        "nonEmpty": true,
+        "edgeCurveOffsets": 1,
+        "selfLoopOverrides": 1,
+        "previousNodeLabels": 5,
+        "previousRelationLabels": 7,
+        "manualNodeLabels": 1,
+        "manualRelationLabels": 1,
+        "previousRoutes": 7
+      },
+      "noPinParity": true,
+      "baselineSelectedPositionFingerprint": "a:364,-8|b:191,-8|c:19,-8|d:19,176|e:191,176",
+      "experimentNoPinSelectedPositionFingerprint": "a:364,-8|b:191,-8|c:19,-8|d:19,176|e:191,176",
+      "rows": [
+        {
+          "fixture": "parallel-self-loop-control",
+          "pinCase": "no-pins",
+          "fixedAnchorCount": 0,
+          "movableNodeCount": 5,
+          "anchorSources": {},
+          "status": "completed",
+          "candidateCount": 12,
+          "selectedFamily": "structural-frontier-4-grid-structural",
+          "selectedPositionFingerprint": "a:364,-8|b:191,-8|c:19,-8|d:19,176|e:191,176",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 127.285,
+          "selectedMetrics": {
+            "score": 32019.81309970288,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              345,
+              184
+            ],
+            "aspectRatio": 1.875,
+            "fitScale": 1,
+            "routeMedian": 112.76657269978716,
+            "routeMax": 393.51022724238135,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 75.73183858581437,
+            "labelCorridorConflictPairs": 7,
+            "labelCorridorMinimumClearance": 27.01553729933054,
+            "labelCorridorMaximumIntrusion": 20.98446270066946,
+            "usableSpanPenalty": 4067.1299317652297,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "2985c606fa88af700a81208d5b44fedd89e21fb25564b55573ca1f1cd3a240c3",
+          "structuredClone": true
+        },
+        {
+          "fixture": "parallel-self-loop-control",
+          "pinCase": "one-saved",
+          "fixedAnchorCount": 1,
+          "movableNodeCount": 4,
+          "anchorSources": {
+            "a": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-4",
+          "selectedPositionFingerprint": "a:544,56|b:210,-8|c:7,-19|d:7,183|e:207,171",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 37.239,
+          "selectedMetrics": {
+            "score": 32398.327614929778,
+            "overlapPairs": 0,
+            "minimumSeparation": 179.02513789968157,
+            "extent": [
+              537,
+              202
+            ],
+            "aspectRatio": 2.6584158415841586,
+            "fitScale": 1,
+            "routeMedian": 275.7738303132293,
+            "routeMax": 393.5102272423815,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 26.386456214966344,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 34.30059682487007,
+            "labelCorridorMaximumIntrusion": 13.69940317512993,
+            "usableSpanPenalty": 4067.1299317652342,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "2985c606fa88af700a81208d5b44fedd89e21fb25564b55573ca1f1cd3a240c3",
+          "structuredClone": true
+        },
+        {
+          "fixture": "parallel-self-loop-control",
+          "pinCase": "few-staged",
+          "fixedAnchorCount": 2,
+          "movableNodeCount": 3,
+          "anchorSources": {
+            "a": "staged",
+            "c": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-4",
+          "selectedPositionFingerprint": "a:544,56|b:197,-73|c:199,56|d:3,177|e:207,200",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 40.497,
+          "selectedMetrics": {
+            "score": 32459.287076967357,
+            "overlapPairs": 0,
+            "minimumSeparation": 129.0155029444136,
+            "extent": [
+              541,
+              273
+            ],
+            "aspectRatio": 1.9816849816849818,
+            "fitScale": 0.913946587537092,
+            "routeMedian": 296.8785613320197,
+            "routeMax": 393.5102272423815,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 54.1709881633655,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 30.604295142119355,
+            "labelCorridorMaximumIntrusion": 17.395704857880645,
+            "usableSpanPenalty": 4067.1299317652342,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "2985c606fa88af700a81208d5b44fedd89e21fb25564b55573ca1f1cd3a240c3",
+          "structuredClone": true
+        },
+        {
+          "fixture": "parallel-self-loop-control",
+          "pinCase": "many-mixed",
+          "fixedAnchorCount": 3,
+          "movableNodeCount": 2,
+          "anchorSources": {
+            "a": "saved",
+            "b": "staged",
+            "c": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-4",
+          "selectedPositionFingerprint": "a:544,56|b:371,56|c:199,56|d:3,177|e:207,200",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 36.363,
+          "selectedMetrics": {
+            "score": 32115.053938622557,
+            "overlapPairs": 0,
+            "minimumSeparation": 144.22205101855957,
+            "extent": [
+              541,
+              144
+            ],
+            "aspectRatio": 3.7569444444444446,
+            "fitScale": 1,
+            "routeMedian": 140.88699215961952,
+            "routeMax": 393.5102272423815,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 93.14042675547847,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 21.608810197636544,
+            "labelCorridorMaximumIntrusion": 26.391189802363456,
+            "usableSpanPenalty": 4067.1299317652342,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "2985c606fa88af700a81208d5b44fedd89e21fb25564b55573ca1f1cd3a240c3",
+          "structuredClone": true
+        },
+        {
+          "fixture": "parallel-self-loop-control",
+          "pinCase": "one-movable",
+          "fixedAnchorCount": 4,
+          "movableNodeCount": 1,
+          "anchorSources": {
+            "a": "saved",
+            "b": "staged",
+            "c": "saved",
+            "d": "staged"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "anchor-aware-relaxation-4",
+          "selectedPositionFingerprint": "a:544,56|b:371,56|c:199,56|d:199,240|e:182,142",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 38.904,
+          "selectedMetrics": {
+            "score": 137024.06309970285,
+            "overlapPairs": 0,
+            "minimumSeparation": 87.66413177577247,
+            "extent": [
+              362,
+              184
+            ],
+            "aspectRatio": 1.9673913043478262,
+            "fitScale": 1,
+            "routeMedian": 112.76657269978715,
+            "routeMax": 393.5102272423815,
+            "crossings": 1,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 87.9425766140204,
+            "labelCorridorConflictPairs": 7,
+            "labelCorridorMinimumClearance": 21.60881019763655,
+            "labelCorridorMaximumIntrusion": 26.39118980236345,
+            "usableSpanPenalty": 4067.1299317652342,
+            "shortHopCount": 2,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "2985c606fa88af700a81208d5b44fedd89e21fb25564b55573ca1f1cd3a240c3",
+          "structuredClone": true
+        },
+        {
+          "fixture": "parallel-self-loop-control",
+          "pinCase": "all-pinned",
+          "fixedAnchorCount": 5,
+          "movableNodeCount": 0,
+          "anchorSources": {
+            "a": "saved",
+            "b": "staged",
+            "c": "saved",
+            "d": "staged",
+            "e": "saved"
+          },
+          "status": "completed",
+          "candidateCount": 4,
+          "selectedFamily": "pinned-fixed-1",
+          "selectedPositionFingerprint": "a:544,56|b:371,56|c:199,56|d:199,240|e:371,240",
+          "exactPinnedCoordinates": true,
+          "finiteCompleteResult": true,
+          "elapsedMs": 37.533,
+          "selectedMetrics": {
+            "score": 32019.813099702893,
+            "overlapPairs": 0,
+            "minimumSeparation": 172,
+            "extent": [
+              345,
+              184
+            ],
+            "aspectRatio": 1.875,
+            "fitScale": 1,
+            "routeMedian": 112.76657269978715,
+            "routeMax": 393.5102272423815,
+            "crossings": 0,
+            "crossingRelationLabelNear": 0,
+            "labelRouteHits": 0,
+            "labelNear20": 2,
+            "labelOverlap": 0,
+            "labelCorridorDeficit": 96.96981885680236,
+            "labelCorridorConflictPairs": 6,
+            "labelCorridorMinimumClearance": 21.608810197636544,
+            "labelCorridorMaximumIntrusion": 26.391189802363456,
+            "usableSpanPenalty": 4067.1299317652342,
+            "shortHopCount": 1,
+            "feedbackApplied": true
+          },
+          "snapshotFingerprint": "2985c606fa88af700a81208d5b44fedd89e21fb25564b55573ca1f1cd3a240c3",
+          "structuredClone": true
+        }
+      ],
+      "runtime": {
+        "repetitions": 3,
+        "candidateGenerationMsMedian": 0.16349999999965803,
+        "productEvaluationMsMedian": 37.782500000000255,
+        "candidateGenerationMs": [
+          0.16240000000016153,
+          0.16349999999965803,
+          0.17709999999988213
+        ],
+        "productEvaluationMs": [
+          56.76639999999952,
+          37.782500000000255,
+          36.29669999999987
+        ]
+      },
+      "worker": {
+        "messages": [
+          {
+            "kind": "started",
+            "operationId": "pinned-feasibility-parallel-self-loop-control",
+            "generation": 1,
+            "snapshotIdentity": "2985c606fa88af700a81208d5b44fedd89e21fb25564b55573ca1f1cd3a240c3"
+          },
+          {
+            "kind": "completed",
+            "operationId": "pinned-feasibility-parallel-self-loop-control",
+            "generation": 1,
+            "snapshotIdentity": "2985c606fa88af700a81208d5b44fedd89e21fb25564b55573ca1f1cd3a240c3"
+          }
+        ],
+        "terminal": {
+          "kind": "completed",
+          "validation": {
+            "ok": true
+          }
+        }
+      }
+    }
+  ],
+  "allNoPinParity": true,
+  "allWorkerCompleted": true,
+  "allPinnedExact": true,
+  "allSnapshotsNonEmpty": true,
+  "operationBoundaryReadiness": "hard-constraint, serializability, Product snapshot, and Worker transport boundary proven; general Explicit Auto Layout quality/release acceptance remains open",
+  "productionWiring": false,
+  "humanReview": "unchanged QUALIFIED; not reopened"
+}
