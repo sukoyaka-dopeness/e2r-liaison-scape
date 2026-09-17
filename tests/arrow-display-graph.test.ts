@@ -60,7 +60,7 @@ test("renders Dataset-contained arrow display modes and line styles by Relation 
   environment.document.body.append(container);
 
   try {
-    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
     environment.addCleanup(() => server.close());
     const root = createRoot(container);
     environment.addCleanup(() => act(async () => root.unmount()));

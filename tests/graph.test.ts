@@ -996,6 +996,8 @@ test("hover descriptions are bounded and preserve empty descriptions", () => {
 
 test("hover content keeps ownership on its own line", () => {
   assert.deepEqual(composeHoverLines("entity", { name: "Entity", ownership: "" }), ["Entity"]);
+  assert.deepEqual(composeHoverLines("entity", { name: "Entity", ownership: "", state: "Pinned" }), ["Entity", "Pinned"]);
+  assert.deepEqual(composeHoverLines("entity", { ownership: "", state: "Pinned" }), ["Pinned"]);
   assert.deepEqual(composeHoverLines("node-label", { description: "Description", ownership: "User placement" }), ["Description", "User placement"]);
   assert.deepEqual(composeHoverLines("node-label", { ownership: "Automatic placement" }), ["Automatic placement"]);
   assert.deepEqual(composeHoverLines("relation-label", { name: "Supports", ownership: "User placement" }), ["Supports", "User placement"]);

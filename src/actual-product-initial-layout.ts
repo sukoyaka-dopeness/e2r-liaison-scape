@@ -1,5 +1,5 @@
 import { deriveBoundedInitialLayout, type InitialLayoutProviderResult } from "./initial-layout-provider.ts";
-import { settleInitialPlacement, type LayoutPoint } from "./auto-layout.ts";
+import { canonicalizeAutomaticPositions, settleInitialPlacement, type LayoutPoint } from "./auto-layout.ts";
 import { placeInitialEntities } from "./entity-placement.ts";
 import type { GraphEdge, GraphNode } from "./dataset.ts";
 
@@ -39,7 +39,7 @@ export function deriveActualProductInitialLayout({
       relations: edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })),
       strategy: optIn,
     });
-    return { positions: result.positions, authority: "bounded-provider", provider: result.provider, strategy: optIn, status: result.status, reason: result.reason };
+    return { positions: canonicalizeAutomaticPositions(result.positions), authority: "bounded-provider", provider: result.provider, strategy: optIn, status: result.status, reason: result.reason };
   }
   return {
     positions: settleInitialPlacement({ entities: nodes.map(({ id }) => ({ id })), relations: edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })) }),

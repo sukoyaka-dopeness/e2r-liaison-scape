@@ -71,7 +71,7 @@ test("resolves each incident Relation before explicit Entity deletion", async ()
   environment.addCleanup(() => act(async () => root.unmount()));
 
   try {
-    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
     environment.addCleanup(() => server.close());
     const { useDetailDeletionWorkflow } = await server.ssrLoadModule("/src/hooks/useDetailDeletionWorkflow.ts");
     await act(async () => root.render(React.createElement(WorkflowHarness, { useWorkflow: useDetailDeletionWorkflow })));

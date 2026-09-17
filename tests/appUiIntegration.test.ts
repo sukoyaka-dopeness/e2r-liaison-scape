@@ -85,7 +85,7 @@ async function withRelationDetailProbe(dataset: Dataset, callback: (environment:
   const container = environment.document.createElement("div");
   environment.document.body.append(container);
   const root = createRoot(container);
-  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
   try {
     const [{ RelationDetailDialog }, { useDetailDeletionWorkflow }] = await Promise.all([
       server.ssrLoadModule("/src/components/RelationDetailDialog.tsx"),
@@ -142,7 +142,7 @@ async function withProductionApp({ locale = "en", dataset, beforeRender, callbac
   environment.document.body.append(container);
 
   try {
-    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
     environment.addCleanup(() => server.close());
     const root = createRoot(container);
     environment.addCleanup(() => act(async () => root.unmount()));
@@ -171,7 +171,7 @@ test("renders the production LiaisonScape Home surface", async () => {
   try {
     const server = await createServer({
       root: process.cwd(),
-      server: { middlewareMode: true, hmr: false },
+      server: { middlewareMode: true, hmr: false, ws: false },
       appType: "custom",
     });
     environment.addCleanup(() => server.close());
@@ -351,7 +351,7 @@ test("opens an exact targeted Relation inspection request on the existing Detail
   environment.document.body.append(container);
 
   try {
-    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
     environment.addCleanup(() => server.close());
     const root = createRoot(container);
     environment.addCleanup(() => act(async () => root.unmount()));
@@ -377,7 +377,7 @@ test("renders type-neutral Relation Detail roles for Event endpoints in both dir
   environment.document.body.append(container);
 
   try {
-    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
     environment.addCleanup(() => server.close());
     const root = createRoot(container);
     environment.addCleanup(() => act(async () => root.unmount()));
@@ -441,7 +441,7 @@ test("opens a targeted Relation deletion intent on the existing Detail surface w
   environment.document.body.append(container);
 
   try {
-    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
     environment.addCleanup(() => server.close());
     const root = createRoot(container);
     environment.addCleanup(() => act(async () => root.unmount()));
@@ -545,6 +545,57 @@ test("dismisses a placement ownership popover when a node drag starts", async ()
     await dispatchPointer(body, "pointerover");
     assert.ok(environment.document.querySelector(".placement-hover-popover"));
   }});
+});
+
+test("shows localized Pin state only in the existing Pinned Entity ownership popover", async (context) => {
+  for (const [locale, expected] of [["en", "Pinned"], ["ja", "ピン留め済み"]] as const) {
+    await context.test(locale, async () => {
+      const dataset: Dataset = {
+        version: "1.0",
+        entities: [
+          { id: "entity-pinned", name: "Pinned Entity" },
+          { id: "entity-unpinned", name: "Ordinary Entity" },
+        ],
+        events: [],
+        relations: [],
+        extensions: {
+          "draft.github.sukoyaka-dopeness.liaisonscape-layout": {
+            specVersion: "0.1.0",
+            entities: {
+              "entity-pinned": { pinned: true, spaceId: "liaisonscape-graph" },
+            },
+          },
+        },
+      };
+      await withProductionApp({ locale, dataset, callback: async (environment) => {
+        const dispatchPointer = async (target: Element, type: string, pointerType = "mouse") => {
+          const event = new environment.window.Event(type, { bubbles: true, cancelable: true });
+          Object.defineProperties(event, {
+            clientX: { value: 120 },
+            clientY: { value: 140 },
+            pointerId: { value: 1 },
+            pointerType: { value: pointerType },
+          });
+          await act(async () => { target.dispatchEvent(event); });
+        };
+        const pinned = environment.document.querySelector('[data-entity-id="entity-pinned"] .entity-body') as SVGRectElement;
+        const unpinned = environment.document.querySelector('[data-entity-id="entity-unpinned"] .entity-body') as SVGRectElement;
+        assert.ok(pinned);
+        assert.ok(unpinned);
+
+        await dispatchPointer(pinned, "pointerover");
+        const state = environment.document.querySelector(".placement-hover-popover__ownership");
+        assert.equal(state?.textContent, expected);
+
+        await dispatchPointer(pinned, "pointerout");
+        await dispatchPointer(unpinned, "pointerover", "touch");
+        const unpinnedPopover = environment.document.querySelector(".placement-hover-popover");
+        assert.ok(unpinnedPopover);
+        assert.doesNotMatch(unpinnedPopover.textContent ?? "", /Pinned|Unpinned|ピン留め/);
+        assert.equal(environment.document.querySelector(".placement-hover-popover__ownership"), null);
+      }});
+    });
+  }
 });
 
 test("paints the Node-label connector below the Node selection affordance", async () => {
@@ -656,7 +707,7 @@ test("implements the collapsible viewport toolbar interaction contract", async (
   environment.document.body.append(container);
 
   try {
-    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
     environment.addCleanup(() => server.close());
     const root = createRoot(container);
     environment.addCleanup(() => act(async () => root.unmount()));
@@ -956,7 +1007,7 @@ test("renders Entity deletion blockers as labeled connected-object rows in both 
   };
 
   try {
-    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
     environment.addCleanup(() => server.close());
     const root = createRoot(container);
     environment.addCleanup(() => act(async () => root.unmount()));
@@ -1325,7 +1376,7 @@ test("routes a real Relation Detail Arrow save through App updateDataset and the
   environment.document.body.append(container);
 
   try {
-    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
     environment.addCleanup(() => server.close());
     const root = createRoot(container);
     environment.addCleanup(() => act(async () => root.unmount()));

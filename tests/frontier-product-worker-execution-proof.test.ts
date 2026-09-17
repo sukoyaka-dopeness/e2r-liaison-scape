@@ -24,6 +24,7 @@ test("Frontier/Product worker core is finite, deterministic, and serializable", 
   assert.deepEqual(first.candidateSet, second.candidateSet);
   assert.deepEqual(first.selected, second.selected);
   assert.equal(validateFrontierProductResult(first).ok, true);
+  assert.ok(Object.values(first.selected?.positions ?? {}).every((point) => Number.isInteger(point.x) && Number.isInteger(point.y)));
   assert.doesNotThrow(() => structuredClone(first));
 });
 

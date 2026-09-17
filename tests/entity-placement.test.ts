@@ -35,7 +35,7 @@ test("disconnected and long-label entities receive finite non-overlapping positi
   assert.ok(new Set(Object.values(result).map(point => `${point.x},${point.y}`)).size === 3);
 });
 
-test("bounded initial settling is deterministic and non-grid for coordinate-less graphs", () => {
+test("bounded initial settling is deterministic and integer-canonical for coordinate-less graphs", () => {
   const graph = nodes(["a", "b", "c", "d"]);
   const edges = [edge("a", "b"), edge("b", "c"), edge("c", "d")];
   const input = { entities: graph.map(({ id }) => ({ id })), relations: edges };
@@ -43,5 +43,5 @@ test("bounded initial settling is deterministic and non-grid for coordinate-less
   const second = settleInitialPlacement({ ...input, entities: [...input.entities].reverse() });
   assert.deepEqual(first, second);
   assert.equal(new Set(Object.values(first).map((point) => `${point.x},${point.y}`)).size, 4);
-  assert.ok(Object.values(first).some((point) => point.x % 1 !== 0 || point.y % 1 !== 0));
+  assert.ok(Object.values(first).every((point) => Number.isInteger(point.x) && Number.isInteger(point.y)));
 });

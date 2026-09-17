@@ -1,6 +1,6 @@
 export type PreviewPoint = Readonly<{ x: number; y: number }>;
 export type OperationLocalProductPreview = Readonly<{
-  operationId: number;
+  operationId: string | number;
   generation: number;
   snapshotIdentity: string;
   candidateFingerprint: string;
@@ -13,7 +13,7 @@ export function fingerprintPreviewPositions(positions: Readonly<Record<string, P
 
 export function validateOperationLocalProductPreview(
   preview: OperationLocalProductPreview | null | undefined,
-  expected: Readonly<{ operationId: number; generation: number; snapshotIdentity: string; entityIds: readonly string[] }>,
+  expected: Readonly<{ operationId: string | number; generation: number; snapshotIdentity: string; entityIds: readonly string[] }>,
 ): preview is OperationLocalProductPreview {
   if (!preview || preview.operationId !== expected.operationId || preview.generation !== expected.generation || preview.snapshotIdentity !== expected.snapshotIdentity) return false;
   const ids = Object.keys(preview.positions).sort(); const expectedIds = [...expected.entityIds].sort();

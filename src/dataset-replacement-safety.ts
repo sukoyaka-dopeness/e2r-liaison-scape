@@ -1,5 +1,6 @@
 export type PendingUserWorkSources = {
   unsavedCoordinates: boolean;
+  unsavedPins?: boolean;
   manualRelationRoute: boolean;
   manualRelationLabel: boolean;
   manualNodeLabel: boolean;

@@ -177,10 +177,15 @@ export function solveAutoLayout(input: AutoLayoutInput, options: AutoLayoutOptio
   return settleNormalizedLayout(layoutGraph, { clearance, gap, iterations }, (component, componentLeft, nodeClearance) => createAutoLayoutInitialPositions(layoutGraph, component, componentLeft, nodeClearance));
 }
 
+/** Canonicalizes only positions produced for automatic initial display. */
+export function canonicalizeAutomaticPositions(positions: Readonly<Record<string, LayoutPoint>>): Record<string, LayoutPoint> {
+  return Object.fromEntries(Object.entries(positions).map(([id, point]) => [id, { x: Math.round(point.x), y: Math.round(point.y) }]));
+}
+
 /**
  * Bounded derived placement for coordinate-less Dataset opening. This reuses
  * the pure solver mechanics without invoking the explicit Auto Layout workflow.
  */
 export function settleInitialPlacement(input: AutoLayoutInput): Record<string, LayoutPoint> {
-  return solveAutoLayout(input, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
+  return canonicalizeAutomaticPositions(solveAutoLayout(input, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS }));
 }

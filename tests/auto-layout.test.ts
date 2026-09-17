@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   INITIAL_PLACEMENT_SETTLING_ITERATIONS,
   buildNormalizedLayoutGraph,
+  canonicalizeAutomaticPositions,
   settleInitialPlacement,
   settleLayoutPositions,
   solveAutoLayout,
@@ -94,8 +95,22 @@ test("settleInitialPlacement uses the default Product composition with exactly t
   };
   assert.deepEqual(
     settleInitialPlacement(input),
-    solveAutoLayout(input, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS }),
+    canonicalizeAutomaticPositions(solveAutoLayout(input, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS })),
   );
+});
+
+test("keeps internal automatic calculation precision separate from initial-display canonicalization", () => {
+  const input = {
+    entities: entities(["hub", "a", "b"]),
+    relations: [
+      { id: "ha", sourceId: "hub", targetId: "a" },
+      { id: "hb", sourceId: "hub", targetId: "b" },
+    ],
+  };
+  const internal = solveAutoLayout(input, { iterations: INITIAL_PLACEMENT_SETTLING_ITERATIONS });
+  const displayed = settleInitialPlacement(input);
+  assert.ok(Object.values(internal).some((point) => point.x % 1 !== 0 || point.y % 1 !== 0));
+  assert.ok(Object.values(displayed).every((point) => Number.isInteger(point.x) && Number.isInteger(point.y)));
 });
 
 test("builds one canonical normalized graph independent of Relation order", () => {

@@ -11,6 +11,7 @@ test("coarse opt-in applies only to coordinate-less Product graphs", () => {
   assert.equal(result.strategy, "coarse-objective-prototype-v1");
   assert.equal(result.provider, "coarse-objective-prototype-v1");
   assert.equal(result.status, "prototype");
+  assert.ok(Object.values(result.positions).every((point) => Number.isInteger(point.x) && Number.isInteger(point.y)));
 });
 
 test("fully stored coordinates remain authoritative under coarse opt-in", () => {
@@ -32,4 +33,25 @@ test("without opt-in coordinate-less graphs retain the current Product provider"
   assert.equal(result.authority, "current");
   assert.equal(result.provider, "current-product");
   assert.equal(result.strategy, undefined);
+  assert.ok(Object.values(result.positions).every((point) => Number.isInteger(point.x) && Number.isInteger(point.y)));
+});
+
+test("stored fractional coordinates remain authoritative and unrounded", () => {
+  const result = deriveActualProductInitialLayout({
+    nodes,
+    edges,
+    storedPositions: { a: { x: 10.25, y: 20.75 }, b: { x: 200.5, y: 220.125 } },
+  });
+  assert.deepEqual(result.positions, { a: { x: 10.25, y: 20.75 }, b: { x: 200.5, y: 220.125 } });
+  assert.equal(result.authority, "stored");
+});
+
+test("mixed fractional coordinates remain authoritative while completion stays Product-owned", () => {
+  const result = deriveActualProductInitialLayout({
+    nodes,
+    edges,
+    storedPositions: { a: { x: 10.25, y: 20.75 } },
+  });
+  assert.deepEqual(result.positions.a, { x: 10.25, y: 20.75 });
+  assert.equal(result.authority, "mixed-completion");
 });

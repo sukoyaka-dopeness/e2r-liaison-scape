@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { assessCoordinateDraftMigration, migrateCoordinatePrototypeToDraft } from "./coordinate-migration";
 import { assessLiaisonScapeSpaceMigration, migrateLinkscapeSpaceToLiaisonScape } from "./space-migration";
-import { applyStoredCoordinates, buildEntityGraph, getStoredCoordinates, updateDatasetTitle, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
+import { buildEntityGraph, getStoredCoordinates, LIAISONSCAPE_SPACE_ID, updateDatasetTitle, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
 import { getDatasetMetadata, loadDataset, serializeDataset, validateDatasetForExport } from "./services/DatasetService";
 import { createEntity } from "./services/EntityService";
 import { createRelation } from "./services/RelationService";
@@ -29,7 +29,6 @@ import { clearDatasetHandoffFragment, parseTargetedDatasetHandoffFragment, type 
 import { resolveRelationTarget, supportsRelationHandoffCapability } from "./capability-handoff";
 import { useDetailDeletionWorkflow } from "./hooks/useDetailDeletionWorkflow";
 import { placeInitialEntity } from "./initial-entity-placement";
-import { solveAutoLayout } from "./auto-layout";
 import { createAutomaticPresentationProfiler, deriveBoundedAutomaticPresentation, type AutomaticNodeLabelRecoveryTrace, type AutomaticRouteDecision, type DerivedAutomaticRoute } from "./graph-presentation";
 import { deriveProductParallelBundlePolicy } from "./product-parallel-bundle-policy";
 import { publishDatasetOpenTiming, publishDragPointerProcessing, publishNodeLabelLifecycleDiagnostic, publishPresentationDiagnostic, publishPresentationTiming, type DatasetOpenTimingSample } from "./presentation-diagnostics";
@@ -38,6 +37,11 @@ import { acceptanceFixturePath, acceptanceLayoutPath, parseAcceptanceFixture, ty
 import { readAcceptancePayload, storeAcceptancePayload } from "./acceptance-payload-reopen";
 import { validateOperationLocalProductPreview, type OperationLocalProductPreview } from "./operation-local-product-preview";
 import { createBrowserFrontierAutomaticDisplayWorker, createFrontierAutomaticDisplaySnapshot, FrontierAutomaticDisplayAdapter, type FrontierAutomaticDisplayOutcome } from "./frontier-automatic-display-adapter";
+import { buildAtomicPinSaveCandidate, createWorkingPinState, deriveWorkingPinState, emptyWorkingPinState, reconcileWorkingPinState, stagePin, stageUnpin, type WorkingPinState } from "./pin-persistence";
+import { captureExplicitAutoLayoutSnapshotFromDataset } from "./explicit-auto-layout-operation";
+import { ExplicitAutoLayoutBrowserAdapter } from "./explicit-auto-layout-browser-adapter";
+import { createExplicitAutoLayoutFailureDiagnostic, type ExplicitAutoLayoutFailureDiagnostic } from "./explicit-auto-layout-failure-diagnostic";
+import { dependencyFingerprint } from "./presentation-dependency";
 
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
@@ -112,6 +116,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     : null;
   const acceptancePayloadReopen = import.meta.env.DEV
     && new URLSearchParams(window.location.search).get("acceptance-reopen") === "saved";
+  const explicitAutoLayoutFailureProbe = import.meta.env.DEV
+    && new URLSearchParams(window.location.search).get("explicit-auto-layout-failure-probe") === "pin-resolution";
   const initialLayoutParam = new URLSearchParams(window.location.search).get("initial-layout");
   const initialLayoutOptIn = initialLayoutParam === "coarse-objective-prototype-v1"
     ? "coarse-objective-prototype-v1" as ActualProductInitialLayoutOptIn
@@ -141,13 +147,21 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
   const [frontierAsyncState, setFrontierAsyncState] = useState<"idle" | "started" | "completed" | "fallback" | "cancelled" | "stale">("idle");
   const [activeOperationPreview, setActiveOperationPreview] = useState<OperationLocalProductPreview | null>(null);
+  const [explicitAutoLayoutState, setExplicitAutoLayoutState] = useState<"idle" | "running" | "preview" | "failed">("idle");
+  const [explicitAutoLayoutWarning, setExplicitAutoLayoutWarning] = useState(false);
+  const [explicitAutoLayoutFailureDiagnostic, setExplicitAutoLayoutFailureDiagnostic] = useState<ExplicitAutoLayoutFailureDiagnostic | null>(null);
   const productInitialLayoutOverrideRef = useRef<ActualProductDiagnosticInitialLayout | null>(null);
   const frontierAdapterRef = useRef<FrontierAutomaticDisplayAdapter | null>(null);
   const frontierGenerationRef = useRef(0);
   const frontierSessionIdentityRef = useRef<string | null>(null);
+  const explicitAutoLayoutAdapterRef = useRef<ExplicitAutoLayoutBrowserAdapter | null>(null);
+  const explicitAutoLayoutGenerationRef = useRef(0);
+  const datasetRevisionRef = useRef(0);
+  const manuallyMovedEntityIdsRef = useRef<Set<string>>(new Set());
   const [liveDragPosition, setLiveDragPosition] = useState<{ id: string; position: { x: number; y: number } } | null>(null);
   const [presentationRevision, setPresentationRevision] = useState(0);
   const [coordinatesDirty, setCoordinatesDirty] = useState(false);
+  const [workingPinState, setWorkingPinState] = useState<WorkingPinState>(emptyWorkingPinState);
   const adoptedCoordinateEntityIdsRef = useRef<Set<string>>(new Set());
   const [creationMode, setCreationMode] = useState<"entity" | "relation" | null>(null);
   const [relationCreationPreview, setRelationCreationPreview] = useState<{ sourceId: string; point: { x: number; y: number }; targetId: string | null } | null>(null);
@@ -206,10 +220,22 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const datasetLoadingTimerRef = useRef<number | null>(null);
   const datasetLoadingShownAtRef = useRef<number | null>(null);
   const datasetLoadingAwaitingStableRef = useRef(false);
+  const { pins: workingPins, unsavedPins } = useMemo(() => deriveWorkingPinState(workingPinState), [workingPinState]);
 
   function invalidateFrontierOperation(reason: string) {
     frontierAdapterRef.current?.invalidate(reason);
     setFrontierAsyncState("idle");
+    explicitAutoLayoutAdapterRef.current?.invalidate(reason);
+    if (explicitAutoLayoutState === "running") setExplicitAutoLayoutState("idle");
+    setExplicitAutoLayoutFailureDiagnostic(null);
+  }
+
+  function invalidateExplicitAutoLayout(reason: string, discardPreview = true) {
+    explicitAutoLayoutAdapterRef.current?.invalidate(reason);
+    if (discardPreview) setActiveOperationPreview(null);
+    setExplicitAutoLayoutState("idle");
+    setExplicitAutoLayoutWarning(false);
+    setExplicitAutoLayoutFailureDiagnostic(null);
   }
 
   function cancelFrontierAutomaticDisplay() {
@@ -271,6 +297,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   useEffect(() => () => {
     frontierSessionIdentityRef.current = null;
     frontierAdapterRef.current?.dispose();
+    explicitAutoLayoutAdapterRef.current?.dispose();
   }, []);
 
   function beginDatasetOpenTiming(source: DatasetReplacementSource) {
@@ -385,9 +412,9 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }, [locale]);
 
   useEffect(() => {
-    if (!frontierAdapterRef.current) return;
     frontierSessionIdentityRef.current = null;
     invalidateFrontierOperation("locale-change");
+    invalidateExplicitAutoLayout("locale-change");
   }, [locale]);
 
   useEffect(() => {
@@ -423,6 +450,34 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         if (!response.ok) throw new Error(`Acceptance fixture request failed: ${response.status}`);
         productInitialLayoutOverrideRef.current = override;
         return response.text();
+      })
+      .then((raw) => {
+        if (!explicitAutoLayoutFailureProbe) return raw;
+        const probed = JSON.parse(raw) as Dataset;
+        const entityId = probed.entities[0]?.id;
+        if (!entityId) return raw;
+        const currentExtensions = probed.extensions && typeof probed.extensions === "object"
+          ? probed.extensions as Record<string, unknown>
+          : {};
+        const currentSpecification = currentExtensions["draft.github.sukoyaka-dopeness.specification"];
+        const specification = currentSpecification && typeof currentSpecification === "object"
+          ? currentSpecification as Record<string, unknown>
+          : {};
+        probed.extensions = {
+          ...currentExtensions,
+          "draft.github.sukoyaka-dopeness.specification": {
+            ...specification,
+            uses: [
+              ...(Array.isArray(specification.uses) ? specification.uses : []),
+              { extension: "draft.github.sukoyaka-dopeness.liaisonscape-layout", version: "0.1.0" },
+            ],
+          },
+          "draft.github.sukoyaka-dopeness.liaisonscape-layout": {
+            specVersion: "0.1.0",
+            entities: { [entityId]: { pinned: true, spaceId: "liaisonscape-graph" } },
+          },
+        };
+        return JSON.stringify(probed);
       })
       .then((raw) => scheduleDatasetOpen(() => open(raw, null, "local")))
       .catch(() => { finishDatasetLoading(); setMessage(translate(acceptanceFixture.locale, "sampleDatasetLoadFailure")); });
@@ -785,6 +840,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const meaningfulCreationDraft = creationMode !== null && [creationName, creationDescription, creationSource, creationTarget].some((value) => value.trim().length > 0);
   const pendingUserWork = hasPendingUserWork({
     unsavedCoordinates: coordinatesDirty,
+    unsavedPins,
     manualRelationRoute: Object.keys(edgeCurveOffsets).length > 0 || Object.keys(selfLoopOverrides).length > 0,
     manualRelationLabel: manualRelationLabelAnchors.current.size > 0,
     manualNodeLabel: manualNodeLabelOffsets.current.size > 0,
@@ -1061,6 +1117,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
 
   function acceptDataset(nextDataset: Dataset, source: DatasetReplacementSource | null = pendingDatasetReplacementSource) {
     invalidateFrontierOperation("dataset-replacement");
+    invalidateExplicitAutoLayout("dataset-replacement");
+    datasetRevisionRef.current += 1;
     frontierGenerationRef.current += 1;
     const frontierGeneration = frontierGenerationRef.current;
     frontierSessionIdentityRef.current = null;
@@ -1081,6 +1139,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     }
     datasetLoadingAwaitingStableRef.current = true;
     cleanDatasetBaseline.current = structuredClone(nextDataset);
+    setWorkingPinState(createWorkingPinState(nextDataset).state);
     setActiveOperationPreview(null);
     setDataset(nextDataset);
     setDatasetModified(false);
@@ -1201,9 +1260,43 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
 
   function updateDataset(nextDataset: Dataset) {
     invalidateFrontierOperation("dataset-mutation");
+    invalidateExplicitAutoLayout("dataset-mutation");
+    datasetRevisionRef.current += 1;
     frontierSessionIdentityRef.current = null;
+    setWorkingPinState((state) => reconcileWorkingPinState(state, nextDataset));
     setDataset(nextDataset);
     setDatasetModified(isDatasetModified(cleanDatasetBaseline.current ?? nextDataset, nextDataset));
+  }
+
+  /** App-owned mutation seam for the Pin/Unpin UI. */
+  function stagePinForEntity(entityId: string, spaceId: string) {
+    if (!dataset) return;
+    const storedPosition = getStoredCoordinates(dataset)[entityId];
+    const result = stagePin(workingPinState, entityId, spaceId, {
+      hasCompatibleSavedAnchor: storedPosition !== undefined,
+      currentPosition: positions[entityId],
+    });
+    if (result.refusal) return;
+    setWorkingPinState(result.state);
+    if (storedPosition === undefined && positions[entityId] !== undefined) {
+      adoptedCoordinateEntityIdsRef.current.add(entityId);
+      setCoordinatesDirty(true);
+    }
+  }
+
+  /** App-owned mutation seam for the Pin/Unpin UI. */
+  function stageUnpinForEntity(entityId: string, retainCoordinate = false) {
+    const result = stageUnpin(workingPinState, entityId, { retainCoordinate });
+    if (result.refusal) return;
+    setWorkingPinState(result.state);
+    const nextDiscarded = deriveWorkingPinState(result.state).coordinatesToDiscard;
+    for (const discardedEntityId of nextDiscarded) adoptedCoordinateEntityIdsRef.current.delete(discardedEntityId);
+    if (nextDiscarded.length > 0) setCoordinatesDirty(adoptedCoordinateEntityIdsRef.current.size > 0);
+  }
+
+  function toggleEntityPin(entityId: string) {
+    if (workingPins[entityId] !== undefined) stageUnpinForEntity(entityId);
+    else stagePinForEntity(entityId, LIAISONSCAPE_SPACE_ID);
   }
 
   function beginDatasetTitleEdit(trigger: HTMLButtonElement) {
@@ -1357,6 +1450,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     if (view === "home") return;
     frontierSessionIdentityRef.current = null;
     frontierAdapterRef.current?.cancel("workspace-exit");
+    explicitAutoLayoutAdapterRef.current?.cancel("workspace-exit");
+    setExplicitAutoLayoutState("idle");
     setActiveOperationPreview(null);
     setView("home");
     window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href);
@@ -1646,9 +1741,11 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     }
     else if (drag.kind === "node" && drag.id && moved && drag.startNodePosition && drag.startGraphPoint) {
       invalidateFrontierOperation("manual-node-mutation");
+      invalidateExplicitAutoLayout("manual-node-mutation");
       publishDragPointerProcessing({ nodeId: drag.id, eventTimeStamp: event.timeStamp, processedAt: performance.now(), clientX: event.clientX, clientY: event.clientY });
       setCoordinatesDirty(true);
       adoptedCoordinateEntityIdsRef.current.add(drag.id!);
+      manuallyMovedEntityIdsRef.current.add(drag.id!);
       queueNodeDragPosition(drag.id, { x: drag.startNodePosition.x + currentPoint.x - drag.startGraphPoint.x, y: drag.startNodePosition.y + currentPoint.y - drag.startGraphPoint.y });
     }
     else if (drag.kind === "node-label" && drag.id && moved) {
@@ -1831,13 +1928,19 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }
 
   function saveCoordinates() {
-    if (!dataset || !coordinatesDirty) return;
+    if (!dataset || (!coordinatesDirty && !unsavedPins)) return;
     invalidateFrontierOperation("coordinates-saved");
     const storedPositions = getStoredCoordinates(dataset);
     const entityIds = new Set(dataset.entities.map(({ id }) => id));
     const persistablePositions = buildPersistableCoordinatePositions({ storedPositions, currentPositions: positions, adoptedEntityIds: adoptedCoordinateEntityIdsRef.current, entityIds });
-    const saved = applyStoredCoordinates(dataset, persistablePositions);
-    if (saved === dataset) {
+    const saveResult = buildAtomicPinSaveCandidate({ dataset, coordinatePositions: persistablePositions, workingPins: workingPinState });
+    if (saveResult.status === "failed") {
+      setDiagnostics(saveResult.diagnostics.map(({ code, entityId, message }) => ({ severity: "error" as const, code, path: entityId ? `extensions.liaisonscape-layout.entities.${entityId}` : "extensions.liaisonscape-layout", relatedIds: entityId ? [entityId] : undefined })));
+      setMessage(translate(locale, "coordinatePayloadWriteRefusal"));
+      return;
+    }
+    const saved = saveResult.dataset;
+    if (!saveResult.changed) {
       const readiness = assessCoordinateDraftMigration(dataset);
       if (!readiness.ready && readiness.code === "linkscape_coordinate_draft_migration_target_exists") {
         setMessage(translate(locale, "coordinateDraftWriteRefusal"));
@@ -1848,9 +1951,11 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     }
     cleanDatasetBaseline.current = structuredClone(saved);
     setDataset(saved);
+    setWorkingPinState(createWorkingPinState(saved).state);
     setDatasetModified(false);
     setCoordinatesDirty(false);
     adoptedCoordinateEntityIdsRef.current.clear();
+    manuallyMovedEntityIdsRef.current.clear();
     if (acceptancePayloadReopen) storeAcceptancePayload(window.sessionStorage, serializeDataset(saved));
     setMessage(translate(locale, "coordinateSaveSuccess"));
   }
@@ -1921,15 +2026,137 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }
 
   function applyAutoLayout() {
-    if (!dataset) return;
-    invalidateFrontierOperation("another-auto-layout");
-    const result = solveAutoLayout({ entities: graph.nodes.map(({ id }) => ({ id })), relations: graph.edges.map(({ id, sourceId, targetId }) => ({ id, sourceId, targetId })) });
-    const changed = graph.nodes.some((node) => { const current = positions[node.id] ?? node; const next = result[node.id]; return next !== undefined && (current.x !== next.x || current.y !== next.y); });
-    if (!changed) { setAutoLayoutConfirmationOpen(false); return; }
-    setPositions((value) => ({ ...value, ...result }));
-    setCoordinatesDirty(true);
-    for (const node of graph.nodes) adoptedCoordinateEntityIdsRef.current.add(node.id);
     setAutoLayoutConfirmationOpen(false);
+    if (!dataset || graph.nodes.length === 0) return;
+    invalidateFrontierOperation("explicit-auto-layout");
+    invalidateExplicitAutoLayout("replaced-by-new-operation");
+    explicitAutoLayoutGenerationRef.current += 1;
+    const generation = explicitAutoLayoutGenerationRef.current;
+    const operationId = `explicit-auto-layout-${generation}`;
+    const storedPositions = getStoredCoordinates(dataset);
+    const completePositions = Object.fromEntries(graph.nodes.map((node) => [node.id, positions[node.id] ?? node]));
+    const stagedPins = { ...workingPinState.staged };
+    const coordinateOwnership = Object.fromEntries(graph.nodes.map((node) => [node.id,
+      adoptedCoordinateEntityIdsRef.current.has(node.id) ? "adopted" : storedPositions[node.id] ? "stored" : "derived",
+    ])) as Record<string, "stored" | "derived" | "adopted">;
+    const relationLabels = new Map(dataset.relations.map((relation) => [relation.id, typeof relation.name === "string" ? relation.name : ""]));
+    const graphFingerprint = dependencyFingerprint({ nodes: graph.nodes, edges: graph.edges }).digest;
+    const captured = captureExplicitAutoLayoutSnapshotFromDataset({
+      operationId,
+      generation,
+      datasetIdentity: metadata?.datasetId ?? dependencyFingerprint(dataset).digest,
+      datasetRevision: datasetRevisionRef.current,
+      graphFingerprint,
+      graph: {
+        nodes: graph.nodes.map((node) => ({ ...node })),
+        edges: graph.edges.map((edge) => ({ ...edge, label: relationLabels.get(edge.id) ?? "" })),
+      },
+      positions: completePositions,
+      storedCoordinateFingerprint: Object.keys(storedPositions).length ? dependencyFingerprint(storedPositions).digest : null,
+      adoptedCoordinateFingerprint: adoptedCoordinateEntityIdsRef.current.size ? dependencyFingerprint([...adoptedCoordinateEntityIdsRef.current].sort().map((id) => [id, completePositions[id]])).digest : null,
+      coordinatesDirty,
+      coordinateOwnership,
+      dataset,
+      currentPositions: completePositions,
+      stagedPins,
+      manuallyMovedEntityIds: [...manuallyMovedEntityIdsRef.current],
+      product: {
+        edgeCurveOffsets: { ...edgeCurveOffsets },
+        selfLoopOverrides: { ...selfLoopOverrides },
+        provisionalNodeLabels: provisionalNodeLabels.map((label) => ({ ...label })),
+        previousNodeLabelPlacements: Object.fromEntries(previousNodeLabelPlacements.current),
+        previousRelationLabelPlacements: Object.fromEntries(previousEdgeLabelPlacements.current),
+        manualNodeLabelOffsets: Object.fromEntries(manualNodeLabelOffsets.current),
+        manualRelationLabelAnchors: Object.fromEntries(manualRelationLabelAnchors.current),
+        previousAutomaticRoutes: Object.fromEntries(previousAutomaticRoutes.current),
+        feedbackEnabled: true,
+      },
+      locale,
+      algorithmVersion: "frontier-12-product-selection-v1",
+      budgetPolicy: { mode: "worker-no-fixed-timeout" },
+    });
+    if (!captured.snapshot) {
+      setExplicitAutoLayoutFailureDiagnostic(createExplicitAutoLayoutFailureDiagnostic({
+        failure: captured.failure,
+        operationId,
+        graphFingerprint,
+        entityCount: graph.nodes.length,
+        effectivePinCount: Object.keys(workingPins).length,
+        pinDiagnosticCodes: captured.pinDiagnostics.map(({ code }) => code),
+        workerStarted: false,
+      }));
+      setExplicitAutoLayoutState("failed");
+      setMessage(translate(locale, "explicitAutoLayoutFailed"));
+      return;
+    }
+    const adapter = explicitAutoLayoutAdapterRef.current ?? (explicitAutoLayoutAdapterRef.current = new ExplicitAutoLayoutBrowserAdapter());
+    setExplicitAutoLayoutState("running");
+    setExplicitAutoLayoutWarning(false);
+    setExplicitAutoLayoutFailureDiagnostic(null);
+    void adapter.start(captured.snapshot).then((outcome) => {
+      if (outcome.status !== "completed") {
+        if (outcome.status === "failed") {
+          setExplicitAutoLayoutFailureDiagnostic(createExplicitAutoLayoutFailureDiagnostic({
+            failure: outcome.failure ?? { code: outcome.reason },
+            operationId: outcome.operationId,
+            snapshotIdentity: outcome.snapshotIdentity,
+            graphFingerprint,
+            entityCount: graph.nodes.length,
+            effectivePinCount: Object.keys(captured.snapshot.activePins).length,
+            workerStarted: true,
+          }));
+          setExplicitAutoLayoutState("failed");
+          setMessage(translate(locale, "explicitAutoLayoutFailed"));
+        } else setExplicitAutoLayoutState("idle");
+        return;
+      }
+      if (explicitAutoLayoutGenerationRef.current !== generation) return;
+      const preview: OperationLocalProductPreview = {
+        operationId: outcome.operationId,
+        generation: outcome.generation,
+        snapshotIdentity: outcome.snapshotIdentity,
+        candidateFingerprint: outcome.preview.candidateFingerprint,
+        positions: outcome.preview.positions,
+      };
+      setActiveOperationPreview(preview);
+      setExplicitAutoLayoutWarning(outcome.preview.warnings.length > 0);
+      setExplicitAutoLayoutState("preview");
+    });
+  }
+
+  function cancelExplicitAutoLayout() {
+    explicitAutoLayoutAdapterRef.current?.cancel("user-cancelled");
+    setExplicitAutoLayoutState("idle");
+    setExplicitAutoLayoutFailureDiagnostic(null);
+    maintenanceMenuSummaryRef.current?.focus();
+  }
+
+  function rejectExplicitAutoLayoutPreview() {
+    setActiveOperationPreview(null);
+    setExplicitAutoLayoutState("idle");
+    setExplicitAutoLayoutWarning(false);
+    setExplicitAutoLayoutFailureDiagnostic(null);
+    maintenanceMenuSummaryRef.current?.focus();
+  }
+
+  function acceptExplicitAutoLayoutPreview() {
+    if (!activeOperationPreview) return;
+    const next = activeOperationPreview.positions;
+    const changed = graph.nodes.some((node) => {
+      const before = positions[node.id] ?? node;
+      const after = next[node.id];
+      return after !== undefined && (before.x !== after.x || before.y !== after.y);
+    });
+    if (changed) {
+      setPositions(Object.fromEntries(Object.entries(next).map(([id, point]) => [id, { ...point }])));
+      setCoordinatesDirty(true);
+      for (const node of graph.nodes) adoptedCoordinateEntityIdsRef.current.add(node.id);
+    }
+    setActiveOperationPreview(null);
+    setExplicitAutoLayoutState("idle");
+    setExplicitAutoLayoutWarning(false);
+    setExplicitAutoLayoutFailureDiagnostic(null);
+    setMessage(translate(locale, changed ? "explicitAutoLayoutAccepted" : "explicitAutoLayoutUnchanged"));
   }
 
   function requestAutoLayout() {
@@ -2160,16 +2387,16 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
           <div className="dataset-actions__buttons">
             <button type="button" disabled={!dataset || Boolean(activeOperationPreview)} onClick={() => openCreation("entity")}>{translate(locale, "addEntity")}</button>
             <button type="button" disabled={!dataset || Boolean(activeOperationPreview)} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
-            <button type="button" className="desktop-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
+            <button type="button" className="desktop-secondary-action" disabled={!dataset || (!coordinatesDirty && !unsavedPins)} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
             <details ref={maintenanceMenuRef} className="maintenance-menu" onToggle={(event) => setMaintenanceMenuOpen(event.currentTarget.open)} onKeyDown={handleMaintenanceMenuKeyDown}>
               <summary ref={maintenanceMenuSummaryRef}>{translate(locale, "more")}</summary>
               <div className="maintenance-menu__items">
                 <button type="button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; closeMaintenanceMenu(); workspaceOpenFileInputRef.current?.click(); }}>{translate(locale, "openWorkspaceDataset")}</button>
                 <button type="button" disabled={!dataset} onClick={() => { closeMaintenanceMenu(); exportDataset(); }}>{translate(locale, "exportDataset")}</button>
-                <button type="button" className="mobile-secondary-action" disabled={!dataset || !coordinatesDirty} onClick={() => { closeMaintenanceMenu(); saveCoordinates(); }}>{translate(locale, "saveCoordinates")}</button>
+                <button type="button" className="mobile-secondary-action" disabled={!dataset || (!coordinatesDirty && !unsavedPins)} onClick={() => { closeMaintenanceMenu(); saveCoordinates(); }}>{translate(locale, "saveCoordinates")}</button>
                 <button type="button" disabled={!dataset || Boolean(activeOperationPreview) || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>{translate(locale, "migrateCoordinateDraft")}</button>
                 <button type="button" disabled={!dataset || Boolean(activeOperationPreview) || spaceMigrationReadiness?.ready !== true} onClick={migrateSpaceToLiaisonScape}>{translate(locale, "migrateLinkscapeCoordinates")}</button>
-                <button type="button" disabled={!dataset || Boolean(activeOperationPreview) || graph.nodes.length === 0} onClick={requestAutoLayout}>{translate(locale, "autoLayout")}</button>
+                <button type="button" disabled={!dataset || Boolean(activeOperationPreview) || explicitAutoLayoutState === "running" || graph.nodes.length === 0} onClick={requestAutoLayout}>{translate(locale, "autoLayout")}</button>
                 <div className="mobile-secondary-action mobile-viewport-menu" aria-label={translate(locale, "graphViewControls")}>
                   <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>{translate(locale, "zoomOut")}</button>
                   <span aria-live="polite">{Math.round(scale * 100)}%</span>
@@ -2188,6 +2415,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       {contextMenu && <div ref={contextMenuRef} className="canvas-context-menu context-menu" role="menu" aria-label={translate(locale, "canvasActions")} style={{ position: "fixed", left: contextMenuPosition?.left ?? contextMenu.clientX, top: contextMenuPosition?.top ?? contextMenu.clientY }} onPointerDown={(event) => event.stopPropagation()}>
         {contextMenu.kind === "canvas" ? <button type="button" role="menuitem" onClick={chooseCanvasAddEntity}>{translate(locale, "addEntity")}</button> : <>
           <button type="button" role="menuitem" onClick={openContextMenuDetails}>{translate(locale, "openDetails")}</button>
+          {(contextMenu.kind === "entity" || contextMenu.kind === "node-label") && <button type="button" role="menuitem" onClick={() => { toggleEntityPin(contextMenu.entityId); setContextMenu(null); }}>{workingPins[contextMenu.entityId] !== undefined ? translate(locale, "unpinEntity") : translate(locale, "pinEntity")}</button>}
           {((contextMenu.kind === "node-label" && manualNodeLabelOffsets.current.has(contextMenu.entityId)) ||
             (contextMenu.kind === "relation-path" && (edgeCurveOffsets[contextMenu.relationId] !== undefined || selfLoopOverrides[contextMenu.relationId] !== undefined)) ||
             (contextMenu.kind === "relation-label" && manualRelationLabelAnchors.current.has(contextMenu.relationId))) &&
@@ -2262,13 +2490,34 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         <span>{frontierAsyncStatusText}</span>
         {frontierAsyncPending && <button type="button" onClick={cancelFrontierAutomaticDisplay}>{translate(locale, "cancelAutomaticPlacement")}</button>}
       </div>}
+      {dataset && (explicitAutoLayoutState === "running" || activeOperationPreview) && <aside className="explicit-auto-layout-surface" role="status" aria-live="polite" data-hq-preview-fingerprint={activeOperationPreview?.candidateFingerprint}>
+        <h3>{explicitAutoLayoutState === "preview" ? translate(locale, "explicitAutoLayoutReview") : translate(locale, "autoLayout")}</h3>
+        <p>{explicitAutoLayoutState === "running" ? translate(locale, "explicitAutoLayoutRunning") : explicitAutoLayoutState === "preview" ? translate(locale, "explicitAutoLayoutPreview") : "HQ candidate preview · read-only"}</p>
+        {explicitAutoLayoutState === "preview" && explicitAutoLayoutWarning && <p className="explicit-auto-layout-surface__warning">{translate(locale, "explicitAutoLayoutWarning")}</p>}
+        {explicitAutoLayoutState === "running" && <button type="button" onClick={cancelExplicitAutoLayout}>{translate(locale, "cancelAutoLayout")}</button>}
+        {explicitAutoLayoutState === "preview" && <div className="explicit-auto-layout-surface__actions">
+          <button type="button" onClick={acceptExplicitAutoLayoutPreview}>{translate(locale, "useAutoLayout")}</button>
+          <button type="button" onClick={rejectExplicitAutoLayoutPreview}>{translate(locale, "returnToPreviousLayout")}</button>
+        </div>}
+        {explicitAutoLayoutState === "idle" && <button type="button" onClick={() => setActiveOperationPreview(null)}>End HQ preview</button>}
+      </aside>}
+      {import.meta.env.DEV && dataset && explicitAutoLayoutState === "failed" && explicitAutoLayoutFailureDiagnostic && <aside className="explicit-auto-layout-surface explicit-auto-layout-diagnostic" role="status" aria-live="polite" data-explicit-auto-layout-failure={explicitAutoLayoutFailureDiagnostic.reasonCode}>
+        <h3>Auto Layout diagnostic</h3>
+        <dl>
+          <dt>stage</dt><dd>{explicitAutoLayoutFailureDiagnostic.stage}</dd>
+          <dt>reason</dt><dd>{explicitAutoLayoutFailureDiagnostic.reasonCode}</dd>
+          <dt>operation</dt><dd>{explicitAutoLayoutFailureDiagnostic.operationId}</dd>
+          <dt>snapshot</dt><dd>{explicitAutoLayoutFailureDiagnostic.snapshotIdentity ?? "not captured"}</dd>
+          <dt>graph</dt><dd>{explicitAutoLayoutFailureDiagnostic.graphFingerprint}</dd>
+          <dt>entities</dt><dd>{explicitAutoLayoutFailureDiagnostic.entityCount}</dd>
+          <dt>effective pins</dt><dd>{explicitAutoLayoutFailureDiagnostic.effectivePinCount}</dd>
+          <dt>pin diagnostics</dt><dd>{explicitAutoLayoutFailureDiagnostic.pinDiagnosticCodes.join(", ") || "none"}</dd>
+          <dt>worker</dt><dd>{explicitAutoLayoutFailureDiagnostic.workerStatus}</dd>
+        </dl>
+      </aside>}
       {dataset && (
         <section className="graph-section" data-frontier-async-state={frontierAsyncEnabled ? frontierAsyncState : undefined}>
           <h2>Graph</h2>
-          {activeOperationPreview && <aside className="status-message" role="status" data-hq-preview-fingerprint={activeOperationPreview.candidateFingerprint}>
-            HQ candidate preview · operation {activeOperationPreview.operationId} · read-only
-            <button type="button" onClick={() => setActiveOperationPreview(null)}>End HQ preview</button>
-          </aside>}
           <div ref={viewportToolbarRef} className="viewport-controls mobile-hide" aria-label={translate(locale, "graphViewControls")} style={viewportToolbarPosition ? { left: viewportToolbarPosition.x, top: viewportToolbarPosition.y, right: "auto" } : undefined}>
             <button type="button" className="viewport-toolbar-handle" aria-expanded={!viewportToolbarCollapsed} aria-controls="viewport-toolbar-actions" aria-label={translate(locale, viewportToolbarCollapsed ? "expandViewportControls" : "collapseViewportControls")} onClick={toggleViewportToolbar} onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={(event) => endViewportToolbarDrag(event, true)}>⠿</button>
             <span className="viewport-toolbar-handle-tooltip" role="tooltip" aria-hidden="true">{translate(locale, viewportToolbarCollapsed ? "viewportToolbarMoveExpandHelp" : "viewportToolbarMoveCollapseHelp")}</span>
@@ -2464,15 +2713,17 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
                 const source = edge ? graph.nodes.find(({ id }) => id === edge.sourceId) : undefined;
                 const target = edge ? graph.nodes.find(({ id }) => id === edge.targetId) : undefined;
                 const kind = hoveredPlacement.target;
+                const pinnedEntity = kind === "entity" && workingPins[hoveredPlacement.id] !== undefined;
                 const lines = composeHoverLines(kind, {
                   name: kind === "entity" ? node?.label : typeof relation?.name === "string" ? relation.name : undefined,
                   description: kind === "node-label" ? node?.description : undefined,
                   source: source?.label,
                   target: target?.label,
                   ownership: kind === "entity" ? "" : placementText(kind, hoveredPlacement.id),
+                  state: pinnedEntity ? translate(locale, "entityPinned") : undefined,
                   self: kind === "relation-route" && relation?.sourceId === relation?.targetId,
                 });
-                return lines.map((line, index) => <div key={`${hoveredPlacement.id}-${index}`} className={kind === "entity" || index !== lines.length - 1 ? undefined : "placement-hover-popover__ownership"}>{line}</div>);
+                return lines.map((line, index) => <div key={`${hoveredPlacement.id}-${index}`} className={index === lines.length - 1 && (kind !== "entity" || pinnedEntity) ? "placement-hover-popover__ownership" : undefined}>{line}</div>);
               })()}
             </div>
           )}
@@ -2545,6 +2796,9 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
               onDelete={removeSelectedEntity}
               onRelated={openRelatedRelation}
               onClose={requestDetailDismissal}
+              pinned={workingPins[selectedDetail.entity.id] !== undefined}
+              readOnly={readOnlyPreview}
+              onPinToggle={() => toggleEntityPin(selectedDetail.entity.id)}
             />
           )}
           {detailOpen && selectedRelationDetail && (

@@ -307,6 +307,22 @@ function updateExistingCompleteSpecificationDeclaration(dataset: Dataset): void 
   };
 }
 
+/** Keeps one existing complete Specification declaration aligned with an application-owned payload. */
+export function synchronizeExistingSpecificationDeclaration(dataset: Dataset, extensionId: string, version: string): void {
+  if (!isRecord(dataset.extensions)) return;
+  const specification = dataset.extensions[SPECIFICATION_EXTENSION_ID];
+  if (!isRecord(specification) || specification.specVersion !== "0.1.0") return;
+  const uses = specification.uses === undefined ? [] : specification.uses;
+  if (!Array.isArray(uses) || !uses.every(isRecord)) return;
+  const matching = uses.filter(({ extension }) => extension === extensionId);
+  if (matching.length > 1 || (matching.length === 1 && matching[0]?.version !== version)) return;
+  const payloadPresent = extensionId in dataset.extensions;
+  const nextUses = payloadPresent
+    ? matching.length === 1 ? uses : [...uses, { extension: extensionId, version }]
+    : uses.filter(({ extension }) => extension !== extensionId);
+  dataset.extensions[SPECIFICATION_EXTENSION_ID] = { ...specification, uses: nextUses };
+}
+
 export function applyStoredCoordinates(dataset: Dataset, positions: Record<string, Coordinate>): Dataset {
   const hasSavablePosition = dataset.entities.some((entity) => isCoordinate(positions[entity.id]));
   if (!hasSavablePosition) return dataset;
