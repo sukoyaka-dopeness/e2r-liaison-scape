@@ -1612,6 +1612,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     const toolbar = viewportToolbarRef.current;
     const graphElement = graphRef.current;
     if (!toolbar || !graphElement || event.button !== 0 || event.isPrimary === false) return;
+    event.currentTarget.dataset.pointerFocus = "true";
     event.stopPropagation();
     const graphRect = graphElement.getBoundingClientRect();
     const toolbarRect = toolbar.getBoundingClientRect();
@@ -2500,7 +2501,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         <section className="graph-section" data-frontier-async-state={frontierAsyncEnabled ? frontierAsyncState : undefined}>
           <h2>Graph</h2>
           <div ref={viewportToolbarRef} className="viewport-controls mobile-hide" aria-label={translate(locale, "graphViewControls")} style={viewportToolbarPosition ? { left: viewportToolbarPosition.x, top: viewportToolbarPosition.y, right: "auto" } : undefined}>
-            <button type="button" className="viewport-toolbar-handle" aria-expanded={!viewportToolbarCollapsed} aria-controls="viewport-toolbar-actions" aria-label={translate(locale, viewportToolbarCollapsed ? "expandViewportControls" : "collapseViewportControls")} onClick={toggleViewportToolbar} onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={(event) => endViewportToolbarDrag(event, true)}>⠿</button>
+            <button type="button" className="viewport-toolbar-handle" aria-expanded={!viewportToolbarCollapsed} aria-controls="viewport-toolbar-actions" aria-label={translate(locale, viewportToolbarCollapsed ? "expandViewportControls" : "collapseViewportControls")} onClick={toggleViewportToolbar} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") delete event.currentTarget.dataset.pointerFocus; }} onBlur={(event) => { delete event.currentTarget.dataset.pointerFocus; }} onPointerDown={startViewportToolbarDrag} onPointerMove={moveViewportToolbar} onPointerUp={endViewportToolbarDrag} onPointerCancel={(event) => endViewportToolbarDrag(event, true)}>⠿</button>
             <span className="viewport-toolbar-handle-tooltip" role="tooltip" aria-hidden="true">{translate(locale, viewportToolbarCollapsed ? "viewportToolbarMoveExpandHelp" : "viewportToolbarMoveCollapseHelp")}</span>
             <div id="viewport-toolbar-actions" className="viewport-toolbar-actions" hidden={viewportToolbarCollapsed}>
               <button type="button" onClick={() => setScale((value) => zoomScale(value, "out"))}>{translate(locale, "zoomOut")}</button>

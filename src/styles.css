@@ -305,16 +305,18 @@ li { margin: .35rem 0; }
 .danger-confirm:hover:not(:disabled) { border-color: #991b1b; background: #991b1b; }
 .graph-selection-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; }
 .relation-curvature-hint { flex-basis: 100%; margin: 0; color: #6b6375; font-size: .82rem; }
-.viewport-controls { position: absolute; z-index: 3; top: 42px; right: 12px; width: max-content; margin: 0; padding: 5px; border: 1px solid #e5e4e7; border-radius: 8px; background: rgba(255,255,255,.92); box-shadow: 0 4px 14px rgba(8,6,13,.1); }
-.viewport-toolbar-handle { flex: 0 0 auto; white-space: nowrap; }
+.viewport-controls { position: absolute; z-index: 3; top: 42px; right: 12px; display: flex; align-items: center; width: max-content; margin: 0; padding: 3px; border: 1px solid #e5e4e7; border-radius: 6px; background: rgba(255,255,255,.92); box-shadow: 0 3px 10px rgba(8,6,13,.1); }
+.viewport-toolbar-handle { flex: 0 0 auto; min-width: 28px; min-height: 28px; padding: 2px 4px; border-radius: 4px; font-size: .8rem; line-height: 1; white-space: nowrap; }
+.viewport-toolbar-handle[data-pointer-focus="true"]:focus-visible { outline: none; }
 .viewport-controls .viewport-toolbar-handle-tooltip { position: absolute; z-index: 4; left: 0; bottom: calc(100% + 6px); display: none; width: max-content; min-width: 0; max-width: min(12rem, calc(100vw - 16px)); padding: 4px 6px; border: 1px solid #d9d5df; border-radius: 6px; color: #08060d; background: rgba(255,255,255,.96); box-shadow: 0 4px 14px rgba(8,6,13,.16); font-size: .75rem; font-weight: 600; line-height: 1.2; text-align: left; white-space: pre-line; pointer-events: none; }
 .viewport-toolbar-handle:hover + .viewport-toolbar-handle-tooltip,
-.viewport-toolbar-handle:focus-visible + .viewport-toolbar-handle-tooltip { display: block; }
-.viewport-toolbar-actions { display: flex; align-items: center; flex: 0 0 auto; flex-wrap: nowrap; gap: 8px; }
+.viewport-toolbar-handle:focus-visible:not([data-pointer-focus="true"]) + .viewport-toolbar-handle-tooltip { display: block; }
+.viewport-toolbar-actions { display: flex; align-items: center; flex: 0 0 auto; flex-wrap: nowrap; gap: 4px; }
 .viewport-toolbar-actions > button,
 .viewport-toolbar-actions > span { flex: 0 0 auto; white-space: nowrap; }
+.viewport-toolbar-actions > button { min-height: 30px; padding: 3px 6px; border-radius: 4px; font-size: .78rem; line-height: 1.15; }
 .viewport-toolbar-actions[hidden] { display: none; }
-.viewport-controls span { min-width: 3rem; text-align: center; }
+.viewport-controls span { min-width: 2.7rem; font-size: .75rem; line-height: 1; text-align: center; }
 
 /* Bounded ordinary-control density experiment. Keep dataset-title input
    prominence, graph viewport controls, content typography, and destructive

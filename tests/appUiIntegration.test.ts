@@ -497,7 +497,14 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.match(styles, /\.viewport-toolbar-actions > button,\s*\.viewport-toolbar-actions > span \{[^}]*white-space: nowrap;/);
   assert.match(styles, /\.viewport-toolbar-handle-tooltip \{[^}]*position: absolute;[^}]*display: none;[^}]*pointer-events: none;/);
   assert.match(styles, /\.viewport-toolbar-handle-tooltip \{[^}]*font-weight: 600;[^}]*white-space: pre-line;/);
-  assert.match(styles, /\.viewport-toolbar-handle:hover \+ \.viewport-toolbar-handle-tooltip,\s*\.viewport-toolbar-handle:focus-visible \+ \.viewport-toolbar-handle-tooltip \{[^}]*display: block;/);
+  assert.match(styles, /\.viewport-toolbar-handle:hover \+ \.viewport-toolbar-handle-tooltip,\s*\.viewport-toolbar-handle:focus-visible:not\(\[data-pointer-focus="true"\]\) \+ \.viewport-toolbar-handle-tooltip \{[^}]*display: block;/);
+  assert.match(styles, /\.viewport-controls \{[^}]*padding: 3px;[^}]*border-radius: 6px;/);
+  assert.match(styles, /\.viewport-toolbar-handle \{[^}]*min-width: 28px;[^}]*min-height: 28px;/);
+  assert.match(styles, /\.viewport-toolbar-actions \{[^}]*gap: 4px;/);
+  assert.match(styles, /\.viewport-toolbar-actions > button \{[^}]*min-height: 30px;[^}]*font-size: \.78rem;/);
+  assert.match(styles, /\.viewport-controls span \{[^}]*min-width: 2\.7rem;[^}]*font-size: \.75rem;/);
+  assert.match(source, /dataset\.pointerFocus = "true"/);
+  assert.match(source, /delete event\.currentTarget\.dataset\.pointerFocus/);
   assert.match(styles, /@media \(max-width: 600px\)/);
 });
 
@@ -755,6 +762,7 @@ test("implements the collapsible viewport toolbar interaction contract", async (
     };
 
     await dispatchPointer("pointerdown", 1, 10, 10);
+    assert.equal(handle.getAttribute("data-pointer-focus"), "true");
     await dispatchPointer("pointermove", 1, 18, 10);
     await dispatchPointer("pointerup", 1, 18, 10);
     await consumePointerClick();
@@ -764,6 +772,8 @@ test("implements the collapsible viewport toolbar interaction contract", async (
     assert.equal(handle.getAttribute("aria-label"), "Expand viewport controls");
     assert.equal(environment.document.activeElement, handle);
     assert.equal(tooltip.textContent, "Move\nExpand");
+    await act(async () => { handle.dispatchEvent(new environment.window.KeyboardEvent("keydown", { key: "Enter", bubbles: true })); });
+    assert.equal(handle.hasAttribute("data-pointer-focus"), false);
 
     await act(async () => { handle.click(); });
     assert.equal(handle.getAttribute("aria-expanded"), "true");
