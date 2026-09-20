@@ -129,7 +129,7 @@ test("dictionary contains the foundation messages for both locales", () => {
   assert.equal(formatSelectedRelation("ja", "relation-1"), "選択中のつながり: relation-1");
   assert.equal(formatGraphSummary("en", 1, 1), "1 entity · 1 relation");
   assert.equal(formatGraphSummary("en", 9, 8), "9 entities · 8 relations");
-  assert.equal(formatGraphSummary("ja", 1, 1), "1 エンティティ · 1 つながり");
+  assert.equal(formatGraphSummary("ja", 1, 1), "1件のエンティティ · 1件のつながり");
   assert.equal(formatLoadedDataset("en", 1, 1), "Loaded 1 Entity and 1 Relation.");
   assert.equal(formatLoadedDataset("en", 9, 8), "Loaded 9 Entities and 8 Relations.");
   assert.equal(formatLoadedDataset("ja", 9, 8), "9 件のエンティティと 8 件のつながりを読み込みました。");

@@ -208,8 +208,6 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const workspaceOpenFileInputRef = useRef<HTMLInputElement>(null);
   const replacementTriggerRef = useRef<HTMLButtonElement | null>(null);
   const datasetTitleInputRef = useRef<HTMLInputElement | null>(null);
-  const datasetTitleEditTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const restoreDatasetTitleFocusRef = useRef(false);
   const maintenanceMenuRef = useRef<HTMLDetailsElement>(null);
   const maintenanceMenuSummaryRef = useRef<HTMLElement>(null);
   const restoreReplacementFocusRef = useRef(false);
@@ -559,15 +557,10 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     return () => window.cancelAnimationFrame(frame);
   }, [pendingDatasetReplacement]);
   useEffect(() => {
-    if (!datasetTitleEditing) {
-      if (!restoreDatasetTitleFocusRef.current) return;
-      restoreDatasetTitleFocusRef.current = false;
-      const frame = window.requestAnimationFrame(() => datasetTitleEditTriggerRef.current?.focus());
-      return () => window.cancelAnimationFrame(frame);
-    }
+    if (!dataset || !datasetTitleEditing) return;
     const frame = window.requestAnimationFrame(() => datasetTitleInputRef.current?.focus());
     return () => window.cancelAnimationFrame(frame);
-  }, [datasetTitleEditing]);
+  }, [dataset, datasetTitleEditing]);
   const metadata = dataset ? getDatasetMetadata(dataset) : null;
   const coordinateMigrationReadiness = dataset ? assessCoordinateDraftMigration(dataset) : null;
   const spaceMigrationReadiness = dataset ? assessLiaisonScapeSpaceMigration(dataset) : null;
@@ -1143,9 +1136,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     setActiveOperationPreview(null);
     setDataset(nextDataset);
     setDatasetModified(false);
-    setDatasetTitleEditing(false);
-    setDatasetTitleDraft("");
-    restoreDatasetTitleFocusRef.current = false;
+    setDatasetTitleEditing(true);
+    setDatasetTitleDraft(getDatasetMetadata(nextDataset)?.title ?? "");
     setPendingDatasetReplacement(null);
     setPendingDatasetReplacementSource(null);
     setSelectedId(null);
@@ -1299,26 +1291,9 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     else stagePinForEntity(entityId, LIAISONSCAPE_SPACE_ID);
   }
 
-  function beginDatasetTitleEdit(trigger: HTMLButtonElement) {
-    setDatasetTitleDraft(metadata?.title ?? "");
-    datasetTitleEditTriggerRef.current = trigger;
-    setDatasetTitleEditing(true);
-  }
-
-  function finishDatasetTitleEdit() {
-    setDatasetTitleEditing(false);
-    setDatasetTitleDraft("");
-    restoreDatasetTitleFocusRef.current = true;
-  }
-
   function saveDatasetTitle() {
     if (!dataset) return;
     updateDataset(updateDatasetTitle(dataset, datasetTitleDraft));
-    finishDatasetTitleEdit();
-  }
-
-  function cancelDatasetTitleEdit() {
-    finishDatasetTitleEdit();
   }
 
   function requestDatasetReplacement(candidate: Dataset, trigger: HTMLButtonElement | null | undefined, source: DatasetReplacementSource) {
@@ -2366,10 +2341,37 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         </div>
       </header>
     <main className="app-content" aria-busy={datasetLoading}>
-      <div className="page-header">
-        <h1>Entity graph</h1>
-        <p>Entity-first E2R relationship graph.</p>
-      </div>
+      {dataset && (
+        <section className="dataset-identity" aria-labelledby="dataset-identity-heading">
+          <h1 id="dataset-identity-heading" className="visually-hidden">{translate(locale, "datasetTitle")}</h1>
+          <label className="dataset-title-editor__label" htmlFor="dataset-title-input">
+            {translate(locale, "datasetTitleVisible")}
+          </label>
+          <div className="dataset-title-editor">
+            <input
+              id="dataset-title-input"
+              ref={datasetTitleInputRef}
+              type="text"
+              value={datasetTitleDraft}
+              aria-label={translate(locale, "datasetTitleInput")}
+              onChange={(event) => setDatasetTitleDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  setDatasetTitleDraft(metadata?.title ?? "");
+                }
+              }}
+            />
+            <button
+              type="button"
+              disabled={Boolean(activeOperationPreview) || datasetTitleDraft === (metadata?.title ?? "")}
+              onClick={saveDatasetTitle}
+            >
+              {translate(locale, "applyDatasetTitle")}
+            </button>
+          </div>
+        </section>
+      )}
       {datasetLoadingIndicator}
         <div className="dataset-actions">
           <input
@@ -2454,27 +2456,6 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       />}
       {dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={cancelDeletion} onConfirm={confirmDeletion} />}
       {dataset && autoLayoutConfirmationOpen && <AutoLayoutConfirmation locale={locale} onCancel={() => { setAutoLayoutConfirmationOpen(false); maintenanceMenuSummaryRef.current?.focus(); }} onConfirm={applyAutoLayout} />}
-      {dataset && (
-        <dl className="dataset-metadata" aria-label={translate(locale, "datasetMetadata")}>
-          <dt>{translate(locale, "datasetTitleVisible")}</dt>
-          {datasetTitleEditing ? <dd className="dataset-title-editing">
-            <input
-              ref={datasetTitleInputRef}
-              type="text"
-              value={datasetTitleDraft}
-              aria-label={translate(locale, "datasetTitleInput")}
-              onChange={(event) => setDatasetTitleDraft(event.target.value)}
-              onKeyDown={(event) => { if (event.key === "Escape") { event.preventDefault(); cancelDatasetTitleEdit(); } }}
-            />
-            <button type="button" onClick={saveDatasetTitle}>{translate(locale, "saveDatasetTitleVisible")}</button>
-            <button type="button" onClick={cancelDatasetTitleEdit}>{translate(locale, "cancel")}</button>
-          </dd> : <dd>
-            <span>{metadata?.title ?? translate(locale, "untitled")}</span>
-            <button type="button" disabled={Boolean(activeOperationPreview)} onClick={(event) => beginDatasetTitleEdit(event.currentTarget)} aria-label={translate(locale, "editDatasetTitle")}>{translate(locale, "edit")}</button>
-          </dd>}
-          <dt>Dataset ID</dt><dd>{metadata?.datasetId ?? translate(locale, "datasetIdNotAssigned")}</dd>
-        </dl>
-      )}
       {diagnostics.length > 0 && (
         <ul aria-label={translate(locale, "validationDiagnostics")}>
           {diagnostics.map((diagnostic, index) => (

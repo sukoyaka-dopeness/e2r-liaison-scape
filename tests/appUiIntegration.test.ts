@@ -808,29 +808,25 @@ test("keeps Dataset title editing connected to existing Dataset safety state", (
   const i18n = readFileSync("src/i18n.ts", "utf8");
   const styles = readFileSync("src/styles.css", "utf8");
 
-  assert.match(i18n, /editDatasetTitle:/);
-  assert.match(i18n, /saveDatasetTitle:/);
+  assert.match(i18n, /applyDatasetTitle:/);
   assert.match(i18n, /datasetTitleVisible:/);
-  assert.match(i18n, /saveDatasetTitleVisible:/);
   assert.match(i18n, /datasetTitleInput:/);
   assert.match(i18n, /datasetTitleInput: "Dataset title"/);
   assert.match(i18n, /datasetTitleVisible: "Title"/);
-  assert.match(i18n, /saveDatasetTitleVisible: "Save"/);
   assert.match(source, /updateDatasetTitle\(dataset, datasetTitleDraft\)/);
   assert.match(source, /updateDataset\(updateDatasetTitle\(dataset, datasetTitleDraft\)\)/);
   assert.match(source, /meaningfulDatasetTitleDraft: datasetTitleEditing/);
   assert.match(source, /event\.key === "Escape"/);
-  assert.match(source, /restoreDatasetTitleFocusRef/);
-  assert.match(source, /setDatasetTitleEditing\(false\);\s*setDatasetTitleDraft\(""\)/s);
+  assert.match(source, /setDatasetTitleEditing\(true\);\s*setDatasetTitleDraft\(getDatasetMetadata\(nextDataset\)/s);
   assert.match(source, /ref=\{datasetTitleInputRef\}/);
-  assert.doesNotMatch(source, /ref=\{datasetTitleEditTriggerRef\}/);
+  assert.match(source, /className="dataset-identity"/);
+  assert.match(source, /translate\(locale, "applyDatasetTitle"\)/);
   const exportFunction = source.slice(source.indexOf("function exportCurrentDataset"), source.indexOf("function exportAndContinueDatasetReplacement"));
   assert.doesNotMatch(exportFunction, /datasetTitleDraft/);
-  assert.match(styles, /\.dataset-metadata \.dataset-title-editing/);
-  assert.match(styles, /\.dataset-metadata > dt:first-of-type \+ dd > span \{ min-width: 0;/);
+  assert.match(styles, /\.dataset-title-editor input/);
+  assert.match(styles, /\.dataset-title-editor button/);
   assert.match(styles, /@media \(max-width: 600px\)/);
-  assert.match(styles, /\.dataset-metadata \.dataset-title-editing input \{ flex-basis: 100%; \}/);
-  assert.doesNotMatch(styles, /\.dataset-metadata \{ grid-template-columns:/);
+  assert.doesNotMatch(styles, /\.dataset-metadata/);
 });
 
 test("keeps object IDs behind collapsed technical detail disclosures", () => {

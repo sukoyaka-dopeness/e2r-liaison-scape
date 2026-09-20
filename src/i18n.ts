@@ -124,9 +124,7 @@ export const messages = {
     editEntity: "Edit Entity",
     datasetTitle: "Dataset title",
     datasetTitleVisible: "Title",
-    editDatasetTitle: "Edit Dataset title",
-    saveDatasetTitle: "Save Dataset title",
-    saveDatasetTitleVisible: "Save",
+    applyDatasetTitle: "Apply title",
     datasetTitleInput: "Dataset title",
     untitled: "Untitled",
     newDataset: "New Dataset", openSampleDataset: "Open sample Dataset", sampleDatasetLoadFailure: "Could not load the sample Dataset.",
@@ -184,9 +182,7 @@ export const messages = {
     automaticPlacementFallback: "\u81ea\u52d5\u914d\u7f6e\u3092\u5229\u7528\u3067\u304d\u306a\u3044\u305f\u3081\u3001\u73fe\u5728\u306e\u30ec\u30a4\u30a2\u30a6\u30c8\u3092\u4fdd\u6301\u3057\u307e\u3057\u305f\u3002",
     edit: "\u7de8\u96c6",
     datasetTitleVisible: "\u30bf\u30a4\u30c8\u30eb",
-    editDatasetTitle: "\u30c7\u30fc\u30bf\u30bb\u30c3\u30c8\u306e\u30bf\u30a4\u30c8\u30eb\u3092\u7de8\u96c6",
-    saveDatasetTitle: "\u30c7\u30fc\u30bf\u30bb\u30c3\u30c8\u306e\u30bf\u30a4\u30c8\u30eb\u3092\u4fdd\u5b58",
-    saveDatasetTitleVisible: "\u4fdd\u5b58",
+    applyDatasetTitle: "\u30bf\u30a4\u30c8\u30eb\u3092\u9069\u7528",
     datasetTitleInput: "Dataset\u30bf\u30a4\u30c8\u30eb",
     handoffInvalid: "Datasetの引き渡しリンクが正しくありません。",
     handoffFetchFailure: "引き渡しリンクからDatasetを取得できませんでした。",
@@ -414,7 +410,7 @@ export function formatSelectedRelation(locale: Locale, id: string): string {
 }
 
 export function formatGraphSummary(locale: Locale, entities: number, relations: number): string {
-  if (locale === "ja") return `${entities} エンティティ · ${relations} つながり`;
+  if (locale === "ja") return `${entities}件のエンティティ · ${relations}件のつながり`;
   return `${entities} ${entities === 1 ? "entity" : "entities"} · ${relations} ${relations === 1 ? "relation" : "relations"}`;
 }
 
