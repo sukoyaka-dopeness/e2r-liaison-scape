@@ -316,6 +316,24 @@ li { margin: .35rem 0; }
 .viewport-toolbar-actions[hidden] { display: none; }
 .viewport-controls span { min-width: 3rem; text-align: center; }
 
+/* Bounded ordinary-control density experiment. Keep dataset-title editing,
+   graph viewport controls, dialogs, destructive controls, and shell geometry
+   on their existing contracts. */
+.app-header .header-home-button,
+.app-header .locale-button,
+.home-actions button,
+.home-actions .open-dataset-button,
+.dataset-actions__buttons > button,
+.dataset-actions__buttons > .maintenance-menu > summary,
+.maintenance-menu__items > button,
+.app-footer .credits-button {
+  min-height: 38px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 16px;
+  line-height: 120%;
+}
+
 @media (max-width: 600px) {
   :root { font-size: 16px; }
   #root { border-inline: 0; }
