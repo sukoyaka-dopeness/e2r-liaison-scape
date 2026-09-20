@@ -812,7 +812,7 @@ test("keeps Dataset title editing connected to existing Dataset safety state", (
   assert.match(i18n, /datasetTitleVisible:/);
   assert.match(i18n, /datasetTitleInput:/);
   assert.match(i18n, /datasetTitleInput: "Dataset title"/);
-  assert.match(i18n, /datasetTitleVisible: "Title"/);
+  assert.match(i18n, /datasetTitleVisible: "Dataset title"/);
   assert.match(source, /updateDatasetTitle\(dataset, datasetTitleDraft\)/);
   assert.match(source, /updateDataset\(updateDatasetTitle\(dataset, datasetTitleDraft\)\)/);
   assert.match(source, /meaningfulDatasetTitleDraft: datasetTitleEditing/);
