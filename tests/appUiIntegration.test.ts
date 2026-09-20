@@ -503,6 +503,8 @@ test("keeps the Workspace More keyboard contract and toolbar count local to the 
   assert.match(styles, /\.viewport-toolbar-actions \{[^}]*gap: 4px;/);
   assert.match(styles, /\.viewport-toolbar-actions > button \{[^}]*min-height: 30px;[^}]*font-size: \.78rem;/);
   assert.match(styles, /\.viewport-controls span \{[^}]*min-width: 2\.7rem;[^}]*font-size: \.75rem;/);
+  assert.match(styles, /\.maintenance-menu summary \{[^}]*display: flex;[^}]*align-items: center;/);
+  assert.match(styles, /\.graph-selection-actions > button,/);
   assert.match(source, /dataset\.pointerFocus = "true"/);
   assert.match(source, /delete event\.currentTarget\.dataset\.pointerFocus/);
   assert.match(styles, /@media \(max-width: 600px\)/);

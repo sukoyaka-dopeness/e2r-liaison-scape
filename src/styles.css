@@ -82,7 +82,7 @@ body { margin: 0; }
 @media (prefers-reduced-motion: reduce) { .dataset-loading-indicator__spinner { animation: none; } }
 .maintenance-menu { position: relative; }
 .dataset-actions__buttons > .maintenance-menu { margin-inline-start: auto; }
-.maintenance-menu summary { min-height: 40px; padding: 8px 12px; border: 1px solid #e5e4e7; border-radius: 6px; color: #08060d; background: #fff; cursor: pointer; list-style: none; }
+.maintenance-menu summary { display: flex; align-items: center; min-height: 40px; padding: 8px 12px; border: 1px solid #e5e4e7; border-radius: 6px; color: #08060d; background: #fff; cursor: pointer; list-style: none; }
 .maintenance-menu summary::-webkit-details-marker { display: none; }
 .maintenance-menu__items { position: absolute; z-index: 4; right: 0; top: calc(100% + 6px); display: grid; width: max-content; max-width: min(28rem, calc(100vw - 32px)); gap: 6px; padding: 8px; border: 1px solid #e5e4e7; border-radius: 8px; background: #fff; box-shadow: 0 12px 30px rgba(8,6,13,.14); }
 .mobile-secondary-action { display: none; }
@@ -332,6 +332,7 @@ li { margin: .35rem 0; }
 .dataset-title-editor button,
 .detail-actions button,
 .detail-header button,
+.graph-selection-actions > button,
 .creation-dialog-actions button,
 .credits-actions button,
 .detail-danger > button,
