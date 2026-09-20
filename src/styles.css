@@ -316,9 +316,9 @@ li { margin: .35rem 0; }
 .viewport-toolbar-actions[hidden] { display: none; }
 .viewport-controls span { min-width: 3rem; text-align: center; }
 
-/* Bounded ordinary-control density experiment. Keep dataset-title editing,
-   graph viewport controls, dialogs, destructive controls, and shell geometry
-   on their existing contracts. */
+/* Bounded ordinary-control density experiment. Keep dataset-title input
+   prominence, graph viewport controls, content typography, and destructive
+   treatment on their existing contracts. */
 .app-header .header-home-button,
 .app-header .locale-button,
 .home-actions button,
@@ -326,11 +326,19 @@ li { margin: .35rem 0; }
 .dataset-actions__buttons > button,
 .dataset-actions__buttons > .maintenance-menu > summary,
 .maintenance-menu__items > button,
-.app-footer .credits-button {
-  min-height: 38px;
-  padding: 6px 10px;
-  border-radius: 5px;
-  font-size: 16px;
+.app-footer .credits-button,
+.dataset-title-editor button,
+.detail-actions button,
+.detail-header button,
+.creation-dialog-actions button,
+.credits-actions button,
+.detail-danger > button,
+.detail-pin-section button,
+.entity-deletion-resolution__relation > button {
+  min-height: 36px;
+  padding: 5px 9px;
+  border-radius: 4px;
+  font-size: 15px;
   line-height: 120%;
 }
 
