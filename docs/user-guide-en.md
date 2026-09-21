@@ -28,6 +28,12 @@ Home provides the following actions:
 - `日本語`: switch the display language.
 - `Credits`: view the application credits.
 
+The Header shows the current language and provides the Home link and locale
+control while a Dataset is open. In the workspace, the **More** menu includes
+**Open Dataset** and **Export E2R JSON** together with the available placement
+and display tools. **Sample info** on Home opens the central E2R specification
+provenance record for the public sample.
+
 For a first visit, choose `Open sample Dataset`. In the English locale this
 opens the `Lighthouse Restoration Project`, which is designed to demonstrate
 the graph and editing features.
@@ -37,9 +43,19 @@ the graph and editing features.
 Choose `Open E2R Dataset` and select an E2R JSON file. After a successful load,
 Entities appear as nodes and connections between Entities appear as lines.
 
+At the top of the workspace, edit the **Dataset title** and choose **Apply
+title** to make the title part of the Dataset. The title is preserved in an
+exported E2R JSON file.
+
 The English sample is available from Home through the current locale. A
 Relation connected to an Event remains in the Dataset, but it is not displayed
 as an Entity-to-Entity connection in the current graph view.
+
+The public Gallery has five ordinary sample families. E2R Self-Description is
+a separate non-normative dogfood and technical entry, not a sixth Gallery
+sample. The public sample files are History 2 data; the bounded
+`history@2.0.0 / position-circa` profile used by them is Stable, while the
+full `history@2.0.0` extension remains Candidate.
 
 ## Explore the relationship map
 
@@ -54,6 +70,13 @@ as an Entity-to-Entity connection in the current graph view.
 
 The initial position of a node without a saved position is assigned for
 display. This assignment alone does not modify the Dataset.
+
+When a Dataset does not provide complete stored node positions, LiaisonScape
+can run **Automatic Display**. While it is working, the interface reports the
+pending calculation and offers **Cancel automatic placement**. If automatic
+placement is unavailable, the current layout is kept. A calculated display is
+view state until you choose **Save node coordinates**; existing stored or
+user-saved coordinates remain the Dataset's authority.
 
 ## Pan and zoom
 
@@ -146,6 +169,10 @@ and choose `Return to automatic placement` to reset manual placement.
 For Entity labels, connection routes, and connection labels, LiaisonScape can
 indicate whether the placement is automatic or user-placed. This helps you
 tell which parts of the map you have arranged yourself.
+
+On narrow or mobile screens, the graph can be viewed and explored. Editing is
+best on a desktop screen, where selecting objects, opening details, and moving
+the graph have more room.
 
 ## Export a Dataset
 
