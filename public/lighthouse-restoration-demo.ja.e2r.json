@@ -59,10 +59,16 @@
       "description": "旧港の灯台が船を港へ導き始めた。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1898,
-            "month": 6
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1898,
+                "month": 6
+              }
+            }
+          ]
         }
       }
     },
@@ -72,9 +78,15 @@
       "description": "設計図と写真が港の歴史資料館へ移された。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1987
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1987
+              }
+            }
+          ]
         }
       }
     },
@@ -84,11 +96,17 @@
       "description": "灯台システムが故障し、修復計画が始まった。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2025,
-            "month": 11,
-            "day": 18
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2025,
+                "month": 11,
+                "day": 18
+              }
+            }
+          ]
         }
       }
     },
@@ -98,10 +116,16 @@
       "description": "港湾局がクララを修復プロジェクトの責任者に任命した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 1
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 1
+              }
+            }
+          ]
         }
       }
     },
@@ -111,13 +135,19 @@
       "description": "港の地域社会の支援を受けて修復計画が発表された。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 2,
-            "day": 14,
-            "hour": 10,
-            "minute": 0
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 2,
+                "day": 14,
+                "hour": 10,
+                "minute": 0
+              }
+            }
+          ]
         }
       }
     },
@@ -127,10 +157,16 @@
       "description": "ソフィアが資料館で建設当時の設計図を発見した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 3
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 3
+              }
+            }
+          ]
         }
       }
     },
@@ -140,11 +176,17 @@
       "description": "クララ、トーマス、マヤが灯台とシステムの作業を始めた。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 4,
-            "day": 6
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 4,
+                "day": 6
+              }
+            }
+          ]
         }
       }
     },
@@ -154,10 +196,16 @@
       "description": "ダニエルが地域募金の目標達成を報告した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 6
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 6
+              }
+            }
+          ]
         }
       }
     },
@@ -167,13 +215,19 @@
       "description": "マヤがチームと修復した灯台システムを試験した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 7,
-            "day": 31,
-            "hour": 21,
-            "minute": 0
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 7,
+                "day": 31,
+                "hour": 21,
+                "minute": 0
+              }
+            }
+          ]
         }
       }
     },
@@ -183,11 +237,17 @@
       "description": "修復された灯台が現役の灯台と地域の目印として再開した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 8,
-            "day": 10
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 8,
+                "day": 10
+              }
+            }
+          ]
         }
       }
     },
@@ -197,11 +257,17 @@
       "description": "再開後も灯台システムを監視し続ける計画を合意した。",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 8,
-            "day": 11
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 8,
+                "day": 11
+              }
+            }
+          ]
         }
       }
     }
@@ -376,7 +442,7 @@
         },
         {
           "extension": "history",
-          "version": "1.0.0"
+          "version": "2.0.0"
         },
         {
           "extension": "draft.github.sukoyaka-dopeness.liaisonscape-presentation",

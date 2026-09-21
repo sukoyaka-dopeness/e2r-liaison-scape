@@ -59,10 +59,16 @@
       "description": "The Old Harbor Lighthouse began guiding ships into the harbor.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1898,
-            "month": 6
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1898,
+                "month": 6
+              }
+            }
+          ]
         }
       }
     },
@@ -72,9 +78,15 @@
       "description": "Plans and photographs were transferred to the Harbor Historical Archive.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 1987
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 1987
+              }
+            }
+          ]
         }
       }
     },
@@ -84,11 +96,17 @@
       "description": "The beacon system failed, prompting a coordinated restoration effort.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2025,
-            "month": 11,
-            "day": 18
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2025,
+                "month": 11,
+                "day": 18
+              }
+            }
+          ]
         }
       }
     },
@@ -98,10 +116,16 @@
       "description": "The Harbor Authority appointed Clara to lead the restoration project.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 1
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 1
+              }
+            }
+          ]
         }
       }
     },
@@ -111,13 +135,19 @@
       "description": "The project was announced with support from the harbor community.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 2,
-            "day": 14,
-            "hour": 10,
-            "minute": 0
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 2,
+                "day": 14,
+                "hour": 10,
+                "minute": 0
+              }
+            }
+          ]
         }
       }
     },
@@ -127,10 +157,16 @@
       "description": "Sofia found original construction plans in the archive.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 3
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 3
+              }
+            }
+          ]
         }
       }
     },
@@ -140,11 +176,17 @@
       "description": "Clara, Thomas, and Maya began work on the lighthouse and beacon.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 4,
-            "day": 6
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 4,
+                "day": 6
+              }
+            }
+          ]
         }
       }
     },
@@ -154,10 +196,16 @@
       "description": "Daniel reported that local fundraising reached its restoration target.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 6
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 6
+              }
+            }
+          ]
         }
       }
     },
@@ -167,13 +215,19 @@
       "description": "Maya tested the restored beacon system with the team.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 7,
-            "day": 31,
-            "hour": 21,
-            "minute": 0
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 7,
+                "day": 31,
+                "hour": 21,
+                "minute": 0
+              }
+            }
+          ]
         }
       }
     },
@@ -183,11 +237,17 @@
       "description": "The restored lighthouse reopened as a working beacon and community landmark.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 8,
-            "day": 10
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 8,
+                "day": 10
+              }
+            }
+          ]
         }
       }
     },
@@ -197,11 +257,17 @@
       "description": "The team agreed to continue monitoring the beacon after reopening.",
       "extensions": {
         "history": {
-          "time": {
-            "year": 2026,
-            "month": 8,
-            "day": 11
-          }
+          "assertions": [
+            {
+              "id": "time-1",
+              "type": "position",
+              "position": {
+                "year": 2026,
+                "month": 8,
+                "day": 11
+              }
+            }
+          ]
         }
       }
     }
@@ -378,7 +444,7 @@
         },
         {
           "extension": "history",
-          "version": "1.0.0"
+          "version": "2.0.0"
         },
         {
           "extension": "draft.github.sukoyaka-dopeness.liaisonscape-presentation",
