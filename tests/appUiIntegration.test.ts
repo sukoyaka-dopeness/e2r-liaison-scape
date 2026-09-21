@@ -187,6 +187,12 @@ test("renders the production LiaisonScape Home surface", async () => {
     assert.ok(environment.document.querySelector(".home-page"));
     assert.ok(environment.document.querySelector(".home-page h1"));
     assert.ok(environment.document.querySelector(".home-actions"));
+    const supportLink = environment.document.querySelector(".support-link");
+    assert.equal(supportLink?.textContent, "Support E2R on GitHub Sponsors");
+    assert.equal(supportLink?.getAttribute("href"), "https://github.com/sponsors/sukoyaka-dopeness");
+    assert.equal(supportLink?.getAttribute("target"), "_blank");
+    assert.equal(supportLink?.getAttribute("rel"), "noreferrer");
+    assert.equal(environment.document.querySelector(".home-footer")?.contains(supportLink), false);
   } finally {
     await environment.cleanup();
   }

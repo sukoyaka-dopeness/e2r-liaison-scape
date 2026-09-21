@@ -44,6 +44,7 @@ import { createExplicitAutoLayoutFailureDiagnostic, type ExplicitAutoLayoutFailu
 import { dependencyFingerprint } from "./presentation-dependency";
 
 const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-sample-provenance.md";
+const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
 const DATASET_LOADING_MIN_VISIBLE_MS = 180;
@@ -1485,6 +1486,9 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
             {translate(locale, "userGuide")}
           </a>
         </nav>
+        <a className="support-link" href={GITHUB_SPONSORS_URL} target="_blank" rel="noreferrer">
+          {translate(locale, "supportE2r")}
+        </a>
       </main>
       <footer className="app-footer home-footer">
         <small>{translate(locale, "footerDescriptor")}</small>
