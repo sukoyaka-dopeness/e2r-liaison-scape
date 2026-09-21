@@ -35,7 +35,8 @@ body { margin: 0; }
 .home-actions .open-dataset-button { width: 100%; min-height: 40px; justify-content: center; padding: 8px 12px; border: 1px solid #e5e4e7; border-radius: 6px; color: #08060d; font-family: system-ui, "Segoe UI", Roboto, sans-serif; font-size: 16px; font-weight: 400; line-height: 120%; text-align: center; }
 .home-actions button:first-child { color: #08060d; border-color: #e5e4e7; background: #fff; }
 .home-guides { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 28px; }
-.home-guides a { color: #4f2390; }
+.home-guides a { color: #4f2390; font-size: .86rem; }
+.home-content .sample-info-link { font-size: .86rem; }
 .home-content .support-link { display: block; margin-top: 1.5rem; color: #6b6375; font-size: .86rem; text-align: center; text-underline-offset: .18em; }
 .credits-button { min-height: 40px; padding: 8px 12px; font-size: inherit; }
 .page-header { display: none; }
