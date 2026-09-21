@@ -38,3 +38,12 @@ record. It does not change runtime behavior, Dataset/sample contents, or
 e2r-spec. The resulting LiaisonScape commit is a local deployment candidate;
 push, Pages deployment, tag, release, and publication remain pending explicit
 Human approval.
+
+## Current release-set pin follow-up
+
+The `33be032fe109515b409a7e6c176f2bd632149e5c` pin described above is
+historical evidence for that correction checkpoint. The current Pages workflow
+uses the later public immutable e2r-spec authority
+`c3c8f5d14d2131aae6fcbd90597e7f490476f7bb` for the release-set candidate.
+This updates only the cross-repository checkout authority; runtime behavior,
+Dataset contents, and the accepted fixture contract remain unchanged.
