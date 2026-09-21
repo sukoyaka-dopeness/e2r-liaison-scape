@@ -11,17 +11,24 @@ acceptance surface requires
 that revision. This caused the fresh GitHub Actions test step to fail before
 the Pages deployment step.
 
-The workflow now pins e2r-spec to the immutable fixture checkpoint
-`e918d55f4d10b2300d657ee986a4077d10fc03a8`. That checkpoint contains the
-coordinate-less public sample fixtures required by the current tests; later
-e2r-spec changes through the inspected current revision are documentation-only
-for this dependency boundary. The workflow remains revision-pinned rather
-than following `main`.
+The first local correction selected the immutable checkpoint
+`e918d55f4d10b2300d657ee986a4077d10fc03a8`, but that object is not reachable
+from the public e2r-spec remote. The workflow now pins the public immutable
+SHA `33be032fe109515b409a7e6c176f2bd632149e5c`, the current public
+e2r-spec `main` tip at this audit. It contains every fixture path used by the
+LiaisonScape CI contract. Lighthouse and Apollo carry Coordinate Extension
+records at this public revision; those fields are outside the current
+LiaisonScape test consumers, and the full suite passes against the public
+fixture matrix. The workflow remains revision-pinned rather than following
+`main` by name.
 
 Validation at the LiaisonScape source checkpoint:
 
-- focused fixture-boundary test: passed with the pinned fixture;
-- full test suite: 636 passed, 0 failed;
+- public remote reachability: `33be032fe109515b409a7e6c176f2bd632149e5c` was
+  fetched from the public e2r-spec history;
+- fresh public-fixture matrix: full test suite, 636 passed, 0 failed;
+- focused fixture-boundary test: passed with the public fixture;
+- current source full test suite: 636 passed, 0 failed;
 - lint: passed;
 - production build: passed;
 - `git diff --check`: passed.
