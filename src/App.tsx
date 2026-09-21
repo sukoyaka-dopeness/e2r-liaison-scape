@@ -43,6 +43,7 @@ import { ExplicitAutoLayoutBrowserAdapter } from "./explicit-auto-layout-browser
 import { createExplicitAutoLayoutFailureDiagnostic, type ExplicitAutoLayoutFailureDiagnostic } from "./explicit-auto-layout-failure-diagnostic";
 import { dependencyFingerprint } from "./presentation-dependency";
 
+const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-sample-provenance.md";
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
 const DATASET_LOADING_MIN_VISIBLE_MS = 180;
@@ -1471,6 +1472,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
           <div className="sample-action">
             <button type="button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={(event) => void openSample(event.currentTarget)}>{translate(locale, "openSampleDataset")}</button>
           </div>
+          <a className="sample-info-link" href={SAMPLE_PROVENANCE_URL} target="_blank" rel="noreferrer">{translate(locale, "sampleInfo")}</a>
         </div>
         <nav className="home-guides" aria-label={translate(locale, "guides")}>
           <a
