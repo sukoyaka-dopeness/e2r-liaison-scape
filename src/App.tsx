@@ -43,7 +43,7 @@ import { ExplicitAutoLayoutBrowserAdapter } from "./explicit-auto-layout-browser
 import { createExplicitAutoLayoutFailureDiagnostic, type ExplicitAutoLayoutFailureDiagnostic } from "./explicit-auto-layout-failure-diagnostic";
 import { dependencyFingerprint } from "./presentation-dependency";
 
-const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-sample-provenance.md";
+const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-samples/public-sample-provenance.md";
 const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
