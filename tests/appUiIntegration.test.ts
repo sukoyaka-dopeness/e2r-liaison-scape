@@ -155,6 +155,34 @@ async function withProductionApp({ locale = "en", dataset, beforeRender, callbac
   }
 }
 
+test("disables Relation creation without Nodes and preserves the enabled path with one Node", async () => {
+  for (const locale of ["en", "ja"] as const) {
+    await withProductionApp({
+      locale,
+      dataset: { version: "1.0", entities: [], events: [], relations: [] },
+      callback: async (environment) => {
+        const relationButton = environment.document.querySelector(".dataset-actions__buttons button:nth-child(2)") as HTMLButtonElement;
+        assert.ok(relationButton);
+        assert.equal(relationButton.disabled, true);
+        await act(async () => relationButton.click());
+        assert.equal(environment.document.querySelector('[role="dialog"]'), null);
+      },
+    });
+
+    await withProductionApp({
+      locale,
+      dataset: { version: "1.0", entities: [{ id: `single-${locale}`, name: "Single Entity" }], events: [], relations: [] },
+      callback: async (environment) => {
+        const relationButton = environment.document.querySelector(".dataset-actions__buttons button:nth-child(2)") as HTMLButtonElement;
+        assert.ok(relationButton);
+        assert.equal(relationButton.disabled, false);
+        await act(async () => relationButton.click());
+        assert.ok(environment.document.querySelector('[role="dialog"]'));
+      },
+    });
+  }
+});
+
 test("renders the production LiaisonScape Home surface", async () => {
   const environment = createDomTestEnvironment();
   environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);

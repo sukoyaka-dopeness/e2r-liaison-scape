@@ -2397,7 +2397,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
           {dataset && <p className="graph-summary toolbar-graph-summary">{formatGraphSummary(locale, graph.nodes.length, graph.edges.length)}</p>}
           <div className="dataset-actions__buttons">
             <button type="button" disabled={!dataset || Boolean(activeOperationPreview)} onClick={() => openCreation("entity")}>{translate(locale, "addEntity")}</button>
-            <button type="button" disabled={!dataset || Boolean(activeOperationPreview)} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
+            <button type="button" disabled={!dataset || Boolean(activeOperationPreview) || graph.nodes.length === 0} onClick={() => openCreation("relation")}>{translate(locale, "addRelation")}</button>
             <button type="button" className="desktop-secondary-action" disabled={!dataset || (!coordinatesDirty && !unsavedPins)} onClick={saveCoordinates}>{translate(locale, "saveCoordinates")}</button>
             <details ref={maintenanceMenuRef} className="maintenance-menu" onToggle={(event) => setMaintenanceMenuOpen(event.currentTarget.open)} onKeyDown={handleMaintenanceMenuKeyDown}>
               <summary ref={maintenanceMenuSummaryRef}>{translate(locale, "more")}</summary>
