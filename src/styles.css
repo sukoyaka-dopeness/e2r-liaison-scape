@@ -72,10 +72,13 @@ body { margin: 0; }
 .explicit-auto-layout-surface h3 { font-size: 1rem; }
 .explicit-auto-layout-surface__warning { color: #76520b; }
 .explicit-auto-layout-surface__actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.explicit-auto-layout-diagnostic { border-color: #b86b6b; color: #552626; background: #fff8f8; }
+.explicit-auto-layout-diagnostic { display: block; border-color: #b86b6b; color: #552626; background: #fff8f8; }
+.explicit-auto-layout-diagnostic > summary { cursor: pointer; font-weight: 650; overflow-wrap: anywhere; }
+.explicit-auto-layout-diagnostic__content { display: grid; gap: 8px; margin-top: 10px; }
 .explicit-auto-layout-diagnostic dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 3px 10px; margin: 0; font: .78rem/1.35 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .explicit-auto-layout-diagnostic dt { font-weight: 700; }
 .explicit-auto-layout-diagnostic dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.explicit-auto-layout-diagnostic pre { max-width: 100%; margin: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
 .frontier-async-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0; padding: 8px 10px; border: 1px solid #d9d5df; border-radius: 6px; color: #4b4560; background: #f3f1f7; font-size: .9rem; }
 .frontier-async-status--pending { border-color: #c7b8e6; color: #4f2390; }
 .frontier-async-status button { flex: 0 0 auto; min-height: 34px; padding: 6px 10px; }

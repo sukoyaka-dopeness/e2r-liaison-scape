@@ -131,7 +131,7 @@ export type ExplicitAutoLayoutCalculationResult =
 
 export type ExplicitAutoLayoutOutcome =
   | Readonly<{ status: "completed"; operationId: string; generation: number; snapshotIdentity: string; preview: ExplicitAutoLayoutPreviewProposal }>
-  | Readonly<{ status: "cancelled" | "stale" | "failed"; operationId: string; generation: number; snapshotIdentity: string; reason: string; failure?: ExplicitAutoLayoutFailure }>;
+  | Readonly<{ status: "cancelled" | "stale" | "failed"; operationId: string; generation: number; snapshotIdentity: string; reason: string; failure?: ExplicitAutoLayoutFailure; workerDiagnostic?: Readonly<Record<string, unknown>> }>;
 
 export type ExplicitAutoLayoutProvenance = Readonly<{
   operationId: string;
@@ -337,7 +337,14 @@ function failureResult(code: ExplicitAutoLayoutFailure["code"], message: string)
  * This is a synchronous pure core; an adapter or Worker owns transport and
  * lifecycle. Product routing, labels, and Self-loop state stay downstream.
  */
-export function runExplicitAutoLayoutOperation(snapshot: ExplicitAutoLayoutSnapshot, config: ExplicitAutoLayoutConfig = DEFAULT_EXPLICIT_AUTO_LAYOUT_CONFIG): ExplicitAutoLayoutCalculationResult {
+export type ExplicitAutoLayoutDiagnosticPhase = "candidate-generation" | "product-evaluation" | "result-canonicalization" | "result-validation";
+
+export function runExplicitAutoLayoutOperation(
+  snapshot: ExplicitAutoLayoutSnapshot,
+  config: ExplicitAutoLayoutConfig = DEFAULT_EXPLICIT_AUTO_LAYOUT_CONFIG,
+  onDiagnosticPhase?: (phase: ExplicitAutoLayoutDiagnosticPhase) => void,
+): ExplicitAutoLayoutCalculationResult {
+  onDiagnosticPhase?.("candidate-generation");
   const hasPins = Object.keys(snapshot.activePins).length > 0;
   const candidateSet = hasPins
     ? generatePinnedFrontierCandidateSet({
@@ -363,6 +370,7 @@ export function runExplicitAutoLayoutOperation(snapshot: ExplicitAutoLayoutSnaps
       aspect: "aspect" in candidate ? candidate.aspect : 0,
     },
   }));
+  onDiagnosticPhase?.("product-evaluation");
   const proposals: ExplicitAutoLayoutProposal[] = candidates.map((candidate, candidateIndex) => {
     const evaluated = evaluateProductPresentation(snapshot, candidate.positions);
     return { candidateIndex, family: candidate.family, sourceIdentity: candidate.sourceIdentity, positions: candidate.positions, metrics: evaluated.metrics, eligible: isAutomaticLayoutPresentationEligible(evaluated.metrics), presentationSignature: evaluated.presentationSignature };
@@ -370,8 +378,11 @@ export function runExplicitAutoLayoutOperation(snapshot: ExplicitAutoLayoutSnaps
   proposals.sort(compareAutomaticLayoutProposals);
   const selectedFloat = proposals[0];
   if (!selectedFloat) return failureResult("INCOMPLETE_RESULT", "Frontier/Product evaluation produced no candidate");
+  onDiagnosticPhase?.("result-canonicalization");
   const selectedPositions = canonicalize(selectedFloat.positions, config.finalCanonicalization, snapshot.activePins);
+  onDiagnosticPhase?.("product-evaluation");
   const selectedEvaluation = evaluateProductPresentation(snapshot, selectedPositions);
+  onDiagnosticPhase?.("result-validation");
   const validation = structuralValidation(snapshot, selectedPositions, true);
   if (!validation.complete || !validation.finite) return failureResult("NON_FINITE_RESULT", "Selected Explicit Auto Layout positions are incomplete or non-finite");
   if (!validation.pinsPreserved || (hasPins && !exactPinnedAnchors(selectedPositions, snapshot.activePins))) return failureResult("PIN_VIOLATION", "Selected Explicit Auto Layout positions violate a fixed Pin anchor");

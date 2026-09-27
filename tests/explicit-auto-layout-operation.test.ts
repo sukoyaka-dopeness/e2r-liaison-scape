@@ -67,10 +67,15 @@ const config = { ...DEFAULT_EXPLICIT_AUTO_LAYOUT_CONFIG, frontier: { limit: 2, f
 class FakeExplicitWorker implements ExplicitAutoLayoutWorker {
   onmessage: ((event: MessageEvent<ExplicitAutoLayoutWorkerMessage>) => void) | null = null;
   onerror: ((event: ErrorEvent) => void) | null = null;
+  onmessageerror: ((event: MessageEvent) => void) | null = null;
   terminated = false;
   private readonly pending: boolean;
+  lastJob: ExplicitAutoLayoutWorkerJob | null = null;
+  postMessageThrows = false;
   constructor(pending = false) { this.pending = pending; }
   postMessage(job: ExplicitAutoLayoutWorkerJob): void {
+    this.lastJob = job;
+    if (this.postMessageThrows) throw new DOMException("Clone failed", "DataCloneError");
     if (this.pending) return;
     this.onmessage?.({ data: {
       kind: "explicit-auto-layout-result",
@@ -105,6 +110,122 @@ test("browser adapter Cancel terminates work and preserves the no-adoption bound
   adapter.cancel("user-cancelled");
   assert.equal((await pending).status, "cancelled");
   assert.equal(worker.terminated, true);
+});
+
+test("browser adapter retains Worker error event details and terminates without preview", async () => {
+  const worker = new FakeExplicitWorker(true);
+  const adapter = new ExplicitAutoLayoutBrowserAdapter(() => worker, true);
+  const pending = adapter.start(snapshot());
+  worker.onerror?.({
+    message: "Uncaught TypeError: diagnostic sample",
+    filename: "http://localhost/src/explicit-auto-layout-worker.ts",
+    lineno: 47,
+    colno: 9,
+    error: new TypeError("diagnostic sample"),
+    cancelable: false,
+    defaultPrevented: false,
+  } as ErrorEvent);
+  const result = await pending;
+  assert.equal(result.status, "failed");
+  if (result.status !== "failed") return;
+  assert.equal(result.reason, "Uncaught TypeError: diagnostic sample");
+  assert.equal(result.workerDiagnostic?.source, "worker-error-event");
+  assert.equal(result.workerDiagnostic?.filename, "http://localhost/src/explicit-auto-layout-worker.ts");
+  assert.equal(result.workerDiagnostic?.lineno, 47);
+  assert.equal(result.workerDiagnostic?.colno, 9);
+  assert.equal(result.workerDiagnostic?.errorName, "TypeError");
+  assert.equal(result.workerDiagnostic?.errorMessage, "diagnostic sample");
+  assert.equal(typeof result.workerDiagnostic?.errorStack, "string");
+  assert.equal(worker.terminated, true);
+});
+
+test("browser adapter distinguishes messageerror and synchronous postMessage failure", async () => {
+  const worker = new FakeExplicitWorker(true);
+  const adapter = new ExplicitAutoLayoutBrowserAdapter(() => worker, true);
+  const pending = adapter.start(snapshot());
+  worker.onmessageerror?.({ data: null, origin: "", lastEventId: "" } as MessageEvent);
+  const result = await pending;
+  assert.equal(result.status, "failed");
+  if (result.status !== "failed") return;
+  assert.equal(result.reason, "worker-messageerror");
+  assert.equal(result.workerDiagnostic?.source, "worker-messageerror-event");
+  assert.equal(worker.terminated, true);
+
+  const throwingWorker = new FakeExplicitWorker(true);
+  throwingWorker.postMessageThrows = true;
+  const throwingResult = await new ExplicitAutoLayoutBrowserAdapter(() => throwingWorker, true).start(snapshot());
+  assert.equal(throwingResult.status, "failed");
+  if (throwingResult.status !== "failed") return;
+  assert.equal(throwingResult.reason, "worker-postmessage-throw");
+  assert.equal(throwingResult.workerDiagnostic?.name, "DataCloneError");
+  assert.equal(throwingWorker.terminated, true);
+});
+
+test("production browser adapter settles Worker transport failures without retaining diagnostics", async () => {
+  const workerError = new FakeExplicitWorker(true);
+  const workerErrorPending = new ExplicitAutoLayoutBrowserAdapter(() => workerError, false).start(snapshot());
+  workerError.onerror?.({ message: "private worker stack detail" } as ErrorEvent);
+  const workerErrorResult = await workerErrorPending;
+  assert.equal(workerErrorResult.status, "failed");
+  if (workerErrorResult.status === "failed") {
+    assert.equal(workerErrorResult.reason, "worker-error");
+    assert.equal(workerErrorResult.workerDiagnostic, undefined);
+  }
+  assert.equal(workerError.terminated, true);
+
+  const messageError = new FakeExplicitWorker(true);
+  const messageErrorPending = new ExplicitAutoLayoutBrowserAdapter(() => messageError, false).start(snapshot());
+  messageError.onmessageerror?.({ data: { private: "worker details" }, origin: "local" } as MessageEvent);
+  const messageErrorResult = await messageErrorPending;
+  assert.equal(messageErrorResult.status, "failed");
+  if (messageErrorResult.status === "failed") {
+    assert.equal(messageErrorResult.reason, "worker-messageerror");
+    assert.equal(messageErrorResult.workerDiagnostic, undefined);
+  }
+  assert.equal(messageError.terminated, true);
+
+  const throwingWorker = new FakeExplicitWorker(true);
+  throwingWorker.postMessageThrows = true;
+  const postMessageResult = await new ExplicitAutoLayoutBrowserAdapter(() => throwingWorker, false).start(snapshot());
+  assert.equal(postMessageResult.status, "failed");
+  if (postMessageResult.status === "failed") {
+    assert.equal(postMessageResult.reason, "worker-postmessage-throw");
+    assert.equal(postMessageResult.workerDiagnostic, undefined);
+  }
+  assert.equal(throwingWorker.terminated, true);
+});
+
+test("the development Worker failure probe is forwarded only with diagnostics enabled and retains its cause", async () => {
+  const developmentWorker = new FakeExplicitWorker(true);
+  const developmentAdapter = new ExplicitAutoLayoutBrowserAdapter(() => developmentWorker, true);
+  const developmentPending = developmentAdapter.start(snapshot(), true);
+  assert.equal(developmentWorker.lastJob?.diagnosticFailureProbe, "worker-operation");
+  const developmentSnapshot = developmentWorker.lastJob?.snapshot;
+  assert.ok(developmentSnapshot);
+  developmentWorker.onmessage?.({ data: {
+    kind: "explicit-auto-layout-result",
+    operationId: developmentSnapshot.operationId,
+    generation: developmentSnapshot.generation,
+    snapshotIdentity: developmentSnapshot.snapshotIdentity,
+    result: { status: "failed", failure: { code: "EXECUTION_ERROR", message: "intentional diagnostic probe" } },
+    diagnostic: { source: "worker-computation-exception", phase: "candidate-generation", name: "Error", message: "intentional diagnostic probe", stack: "Error: intentional diagnostic probe" },
+  } } as MessageEvent<ExplicitAutoLayoutWorkerMessage>);
+  const developmentResult = await developmentPending;
+  assert.equal(developmentResult.status, "failed");
+  if (developmentResult.status === "failed") {
+    assert.equal(developmentResult.workerDiagnostic?.source, "worker-computation-exception");
+    assert.equal(developmentResult.workerDiagnostic?.phase, "candidate-generation");
+  }
+
+  const productionWorker = new FakeExplicitWorker(true);
+  const productionAdapter = new ExplicitAutoLayoutBrowserAdapter(() => productionWorker, false);
+  const productionPending = productionAdapter.start(snapshot(), true);
+  assert.equal(productionWorker.lastJob?.diagnosticFailureProbe, undefined);
+  productionAdapter.cancel("test-cleanup");
+  assert.equal((await productionPending).status, "cancelled");
+
+  const worker = fs.readFileSync(path.join(process.cwd(), "src/explicit-auto-layout-worker.ts"), "utf8");
+  assert.match(worker, /if \(import\.meta\.env\.DEV\)[\s\S]*diagnosticFailureProbe === "worker-operation"/);
 });
 
 test("normal App Auto Layout uses snapshot, Worker, Preview, Accept and Reject instead of direct solve", () => {
@@ -151,6 +272,13 @@ test("runs Product-faithful selection from the captured manual and previous pres
   const provenance = explicitAutoLayoutProvenance(captured, result);
   assert.equal(provenance.inputFingerprint, captured.snapshotIdentity);
   assert.equal(provenance.candidateFingerprint, result.preview.candidateFingerprint);
+});
+
+test("diagnostic phase hook reports candidate, Product, and validation boundaries in order", () => {
+  const phases: string[] = [];
+  const result = runExplicitAutoLayoutOperation(snapshot(), config, (phase) => phases.push(phase));
+  assert.equal(result.status, "completed");
+  assert.deepEqual(phases, ["candidate-generation", "product-evaluation", "result-canonicalization", "product-evaluation", "result-validation"]);
 });
 
 test("generates fixed-anchor candidates and preserves saved Pins exactly", () => {

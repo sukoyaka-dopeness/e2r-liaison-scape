@@ -20,6 +20,7 @@ export type ExplicitAutoLayoutFailureDiagnostic = Readonly<{
   candidateGenerationReached: boolean | null;
   productEvaluationReached: boolean | null;
   validationReached: boolean | null;
+  workerDiagnostic: Readonly<Record<string, unknown>> | null;
 }>;
 
 type DiagnosticInput = Readonly<{
@@ -31,6 +32,7 @@ type DiagnosticInput = Readonly<{
   effectivePinCount: number;
   pinDiagnosticCodes?: readonly string[];
   workerStarted: boolean;
+  workerDiagnostic?: Readonly<Record<string, unknown>>;
 }>;
 
 function stageFor(code: string, workerStarted: boolean): ExplicitAutoLayoutFailureStage {
@@ -56,6 +58,7 @@ export function createExplicitAutoLayoutFailureDiagnostic(input: DiagnosticInput
     candidateGenerationReached: stage === "snapshot-capture" ? false : stage === "candidate-generation" ? true : stage === "worker-execution" ? null : true,
     productEvaluationReached: stage === "snapshot-capture" || stage === "candidate-generation" ? false : stage === "worker-execution" ? null : true,
     validationReached: stage === "result-validation" ? true : stage === "worker-execution" ? null : false,
+    workerDiagnostic: input.workerDiagnostic ? Object.freeze({ ...input.workerDiagnostic }) : null,
   });
 }
 

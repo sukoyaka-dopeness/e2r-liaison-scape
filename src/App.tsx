@@ -40,7 +40,7 @@ import { createBrowserFrontierAutomaticDisplayWorker, createFrontierAutomaticDis
 import { buildAtomicPinSaveCandidate, createWorkingPinState, deriveWorkingPinState, emptyWorkingPinState, reconcileWorkingPinState, stagePin, stageUnpin, type WorkingPinState } from "./pin-persistence";
 import { captureExplicitAutoLayoutSnapshotFromDataset } from "./explicit-auto-layout-operation";
 import { ExplicitAutoLayoutBrowserAdapter } from "./explicit-auto-layout-browser-adapter";
-import { createExplicitAutoLayoutFailureDiagnostic, type ExplicitAutoLayoutFailureDiagnostic } from "./explicit-auto-layout-failure-diagnostic";
+import { createExplicitAutoLayoutFailureDiagnostic, shouldExposeExplicitAutoLayoutFailureDiagnostic, type ExplicitAutoLayoutFailureDiagnostic } from "./explicit-auto-layout-failure-diagnostic";
 import { dependencyFingerprint } from "./presentation-dependency";
 
 const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-samples/public-sample-provenance.md";
@@ -48,6 +48,10 @@ const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
 const DATASET_LOADING_MIN_VISIBLE_MS = 180;
+function formatExplicitAutoLayoutReached(locale: Locale, reached: boolean | null): string {
+  if (reached === null) return translate(locale, "diagnosticUnknown");
+  return translate(locale, reached ? "diagnosticReached" : "diagnosticNotReached");
+}
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
 type OpenDatasetResult = { status: "accepted-or-staged" } | { status: "parse-error" } | { status: "validation-error" } | { status: "target-error" };
 type DatasetReplacementSource = "handoff" | "local" | "sample" | "new";
@@ -119,7 +123,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const acceptancePayloadReopen = import.meta.env.DEV
     && new URLSearchParams(window.location.search).get("acceptance-reopen") === "saved";
   const explicitAutoLayoutFailureProbe = import.meta.env.DEV
-    && new URLSearchParams(window.location.search).get("explicit-auto-layout-failure-probe") === "pin-resolution";
+    ? new URLSearchParams(window.location.search).get("explicit-auto-layout-failure-probe")
+    : null;
   const initialLayoutParam = new URLSearchParams(window.location.search).get("initial-layout");
   const initialLayoutOptIn = initialLayoutParam === "coarse-objective-prototype-v1"
     ? "coarse-objective-prototype-v1" as ActualProductInitialLayoutOptIn
@@ -227,7 +232,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     setFrontierAsyncState("idle");
     explicitAutoLayoutAdapterRef.current?.invalidate(reason);
     if (explicitAutoLayoutState === "running") setExplicitAutoLayoutState("idle");
-    setExplicitAutoLayoutFailureDiagnostic(null);
+    if (reason === "dataset-replacement") setExplicitAutoLayoutFailureDiagnostic(null);
   }
 
   function invalidateExplicitAutoLayout(reason: string, discardPreview = true) {
@@ -235,7 +240,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     if (discardPreview) setActiveOperationPreview(null);
     setExplicitAutoLayoutState("idle");
     setExplicitAutoLayoutWarning(false);
-    setExplicitAutoLayoutFailureDiagnostic(null);
+    if (reason === "dataset-replacement") setExplicitAutoLayoutFailureDiagnostic(null);
   }
 
   function cancelFrontierAutomaticDisplay() {
@@ -452,7 +457,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         return response.text();
       })
       .then((raw) => {
-        if (!explicitAutoLayoutFailureProbe) return raw;
+        if (explicitAutoLayoutFailureProbe !== "pin-resolution") return raw;
         const probed = JSON.parse(raw) as Dataset;
         const entityId = probed.entities[0]?.id;
         if (!entityId) return raw;
@@ -2074,8 +2079,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     const adapter = explicitAutoLayoutAdapterRef.current ?? (explicitAutoLayoutAdapterRef.current = new ExplicitAutoLayoutBrowserAdapter());
     setExplicitAutoLayoutState("running");
     setExplicitAutoLayoutWarning(false);
-    setExplicitAutoLayoutFailureDiagnostic(null);
-    void adapter.start(captured.snapshot).then((outcome) => {
+    void adapter.start(captured.snapshot, explicitAutoLayoutFailureProbe === "worker-operation").then((outcome) => {
       if (outcome.status !== "completed") {
         if (outcome.status === "failed") {
           setExplicitAutoLayoutFailureDiagnostic(createExplicitAutoLayoutFailureDiagnostic({
@@ -2086,6 +2090,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
             entityCount: graph.nodes.length,
             effectivePinCount: Object.keys(captured.snapshot.activePins).length,
             workerStarted: true,
+            workerDiagnostic: outcome.workerDiagnostic,
           }));
           setExplicitAutoLayoutState("failed");
           setMessage(translate(locale, "explicitAutoLayoutFailed"));
@@ -2109,7 +2114,6 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   function cancelExplicitAutoLayout() {
     explicitAutoLayoutAdapterRef.current?.cancel("user-cancelled");
     setExplicitAutoLayoutState("idle");
-    setExplicitAutoLayoutFailureDiagnostic(null);
     maintenanceMenuSummaryRef.current?.focus();
   }
 
@@ -2117,7 +2121,6 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     setActiveOperationPreview(null);
     setExplicitAutoLayoutState("idle");
     setExplicitAutoLayoutWarning(false);
-    setExplicitAutoLayoutFailureDiagnostic(null);
     maintenanceMenuSummaryRef.current?.focus();
   }
 
@@ -2137,7 +2140,6 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     setActiveOperationPreview(null);
     setExplicitAutoLayoutState("idle");
     setExplicitAutoLayoutWarning(false);
-    setExplicitAutoLayoutFailureDiagnostic(null);
     setMessage(translate(locale, changed ? "explicitAutoLayoutAccepted" : "explicitAutoLayoutUnchanged"));
   }
 
@@ -2489,20 +2491,29 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         </div>}
         {explicitAutoLayoutState === "idle" && <button type="button" onClick={() => setActiveOperationPreview(null)}>End HQ preview</button>}
       </aside>}
-      {import.meta.env.DEV && dataset && explicitAutoLayoutState === "failed" && explicitAutoLayoutFailureDiagnostic && <aside className="explicit-auto-layout-surface explicit-auto-layout-diagnostic" role="status" aria-live="polite" data-explicit-auto-layout-failure={explicitAutoLayoutFailureDiagnostic.reasonCode}>
-        <h3>Auto Layout diagnostic</h3>
-        <dl>
-          <dt>stage</dt><dd>{explicitAutoLayoutFailureDiagnostic.stage}</dd>
-          <dt>reason</dt><dd>{explicitAutoLayoutFailureDiagnostic.reasonCode}</dd>
-          <dt>operation</dt><dd>{explicitAutoLayoutFailureDiagnostic.operationId}</dd>
-          <dt>snapshot</dt><dd>{explicitAutoLayoutFailureDiagnostic.snapshotIdentity ?? "not captured"}</dd>
-          <dt>graph</dt><dd>{explicitAutoLayoutFailureDiagnostic.graphFingerprint}</dd>
-          <dt>entities</dt><dd>{explicitAutoLayoutFailureDiagnostic.entityCount}</dd>
-          <dt>effective pins</dt><dd>{explicitAutoLayoutFailureDiagnostic.effectivePinCount}</dd>
-          <dt>pin diagnostics</dt><dd>{explicitAutoLayoutFailureDiagnostic.pinDiagnosticCodes.join(", ") || "none"}</dd>
-          <dt>worker</dt><dd>{explicitAutoLayoutFailureDiagnostic.workerStatus}</dd>
-        </dl>
-      </aside>}
+      {import.meta.env.DEV && dataset && shouldExposeExplicitAutoLayoutFailureDiagnostic(import.meta.env.DEV, explicitAutoLayoutFailureDiagnostic) && <details className="explicit-auto-layout-surface explicit-auto-layout-diagnostic" data-explicit-auto-layout-failure={explicitAutoLayoutFailureDiagnostic.reasonCode}>
+        <summary>{translate(locale, "autoLayoutDiagnosticDetails")}</summary>
+        <div className="explicit-auto-layout-diagnostic__content">
+          <h3>{translate(locale, "autoLayoutDiagnostic")}</h3>
+          <dl>
+            <dt>{translate(locale, "autoLayoutDiagnosticStage")}</dt><dd>{explicitAutoLayoutFailureDiagnostic.stage}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticReason")}</dt><dd>{explicitAutoLayoutFailureDiagnostic.reasonCode}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticOperation")}</dt><dd>{explicitAutoLayoutFailureDiagnostic.operationId}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticSnapshot")}</dt><dd>{explicitAutoLayoutFailureDiagnostic.snapshotIdentity ?? translate(locale, "diagnosticNotCaptured")}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticGraph")}</dt><dd>{explicitAutoLayoutFailureDiagnostic.graphFingerprint}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticEntities")}</dt><dd>{explicitAutoLayoutFailureDiagnostic.entityCount}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticPins")}</dt><dd>{explicitAutoLayoutFailureDiagnostic.effectivePinCount}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticPinEvidence")}</dt><dd>{explicitAutoLayoutFailureDiagnostic.pinDiagnosticCodes.join(", ") || translate(locale, "diagnosticNone")}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticWorker")}</dt><dd>{translate(locale, explicitAutoLayoutFailureDiagnostic.workerStatus === "failed" ? "diagnosticWorkerFailed" : "diagnosticWorkerNotStarted")}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticCandidateReached")}</dt><dd>{formatExplicitAutoLayoutReached(locale, explicitAutoLayoutFailureDiagnostic.candidateGenerationReached)}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticProductReached")}</dt><dd>{formatExplicitAutoLayoutReached(locale, explicitAutoLayoutFailureDiagnostic.productEvaluationReached)}</dd>
+            <dt>{translate(locale, "autoLayoutDiagnosticValidationReached")}</dt><dd>{formatExplicitAutoLayoutReached(locale, explicitAutoLayoutFailureDiagnostic.validationReached)}</dd>
+            {explicitAutoLayoutFailureDiagnostic.workerDiagnostic && <>
+              <dt>{translate(locale, "autoLayoutDiagnosticWorkerDetails")}</dt><dd><pre>{JSON.stringify(explicitAutoLayoutFailureDiagnostic.workerDiagnostic, null, 2)}</pre></dd>
+            </>}
+          </dl>
+        </div>
+      </details>}
       {dataset && (
         <section className="graph-section" data-frontier-async-state={frontierAsyncEnabled ? frontierAsyncState : undefined}>
           <h2>Graph</h2>
