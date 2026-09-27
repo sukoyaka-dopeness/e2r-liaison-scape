@@ -932,6 +932,43 @@ test("renders selected Relation status with the existing three-field structure",
   assert.doesNotMatch(app, /formatSelectedRelation\(locale/);
 });
 
+test("renders selected Entity status with the Entity name and preserves the ID fallback", async () => {
+  for (const locale of ["en", "ja"] as const) {
+    await withProductionApp({
+      locale,
+      dataset: { version: "1.0", entities: [{ id: "named", name: "Named Entity" }, { id: "unnamed" }], events: [], relations: [] },
+      callback: async (environment) => {
+        environment.installGlobal("SVGSVGElement", environment.window.SVGSVGElement);
+        environment.window.SVGSVGElement.prototype.setPointerCapture = function setPointerCapture() {};
+        environment.window.SVGSVGElement.prototype.hasPointerCapture = function hasPointerCapture() { return true; };
+        environment.window.SVGSVGElement.prototype.releasePointerCapture = function releasePointerCapture() {};
+        const selectEntity = async (id: string) => {
+          const body = environment.document.querySelector(`[data-entity-id="${id}"] .entity-body`) as SVGRectElement;
+          assert.ok(body);
+          const pointerEventProperties = {
+            button: { value: 0 },
+            clientX: { value: 120 },
+            clientY: { value: 140 },
+            pointerId: { value: 1 },
+            pointerType: { value: "mouse" },
+          };
+          const pointerDown = new environment.window.Event("pointerdown", { bubbles: true, cancelable: true });
+          Object.defineProperties(pointerDown, pointerEventProperties);
+          const pointerUp = new environment.window.Event("pointerup", { bubbles: true, cancelable: true });
+          Object.defineProperties(pointerUp, pointerEventProperties);
+          await act(async () => {
+            body.dispatchEvent(pointerDown);
+            body.dispatchEvent(pointerUp);
+          });
+          return environment.document.querySelector('.graph-selection-status[role="status"]')?.textContent ?? "";
+        };
+        assert.equal(await selectEntity("named"), locale === "ja" ? "選択中のエンティティ: Named Entity" : "Selected Entity: Named Entity");
+        assert.equal(await selectEntity("unnamed"), locale === "ja" ? "選択中のエンティティ: unnamed" : "Selected Entity: unnamed");
+      },
+    });
+  }
+});
+
 test("keeps Entity endpoint identity presentation shared across relation surfaces", () => {
   const creation = readFileSync("src/components/CreationDialog.tsx", "utf8");
   const relation = readFileSync("src/components/RelationDetailDialog.tsx", "utf8");

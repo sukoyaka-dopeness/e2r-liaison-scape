@@ -580,6 +580,9 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const coordinateMigrationReadiness = dataset ? assessCoordinateDraftMigration(dataset) : null;
   const spaceMigrationReadiness = dataset ? assessLiaisonScapeSpaceMigration(dataset) : null;
   const graph = useMemo(() => dataset ? buildEntityGraph(dataset) : { nodes: [], edges: [], unsupportedEdges: 0, eventRelatedHiddenEdges: 0, otherUnsupportedEdges: 0 }, [dataset]);
+  const selectedEntityStatus = selectedId
+    ? graph.nodes.find(({ id }) => id === selectedId)?.label ?? selectedId
+    : null;
   const previewExpected = operationLocalPreview ? { operationId: operationLocalPreview.operationId, generation: operationLocalPreview.generation, snapshotIdentity: operationLocalPreview.snapshotIdentity, entityIds: graph.nodes.map(({ id }) => id) } : null;
   const validatedPreview = import.meta.env.DEV && previewExpected && validateOperationLocalProductPreview(operationLocalPreview, previewExpected) ? operationLocalPreview : null;
   const renderPositions = activeOperationPreview?.positions ?? positions;
@@ -2734,7 +2737,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
               })()}
             </div>
           )}
-          {selectedId && <p className="graph-selection-status" role="status">{formatSelectedEntity(locale, selectedId)}</p>}
+          {selectedEntityStatus && <p className="graph-selection-status" role="status">{formatSelectedEntity(locale, selectedEntityStatus)}</p>}
           {selectedRelationId && selectedRelationStatus && <p className="graph-selection-status" role="status">
             <span className="graph-selection-status-line">{translate(locale, "relatedRelationName")}: {selectedRelationStatus.relationName ?? translate(locale, "unnamedRelation")}</span>
             <span className="graph-selection-status-line">{translate(locale, "relatedRelationSource")}: {selectedRelationStatus.source}</span>
