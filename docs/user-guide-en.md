@@ -30,9 +30,9 @@ Home provides the following actions:
 
 The Header shows the current language and provides the Home link and locale
 control while a Dataset is open. In the workspace, the **More** menu includes
-**Open Dataset** and **Export E2R JSON** together with the available placement
-and display tools. **Sample info** on Home opens the central E2R specification
-provenance record for the public sample.
+**Open Dataset**, **Export E2R JSON**, **Auto Layout**, and the available
+placement and display tools. **Sample info** on Home opens the central E2R
+specification provenance record for the public sample.
 
 For a first visit, choose `Open sample Dataset`. In the English locale this
 opens the `Lighthouse Restoration Project`, which is designed to demonstrate
@@ -78,6 +78,13 @@ placement is unavailable, the current layout is kept. A calculated display is
 view state until you choose **Save node coordinates**; existing stored or
 user-saved coordinates remain the Dataset's authority.
 
+To explicitly recalculate the layout, choose **Auto Layout** from **More**. If
+you have unsaved positions, LiaisonScape asks before replacing them. The
+calculation opens a read-only preview. Choose **Use this layout** to apply the
+preview temporarily, or **Return to previous layout** to reject it. A preview
+may include a presentation-quality warning; it can still be reviewed or
+rejected. Choose **Save node coordinates** to persist an accepted layout.
+
 ## Pan and zoom
 
 - Hold `Ctrl` while scrolling the mouse wheel upward to zoom in.
@@ -113,12 +120,25 @@ Delete an Entity from its detail view. An Entity with connected Relations
 cannot be deleted; remove or review those Relations first. Cascade deletion is
 not performed.
 
+### Pin and unpin an Entity
+
+The Entity detail view shows the current Pin state and provides **Pin** or
+**Unpin**. The Entity context menu also provides the same action. A Pin keeps
+that Entity's current position fixed as a constraint for **Auto Layout**;
+moving an Entity does not automatically pin it. Pin and Unpin changes are
+working changes, not an immediate Dataset save. Choose **Save node
+coordinates** to persist the position and Pin state together.
+
 ## Create and edit Relations
 
 ### Create a Relation
 
 Choose `Add Relation`, select the `Source Entity` and `Target Entity`, enter an
 optional name and description, and choose `Save Relation`.
+
+**Add Relation** is unavailable until the Dataset contains at least one
+Entity. With one Entity, the existing self-Relation behavior allows that same
+Entity to be selected for both endpoints.
 
 A Relation has a direction from its source to its target. To create the
 opposite direction, exchange the source and target selections.
@@ -153,6 +173,11 @@ keeps the moved positions temporary and shows a message explaining that they
 were not saved. Follow that message rather than assuming that the move was
 persisted.
 
+Pin and Unpin are part of the same working layout state. They are not written
+immediately; **Save node coordinates** is the explicit persistence boundary
+for both node positions and Pin state. Moving a node alone does not create a
+Pin.
+
 Connection curves and displayed label positions are view settings separate
 from saved node positions. Manual route and label placement is pending view
 work and is not saved by `Save node coordinates`.
@@ -181,9 +206,10 @@ Choose `Export E2R JSON` to validate and download the current Dataset.
 Export may be blocked when validation finds a problem. Review the displayed
 message and correct the relevant Entity or Relation before trying again.
 
-Saved Entity and Relation edits and saved node coordinates are included in the
-export. Temporary unsaved node positions, zoom, pan, selection, connection
-curves, label positions, and other view state are not exported as Dataset data.
+Saved Entity and Relation edits, saved node coordinates, and saved Pin state
+are included in the export. Temporary unsaved node positions, Pin/Unpin
+changes, zoom, pan, selection, connection curves, label positions, and other
+view state are not exported as Dataset data.
 
 ## Replace a Dataset safely
 
