@@ -917,6 +917,21 @@ test("keeps object IDs behind collapsed technical detail disclosures", () => {
   assert.match(styles, /\.detail-fields select \{ box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0;/);
 });
 
+test("renders selected Relation status with the existing three-field structure", () => {
+  const app = readFileSync("src/App.tsx", "utf8");
+  assert.match(app, /className="graph-selection-status" role="status"/);
+  assert.match(app, /className="graph-selection-status-line">\{translate\(locale, "relatedRelationName"\)\}: /);
+  assert.match(app, /className="graph-selection-status-line">\{translate\(locale, "relatedRelationSource"\)\}: /);
+  assert.match(app, /className="graph-selection-status-line">\{translate\(locale, "relatedRelationTarget"\)\}: /);
+  assert.match(app, /translate\(locale, "relatedRelationName"\)/);
+  assert.match(app, /translate\(locale, "relatedRelationSource"\)/);
+  assert.match(app, /translate\(locale, "relatedRelationTarget"\)/);
+  assert.match(app, /translate\(locale, "unnamedRelation"\)/);
+  assert.doesNotMatch(app, /selectedRelationCurvatureHint/);
+  assert.doesNotMatch(app, /relation-curvature-hint/);
+  assert.doesNotMatch(app, /formatSelectedRelation\(locale/);
+});
+
 test("keeps Entity endpoint identity presentation shared across relation surfaces", () => {
   const creation = readFileSync("src/components/CreationDialog.tsx", "utf8");
   const relation = readFileSync("src/components/RelationDetailDialog.tsx", "utf8");

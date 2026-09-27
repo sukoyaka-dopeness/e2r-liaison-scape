@@ -24,7 +24,7 @@ test("manual Relation route remains authoritative with node-label obstacles", ()
 });
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconstructManualNodeLabelPosition, reconstructManualRelationLabelTarget } from "../src/relation-label-presentation.ts";
 import { boundedHoverDescription, composeHoverLines, placementOwnership } from "../src/placement-ownership.ts";
-import { buildRelatedRelationDisplay } from "../src/related-relation-display.ts";
+import { buildRelatedRelationDisplay, buildSelectedRelationDisplay, shortRelationId } from "../src/related-relation-display.ts";
 import { buildEntityEndpointLabels } from "../src/entity-endpoint-display.ts";
 
 const roundedEntityShape = { kind: "rounded-rectangle" as const, halfWidth: 32, halfHeight: 32, cornerRadius: 12 };
@@ -234,6 +234,18 @@ test("Related Relation display uses trimmed names and structured endpoint labels
 test("Related Relation display falls back to IDs and disambiguates duplicate names", () => {
   const dataset: Dataset = { version: "1.0", entities: [{ id: "12345678-a", name: "Alex" }, { id: "12345678-b", name: " Alex " }], events: [{ id: "event-missing-name", name: "   " }], relations: [] };
   assert.deepEqual(buildRelatedRelationDisplay(dataset, { id: "relation", name: "   ", sourceId: "12345678-a", targetId: "event-missing-name" }), { relationId: "relation", relationName: null, source: "Alex (12345678-a)", target: "event-missing-name" });
+});
+
+test("selected Relation ID fallback reuses the collision-safe short-ID rule", () => {
+  assert.equal(shortRelationId("12345678-alpha", ["12345678-alpha", "12345678-beta"]), "12345678-a");
+  assert.equal(shortRelationId("abcdef12-alpha", ["abcdef12-alpha", "abcdef12-beta"]), "abcdef12-a");
+  assert.equal(shortRelationId("short-id", ["short-id"]), "short-id");
+});
+
+test("selected Relation display shortens unnamed endpoint IDs without changing Related Relations display", () => {
+  const dataset: Dataset = { version: "1.0", entities: [{ id: "12345678-source" }, { id: "12345678-target" }], events: [], relations: [] };
+  assert.deepEqual(buildSelectedRelationDisplay(dataset, { id: "relation", sourceId: "12345678-source", targetId: "12345678-target" }), { relationId: "relation", relationName: null, source: "12345678-s", target: "12345678-t" });
+  assert.deepEqual(buildRelatedRelationDisplay(dataset, { id: "relation", sourceId: "12345678-source", targetId: "12345678-target" }), { relationId: "relation", relationName: null, source: "12345678-source", target: "12345678-target" });
 });
 
 test("Entity endpoint labels keep unique names quiet and disambiguate duplicate names", () => {

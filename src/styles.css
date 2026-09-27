@@ -99,6 +99,8 @@ body { margin: 0; }
 .graph-section { position: relative; min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; margin-top: 8px; }
 .graph-section h2 { display: none; }
 .graph-section > p { margin: 3px 0; font-size: .84rem; }
+.graph-selection-status { overflow-wrap: anywhere; }
+.graph-selection-status-line { display: block; }
 .graph-summary { order: 0; }
 button {
   box-sizing: border-box;
@@ -310,7 +312,6 @@ li { margin: .35rem 0; }
 .danger-confirm { border-color: #dc2626; color: #fff; background: #b91c1c; }
 .danger-confirm:hover:not(:disabled) { border-color: #991b1b; background: #991b1b; }
 .graph-selection-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; }
-.relation-curvature-hint { flex-basis: 100%; margin: 0; color: #6b6375; font-size: .82rem; }
 .viewport-controls { position: absolute; z-index: 3; top: 42px; right: 12px; display: flex; align-items: center; width: max-content; margin: 0; padding: 3px; border: 1px solid #e5e4e7; border-radius: 6px; background: rgba(255,255,255,.92); box-shadow: 0 3px 10px rgba(8,6,13,.1); }
 .viewport-toolbar-handle { flex: 0 0 auto; min-width: 28px; min-height: 28px; padding: 2px 4px; border-radius: 4px; font-size: .8rem; line-height: 1; white-space: nowrap; }
 .viewport-toolbar-handle[data-pointer-focus="true"]:focus-visible { outline: none; }

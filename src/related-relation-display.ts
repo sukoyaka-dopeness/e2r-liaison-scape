@@ -36,7 +36,19 @@ export function buildRelatedRelationDisplay(dataset: Dataset, relation: E2RObjec
   return { relationName: trimmedName(relation), source: endpointDisplay(relation.sourceId, objects, names), target: endpointDisplay(relation.targetId, objects, names), relationId: relation.id };
 }
 
-function shortRelationId(id: string, ids: string[]): string {
+export function buildSelectedRelationDisplay(dataset: Dataset, relation: E2RObject): RelatedRelationDisplay {
+  const display = buildRelatedRelationDisplay(dataset, relation);
+  const objects = [...dataset.entities, ...dataset.events];
+  const objectIds = objects.map(({ id }) => id);
+  const endpointValue = (id: unknown, value: string): string => {
+    const rawId = typeof id === "string" ? id : String(id ?? "");
+    const object = objects.find((candidate) => candidate.id === rawId);
+    return object && !trimmedName(object) ? shortRelationId(rawId, objectIds) : value;
+  };
+  return { ...display, source: endpointValue(relation.sourceId, display.source), target: endpointValue(relation.targetId, display.target) };
+}
+
+export function shortRelationId(id: string, ids: string[]): string {
   for (let length = 8; length <= id.length; length += 1) {
     const candidate = id.slice(0, length);
     if (ids.every((other) => other === id || !other.startsWith(candidate))) return candidate;

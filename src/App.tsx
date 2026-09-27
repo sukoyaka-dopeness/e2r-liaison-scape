@@ -20,7 +20,7 @@ import { CreationDialog } from "./components/CreationDialog";
 import { readRelationArrowDisplay, readRelationLineStyle } from "./presentation-extension";
 import { getRelationArrowheadGeometries } from "./relation-arrow-presentation";
 import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, ENTITY_ATTACHMENT_SHAPE, fitGraphView, getEntityAttachment, getNodeLabelTextGeometry, getRelationLabelTextGeometry, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, type LabelRect, type NodeLabelAngularEscapeInput, type RelationLabelWrapPolicy, zoomScale } from "./viewport";
-import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatSelectedRelation, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
+import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
 import { applyEntityCreationPlacement, buildPersistableCoordinatePositions, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
@@ -42,6 +42,7 @@ import { captureExplicitAutoLayoutSnapshotFromDataset } from "./explicit-auto-la
 import { ExplicitAutoLayoutBrowserAdapter } from "./explicit-auto-layout-browser-adapter";
 import { createExplicitAutoLayoutFailureDiagnostic, shouldExposeExplicitAutoLayoutFailureDiagnostic, type ExplicitAutoLayoutFailureDiagnostic } from "./explicit-auto-layout-failure-diagnostic";
 import { dependencyFingerprint } from "./presentation-dependency";
+import { buildSelectedRelationDisplay } from "./related-relation-display";
 
 const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-samples/public-sample-provenance.md";
 const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
@@ -376,6 +377,13 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       manualRelationLabelAnchors.current.delete(id);
     },
   });
+  const selectedRelationStatus = selectedRelationId
+    ? (() => {
+      const relation = selectedRelationDetail?.relation;
+      if (!dataset || !relation) return { relationName: null, source: "", target: "" };
+      return buildSelectedRelationDisplay(dataset, relation);
+    })()
+    : null;
 
   useEffect(() => {
     if (!maintenanceMenuOpen) return;
@@ -2726,12 +2734,14 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
               })()}
             </div>
           )}
-          {(selectedId || selectedRelationId) && <p role="status">{selectedId
-            ? formatSelectedEntity(locale, selectedId)
-            : formatSelectedRelation(locale, selectedRelationId!)}</p>}
+          {selectedId && <p className="graph-selection-status" role="status">{formatSelectedEntity(locale, selectedId)}</p>}
+          {selectedRelationId && selectedRelationStatus && <p className="graph-selection-status" role="status">
+            <span className="graph-selection-status-line">{translate(locale, "relatedRelationName")}: {selectedRelationStatus.relationName ?? translate(locale, "unnamedRelation")}</span>
+            <span className="graph-selection-status-line">{translate(locale, "relatedRelationSource")}: {selectedRelationStatus.source}</span>
+            <span className="graph-selection-status-line">{translate(locale, "relatedRelationTarget")}: {selectedRelationStatus.target}</span>
+          </p>}
           {selectedRelationDetail && !detailOpen && (
             <div className="graph-selection-actions">
-              <p className="relation-curvature-hint" role="status">{translate(locale, "selectedRelationCurvatureHint")}</p>
               <button type="button" onClick={() => openRelationDetail(selectedRelationDetail.relation.id)}>{translate(locale, "editRelation")}</button>
               <button
                 type="button"

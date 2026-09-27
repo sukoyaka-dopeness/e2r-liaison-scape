@@ -10,7 +10,6 @@ import {
   formatGraphSummary,
   formatLoadedDataset,
   formatSelectedEntity,
-  formatSelectedRelation,
   formatUnsupportedEventRelations,
   formatRelationCreationRefusal,
   formatRelationDeletionRefusal,
@@ -125,8 +124,8 @@ test("dictionary contains the foundation messages for both locales", () => {
   assert.equal(translate("ja", "legacyMigrationSuccess"), "旧Linkscape形式の座標をLiaisonScapeへ移行しました。");
   assert.equal(formatSelectedEntity("en", "entity-1"), "Selected Entity: entity-1");
   assert.equal(formatSelectedEntity("ja", "entity-1"), "選択中のエンティティ: entity-1");
-  assert.equal(formatSelectedRelation("en", "relation-1"), "Selected Relation: relation-1");
-  assert.equal(formatSelectedRelation("ja", "relation-1"), "選択中のつながり: relation-1");
+  assert.equal(translate("en", "unnamedRelation"), "(unnamed)");
+  assert.equal(translate("ja", "unnamedRelation"), "名前なし");
   assert.equal(formatGraphSummary("en", 1, 1), "1 entity · 1 relation");
   assert.equal(formatGraphSummary("en", 9, 8), "9 entities · 8 relations");
   assert.equal(formatGraphSummary("ja", 1, 1), "1件のエンティティ · 1件のつながり");

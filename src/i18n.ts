@@ -136,7 +136,6 @@ export const messages = {
     diagnosticCodeLabel: "Code",
     diagnosticPathLabel: "Path",
     datasetIdNotAssigned: "Not assigned",
-    selectedRelationCurvatureHint: "Drag the selected relation to adjust its curve.",
     automaticPlacement: "Automatic placement",
     userPlacement: "User placement",
     relationRoutePlacement: "Route",
@@ -182,6 +181,7 @@ export const messages = {
     technicalDetails: "Technical details",
     objectId: "Object ID",
     relatedRelationName: "Relation name",
+    unnamedRelation: "(unnamed)",
     connectedObject: "Connected object",
     arrowDisplay: "Arrow display",
     lineStyle: "Line style",
@@ -290,7 +290,6 @@ export const messages = {
     zoomIn: "拡大",
     resetView: "表示をリセット",
     entityRelationshipGraph: "エンティティ相関図",
-    selectedRelationCurvatureHint: "選択中のつながりをドラッグすると曲線を調整できます。",
     automaticPlacement: "自動配置",
     userPlacement: "ユーザー配置",
     relationRoutePlacement: "ルート",
@@ -349,6 +348,7 @@ export const messages = {
     dashedLineStyle: "破線",
     dottedLineStyle: "点線",
     relatedRelationName: "つながりの名前",
+    unnamedRelation: "名前なし",
     connectedObject: "つながり先",
     arrowDisplay: "矢印の表示",
     relatedRelationSource: "始点",
@@ -447,10 +447,6 @@ export function formatDeleteConfirmation(locale: Locale, subject: ConfirmationSu
 
 export function formatSelectedEntity(locale: Locale, id: string): string {
   return locale === "ja" ? `選択中のエンティティ: ${id}` : `Selected Entity: ${id}`;
-}
-
-export function formatSelectedRelation(locale: Locale, id: string): string {
-  return locale === "ja" ? `選択中のつながり: ${id}` : `Selected Relation: ${id}`;
 }
 
 export function formatGraphSummary(locale: Locale, entities: number, relations: number): string {
