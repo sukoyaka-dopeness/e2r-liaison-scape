@@ -24,7 +24,7 @@ Home provides the following actions:
 
 - `New Dataset`: create an empty Dataset.
 - `Open E2R Dataset`: open an E2R JSON file from your device.
-- `Open sample Dataset`: open the sample for the current locale.
+- `Open Lighthouse Restoration Project example`: open the sample for the current locale.
 - `日本語`: switch the display language.
 - `Credits`: view the application credits.
 
@@ -34,7 +34,7 @@ control while a Dataset is open. In the workspace, the **More** menu includes
 placement and display tools. **Sample info** on Home opens the central E2R
 specification provenance record for the public sample.
 
-For a first visit, choose `Open sample Dataset`. In the English locale this
+For a first visit, choose `Open Lighthouse Restoration Project example`. In the English locale this
 opens the `Lighthouse Restoration Project`, which is designed to demonstrate
 the graph and editing features.
 

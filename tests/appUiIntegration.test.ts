@@ -238,7 +238,7 @@ test("shows a delayed Dataset loading status during a slow sample open and clear
   await withProductionApp({
     beforeRender: (environment) => environment.installGlobal("fetch", () => pendingFetch),
     callback: async (environment) => {
-      const sampleButton = [...environment.document.querySelectorAll("button")].find((button) => button.textContent === "Open sample Dataset");
+      const sampleButton = [...environment.document.querySelectorAll("button")].find((button) => button.textContent === "Open Lighthouse Restoration Project example");
       assert.ok(sampleButton);
 
       await act(async () => { (sampleButton as HTMLButtonElement).click(); });
@@ -272,6 +272,7 @@ test("localizes the delayed Dataset loading status for Japanese sample open", as
     callback: async (environment) => {
       const sampleButton = environment.document.querySelector(".sample-action button");
       assert.ok(sampleButton);
+      assert.equal(sampleButton?.textContent, "灯台修復プロジェクトの例を開く");
 
       await act(async () => { (sampleButton as HTMLButtonElement).click(); });
       await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 150)));
