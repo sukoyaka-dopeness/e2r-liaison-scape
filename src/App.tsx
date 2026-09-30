@@ -20,7 +20,7 @@ import { CreationDialog } from "./components/CreationDialog";
 import { readRelationArrowDisplay, readRelationLineStyle } from "./presentation-extension";
 import { getRelationArrowheadGeometries } from "./relation-arrow-presentation";
 import { boundedDragContinuationOffset, bringToFront, centeredViewportTransform, clampScale, curveOffsetFromControlPoint, ENTITY_ATTACHMENT_SHAPE, fitGraphView, getEntityAttachment, getNodeLabelTextGeometry, getRelationLabelTextGeometry, nearestPolylineArcFraction, nodeLabelConnectorEndpoint, placeNodeLabel, pinchZoomScale, pointAtPolylineArcFraction, routeGraphEdge, routeSamplesHaveNodeInfluence, shouldShowNodeLabelConnector, solveVisibleRouteOffset, type LabelRect, type NodeLabelAngularEscapeInput, type RelationLabelWrapPolicy, zoomScale } from "./viewport";
-import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatUnsupportedEventRelations, getInitialLocale, saveLocale, translate, type Locale } from "./i18n";
+import { applyLocale, formatDiagnosticSeverity, formatGraphSummary, formatRelationCreationRefusal, formatSelectedEntity, formatUnsupportedEventRelations, saveLocale, translate, type Locale } from "./i18n";
 import { deriveManualNodeLabelOffset, deriveManualRelationLabelAnchor, reconcileRelationLabelVisualState, type ManualRelationLabelAnchor, type RelationLabelVisualState } from "./relation-label-presentation";
 import { composeHoverLines, placementOwnership, type PlacementTarget } from "./placement-ownership";
 import { applyEntityCreationPlacement, buildPersistableCoordinatePositions, cancelStagedDatasetReplacement, candidateFromLoadResult, decideDatasetReplacement, discardAndContinueStagedDatasetReplacement, hasDocumentExitLossRisk, hasPendingUserWork, isDatasetModified, preservePendingCoordinates, resetManualRelationRoute } from "./dataset-replacement-safety";
@@ -43,6 +43,8 @@ import { ExplicitAutoLayoutBrowserAdapter } from "./explicit-auto-layout-browser
 import { createExplicitAutoLayoutFailureDiagnostic, shouldExposeExplicitAutoLayoutFailureDiagnostic, type ExplicitAutoLayoutFailureDiagnostic } from "./explicit-auto-layout-failure-diagnostic";
 import { dependencyFingerprint } from "./presentation-dependency";
 import { buildSelectedRelationDisplay } from "./related-relation-display";
+import { LocaleConflictDialog } from "./components/LocaleConflictDialog";
+import { clearTemporaryLocaleResolution, parseRequestedLocale, readExplicitLocale, readTemporaryLocaleResolution, resolveStartupLocale, setLocaleFragment, writeTemporaryLocaleResolution, type TemporaryLocaleResolution } from "./locale-preference";
 
 const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-samples/public-sample-provenance.md";
 const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
@@ -92,10 +94,19 @@ type AppProps = {
 };
 
 export default function App({ initialLayoutOverride, parallelBundleVariant, parallelBundleSpacingByKey, relationLabelStaggerById, relationLabelNormalOffsets, relationLabelWrapPolicy, operationLocalPreview, diagnosticDataset, nodeLabelAngularEscapeById, diagnosticFeedbackEnabled, diagnosticPreviousNodeLabelPlacements, diagnosticNodeLabelOverrideById, diagnosticIgnoreNodeLabelMovementCost, diagnosticNodeLabelRecoveryEnabled }: AppProps = {}) {
-  const [locale, setLocale] = useState<Locale>(() => getInitialLocale(
-    window.localStorage,
-    window.navigator.language,
-  ));
+  const [startupLocaleState] = useState(() => {
+    const requested = parseRequestedLocale(window.location.hash);
+    const saved = readExplicitLocale(window.localStorage);
+    let temporary: TemporaryLocaleResolution | undefined;
+    try { temporary = readTemporaryLocaleResolution(window.sessionStorage); } catch { temporary = undefined; }
+    return { ...resolveStartupLocale({ requested, saved, temporary, browserLanguage: window.navigator.language }), requested, saved };
+  });
+  const [locale, setLocale] = useState<Locale>(startupLocaleState.locale);
+  const [localeConflict, setLocaleConflict] = useState<Locale | null>(
+    startupLocaleState.conflict && startupLocaleState.requested.kind === "valid"
+      ? startupLocaleState.requested.locale
+      : null,
+  );
   const [view, setView] = useState<"home" | "workspace">("home");
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [datasetTitleEditing, setDatasetTitleEditing] = useState(false);
@@ -420,9 +431,25 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }, []);
 
   useEffect(() => {
-    saveLocale(window.localStorage, locale);
     applyLocale(locale, document);
   }, [locale]);
+
+  function chooseLocaleManually(nextLocale: Locale) {
+    setLocale(nextLocale);
+    saveLocale(window.localStorage, nextLocale);
+    clearTemporaryLocaleResolution(window.sessionStorage);
+    const hash = setLocaleFragment(window.location.hash, nextLocale);
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}${hash}`);
+  }
+
+  function resolveLocaleConflict(effectiveLocale: Locale) {
+    const request = startupLocaleState.requested;
+    if (request.kind !== "valid") return;
+    const temporary: TemporaryLocaleResolution = { requestedLocale: request.locale, effectiveLocale };
+    writeTemporaryLocaleResolution(window.sessionStorage, temporary);
+    setLocale(effectiveLocale);
+    setLocaleConflict(null);
+  }
 
   useEffect(() => {
     frontierSessionIdentityRef.current = null;
@@ -497,6 +524,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }, []);
 
   useEffect(() => {
+    if (localeConflict) return;
     if (startupHandoffStartedRef.current) return;
     startupHandoffStartedRef.current = true;
     const handoff = parseTargetedDatasetHandoffFragment(window.location.hash);
@@ -537,7 +565,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         finishDatasetLoading();
         setStartupHandoffFailure("fetch-failed");
       });
-  }, []);
+  }, [localeConflict]);
 
   useEffect(() => {
     if (!dataset || !pendingTargetLanding || dataset !== pendingTargetLanding.dataset) return;
@@ -1460,6 +1488,14 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const datasetLoadingIndicator = datasetLoadingVisible
     ? <div className="dataset-loading-indicator" role="status" aria-live="polite" aria-atomic="true"><span className="dataset-loading-indicator__spinner" aria-hidden="true" />{translate(locale, "datasetLoading")}</div>
     : null;
+  const localeConflictDialog = localeConflict
+    ? <LocaleConflictDialog
+      locale={locale}
+      requestedLocale={localeConflict}
+      onUseSaved={() => resolveLocaleConflict(startupLocaleState.saved ?? locale)}
+      onUseRequested={() => resolveLocaleConflict(localeConflict)}
+    />
+    : null;
 
   if (view === "home") return (
     <div className="app-frame home-page">
@@ -1467,8 +1503,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         <a className="app-brand" href={import.meta.env.BASE_URL}>LiaisonScape</a>
         <div className="header-actions">
           {locale === "ja"
-            ? <button type="button" className="locale-button" onClick={() => setLocale("en")}>English</button>
-            : <button type="button" className="locale-button" onClick={() => setLocale("ja")}>日本語</button>}
+            ? <button type="button" className="locale-button" onClick={() => chooseLocaleManually("en")}>English</button>
+            : <button type="button" className="locale-button" onClick={() => chooseLocaleManually("ja")}>日本語</button>}
         </div>
       </header>
       <main className="home-content" aria-busy={datasetLoading}>
@@ -1512,6 +1548,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       </footer>
       {creditsOpen && <CreditsDialog locale={locale} onClose={() => setCreditsOpen(false)} />}
       {replacementDialog}
+      {localeConflictDialog}
     </div>
   );
 
@@ -2356,8 +2393,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         <div className="header-actions">
           <a className="header-home-button" href={import.meta.env.BASE_URL} onClick={goHomeFromWorkspace}>{translate(locale, "home")}</a>
           {locale === "ja"
-            ? <button type="button" className="locale-button" onClick={() => setLocale("en")}>English</button>
-            : <button type="button" className="locale-button" onClick={() => setLocale("ja")}>日本語</button>}
+            ? <button type="button" className="locale-button" onClick={() => chooseLocaleManually("en")}>English</button>
+            : <button type="button" className="locale-button" onClick={() => chooseLocaleManually("ja")}>日本語</button>}
         </div>
       </header>
     <main className="app-content" aria-busy={datasetLoading}>
@@ -2855,6 +2892,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         <button type="button" className="credits-button" onClick={(event) => { creditsTriggerRef.current = event.currentTarget; setCreditsOpen(true); }}>{translate(locale, "credits")}</button>
       </footer>
       {creditsOpen && <CreditsDialog locale={locale} onClose={() => setCreditsOpen(false)} />}
+      {localeConflictDialog}
     </div>
   );
 }

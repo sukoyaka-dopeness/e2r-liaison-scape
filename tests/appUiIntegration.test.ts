@@ -155,6 +155,49 @@ async function withProductionApp({ locale = "en", dataset, beforeRender, callbac
   }
 }
 
+test("resolves requested locale before Handoff and keeps conflict choice temporary", async () => {
+  let fetchCount = 0;
+  await withProductionApp({
+    locale: "en",
+    dataset: { version: "1.0", entities: [{ id: "locale-handoff", name: "Locale Handoff" }], events: [], relations: [] },
+    beforeRender: (environment) => {
+      environment.window.history.replaceState(null, "", "#datasetUrl=https%3A%2F%2Fdata.example%2Fdataset.json&locale=ja");
+      environment.installGlobal("fetch", async () => { fetchCount += 1; return { ok: true, text: async () => JSON.stringify({ version: "1.0", entities: [{ id: "locale-handoff", name: "Locale Handoff" }], events: [], relations: [] }) }; });
+    },
+    callback: async (environment) => {
+      assert.equal(environment.document.querySelector("[role='alertdialog']") !== null, true);
+      assert.equal(fetchCount, 0);
+      const buttons = [...environment.document.querySelectorAll<HTMLButtonElement>(".locale-conflict button")];
+      assert.equal(buttons.length, 2);
+      await act(async () => buttons[1]!.click());
+      await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+      assert.equal(fetchCount, 1);
+      assert.equal(environment.window.localStorage.getItem("liaisonscape.locale"), "en");
+      assert.match(environment.window.location.hash, /locale=ja/);
+      assert.equal(environment.document.documentElement.lang, "ja");
+    },
+  });
+});
+
+test("browser fallback is not persisted and explicit selector writes preference and locale fragment", async () => {
+  await withProductionApp({
+    locale: "en",
+    beforeRender: (environment) => {
+      environment.window.localStorage.removeItem("liaisonscape.locale");
+      Object.defineProperty(environment.window.navigator, "language", { configurable: true, value: "ja-JP" });
+      environment.window.history.replaceState(null, "", "#x=%2F");
+    },
+    callback: async (environment) => {
+      assert.equal(environment.document.documentElement.lang, "ja");
+      assert.equal(environment.window.localStorage.getItem("liaisonscape.locale"), null);
+      const englishButton = [...environment.document.querySelectorAll<HTMLButtonElement>(".locale-button")][0];
+      await act(async () => englishButton!.click());
+      assert.equal(environment.window.localStorage.getItem("liaisonscape.locale"), "en");
+      assert.equal(environment.window.location.hash, "#x=%2F&locale=en");
+    },
+  });
+});
+
 test("disables Relation creation without Nodes and preserves the enabled path with one Node", async () => {
   for (const locale of ["en", "ja"] as const) {
     await withProductionApp({
@@ -396,7 +439,7 @@ test("opens an exact targeted Relation inspection request on the existing Detail
 
     assert.ok(environment.document.querySelector("#relation-detail-title"));
     assert.match(environment.document.querySelector(".detail-object-id")?.textContent ?? "", /relation-target/);
-    assert.deepEqual([environment.document.querySelector('label[for="relation-source"]')?.textContent, environment.document.querySelector('label[for="relation-target"]')?.textContent], ["Connected object", "Connected object"]);
+    assert.deepEqual([environment.document.querySelector('label[for="relation-source"]')?.textContent, environment.document.querySelector('label[for="relation-target"]')?.textContent], [translate("ja", "connectedObject"), translate("ja", "connectedObject")]);
     assert.equal(environment.document.querySelector(".confirmation-relation"), null);
     assert.equal(environment.document.querySelector(".confirmation-entity"), null);
     assert.match(environment.window.location.hash, /locale=ja/);
