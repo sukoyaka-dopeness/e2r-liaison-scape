@@ -301,7 +301,7 @@ test("localizes the Home Credits surface while preserving identity and dismissal
     assert.match(dialog.textContent ?? "", /Application: LiaisonScape 0\.2\.0/);
     assert.match(dialog.textContent ?? "", /Creator: sukoyaka-dopeness/);
     assert.match(dialog.textContent ?? "", /First release: 2026-08-16/);
-    assert.match(dialog.textContent ?? "", /Updated: 2026-08-30/);
+    assert.match(dialog.textContent ?? "", /Updated: 2026-10-01/);
     assert.match(dialog.textContent ?? "", /With gratitude to all the AI systems that contributed to this project\./);
     assert.equal(dialog.querySelector('a[href="https://github.com/sukoyaka-dopeness/e2r-liaison-scape"]')?.textContent, "LiaisonScape repository");
     assert.equal(dialog.querySelector('a[href="https://github.com/sukoyaka-dopeness/e2r-spec"]')?.textContent, "E2R specification repository");
@@ -325,7 +325,7 @@ test("localizes the Japanese Credits surface and preserves every dismissal path"
     assert.match(dialog.textContent ?? "", /アプリケーション: LiaisonScape 0\.2\.0/);
     assert.match(dialog.textContent ?? "", /作成者: sukoyaka-dopeness/);
     assert.match(dialog.textContent ?? "", /初回リリース: 2026-08-16/);
-    assert.match(dialog.textContent ?? "", /更新日: 2026-08-30/);
+    assert.match(dialog.textContent ?? "", /更新日: 2026-10-01/);
     assert.match(dialog.textContent ?? "", /このプロジェクトに貢献したすべてのAIシステムに感謝します。/);
     assert.match(dialog.textContent ?? "", /LiaisonScapeリポジトリ/);
     assert.match(dialog.textContent ?? "", /E2R仕様リポジトリ/);

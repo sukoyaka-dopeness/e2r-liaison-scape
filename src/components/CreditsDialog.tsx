@@ -9,7 +9,7 @@ export function CreditsDialog({ locale, onClose }: { locale: Locale; onClose: ()
       <p>{translate(locale, "application")}: LiaisonScape 0.2.0</p>
       <p>{translate(locale, "creator")}: sukoyaka-dopeness</p>
       <p>{translate(locale, "firstRelease")}: 2026-08-16</p>
-      <p>{translate(locale, "updated")}: 2026-08-30</p>
+      <p>{translate(locale, "updated")}: 2026-10-01</p>
       <p>{translate(locale, "aiAcknowledgement")}</p>
       <nav className="credits-links" aria-label={translate(locale, "creditsLinks")}>
         <a href="https://github.com/sukoyaka-dopeness/e2r-liaison-scape" target="_blank" rel="noreferrer">{translate(locale, "liaisonScapeRepository")}</a>

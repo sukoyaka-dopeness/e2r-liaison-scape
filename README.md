@@ -74,9 +74,9 @@ https://sukoyaka-dopeness.github.io/e2r-liaison-scape/
 
 Current package version: `0.2.0`
 
-The package version and Credits display are aligned for the `0.2.0` release
-candidate. First Distribution provenance remains 2026-08-16, and the current
-application metadata was updated on 2026-08-30.
+The Credits display identifies LiaisonScape `0.2.0`, first released on
+2026-08-16 and updated on 2026-10-01. The application consumes E2R Validator
+`0.7.0`.
 
 ## Known limitations
 
