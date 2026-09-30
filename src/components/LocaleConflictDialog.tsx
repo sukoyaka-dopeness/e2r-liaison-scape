@@ -27,15 +27,16 @@ export function LocaleConflictDialog({ locale, requestedLocale, onUseSaved, onUs
     return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [onUseSaved]);
 
-  const requestedLabel = translate(requestedLocale, requestedLocale === "ja" ? "languageJapanese" : "languageEnglish");
+  const savedLabel = translate(locale, "localeConflictContinueInLocale");
+  const requestedLabel = translate(requestedLocale, "localeConflictShowInLocale");
   return <>
-    <button className="detail-backdrop confirmation-backdrop" type="button" aria-label={translate(locale, "useSavedLocale")} onClick={onUseSaved} />
+    <button className="detail-backdrop confirmation-backdrop" type="button" aria-label={savedLabel} onClick={onUseSaved} />
     <aside ref={dialogRef} className="detail confirmation locale-conflict" role="alertdialog" aria-modal="true" aria-labelledby="locale-conflict-title">
       <h3 id="locale-conflict-title">{translate(locale, "localeConflictTitle")}</h3>
       <p>{translate(locale, "localeConflictMessage")}</p>
       <div className="detail-actions">
-        <button ref={savedRef} type="button" onClick={onUseSaved}>{translate(locale, "useSavedLocale")} ({translate(locale, locale === "ja" ? "languageJapanese" : "languageEnglish")})</button>
-        <button type="button" onClick={onUseRequested}>{translate(locale, "useRequestedLocale")} ({requestedLabel})</button>
+        <button ref={savedRef} type="button" lang={locale} onClick={onUseSaved}>{savedLabel}</button>
+        <button type="button" lang={requestedLocale} onClick={onUseRequested}>{requestedLabel}</button>
       </div>
     </aside>
   </>;
