@@ -449,6 +449,10 @@
         {
           "extension": "draft.github.sukoyaka-dopeness.liaisonscape-presentation",
           "version": "0.1.0"
+        },
+        {
+          "extension": "draft.github.sukoyaka-dopeness.dimension-assessment",
+          "version": "0.2.0"
         }
       ]
     },
@@ -469,6 +473,218 @@
           "lineStyle": "dashed"
         }
       }
+    },
+    "draft.github.sukoyaka-dopeness.dimension-assessment": {
+      "specVersion": "0.2.0",
+      "dimensions": [
+        {
+          "id": "lighthouse.restoration-role",
+          "name": "Restoration Role",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "No described role",
+          "highLabel": "Central described role",
+          "description": "Across the whole story in this Dataset, assesses how central an Entity's stated role is in the lighthouse restoration. It can describe people, the lighthouse, equipment, records, or an organization when the Dataset gives them a role. 0 is an explicit lowest rating, not an unassessed value; 5 is a central role."
+        },
+        {
+          "id": "lighthouse.community-service",
+          "name": "Contribution to Continued Harbor and Community Use",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "No described contribution",
+          "highLabel": "Central contribution",
+          "description": "Across the whole story, assesses how strongly the Entity's stated work or function supports the lighthouse's continued use for harbor and community service. This is an outcome-oriented contribution scale, distinct from having a restoration role. 0 is an explicit lowest rating, not missing; 5 is a central described contribution."
+        },
+        {
+          "id": "lighthouse.role-expertise",
+          "name": "Role-Specific Expertise Shown",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "No role-specific expertise shown",
+          "highLabel": "Expertise clearly demonstrated in the stated role",
+          "description": "Across the whole story, assesses how clearly the Dataset portrays each person's expertise in that person's own stated role. It does not compare the difficulty or worth of different occupations. 0 means no role-specific expertise is shown in this Dataset, not that the person lacks real-world ability and not that the value is unassessed; 5 means the expertise is central and clearly demonstrated."
+        },
+        {
+          "id": "lighthouse.historical-stewardship",
+          "name": "Historical Knowledge and Records",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "No described history resource or contribution",
+          "highLabel": "Central history resource or contribution",
+          "description": "Across the whole story, assesses how central an Entity is as a stated source, holder, discovery point, or steward of knowledge and records about the lighthouse and harbor. It applies only where that connection is described. 0 is an explicit lowest rating, not missing; 5 is central to the story's historical knowledge or records."
+        },
+        {
+          "id": "lighthouse.asset-readiness",
+          "name": "Readiness for Described Service",
+          "min": 0,
+          "max": 5,
+          "integerOnly": true,
+          "lowLabel": "Not shown ready for described service",
+          "highLabel": "Explicitly ready for described service",
+          "description": "Assesses the service-readiness state stated for the restored lighthouse assets in the story's concluding outcome. It is limited to the Lighthouse and Beacon System and is not a physical inspection or a timeline. 0 is an explicit lowest rating, not an absent Assessment; 5 means readiness for the described service is explicit."
+        }
+      ],
+      "assessments": [
+        {
+          "entityId": "lighthouse",
+          "dimensionId": "lighthouse.restoration-role",
+          "value": 5
+        },
+        {
+          "entityId": "lighthouse",
+          "dimensionId": "lighthouse.community-service",
+          "value": 5
+        },
+        {
+          "entityId": "lighthouse",
+          "dimensionId": "lighthouse.asset-readiness",
+          "value": 5
+        },
+        {
+          "entityId": "clara",
+          "dimensionId": "lighthouse.restoration-role",
+          "value": 5
+        },
+        {
+          "entityId": "clara",
+          "dimensionId": "lighthouse.community-service",
+          "value": 3
+        },
+        {
+          "entityId": "clara",
+          "dimensionId": "lighthouse.role-expertise",
+          "value": 5
+        },
+        {
+          "entityId": "elias",
+          "dimensionId": "lighthouse.restoration-role",
+          "value": 3
+        },
+        {
+          "entityId": "elias",
+          "dimensionId": "lighthouse.community-service",
+          "value": 1
+        },
+        {
+          "entityId": "elias",
+          "dimensionId": "lighthouse.role-expertise",
+          "value": 4
+        },
+        {
+          "entityId": "elias",
+          "dimensionId": "lighthouse.historical-stewardship",
+          "value": 4
+        },
+        {
+          "entityId": "maya",
+          "dimensionId": "lighthouse.restoration-role",
+          "value": 5
+        },
+        {
+          "entityId": "maya",
+          "dimensionId": "lighthouse.community-service",
+          "value": 5
+        },
+        {
+          "entityId": "maya",
+          "dimensionId": "lighthouse.role-expertise",
+          "value": 5
+        },
+        {
+          "entityId": "thomas",
+          "dimensionId": "lighthouse.restoration-role",
+          "value": 4
+        },
+        {
+          "entityId": "thomas",
+          "dimensionId": "lighthouse.community-service",
+          "value": 3
+        },
+        {
+          "entityId": "thomas",
+          "dimensionId": "lighthouse.role-expertise",
+          "value": 5
+        },
+        {
+          "entityId": "sofia",
+          "dimensionId": "lighthouse.restoration-role",
+          "value": 3
+        },
+        {
+          "entityId": "sofia",
+          "dimensionId": "lighthouse.community-service",
+          "value": 2
+        },
+        {
+          "entityId": "sofia",
+          "dimensionId": "lighthouse.role-expertise",
+          "value": 5
+        },
+        {
+          "entityId": "sofia",
+          "dimensionId": "lighthouse.historical-stewardship",
+          "value": 5
+        },
+        {
+          "entityId": "daniel",
+          "dimensionId": "lighthouse.restoration-role",
+          "value": 4
+        },
+        {
+          "entityId": "daniel",
+          "dimensionId": "lighthouse.community-service",
+          "value": 4
+        },
+        {
+          "entityId": "daniel",
+          "dimensionId": "lighthouse.role-expertise",
+          "value": 2
+        },
+        {
+          "entityId": "beacon",
+          "dimensionId": "lighthouse.restoration-role",
+          "value": 5
+        },
+        {
+          "entityId": "beacon",
+          "dimensionId": "lighthouse.community-service",
+          "value": 5
+        },
+        {
+          "entityId": "beacon",
+          "dimensionId": "lighthouse.asset-readiness",
+          "value": 4
+        },
+        {
+          "entityId": "archive",
+          "dimensionId": "lighthouse.restoration-role",
+          "value": 3
+        },
+        {
+          "entityId": "archive",
+          "dimensionId": "lighthouse.community-service",
+          "value": 2
+        },
+        {
+          "entityId": "archive",
+          "dimensionId": "lighthouse.historical-stewardship",
+          "value": 5
+        },
+        {
+          "entityId": "authority",
+          "dimensionId": "lighthouse.restoration-role",
+          "value": 4
+        },
+        {
+          "entityId": "authority",
+          "dimensionId": "lighthouse.community-service",
+          "value": 3
+        }
+      ]
     }
   }
 }
