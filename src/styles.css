@@ -354,14 +354,16 @@ li { margin: .35rem 0; }
 }
 
 .maintenance-menu__items > button {
-  min-height: 40px;
-  padding: 8px 12px;
+  min-height: 36px;
+  padding: 5px 9px;
   border: 0;
   border-radius: 4px;
   color: #08060d;
   background: transparent;
   font: inherit;
+  font-size: 15px;
   line-height: 120%;
+  font-weight: 400;
   text-align: start;
 }
 
@@ -383,7 +385,7 @@ li { margin: .35rem 0; }
   .dataset-actions__buttons > .maintenance-menu { min-width: max-content; }
   .dataset-actions__buttons > .maintenance-menu { margin-inline-start: 0; }
   .dataset-actions__buttons > button,
-  .maintenance-menu summary { min-height: 38px; padding: 6px 8px; font-size: .9rem; }
+  .maintenance-menu summary { min-height: 38px; padding: 6px 8px; font-size: 15px; line-height: 120%; }
   .maintenance-menu__items { max-width: calc(100vw - 32px); }
   .app-header { gap: 8px; }
   .header-actions { gap: 4px; }

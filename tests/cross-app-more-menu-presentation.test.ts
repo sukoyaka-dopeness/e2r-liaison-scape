@@ -15,7 +15,8 @@ test("More disclosure retains app actions and adopts the simple text-row present
   assert.match(app, /translate\(locale, "migrateCoordinateDraft"\)/);
   assert.match(app, /translate\(locale, "autoLayout"\)/);
   assert.match(styles, /\.maintenance-menu__items\s*\{[^}]*top:\s*calc\(100% \+ 8px\);[^}]*min-width:\s*12rem;[^}]*gap:\s*2px;[^}]*padding:\s*4px;[^}]*border-radius:\s*6px;/);
-  assert.match(styles, /\.maintenance-menu__items > button\s*\{[^}]*min-height:\s*40px;[^}]*padding:\s*8px 12px;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*font: inherit;[^}]*text-align:\s*start;/);
+  assert.match(styles, /\.maintenance-menu__items > button\s*\{[^}]*min-height:\s*36px;[^}]*padding:\s*5px 9px;[^}]*border:\s*0;[^}]*background:\s*transparent;[^}]*font: inherit;[^}]*font-size:\s*15px;[^}]*line-height:\s*120%;[^}]*text-align:\s*start;/);
+  assert.match(styles, /\.maintenance-menu summary \{[^}]*min-height: 38px;[^}]*font-size: 15px;[^}]*line-height: 120%;/);
   assert.ok(styles.lastIndexOf(".maintenance-menu__items > button {") > styles.indexOf(".maintenance-menu__items > button,", styles.indexOf("/* Bounded ordinary-control density experiment.")));
   assert.match(styles, /\.maintenance-menu__items > button:hover:not\(:disabled\)\s*\{[^}]*background:\s*#f5e9ff;/);
 });
