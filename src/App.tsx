@@ -3,7 +3,7 @@ import type { MouseEvent } from "react";
 import { assessCoordinateDraftMigration, migrateCoordinatePrototypeToDraft } from "./coordinate-migration";
 import { assessLiaisonScapeSpaceMigration, migrateLinkscapeSpaceToLiaisonScape } from "./space-migration";
 import { buildEntityGraph, getStoredCoordinates, LIAISONSCAPE_SPACE_ID, updateDatasetTitle, type Dataset, type Diagnostic, type GraphNode } from "./dataset";
-import { getDatasetMetadata, loadDataset, serializeDataset, validateDatasetForExport } from "./services/DatasetService";
+import { getDatasetExportFilename, getDatasetMetadata, loadDataset, prepareDatasetForExport, serializeDataset, validateDatasetForExport } from "./services/DatasetService";
 import { createEntity } from "./services/EntityService";
 import { createRelation } from "./services/RelationService";
 import { canCompleteLongPress, createCanvasContextMenu, draggedPointFromOrigin, graphPointFromPointer, graphPointFromViewportCenter, isLongPress, svgPointFromPointer, type ContextMenu } from "./direct-graph-authoring";
@@ -1395,11 +1395,12 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       return false;
     }
     if (exportDiagnostics.length > 0) setMessage(translate(locale, "exportWithWarnings"));
-    const blob = new Blob([serializeDataset(dataset)], { type: "application/json" });
+    const exportDataset = prepareDatasetForExport(dataset);
+    const blob = new Blob([serializeDataset(exportDataset)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "e2r-dataset.json";
+    anchor.download = getDatasetExportFilename(exportDataset);
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
