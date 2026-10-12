@@ -141,6 +141,7 @@ test("D6 exposes only the actions allowed by each safety state", () => {
 
 test("replacement focus restores only a connected and enabled initiating trigger", () => {
   assert.equal(canRestoreReplacementTrigger({ isConnected: true, disabled: false }), true);
+  assert.equal(canRestoreReplacementTrigger({ isConnected: true }), true);
   assert.equal(canRestoreReplacementTrigger({ isConnected: true, disabled: true }), false);
   assert.equal(canRestoreReplacementTrigger({ isConnected: false, disabled: false }), false);
   assert.equal(canRestoreReplacementTrigger(null), false);

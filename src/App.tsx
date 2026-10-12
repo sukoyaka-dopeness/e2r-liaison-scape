@@ -56,9 +56,25 @@ function formatExplicitAutoLayoutReached(locale: Locale, reached: boolean | null
   return translate(locale, reached ? "diagnosticReached" : "diagnosticNotReached");
 }
 type StartupHandoffFailure = "invalid-fragment" | "targeted-invalid" | "fetch-failed" | "parse-failed" | "validation-failed";
+type LocalImportFailure = { kind: "read" | "parse"; diagnostics: Diagnostic[] } | { kind: "validation"; diagnostics: Diagnostic[] };
 type OpenDatasetResult = { status: "accepted-or-staged" } | { status: "parse-error" } | { status: "validation-error" } | { status: "target-error" };
 type DatasetReplacementSource = "handoff" | "local" | "sample" | "new";
 type TargetedHandoff = Extract<DatasetHandoffFragment, { kind: "targeted" }>;
+function LocalImportFailureNotice({ failure, locale }: { failure: LocalImportFailure; locale: Locale }) {
+  const messageKey = failure.kind === "read" ? "localImportReadFailure" : failure.kind === "parse" ? "localImportParseFailure" : "datasetValidationFailure";
+  return <div className="home-message local-import-failure" role="alert">
+    <p>{translate(locale, messageKey)}</p>
+    {failure.kind === "validation" && failure.diagnostics.length > 0 && <details>
+      <summary>{translate(locale, "localImportDiagnosticDetails")}</summary>
+      <ul aria-label={translate(locale, "validationDiagnostics")}>
+        {failure.diagnostics.map((diagnostic, index) => <li key={`${diagnostic.code}-${index}`}>
+          <span>{translate(locale, "diagnosticCodeLabel")}: {diagnostic.code}</span>
+          <span>{translate(locale, "diagnosticPathLabel")}: {diagnostic.path}</span>
+        </li>)}
+      </ul>
+    </details>}
+  </div>;
+}
 export type ActualProductDiagnosticInitialLayout = {
   positions: Record<string, { x: number; y: number }>;
   arm: "full-post" | "adaptive-post" | "global-placement3" | "frontier-12";
@@ -114,6 +130,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const [datasetModified, setDatasetModified] = useState(false);
   const [pendingDatasetReplacement, setPendingDatasetReplacement] = useState<Dataset | null>(null);
   const [pendingDatasetReplacementSource, setPendingDatasetReplacementSource] = useState<DatasetReplacementSource | null>(null);
+  const [pendingDatasetReplacementDiagnostics, setPendingDatasetReplacementDiagnostics] = useState<Diagnostic[]>([]);
   const [pendingTargetLanding, setPendingTargetLanding] = useState<{ dataset: Dataset; relationId: string } | null>(null);
   const [startupHandoffFailure, setStartupHandoffFailure] = useState<StartupHandoffFailure | null>(null);
   const [datasetLoading, setDatasetLoading] = useState(false);
@@ -150,6 +167,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const frontierAsyncEnabled = frontierAsyncProductionEnabled || frontierAsyncStagingEnabled;
   const [datasetOpenTimingEvents, setDatasetOpenTimingEvents] = useState<DatasetOpenTimingSample[]>([]);
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
+  const [localImportFailure, setLocalImportFailure] = useState<LocalImportFailure | null>(null);
   const [message, setMessage] = useState("Import an E2R Dataset to begin.");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredEntityId, setHoveredEntityId] = useState<string | null>(null);
@@ -225,7 +243,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   const suppressNextContextMenuRef = useRef(false);
   const homeOpenFileInputRef = useRef<HTMLInputElement>(null);
   const workspaceOpenFileInputRef = useRef<HTMLInputElement>(null);
-  const replacementTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const replacementTriggerRef = useRef<HTMLElement | null>(null);
   const datasetTitleInputRef = useRef<HTMLInputElement | null>(null);
   const maintenanceMenuRef = useRef<HTMLDetailsElement>(null);
   const maintenanceMenuSummaryRef = useRef<HTMLElement>(null);
@@ -318,6 +336,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }, []);
 
   function beginDatasetOpenTiming(source: DatasetReplacementSource) {
+    setLocalImportFailure(null);
     beginDatasetLoading();
     if (datasetOpenTimingRef.current) return;
     const startedAt = performance.now();
@@ -1154,7 +1173,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     };
   }, [dataset, locale, viewportToolbarCollapsed, viewportToolbarPosition]);
 
-  function acceptDataset(nextDataset: Dataset, source: DatasetReplacementSource | null = pendingDatasetReplacementSource) {
+  function acceptDataset(nextDataset: Dataset, source: DatasetReplacementSource | null = pendingDatasetReplacementSource, nextDiagnostics: Diagnostic[] = []) {
     invalidateFrontierOperation("dataset-replacement");
     invalidateExplicitAutoLayout("dataset-replacement");
     datasetRevisionRef.current += 1;
@@ -1181,11 +1200,13 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     setWorkingPinState(createWorkingPinState(nextDataset).state);
     setActiveOperationPreview(null);
     setDataset(nextDataset);
+    setDiagnostics(nextDiagnostics);
     setDatasetModified(false);
     setDatasetTitleEditing(true);
     setDatasetTitleDraft(getDatasetMetadata(nextDataset)?.title ?? "");
     setPendingDatasetReplacement(null);
     setPendingDatasetReplacementSource(null);
+    setPendingDatasetReplacementDiagnostics([]);
     setSelectedId(null);
     setSelectedRelationId(null);
     closeDetail();
@@ -1342,25 +1363,27 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     updateDataset(updateDatasetTitle(dataset, datasetTitleDraft));
   }
 
-  function requestDatasetReplacement(candidate: Dataset, trigger: HTMLButtonElement | null | undefined, source: DatasetReplacementSource) {
+  function requestDatasetReplacement(candidate: Dataset, trigger: HTMLElement | null | undefined, source: DatasetReplacementSource, candidateDiagnostics: Diagnostic[] = []) {
     if (pendingDatasetReplacement) return;
     if (trigger) replacementTriggerRef.current = trigger;
     const decision = decideDatasetReplacement({ candidate, datasetModified, pendingUserWork });
     if (decision.action === "stage") {
       setPendingDatasetReplacement(decision.candidate);
       setPendingDatasetReplacementSource(source);
-    } else acceptDataset(decision.candidate, source);
+      setPendingDatasetReplacementDiagnostics(candidateDiagnostics);
+    } else acceptDataset(decision.candidate, source, candidateDiagnostics);
   }
 
   function cancelDatasetReplacement() {
     if (pendingDatasetReplacement) {
       restoreReplacementFocusRef.current = true;
       setPendingDatasetReplacement(cancelStagedDatasetReplacement(pendingDatasetReplacement).stagedCandidate);
+      setPendingDatasetReplacementDiagnostics([]);
     }
   }
 
   function discardAndContinueDatasetReplacement() {
-    if (pendingDatasetReplacement) acceptDataset(discardAndContinueStagedDatasetReplacement(pendingDatasetReplacement).candidate);
+    if (pendingDatasetReplacement) acceptDataset(discardAndContinueStagedDatasetReplacement(pendingDatasetReplacement).candidate, pendingDatasetReplacementSource, pendingDatasetReplacementDiagnostics);
   }
 
   function exportCurrentDataset(): boolean {
@@ -1387,28 +1410,33 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
 
   function exportAndContinueDatasetReplacement() {
     if (!pendingDatasetReplacement || pendingUserWork || !exportCurrentDataset()) return;
-    acceptDataset(pendingDatasetReplacement);
+    acceptDataset(pendingDatasetReplacement, pendingDatasetReplacementSource, pendingDatasetReplacementDiagnostics);
   }
 
   function exportDatasetOnly() {
     exportCurrentDataset();
   }
 
-  function open(raw: string, trigger?: HTMLButtonElement | null, source: DatasetReplacementSource = "local", target?: TargetedHandoff): OpenDatasetResult {
+  function open(raw: string, trigger?: HTMLElement | null, source: DatasetReplacementSource = "local", target?: TargetedHandoff): OpenDatasetResult {
     beginDatasetOpenTiming(source);
     showDatasetLoading();
     publishDatasetOpenTiming({ phase: "raw-available", source, at: performance.now() });
     const result = loadDataset(raw);
     publishDatasetOpenTiming({ phase: "parsed", source, at: performance.now() });
-    setDiagnostics(result.diagnostics);
     if (result.parseError) {
-      setMessage(translate(locale, "jsonLoadFailure"));
+      if (source === "local") {
+        setLocalImportFailure({ kind: "parse", diagnostics: [] });
+        setMessage("");
+      } else setMessage(translate(locale, "jsonLoadFailure"));
       finishDatasetLoading();
       return { status: "parse-error" };
     }
     const candidate = candidateFromLoadResult(result);
     if (!candidate) {
-      setMessage(translate(locale, "datasetValidationFailure"));
+      if (source === "local") {
+        setLocalImportFailure({ kind: "validation", diagnostics: result.diagnostics.filter(({ severity }) => severity === "error") });
+        setMessage("");
+      } else setMessage(translate(locale, "datasetValidationFailure"));
       finishDatasetLoading();
       return { status: "validation-error" };
     }
@@ -1416,39 +1444,41 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     if (target) {
       const resolution = resolveRelationTarget(candidate, target.targetObjectId, target.targetObjectType);
       if (resolution.kind === "target-not-found") {
-        requestDatasetReplacement(candidate, trigger, source);
+        requestDatasetReplacement(candidate, trigger, source, result.diagnostics);
         setMessage(translate(locale, "targetedHandoffTargetNotFound"));
         return { status: "target-error" };
       }
       if (resolution.kind === "target-type-mismatch") {
-        requestDatasetReplacement(candidate, trigger, source);
+        requestDatasetReplacement(candidate, trigger, source, result.diagnostics);
         setMessage(translate(locale, "targetedHandoffTargetTypeMismatch"));
         return { status: "target-error" };
       }
       if (!supportsRelationHandoffCapability(target.requiredCapability)) {
-        requestDatasetReplacement(candidate, trigger, source);
+        requestDatasetReplacement(candidate, trigger, source, result.diagnostics);
         setMessage(translate(locale, "targetedHandoffCapabilityUnsupported"));
         return { status: "target-error" };
       }
       setPendingTargetLanding({ dataset: candidate, relationId: resolution.relation.id });
     }
-    requestDatasetReplacement(candidate, trigger, source);
+    requestDatasetReplacement(candidate, trigger, source, result.diagnostics);
+    setLocalImportFailure(null);
     setMessage("");
     if (!datasetLoadingAwaitingStableRef.current) finishDatasetLoading();
     return { status: "accepted-or-staged" };
   }
 
-  function openLocalFile(file: File, trigger?: HTMLButtonElement | null) {
+  function openLocalFile(file: File, trigger?: HTMLElement | null) {
     beginDatasetOpenTiming("local");
-    void file.text()
-      .then((raw) => scheduleDatasetOpen(() => open(raw, trigger)))
-      .catch(() => {
+    void file.text().then((raw) => {
+      scheduleDatasetOpen(() => open(raw, trigger));
+    }).catch(() => {
         finishDatasetLoading();
-        setMessage(translate(locale, "jsonLoadFailure"));
+        setMessage("");
+        setLocalImportFailure({ kind: "read", diagnostics: [] });
       });
   }
 
-  async function openSample(trigger?: HTMLButtonElement | null) {
+  async function openSample(trigger?: HTMLElement | null) {
     beginDatasetOpenTiming("sample");
     try {
       const response = await fetch(`${import.meta.env.BASE_URL}lighthouse-restoration-demo.${locale}.e2r.json`);
@@ -1478,12 +1508,12 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     window.history.pushState({ liaisonScapeView: "home" }, "", window.location.href);
   }
 
-  function startNewDataset(trigger?: HTMLButtonElement | null) {
+  function startNewDataset(trigger?: HTMLElement | null) {
     requestDatasetReplacement(structuredClone(emptyDataset), trigger, "new");
   }
 
   const replacementDialog = dataset && pendingDatasetReplacement
-    ? <DatasetReplacementDialog locale={locale} datasetModified={datasetModified} pendingUserWork={pendingUserWork} onCancel={cancelDatasetReplacement} onDiscard={discardAndContinueDatasetReplacement} onExportAndContinue={exportAndContinueDatasetReplacement} onExportDataset={exportDatasetOnly} />
+    ? <DatasetReplacementDialog locale={locale} datasetModified={datasetModified} pendingUserWork={pendingUserWork} diagnostics={pendingDatasetReplacementDiagnostics} onCancel={cancelDatasetReplacement} onDiscard={discardAndContinueDatasetReplacement} onExportAndContinue={exportAndContinueDatasetReplacement} onExportDataset={exportDatasetOnly} />
     : null;
   const datasetLoadingIndicator = datasetLoadingVisible
     ? <div className="dataset-loading-indicator" role="status" aria-live="polite" aria-atomic="true"><span className="dataset-loading-indicator__spinner" aria-hidden="true" />{translate(locale, "datasetLoading")}</div>
@@ -1512,6 +1542,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
         <p className="home-description">{translate(locale, "homeDescription")}</p>
         {datasetLoadingIndicator}
         {startupHandoffFailure && <p className="home-message" role="alert">{translate(locale, startupHandoffFailure === "invalid-fragment" ? "handoffInvalid" : startupHandoffFailure === "targeted-invalid" ? "targetedHandoffInvalid" : startupHandoffFailure === "fetch-failed" ? "handoffFetchFailure" : startupHandoffFailure === "parse-failed" ? "jsonLoadFailure" : "datasetValidationFailure")}</p>}
+        {localImportFailure && <LocalImportFailureNotice failure={localImportFailure} locale={locale} />}
         <div className="home-actions">
           {dataset && <button type="button" onClick={enterWorkspace}>{translate(locale, "continueEditing")}</button>}
           <button type="button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={(event) => startNewDataset(event.currentTarget)}>{translate(locale, "newDataset")}</button>
@@ -1520,7 +1551,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
             ref={homeOpenFileInputRef}
             className="file-input-hidden"
             type="file" tabIndex={-1} disabled={Boolean(pendingDatasetReplacement) || datasetLoading} accept="application/json,.json,.e2r.json"
-            onChange={(event) => { const file = event.target.files?.[0]; const trigger = replacementTriggerRef.current; if (file) openLocalFile(file, trigger); }}
+            onChange={(event) => { const input = event.currentTarget; const file = input.files?.[0]; const trigger = replacementTriggerRef.current; input.value = ""; if (file) openLocalFile(file, trigger); }}
           />
           <div className="sample-action">
             <button type="button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={(event) => void openSample(event.currentTarget)}>{translate(locale, "openSampleDataset")}</button>
@@ -2437,8 +2468,10 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
             type="file" tabIndex={-1} disabled={Boolean(pendingDatasetReplacement) || datasetLoading}
             accept="application/json,.json,.e2r.json"
             onChange={(event) => {
-              const file = event.target.files?.[0];
+              const input = event.currentTarget;
+              const file = input.files?.[0];
               const trigger = replacementTriggerRef.current;
+              input.value = "";
               if (file) openLocalFile(file, trigger);
             }}
           />
@@ -2450,7 +2483,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
             <details ref={maintenanceMenuRef} className="maintenance-menu" onToggle={(event) => setMaintenanceMenuOpen(event.currentTarget.open)} onKeyDown={handleMaintenanceMenuKeyDown}>
               <summary ref={maintenanceMenuSummaryRef}>{translate(locale, "more")}</summary>
               <div className="maintenance-menu__items">
-                <button type="button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={(event) => { replacementTriggerRef.current = event.currentTarget; closeMaintenanceMenu(); workspaceOpenFileInputRef.current?.click(); }}>{translate(locale, "openWorkspaceDataset")}</button>
+                <button type="button" disabled={Boolean(pendingDatasetReplacement) || datasetLoading} onClick={() => { replacementTriggerRef.current = maintenanceMenuSummaryRef.current; closeMaintenanceMenu(); workspaceOpenFileInputRef.current?.click(); }}>{translate(locale, "openWorkspaceDataset")}</button>
                 <button type="button" disabled={!dataset} onClick={() => { closeMaintenanceMenu(); exportDataset(); }}>{translate(locale, "exportDataset")}</button>
                 <button type="button" className="mobile-secondary-action" disabled={!dataset || (!coordinatesDirty && !unsavedPins)} onClick={() => { closeMaintenanceMenu(); saveCoordinates(); }}>{translate(locale, "saveCoordinates")}</button>
                 <button type="button" disabled={!dataset || Boolean(activeOperationPreview) || coordinateMigrationReadiness?.ready !== true} onClick={migrateCoordinatesToDraft}>{translate(locale, "migrateCoordinateDraft")}</button>
@@ -2466,6 +2499,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
             </details>
           </div>
         </div>
+        {localImportFailure && <LocalImportFailureNotice failure={localImportFailure} locale={locale} />}
         {message && <p className="status-message" role="status">{message}</p>}
       {timingDiagnosticsEnabled && dataset && <section aria-label="Dataset open timing diagnostic">
         <h2>Dataset open timing diagnostic</h2>

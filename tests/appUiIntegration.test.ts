@@ -332,6 +332,333 @@ test("localizes the delayed Dataset loading status for Japanese sample open", as
   });
 });
 
+test("shows localized local-import failures with expandable validation details and retries the same file", async () => {
+  await withProductionApp({ locale: "en", callback: async (environment) => {
+    Object.assign(environment.window.HTMLElement.prototype, { attachEvent() {}, detachEvent() {} });
+    const input = environment.document.querySelector(".home-content input[type='file']") as HTMLInputElement;
+    assert.ok(input);
+    let contents = "{";
+    let failRead = false;
+    const file = { text: async () => { if (failRead) throw new Error("read failed"); return contents; } } as File;
+    const selectFile = async () => {
+      Object.defineProperty(input, "files", { configurable: true, value: [file] });
+      await act(async () => { input.dispatchEvent(new environment.window.Event("change", { bubbles: true })); });
+      await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 10)));
+    };
+
+    await selectFile();
+    let alert = environment.document.querySelector(".home-content [role='alert']");
+    assert.equal(alert?.textContent?.includes(translate("en", "localImportParseFailure")), true);
+    assert.equal(input.value, "");
+    await act(async () => (environment.document.querySelector(".home-page .locale-button") as HTMLButtonElement).click());
+    alert = environment.document.querySelector(".home-content [role='alert']");
+    assert.equal(alert?.textContent?.includes(translate("ja", "localImportParseFailure")), true);
+    await act(async () => { input.dispatchEvent(new environment.window.Event("cancel", { bubbles: true })); });
+    assert.equal(environment.document.querySelector(".home-content [role='alert']")?.textContent?.includes(translate("ja", "localImportParseFailure")), true);
+
+    failRead = true;
+    await selectFile();
+    assert.equal(environment.document.querySelector(".home-content [role='alert']")?.textContent?.includes(translate("ja", "localImportReadFailure")), true);
+    failRead = false;
+
+    contents = JSON.stringify({});
+    await act(async () => (environment.document.querySelector(".home-page .locale-button") as HTMLButtonElement).click());
+    await selectFile();
+    alert = environment.document.querySelector(".home-content [role='alert']");
+    assert.equal(alert?.textContent?.includes(translate("en", "datasetValidationFailure")), true);
+    const details = alert?.querySelector("details");
+    assert.ok(details);
+    assert.equal(details?.querySelector("summary")?.textContent, translate("en", "localImportDiagnosticDetails"));
+    assert.ok(details?.querySelector("li")?.textContent?.includes(translate("en", "diagnosticCodeLabel")));
+    assert.ok(details?.querySelector("li")?.textContent?.includes(translate("en", "diagnosticPathLabel")));
+
+    contents = JSON.stringify({ version: "1.0", entities: [{ id: "retry-entity", name: "Retry succeeded" }], events: [], relations: [] });
+    await selectFile();
+    assert.equal(environment.document.querySelector(".home-content [role='alert']"), null);
+    assert.ok(environment.document.querySelector(".graph-section"));
+
+    const workspaceInput = environment.document.querySelector(".app-content input[type='file']") as HTMLInputElement;
+    assert.ok(workspaceInput);
+    contents = "{";
+    Object.defineProperty(workspaceInput, "files", { configurable: true, value: [file] });
+    await act(async () => { workspaceInput.dispatchEvent(new environment.window.Event("change", { bubbles: true })); });
+    await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 10)));
+    assert.equal(environment.document.querySelector(".app-content [role='alert']")?.textContent?.includes(translate("en", "localImportParseFailure")), true);
+    assert.equal(workspaceInput.value, "");
+    contents = JSON.stringify({ version: "1.0", entities: [{ id: "workspace-retry", name: "Workspace retry" }], events: [], relations: [] });
+    Object.defineProperty(workspaceInput, "files", { configurable: true, value: [file] });
+    await act(async () => { workspaceInput.dispatchEvent(new environment.window.Event("change", { bubbles: true })); });
+    await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 20)));
+    assert.equal(environment.document.querySelector(".app-content [role='alert']"), null);
+  }});
+});
+
+test("keeps rejected acquisition diagnostics separate and adopts diagnostics only after accepted replacement", async () => {
+  const currentDataset: Dataset = {
+    version: "1.0",
+    entities: [{ id: "current-dataset-entity", name: "Current Dataset" }],
+    events: [],
+    relations: [],
+    extensions: { "vendor.example": { opaque: true } },
+  };
+  await withProductionApp({ dataset: currentDataset, beforeRender: (environment) => {
+    Object.assign(environment.window.HTMLElement.prototype, { attachEvent() {}, detachEvent() {} });
+    environment.installGlobal("Element", environment.window.Element);
+  }, callback: async (environment) => {
+    const diagnosticsList = () => {
+      const lists = environment.document.querySelectorAll(".app-content ul[aria-label='Validation diagnostics']");
+      return lists.item(lists.length - 1);
+    };
+    const input = environment.document.querySelector(".app-content input[type='file']") as HTMLInputElement;
+    assert.ok(input);
+    assert.ok(diagnosticsList()?.textContent?.includes("unknown_extension"));
+
+    let contents = JSON.stringify({ version: "1.0", entities: [{ id: "invalid-candidate", name: "Invalid" }], events: [] });
+    const file = { text: async () => contents } as File;
+    const selectFile = async () => {
+      Object.defineProperty(input, "files", { configurable: true, value: [file] });
+      await act(async () => { input.dispatchEvent(new environment.window.Event("change", { bubbles: true })); });
+      await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 10)));
+    };
+
+    await selectFile();
+    const failure = environment.document.querySelector(".app-content .local-import-failure");
+    assert.ok(failure?.textContent?.includes("relations_missing"));
+    assert.ok(diagnosticsList()?.textContent?.includes("unknown_extension"));
+    assert.equal(diagnosticsList()?.textContent?.includes("relations_missing"), false);
+    assert.ok(environment.document.querySelector(".graph-section"));
+
+    const node = environment.document.querySelector('[data-entity-id="current-dataset-entity"]') as SVGGElement;
+    const openNodeMenu = async () => {
+      const event = new environment.window.MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: 2, clientX: 20, clientY: 20 });
+      await act(async () => { node.dispatchEvent(event); });
+      return [...environment.document.querySelectorAll<HTMLButtonElement>(".canvas-context-menu [role='menuitem']")].find((button) => /Pin|Unpin/.test(button.textContent ?? "")) as HTMLButtonElement;
+    };
+    const pinAction = await openNodeMenu();
+    assert.match(pinAction?.textContent ?? "", /Pin/);
+    await act(async () => { pinAction.click(); });
+
+    contents = JSON.stringify({
+      version: "1.0",
+      entities: [{ id: "warning-candidate", name: "Warning candidate" }],
+      events: [],
+      relations: [],
+      extensions: { metadata: { title: "Candidate warning" } },
+    });
+    await selectFile();
+    const replacement = environment.document.querySelector(".replacement-confirmation");
+    assert.ok(replacement);
+    assert.ok(replacement?.querySelector(".candidate-diagnostics")?.textContent?.includes("extension_version_unspecified"));
+    assert.ok(diagnosticsList()?.textContent?.includes("unknown_extension"));
+    assert.equal(diagnosticsList()?.textContent?.includes("extension_version_unspecified"), false);
+
+    await act(async () => { (replacement?.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+    assert.equal(environment.document.querySelector(".replacement-confirmation"), null);
+    assert.ok(diagnosticsList()?.textContent?.includes("unknown_extension"));
+    assert.equal(diagnosticsList()?.textContent?.includes("extension_version_unspecified"), false);
+    const retainedPinAction = await openNodeMenu();
+    assert.match(retainedPinAction?.textContent ?? "", /Unpin/);
+    await act(async () => { environment.document.body.dispatchEvent(new environment.window.Event("pointerdown", { bubbles: true })); });
+
+    await selectFile();
+    const confirmedReplacement = environment.document.querySelector(".replacement-confirmation");
+    assert.ok(confirmedReplacement);
+    const discard = [...(confirmedReplacement?.querySelectorAll<HTMLButtonElement>(".detail-actions button") ?? [])].find((button) => /Discard/.test(button.textContent ?? ""));
+    assert.ok(discard);
+    await act(async () => { discard?.click(); });
+    assert.equal(environment.document.querySelector(".replacement-confirmation"), null);
+    assert.ok(diagnosticsList()?.textContent?.includes("extension_version_unspecified"));
+    assert.equal(diagnosticsList()?.textContent?.includes("unknown_extension"), false);
+    assert.ok(environment.document.querySelector(".graph-section")?.textContent?.includes("Warning candidate"));
+  }});
+});
+
+test("restores replacement focus to a visible acquisition control after cancellation", async () => {
+  const run = async ({ home, candidateHasWarning, dismissal }: { home: boolean; candidateHasWarning: boolean; dismissal: "escape" | "cancel" }) => {
+    const currentDataset: Dataset = {
+      version: "1.0",
+      entities: [{ id: "focus-current-entity", name: "Current Dataset" }],
+      events: [],
+      relations: [],
+    };
+    await withProductionApp({ dataset: currentDataset, beforeRender: (environment) => {
+      Object.assign(environment.window.HTMLElement.prototype, { attachEvent() {}, detachEvent() {} });
+    }, callback: async (environment) => {
+      const openNodeMenu = async () => {
+        const node = environment.document.querySelector('[data-entity-id="focus-current-entity"]') as SVGGElement;
+        assert.ok(node);
+        const event = new environment.window.MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: 2, clientX: 20, clientY: 20 });
+        await act(async () => { node.dispatchEvent(event); });
+        return [...environment.document.querySelectorAll<HTMLButtonElement>(".canvas-context-menu [role='menuitem']")].find((button) => /Pin|Unpin/.test(button.textContent ?? "")) as HTMLButtonElement;
+      };
+      const pin = await openNodeMenu();
+      assert.match(pin.textContent ?? "", /Pin/);
+      await act(async () => { pin.click(); });
+      await act(async () => { environment.document.body.dispatchEvent(new environment.window.Event("pointerdown", { bubbles: true })); });
+
+      if (home) {
+        await act(async () => { (environment.document.querySelector(".header-home-button") as HTMLAnchorElement).click(); });
+        const opener = environment.document.querySelector(".open-dataset-button") as HTMLButtonElement;
+        assert.ok(opener);
+        await act(async () => { opener.click(); });
+      } else {
+        const menu = environment.document.querySelector(".maintenance-menu") as HTMLDetailsElement;
+        const summary = menu.querySelector("summary") as HTMLElement;
+        await act(async () => { summary.click(); });
+        const opener = menu.querySelector(".maintenance-menu__items > button") as HTMLButtonElement;
+        assert.ok(opener);
+        await act(async () => { opener.click(); });
+      }
+
+      const input = environment.document.querySelector("input[type='file']") as HTMLInputElement;
+      assert.ok(input);
+      const candidate: Dataset = {
+        version: "1.0",
+        entities: [{ id: "focus-candidate-entity", name: "Candidate Dataset" }],
+        events: [],
+        relations: [],
+        ...(candidateHasWarning ? { extensions: { metadata: { title: "Candidate Warning" } } } : {}),
+      };
+      const file = { text: async () => JSON.stringify(candidate) } as File;
+      Object.defineProperty(input, "files", { configurable: true, value: [file] });
+      await act(async () => { input.dispatchEvent(new environment.window.Event("change", { bubbles: true })); });
+      await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 15)));
+
+      const dialog = environment.document.querySelector(".replacement-confirmation");
+      assert.ok(dialog);
+      assert.equal(Boolean(dialog?.querySelector(".candidate-diagnostics")), candidateHasWarning);
+      if (!candidateHasWarning) {
+        assert.equal(environment.document.activeElement, dialog?.querySelector(".detail-actions button"));
+      }
+      if (dismissal === "escape") {
+        const event = new environment.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+        await act(async () => { environment.document.dispatchEvent(event); });
+        assert.equal(event.defaultPrevented, true);
+      } else {
+        await act(async () => { (dialog?.querySelector(".detail-actions button") as HTMLButtonElement).click(); });
+      }
+      await act(async () => new Promise<void>((resolve) => setTimeout(resolve, 0)));
+
+      assert.equal(environment.document.querySelector(".replacement-confirmation"), null);
+      if (home) {
+        assert.equal(environment.document.activeElement, environment.document.querySelector(".open-dataset-button"));
+        await act(async () => { (environment.document.querySelector(".home-actions button") as HTMLButtonElement).click(); });
+      } else {
+        const menu = environment.document.querySelector(".maintenance-menu") as HTMLDetailsElement;
+        assert.equal(menu.open, false);
+        assert.equal(environment.document.activeElement, menu.querySelector("summary"));
+      }
+      assert.equal(environment.document.querySelector("[data-entity-id='focus-current-entity']") !== null, true);
+      const retainedPin = await openNodeMenu();
+      assert.match(retainedPin.textContent ?? "", /Unpin/);
+    }});
+  };
+
+  await run({ home: false, candidateHasWarning: true, dismissal: "escape" });
+  await run({ home: false, candidateHasWarning: true, dismissal: "cancel" });
+  await run({ home: false, candidateHasWarning: false, dismissal: "escape" });
+  await run({ home: false, candidateHasWarning: false, dismissal: "cancel" });
+  await run({ home: true, candidateHasWarning: true, dismissal: "cancel" });
+  await run({ home: true, candidateHasWarning: true, dismissal: "escape" });
+});
+
+test("labels staged replacement warnings as belonging to the candidate Dataset", async () => {
+  const environment = createDomTestEnvironment();
+  environment.installGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const container = environment.document.createElement("div");
+  environment.document.body.append(container);
+  const root = createRoot(container);
+  let cancelCount = 0;
+  const server = await createServer({ root: process.cwd(), server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
+  try {
+    const { DatasetReplacementDialog } = await server.ssrLoadModule("/src/components/DatasetReplacementDialog.tsx");
+    const diagnostics = [{ severity: "warning" as const, code: "extension_version_unspecified", path: "/extensions/metadata" }];
+    const renderDialog = async (locale: "en" | "ja", candidateDiagnostics = diagnostics) => act(async () => root.render(React.createElement(DatasetReplacementDialog, {
+      key: "replacement-dialog",
+      locale,
+      datasetModified: true,
+      pendingUserWork: false,
+      diagnostics: candidateDiagnostics,
+      onCancel: () => { cancelCount += 1; },
+      onDiscard: () => {},
+      onExportAndContinue: () => {},
+      onExportDataset: () => {},
+    })));
+    await renderDialog("en");
+    const candidateWarnings = environment.document.querySelector(".candidate-diagnostics");
+    const summary = candidateWarnings?.querySelector("summary") as HTMLElement;
+    assert.ok(candidateWarnings);
+    assert.equal(candidateWarnings?.querySelector("summary")?.textContent, translate("en", "replacementCandidateWarnings"));
+    assert.match(candidateWarnings?.textContent ?? "", /extension_version_unspecified/);
+    assert.match(candidateWarnings?.textContent ?? "", /\/extensions\/metadata/);
+    assert.equal(candidateWarnings?.querySelector("ul")?.getAttribute("aria-label"), translate("en", "replacementCandidateWarnings"));
+    assert.equal(environment.document.activeElement, summary);
+
+    const press = async (key: string, shiftKey = false) => {
+      const event = new environment.window.KeyboardEvent("keydown", { bubbles: true, key, shiftKey, cancelable: true });
+      await act(async () => { environment.document.dispatchEvent(event); });
+      return event;
+    };
+    const buttons = [...environment.document.querySelectorAll<HTMLButtonElement>(".replacement-confirmation .detail-actions button")];
+    const [cancel, discard, exportAndContinue] = buttons;
+    assert.equal(buttons.length, 3);
+    await press("Tab");
+    assert.equal(environment.document.activeElement, cancel);
+    await press("Tab");
+    assert.equal(environment.document.activeElement, discard);
+    await press("Tab");
+    assert.equal(environment.document.activeElement, exportAndContinue);
+    await press("Tab");
+    assert.equal(environment.document.activeElement, summary);
+    await press("Tab", true);
+    assert.equal(environment.document.activeElement, exportAndContinue);
+    await press("Tab", true);
+    assert.equal(environment.document.activeElement, discard);
+    await press("Tab", true);
+    assert.equal(environment.document.activeElement, cancel);
+    await press("Tab", true);
+    assert.equal(environment.document.activeElement, summary);
+
+    const outsideButton = environment.document.createElement("button");
+    environment.document.body.append(outsideButton);
+    outsideButton.focus();
+    await press("Tab");
+    assert.equal(environment.document.activeElement, summary);
+    outsideButton.focus();
+    await press("Tab", true);
+    assert.equal(environment.document.activeElement, exportAndContinue);
+    outsideButton.remove();
+
+    const enter = await press("Enter");
+    assert.equal(enter.defaultPrevented, false);
+    const space = await press(" ");
+    assert.equal(space.defaultPrevented, false);
+    const escape = await press("Escape");
+    assert.equal(escape.defaultPrevented, true);
+    assert.equal(cancelCount, 1);
+
+    await renderDialog("ja");
+    assert.equal(environment.document.querySelector(".candidate-diagnostics summary")?.textContent, translate("ja", "replacementCandidateWarnings"));
+    assert.equal(environment.document.querySelector(".candidate-diagnostics ul")?.getAttribute("aria-label"), translate("ja", "replacementCandidateWarnings"));
+
+    await renderDialog("en", []);
+    assert.equal(environment.document.querySelector(".candidate-diagnostics"), null);
+    const noWarningButtons = [...environment.document.querySelectorAll<HTMLButtonElement>(".replacement-confirmation .detail-actions button")];
+    assert.equal(environment.document.activeElement, noWarningButtons[0]);
+    await press("Tab", true);
+    assert.equal(environment.document.activeElement, noWarningButtons.at(-1));
+    await press("Tab");
+    assert.equal(environment.document.activeElement, noWarningButtons[0]);
+
+    await act(async () => { (noWarningButtons[0] as HTMLButtonElement).click(); });
+    assert.equal(cancelCount, 2);
+  } finally {
+    await act(async () => root.unmount());
+    await server.close();
+    await environment.cleanup();
+  }
+});
+
 test("localizes the Home Credits surface while preserving identity and dismissal focus", async () => {
   await withProductionApp({ locale: "en", callback: async (environment) => {
     const opener = environment.document.querySelector(".home-footer .credits-button") as HTMLButtonElement;
