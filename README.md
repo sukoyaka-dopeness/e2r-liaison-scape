@@ -21,7 +21,7 @@ LiaisonScape currently provides:
 - English and Japanese UI
 - Locale-specific public sample Dataset loading from Home
 
-The application uses E2R Validator `0.4.0` and preserves unknown Core fields
+The application uses E2R Validator `0.7.0` and preserves unknown Core fields
 and Extensions through supported load, edit, and save flows. Its current
 acceptance coverage includes A1 through A19, including Event endpoint
 limitations, self and parallel Relations, coordinate behavior, and validation
