@@ -76,9 +76,9 @@ Local release candidate package version: `0.2.1`. The published application
 remains `0.2.0` until a separately authorized deployment.
 
 The local Credits display identifies LiaisonScape `0.2.1`, first released on
-2026-08-16. Its Updated line retains the last confirmed public update date,
-2026-10-01; the next publication date must be set before deployment. The
-application consumes E2R Validator `0.7.0`.
+2026-08-16. Its Updated line is set to the planned 2026-10-21 publication
+date; recheck it before deployment if the schedule changes. The application
+consumes E2R Validator `0.7.0`.
 
 ## Known limitations
 
