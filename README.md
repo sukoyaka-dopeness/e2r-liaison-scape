@@ -63,8 +63,8 @@ directory.
 
 ## GitHub Pages
 
-The repository contains a GitHub Pages deployment workflow and is prepared for
-deployment under the project base path `/e2r-liaison-scape/`.
+The repository deploys to GitHub Pages through its `main` push workflow under
+the project base path `/e2r-liaison-scape/`.
 
 The live application is available at:
 
@@ -72,13 +72,16 @@ https://sukoyaka-dopeness.github.io/e2r-liaison-scape/
 
 ## Version
 
-Local release candidate package version: `0.2.1`. The published application
-remains `0.2.0` until a separately authorized deployment.
+Application and package version: `0.2.1`. The published `main` source is
+`fdb4b099b489e65c062d33586f01db5746a632a9`; its GitHub Pages deployment
+completed on 2026-10-21 JST. A later Credits repository-link hit-area correction
+is [locally Human-accepted within bounds](docs/credits-repository-link-hit-area-fix-2026-10-21.md)
+but has not been published.
 
-The local Credits display identifies LiaisonScape `0.2.1`, first released on
-2026-08-16. Its Updated line is set to the planned 2026-10-21 publication
-date; recheck it before deployment if the schedule changes. The application
-consumes E2R Validator `0.7.0`.
+Credits identifies LiaisonScape `0.2.1`, first released on 2026-08-16, with
+`Updated: 2026-10-21` for the current public deployment. Recheck and, if
+needed, separately approve the Updated date before the next deployment. The
+application consumes E2R Validator `0.7.0`.
 
 ## Known limitations
 

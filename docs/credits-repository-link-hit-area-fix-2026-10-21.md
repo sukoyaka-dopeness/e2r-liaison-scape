@@ -2,7 +2,7 @@
 
 Date: 2026-10-21
 
-Status: **LOCAL FIX PREPARED / HUMAN BROWSER REVIEW PENDING / NOT PUBLISHED**. LiaisonScape `0.2.1` already has a separate public acceptance; this local change does not revise it.
+Status: **LS-CREDITS-LINK1 HUMAN ACCEPTED / CLOSED (BOUNDED) LOCALLY / PUBLICATION PENDING** at `ff9d1d8c720dc80bea5b7ab699d1312cbc9b6bbf`. LiaisonScape `0.2.1` already has a separate public acceptance; this local change does not revise it.
 
 ## Cause and scope
 
@@ -15,9 +15,9 @@ The local correction adds `justify-items: start` to `.credits-links` in `src/sty
 - **Source:** only the Credits navigation grid alignment changes. Application Version `0.2.1`, Creator, `First release: 2026-08-16`, `Updated: 2026-10-21`, EN/JA strings, acknowledgement and repository URLs remain unchanged. The two dates describe the existing published version; this local fix has not been deployed.
 - **Automated / DOM:** existing Credits integration tests cover EN/JA identity, links, Close/Escape/backdrop and focus restoration. The full test, lint and build results for this checkpoint are recorded below. No new static test mirrors the single CSS declaration; the hit area was measured in a real browser.
 - **Codex Browser, isolated local Edge:** at 900px and 360px in both EN and JA, computed `.credits-links` alignment was `start`; both links were narrower than the navigation row. Browser hit testing and actual pointer input found each link's text and excluded the right-side blank space. With navigation suppressed by a test-only event listener, text clicks and focused Enter produced the intended link events; blank-space clicks produced none. Tab/Shift+Tab moved between the anchors. Escape closed Credits and restored focus to its opener after the next animation frame. At 360px there was no document horizontal overflow. A JA narrow-width screenshot showed the two link labels and existing Credits content without clipping.
-- **Human Browser:** the present browser checks are Codex evidence. They do not establish a new Human Browser PASS or formal acceptance.
+- **Human Browser:** the Codex checks above were pre-acceptance evidence. The later, separate Human Browser decision is recorded below.
 
-## Limited Human Browser Review
+## Limited Human Browser Review requested before acceptance (historical)
 
 Use the local checkpoint in a disposable browser Workspace. In EN and JA, at a normal width and a narrow width (about 360px):
 
@@ -27,11 +27,17 @@ Use the local checkpoint in a disposable browser Workspace. In EN and JA, at a n
 
 The requested Human decision is limited acceptance of this Credits link-area correction and its adjacent keyboard/dismiss behavior. Do not infer Product-wide or public-environment acceptance from it.
 
+## LS-CREDITS-LINK1 Formal Human Acceptance — 2026-10-21
+
+Human formally accepted the local correction at exact source commit `ff9d1d8c720dc80bea5b7ab699d1312cbc9b6bbf` as **HUMAN ACCEPTED / CLOSED (BOUNDED)**. In the local LiaisonScape browser, Human reported PASS for EN/JA Credits at normal and 360px widths; both Repository links opened the correct URLs from their text, while the blank space to each link's right did not navigate. Tab, Shift+Tab, Enter, Close, Escape, backdrop dismissal and focus restoration passed. No major Console Error was observed in the reviewed interactions. Human-provided screenshots covered EN/JA at 360px and EN at 1200px.
+
+This is **Human Browser evidence**, separate from the 900px/360px isolated Codex Edge and automated evidence above. It accepts the Credits link hit area and adjacent reviewed display/interaction only. It does not repeat LiaisonScape-wide acceptance or establish behavior in every browser, viewport, navigation path or failure condition. The accepted source commit remains **local and unpushed**; the public application remains at `fdb4b099b489e65c062d33586f01db5746a632a9` until a separately authorized deployment.
+
 ## Publication boundary
 
-No push or Deployment is authorized by this checkpoint. `First release: 2026-08-16` is historical and stays fixed. The current `Updated: 2026-10-21` records the existing deployment, not a future publication date. Before any later push, Human must accept the local fix, choose the exact publication SHA and intended JST date, decide whether Updated needs a new value, and separately authorize the push with its automatic Pages deployment. A date correction would create a new source SHA and require appropriately limited re-review.
+No push or Deployment is authorized by this local acceptance. `First release: 2026-08-16` is historical and stays fixed. The current `Updated: 2026-10-21` records the existing deployment, not a future publication date. Before any later push, Human must approve the exact publication SHA and intended JST date, decide whether Updated needs a new value, and separately authorize the push with its automatic Pages deployment. A date correction would create a new source SHA and require appropriately limited re-review.
 
-The existing README Version section still describes `0.2.1` as a local candidate and `0.2.0` as published, although the current checked-in application and public main are `0.2.1`. That older publication text is outside this link-area correction; reconcile it in a separately approved documentation step before treating the next public candidate as fully ready.
+The README Version section previously described `0.2.1` as a local candidate and `0.2.0` as published. A separate documentation-only checkpoint now aligns that current-status description with the published `0.2.1` source; it does not publish this Credits correction.
 
 ## Local verification results
 
