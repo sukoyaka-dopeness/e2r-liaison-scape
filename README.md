@@ -73,15 +73,13 @@ https://sukoyaka-dopeness.github.io/e2r-liaison-scape/
 ## Version
 
 Application and package version: `0.2.1`. The published `main` source is
-`fdb4b099b489e65c062d33586f01db5746a632a9`; its GitHub Pages deployment
-completed on 2026-10-21 JST. A later Credits repository-link hit-area correction
-is [locally Human-accepted within bounds](docs/credits-repository-link-hit-area-fix-2026-10-21.md)
-but has not been published.
+`54202255df0c34e26c2e1b2d2654ba782e4c4d5e`; its GitHub Pages deployment
+completed on 2026-10-21 at 15:27:30 JST. The separate Credits repository-link
+hit-area correction is [Human-accepted and publicly deployed within bounds](docs/credits-repository-link-hit-area-fix-2026-10-21.md).
 
 Credits identifies LiaisonScape `0.2.1`, first released on 2026-08-16, with
-`Updated: 2026-10-21` for the current public deployment. Recheck and, if
-needed, separately approve the Updated date before the next deployment. The
-application consumes E2R Validator `0.7.0`.
+`Updated: 2026-10-21` for the current public deployment. The application
+consumes E2R Validator `0.7.0`.
 
 ## Known limitations
 
