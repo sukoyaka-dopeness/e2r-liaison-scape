@@ -309,7 +309,7 @@ li { margin: .35rem 0; }
 .credits-dialog { z-index: 31; width: min(28rem, calc(100% - 32px)); padding: 16px; border-radius: 6px; }
 .credits-dialog h2 { margin: 0 0 8px; color: #08060d; font-size: 24px; font-weight: 500; line-height: 118%; letter-spacing: -.24px; }
 .credits-dialog p { margin: 0; }
-.credits-links { display: grid; gap: 8px; }
+.credits-links { display: grid; gap: 8px; justify-items: start; }
 .credits-actions { display: flex; justify-content: flex-start; margin-top: 16px; }
 
 @media (max-width: 1024px) {
