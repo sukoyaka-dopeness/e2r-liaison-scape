@@ -482,6 +482,60 @@ test("keeps rejected acquisition diagnostics separate and adopts diagnostics onl
   }});
 });
 
+test("revalidates Current Dataset Diagnostics after committed title changes in EN and JA", async () => {
+  const warningCode = "extension_version_unspecified";
+  const run = async (locale: "en" | "ja", metadata: { title: string; datasetId?: string }) => {
+    const dataset: Dataset = {
+      version: "1.0",
+      entities: [{ id: "d2-entity", name: "Keep this Entity" }],
+      events: [],
+      relations: [],
+      extensions: { metadata },
+    };
+    await withProductionApp({ locale, dataset, beforeRender: (environment) => {
+      Object.assign(environment.window.HTMLElement.prototype, { attachEvent() {}, detachEvent() {} });
+    }, callback: async (environment) => {
+      const diagnosticsText = () => [...environment.document.querySelectorAll(".app-content ul[aria-label]")]
+        .find((list) => list.getAttribute("aria-label") === translate(locale, "validationDiagnostics"))?.textContent ?? "";
+      const input = environment.document.querySelector("#dataset-title-input") as HTMLInputElement;
+      const apply = environment.document.querySelector(".dataset-title-editor button") as HTMLButtonElement;
+      assert.ok(input);
+      assert.ok(apply);
+      assert.match(diagnosticsText(), new RegExp(warningCode));
+      assert.match(diagnosticsText(), /\/extensions\/metadata/);
+
+      // The DOM test environment does not reliably synthesize React text-input events.
+      // Invoke the mounted control's actual change handler, then use the real Apply button.
+      const reactPropsKey = Object.keys(input).find((key) => key.startsWith("__reactProps$"));
+      assert.ok(reactPropsKey);
+      const reactProps = (input as unknown as Record<string, { onChange: (event: { target: { value: string } }) => void }>)[reactPropsKey];
+      const changeTitle = async (value: string) => {
+        const previousDiagnostics = diagnosticsText();
+        await act(async () => { reactProps.onChange({ target: { value } }); });
+        assert.equal(diagnosticsText(), previousDiagnostics);
+        assert.equal(apply.disabled, false);
+        await act(async () => { apply.click(); });
+        assert.equal(input.value, value);
+        assert.equal(apply.disabled, true);
+      };
+
+      await changeTitle("");
+      assert.equal(diagnosticsText().includes(warningCode), metadata.datasetId !== undefined);
+      assert.ok(environment.document.querySelector(".graph-section")?.textContent?.includes("Keep this Entity"));
+
+      if (metadata.datasetId === undefined) {
+        await changeTitle("Restored title");
+        assert.match(diagnosticsText(), new RegExp(warningCode));
+      }
+    }});
+  };
+
+  await run("en", { title: "Title only" });
+  await run("ja", { title: "Title only" });
+  await run("en", { title: "Title with ID", datasetId: "kept-id" });
+  await run("ja", { title: "Title with ID", datasetId: "kept-id" });
+});
+
 test("restores replacement focus to a visible acquisition control after cancellation", async () => {
   const run = async ({ home, candidateHasWarning, dismissal }: { home: boolean; candidateHasWarning: boolean; dismissal: "escape" | "cancel" }) => {
     const currentDataset: Dataset = {

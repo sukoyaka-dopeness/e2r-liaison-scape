@@ -1318,13 +1318,15 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     setDatasetModified(false);
   }
 
-  function updateDataset(nextDataset: Dataset) {
+  // Commit-time validation keeps the displayed Current Dataset diagnostics on the same revision.
+  function updateDataset(nextDataset: Dataset, nextDiagnostics: Diagnostic[] = validateDatasetForExport(nextDataset)) {
     invalidateFrontierOperation("dataset-mutation");
     invalidateExplicitAutoLayout("dataset-mutation");
     datasetRevisionRef.current += 1;
     frontierSessionIdentityRef.current = null;
     setWorkingPinState((state) => reconcileWorkingPinState(state, nextDataset));
     setDataset(nextDataset);
+    setDiagnostics(nextDiagnostics);
     setDatasetModified(isDatasetModified(cleanDatasetBaseline.current ?? nextDataset, nextDataset));
   }
 
@@ -2024,6 +2026,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
     }
     cleanDatasetBaseline.current = structuredClone(saved);
     setDataset(saved);
+    setDiagnostics(validateDatasetForExport(saved));
     setWorkingPinState(createWorkingPinState(saved).state);
     setDatasetModified(false);
     setCoordinatesDirty(false);
@@ -2042,7 +2045,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       setMessage(translate(locale, "coordinateDraftMigrationRefusal"));
       return;
     }
-    updateDataset(result.dataset);
+    updateDataset(result.dataset, result.diagnostics);
     const coordinateState = preservePendingCoordinates({ positions, coordinatesDirty, storedPositions: getStoredCoordinates(result.dataset) });
     setPositions(coordinateState.positions);
     setCoordinatesDirty(coordinateState.coordinatesDirty);
@@ -2057,7 +2060,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       setMessage(translate(locale, "spaceMigrationRefusal"));
       return;
     }
-    updateDataset(result.dataset);
+    updateDataset(result.dataset, result.diagnostics);
     const coordinateState = preservePendingCoordinates({ positions, coordinatesDirty, storedPositions: getStoredCoordinates(result.dataset) });
     setPositions(coordinateState.positions);
     setCoordinatesDirty(coordinateState.coordinatesDirty);

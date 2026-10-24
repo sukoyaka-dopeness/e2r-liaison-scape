@@ -324,6 +324,31 @@ test("removes empty Metadata and Extensions containers when title was their only
   assert.equal("extensions" in updated, false);
 });
 
+test("title edits keep Current Dataset diagnostics aligned with Export validation", () => {
+  const dataset: Dataset = {
+    version: "1.0",
+    entities: [{ id: "entity-1", name: "Keep" }],
+    events: [],
+    relations: [],
+    extensions: { metadata: { title: "Title only" } },
+  };
+  const original = structuredClone(dataset);
+  assert.deepEqual(validateDatasetForExport(dataset).map(({ code }) => code), ["extension_version_unspecified"]);
+
+  const withoutTitle = updateDatasetTitle(dataset, "");
+  assert.equal("extensions" in withoutTitle, false);
+  assert.deepEqual(validateDatasetForExport(withoutTitle), []);
+  assert.deepEqual(withoutTitle.entities, dataset.entities);
+  assert.deepEqual(dataset, original);
+
+  const restoredTitle = updateDatasetTitle(withoutTitle, "Restored");
+  assert.deepEqual(validateDatasetForExport(restoredTitle).map(({ code }) => code), ["extension_version_unspecified"]);
+
+  const withDatasetId = updateDatasetTitle({ ...dataset, extensions: { metadata: { title: "Title and ID", datasetId: "keep-id" } } }, "");
+  assert.deepEqual(withDatasetId.extensions.metadata, { datasetId: "keep-id" });
+  assert.deepEqual(validateDatasetForExport(withDatasetId).map(({ code }) => code), ["extension_version_unspecified"]);
+});
+
 test("preserves opaque P1 Names research data through an unrelated Core edit and two saves", () => {
   const namesExtensionId = "research.fixture.p1-names";
   const original = {
