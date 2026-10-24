@@ -12,7 +12,7 @@ The comparison baseline is LiaisonScape's distribution file `public/lighthouse-r
 
 ## LS-DA-PRESERVE2 Human Browser and submitted-file evidence
 
-Human used the **published LiaisonScape `0.2.1`** in Edge InPrivate. The Lighthouse Restoration JA Dataset (「灯台修復プロジェクト」) came from a Hub-to-LiaisonScape Handoff. Human observed 10 Entities and 14 graph-visible Relations; the JSON baseline contains 11 Events and 28 total Relations. Human edited and saved exactly these two fields in the LiaisonScape UI:
+Human used the **published LiaisonScape `0.2.1`** in Edge InPrivate. The last verified public application-source deployment at this checkpoint was `54202255df0c34e26c2e1b2d2654ba782e4c4d5e`; this Human browser run did not independently hash its loaded assets. The Lighthouse Restoration JA Dataset (「灯台修復プロジェクト」) came from a Hub-to-LiaisonScape Handoff. Human observed 10 Entities and 14 graph-visible Relations; the JSON baseline contains 11 Events and 28 total Relations. Human edited and saved exactly these two fields in the LiaisonScape UI:
 
 | Object | Before | After |
 | --- | --- | --- |
@@ -27,6 +27,6 @@ Human closed the earlier InPrivate session, opened a new one, and imported that 
 
 ## Diagnostics and formal boundary
 
-`unknown_extension` and `specification_unavailable` appeared at import and after re-import. Under the [Validator diagnostic contract](../../e2r-validator/docs/specification-interoperability.md#diagnostic-states), they are warnings for an uninterpreted payload and unavailable local specification, not proof by themselves of Dataset invalidity or loss. The bounded comparison above found no unintended content change along this path. LiaisonScape did not interpret or edit Dimension Assessment values.
+`unknown_extension` and `specification_unavailable` appeared at import and after re-import. Under the [Validator diagnostic contract](https://github.com/sukoyaka-dopeness/e2r-validator/blob/655954d3186d7a1bca24b3f0b81edec76800c925/docs/specification-interoperability.md#diagnostic-states), they are warnings for an uninterpreted payload and unavailable local specification, not proof by themselves of Dataset invalidity or loss. The bounded comparison above found no unintended content change along this path. LiaisonScape did not interpret or edit Dimension Assessment values.
 
 Human formally accepted this conclusion: **for Lighthouse JA, the reviewed Hub Handoff → Entity/Relation description edit → UI Export → actual JSON comparison → new InPrivate import path showed no unintended Dataset content change, including the unsupported Dimension Assessment information.** The accepted scope is this case and this evidence only. It does not guarantee all Datasets, Extensions, edit/delete operations, browsers, or workspaces; does not promote Candidate `0.2.0` to Stable; and does not close Diagnostics D2 or Cross-Context Workspace Safety. HUB-3APP-REVIEW2 overall Formal Human Acceptance, Hub release candidate review, public Hub HTTPS handoff, and Hub deployment remain independent decisions. This record changes no application source or published revision.

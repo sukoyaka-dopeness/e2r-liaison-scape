@@ -72,13 +72,15 @@ https://sukoyaka-dopeness.github.io/e2r-liaison-scape/
 
 ## Version
 
-Application and package version: `0.2.1`. The published `main` source is
-`54202255df0c34e26c2e1b2d2654ba782e4c4d5e`; its GitHub Pages deployment
-completed on 2026-10-21 at 15:27:30 JST. The separate Credits repository-link
-hit-area correction is [Human-accepted and publicly deployed within bounds](docs/credits-repository-link-hit-area-fix-2026-10-21.md).
+Application and package version: `0.2.1`. The approved Credits-fix application
+source `54202255df0c34e26c2e1b2d2654ba782e4c4d5e` was deployed to GitHub
+Pages on 2026-10-21 at 15:27:30 JST. Its [bounded Human Closure](docs/credits-repository-link-hit-area-fix-2026-10-21.md)
+is distinct from later Documentation-only `main` commits. The separate
+[Lighthouse JA Dimension Assessment preservation acceptance](docs/dimension-assessment-ui-preservation-human-acceptance-2026-10-22.md)
+does not establish Dimension Assessment editing support or general Dataset safety.
 
 Credits identifies LiaisonScape `0.2.1`, first released on 2026-08-16, with
-`Updated: 2026-10-21` for the current public deployment. The application
+`Updated: 2026-10-21` for the documented Credits-fix deployment. The application
 consumes E2R Validator `0.7.0`.
 
 ## Known limitations
