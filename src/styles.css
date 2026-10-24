@@ -38,7 +38,8 @@ body { margin: 0; }
 .home-guides { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 28px; }
 .home-guides a { color: #4f2390; font-size: .86rem; }
 .home-content .sample-info-link { font-size: .86rem; }
-.home-content .support-link { display: block; margin-top: 1.5rem; color: #6b6375; font-size: .86rem; text-align: center; text-underline-offset: .18em; }
+.home-support { display: grid; justify-items: center; gap: 8px; margin-top: 1.5rem; }
+.home-content .support-link { color: #6b6375; font-size: .86rem; text-align: center; text-underline-offset: .18em; }
 .credits-button { min-height: 40px; padding: 8px 12px; font-size: inherit; }
 .page-header { display: none; }
 .page-header h1 { margin: 0; color: #08060d; font-size: 36px; line-height: 115%; font-weight: 500; letter-spacing: -.72px; }

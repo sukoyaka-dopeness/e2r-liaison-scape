@@ -263,7 +263,16 @@ test("renders the production LiaisonScape Home surface", async () => {
     assert.equal(supportLink?.getAttribute("href"), "https://github.com/sponsors/sukoyaka-dopeness");
     assert.equal(supportLink?.getAttribute("target"), "_blank");
     assert.equal(supportLink?.getAttribute("rel"), "noreferrer");
+    const koFiLink = environment.document.querySelectorAll(".home-support .support-link")[1];
+    assert.equal(koFiLink?.textContent, "Support E2R on Ko-fi");
+    assert.equal(koFiLink?.getAttribute("href"), "https://ko-fi.com/sukoyaka_dopeness");
+    assert.equal(koFiLink?.getAttribute("target"), "_blank");
+    assert.equal(koFiLink?.getAttribute("rel"), "noreferrer");
+    assert.equal(koFiLink?.previousElementSibling, supportLink);
     assert.equal(environment.document.querySelector(".home-footer")?.contains(supportLink), false);
+    await act(async () => { (environment.document.querySelector(".locale-button") as HTMLButtonElement).click(); });
+    assert.equal(environment.document.querySelector(".home-support .support-link")?.textContent, "GitHub SponsorsでE2Rを支援する");
+    assert.equal(environment.document.querySelectorAll(".home-support .support-link")[1]?.textContent, "Ko-fiでE2Rを支援する");
   } finally {
     await environment.cleanup();
   }

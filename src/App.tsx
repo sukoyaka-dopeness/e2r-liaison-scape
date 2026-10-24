@@ -48,6 +48,7 @@ import { clearTemporaryLocaleResolution, parseRequestedLocale, readExplicitLocal
 
 const SAMPLE_PROVENANCE_URL = "https://github.com/sukoyaka-dopeness/e2r-spec/blob/main/docs/public-samples/public-sample-provenance.md";
 const GITHUB_SPONSORS_URL = "https://github.com/sponsors/sukoyaka-dopeness";
+const KO_FI_URL = "https://ko-fi.com/sukoyaka_dopeness";
 const emptyDataset: Dataset = { version: "1.0", entities: [], events: [], relations: [] };
 const DATASET_LOADING_SHOW_DELAY_MS = 120;
 const DATASET_LOADING_MIN_VISIBLE_MS = 180;
@@ -1570,9 +1571,14 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
             {translate(locale, "userGuide")}
           </a>
         </nav>
-        <a className="support-link" href={GITHUB_SPONSORS_URL} target="_blank" rel="noreferrer">
-          {translate(locale, "supportE2r")}
-        </a>
+        <div className="home-support">
+          <a className="support-link" href={GITHUB_SPONSORS_URL} target="_blank" rel="noreferrer">
+            {translate(locale, "supportE2r")}
+          </a>
+          <a className="support-link" href={KO_FI_URL} target="_blank" rel="noreferrer">
+            {translate(locale, "supportE2rOnKofi")}
+          </a>
+        </div>
       </main>
       <footer className="app-footer home-footer">
         <small>{translate(locale, "footerDescriptor")}</small>
