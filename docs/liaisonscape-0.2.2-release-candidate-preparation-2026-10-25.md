@@ -1,6 +1,6 @@
 # LiaisonScape 0.2.2 release candidate preparation — 2026-10-25
 
-Status at this preparation checkpoint: **LOCAL RELEASE METADATA ALIGNED / FINAL HUMAN BROWSER REVIEW PENDING / UNPUBLISHED**. Human approved `2026-10-25 JST` as the planned publication date after the initial date-pending checkpoint below. LiaisonScape `0.2.2` was subsequently published and received bounded public HTTPS Human Browser PASS; see the [publication and Human review record](liaisonscape-0.2.2-publication-and-human-review-2026-10-25.md). Formal Publication Closure remains pending.
+Status at this preparation checkpoint: **LOCAL RELEASE METADATA ALIGNED / FINAL HUMAN BROWSER REVIEW PENDING / UNPUBLISHED**. Human approved `2026-10-25 JST` as the planned publication date after the initial date-pending checkpoint below. LiaisonScape `0.2.2` was subsequently published, received bounded public HTTPS Human Browser PASS, and was formally closed by Human within bounds; see the [publication and Human closure record](liaisonscape-0.2.2-publication-and-human-review-2026-10-25.md). The pending status here is historical.
 
 ## Scope and evidence
 

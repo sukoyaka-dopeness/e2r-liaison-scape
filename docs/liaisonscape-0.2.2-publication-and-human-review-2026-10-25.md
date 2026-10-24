@@ -1,6 +1,6 @@
 # LiaisonScape 0.2.2 publication and Human review — 2026-10-25
 
-Status: **PUBLISHED / PUBLIC HTTPS HUMAN BROWSER REVIEW PASS / CLOSED (BOUNDED) / FORMAL PUBLICATION CLOSURE PENDING**.
+Status: **PUBLISHED / PUBLIC HTTPS HUMAN BROWSER REVIEW PASS / CLOSED (BOUNDED) / FORMAL PUBLICATION CLOSURE HUMAN ACCEPTED / CLOSED (BOUNDED)**. The earlier pending decision and its evidence are retained below; Human made the formal closure decision on 2026-10-25 JST.
 
 ## Publication and technical evidence
 
@@ -18,4 +18,12 @@ Human observed that the Footer Credits / クレジット button appears larger a
 
 The earlier final local RC Human Browser Review 7/7 PASS and Ko-fi Home Human Browser Review 5/5 PASS remain separate bounded evidence. The public review does not newly accept every browser or viewport, Dataset or Handoff paths, Workspace or Cross-Context Safety, Validator behavior, or Ko-fi payment service. Validator `0.7.0`, the two Lighthouse JA warnings, Diagnostics D2 OPEN, Dimension Assessment `0.2.0` non-Stable Candidate, LS-DA-PRESERVE2's limited acceptance, and Cross-Context Workspace Safety PENDING remain unchanged.
 
-**Formal Publication Closure is pending a separate Human decision.** The publication SHA, successful Actions/Pages deployment, public HTTP and matching assets, bounded Human public browser report, and nonblocking visual follow-up are the evidence for that decision. This record does not make the Closure decision or authorize another Push or deployment.
+At the post-publication evidence checkpoint, **Formal Publication Closure was pending a separate Human decision**. The publication SHA, successful Actions/Pages deployment, public HTTP and matching assets, bounded Human public browser report, and nonblocking visual follow-up were presented for that decision. That checkpoint did not itself authorize another Push or deployment.
+
+## Formal Human publication closure — 2026-10-25 JST
+
+Human expressly decided **LIAISONSCAPE 0.2.2 FORMAL PUBLICATION CLOSURE / HUMAN ACCEPTED / CLOSED (BOUNDED)** for the published application source `e5bcd8accd0a44ad51b04b825e8ebbc3a25a96a4`. The accepted publication transaction comprises the authorized three-commit Push, successful CI (673/673 tests), lint, build and Pages deployment, public HTTPS and matching asset checks, and the Human-reported bounded public Browser Review above. The earlier local final RC 7/7 PASS and Ko-fi Home 5/5 PASS remain distinct evidence; this decision does not turn technical verification into Human-operated browser observation or add unreported tests.
+
+Closure covers the recorded EN/JA Credits and release metadata, Credits dismissal and focus restoration, Ko-fi display and link, locale switch, basic Home actions, and reviewed normal and 390px layouts. It does not establish unconditional application safety, every browser or viewport, Dataset or Handoff paths, Workspace or Cross-Context Safety, Validator compatibility, or Ko-fi payment behavior. Validator `0.7.0`, the two Lighthouse JA warnings, Diagnostics D2 OPEN, Dimension Assessment `0.2.0` non-Stable Candidate, and LS-DA-PRESERVE2's limited acceptance remain unchanged.
+
+The narrow-width Footer Credits button sizing observation remains **OPEN / LOW PRIORITY / NONBLOCKING** in the E2R-SPEC Roadmap. Its cause is uninvestigated and this closure does not fix it. This Documentation decision does not authorize a further Push or Pages redeployment; synchronizing this local record is a separate transaction.

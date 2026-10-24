@@ -77,7 +77,9 @@ LiaisonScape `0.2.2` was published on 2026-10-25 JST from application source
 `2026-08-16` and Updated `2026-10-25`. The [publication and bounded public Human
 review record](docs/liaisonscape-0.2.2-publication-and-human-review-2026-10-25.md)
 distinguishes successful CI/Pages and public asset checks from the reported
-Human Browser PASS. Formal Publication Closure awaits a separate Human decision.
+Human Browser PASS. Human formally accepted and closed the `0.2.2` publication
+within the record's stated bounds on 2026-10-25 JST. Documentation Push and
+the resulting Pages redeployment require a separate decision.
 
 The earlier `0.2.1` Credits-fix application source
 `54202255df0c34e26c2e1b2d2654ba782e4c4d5e` was deployed to GitHub Pages
