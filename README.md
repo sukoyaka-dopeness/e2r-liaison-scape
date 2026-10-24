@@ -72,22 +72,23 @@ https://sukoyaka-dopeness.github.io/e2r-liaison-scape/
 
 ## Version
 
-The published application remains `0.2.1`. This repository locally prepares
-application and package version `0.2.2` as an unpublished Ko-fi maintenance
-candidate. Its Credits `Updated: 2026-10-25` is the Human-approved planned JST
-publication date, not evidence that `0.2.2` is already public. If the actual
-publication date changes, confirm and align it before Push. The approved
-`0.2.1` Credits-fix application source
+LiaisonScape `0.2.2` was published on 2026-10-25 JST from application source
+`e5bcd8accd0a44ad51b04b825e8ebbc3a25a96a4`. Its Credits show First release
+`2026-08-16` and Updated `2026-10-25`. The [publication and bounded public Human
+review record](docs/liaisonscape-0.2.2-publication-and-human-review-2026-10-25.md)
+distinguishes successful CI/Pages and public asset checks from the reported
+Human Browser PASS. Formal Publication Closure awaits a separate Human decision.
+
+The earlier `0.2.1` Credits-fix application source
 `54202255df0c34e26c2e1b2d2654ba782e4c4d5e` was deployed to GitHub Pages
 on 2026-10-21 at 15:27:30 JST. Its [bounded Human Closure](docs/credits-repository-link-hit-area-fix-2026-10-21.md)
 is distinct from later Documentation-only `main` commits. The separate
 [Lighthouse JA Dimension Assessment preservation acceptance](docs/dimension-assessment-ui-preservation-human-acceptance-2026-10-22.md)
 does not establish Dimension Assessment editing support or general Dataset safety.
 
-The local candidate Credits identifies LiaisonScape `0.2.2`, first released on
-2026-08-16, with planned `Updated: 2026-10-25`. The application consumes E2R
-Validator `0.7.0`. See the [0.2.2 release preparation](docs/liaisonscape-0.2.2-release-candidate-preparation-2026-10-25.md)
-for the remaining Human review and publication gates.
+The application continues to consume E2R Validator `0.7.0`. The [0.2.2 release
+preparation](docs/liaisonscape-0.2.2-release-candidate-preparation-2026-10-25.md)
+preserves the earlier local candidate and publication gates as historical evidence.
 
 ## Known limitations
 

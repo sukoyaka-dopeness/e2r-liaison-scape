@@ -2,7 +2,7 @@
 
 Recorded: 2026-10-24 JST
 
-Status: **LIAISONSCAPE KOFI HOME HUMAN BROWSER ACCEPTED / PASS / CLOSED (BOUNDED) / LOCAL UNPUBLISHED CANDIDATE**. The preparation and pending-review text below record the earlier checkpoint; the later Human decision is recorded in the final section.
+Status for this 2026-10-24 checkpoint: **LIAISONSCAPE KOFI HOME HUMAN BROWSER ACCEPTED / PASS / CLOSED (BOUNDED) / LOCAL UNPUBLISHED CANDIDATE**. The preparation and pending-review text below record the earlier checkpoint; the later Human decision is recorded in the final section. The accepted Home change was subsequently published in LiaisonScape `0.2.2`; see the separate [publication and bounded public Human review record](liaisonscape-0.2.2-publication-and-human-review-2026-10-25.md). Formal Publication Closure remains pending.
 
 ## Candidate identity and purpose
 
