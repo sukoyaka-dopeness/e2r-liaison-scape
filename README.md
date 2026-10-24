@@ -72,16 +72,22 @@ https://sukoyaka-dopeness.github.io/e2r-liaison-scape/
 
 ## Version
 
-Application and package version: `0.2.1`. The approved Credits-fix application
-source `54202255df0c34e26c2e1b2d2654ba782e4c4d5e` was deployed to GitHub
-Pages on 2026-10-21 at 15:27:30 JST. Its [bounded Human Closure](docs/credits-repository-link-hit-area-fix-2026-10-21.md)
+The published application remains `0.2.1`. This repository locally prepares
+application and package version `0.2.2` as an unpublished Ko-fi maintenance
+candidate; its Credits `Updated` date still describes the last confirmed
+application publication and must be set to the actual JST publication date
+before any `0.2.2` Push. The approved `0.2.1` Credits-fix application source
+`54202255df0c34e26c2e1b2d2654ba782e4c4d5e` was deployed to GitHub Pages
+on 2026-10-21 at 15:27:30 JST. Its [bounded Human Closure](docs/credits-repository-link-hit-area-fix-2026-10-21.md)
 is distinct from later Documentation-only `main` commits. The separate
 [Lighthouse JA Dimension Assessment preservation acceptance](docs/dimension-assessment-ui-preservation-human-acceptance-2026-10-22.md)
 does not establish Dimension Assessment editing support or general Dataset safety.
 
-Credits identifies LiaisonScape `0.2.1`, first released on 2026-08-16, with
-`Updated: 2026-10-21` for the documented Credits-fix deployment. The application
-consumes E2R Validator `0.7.0`.
+The local candidate Credits identifies LiaisonScape `0.2.2`, first released on
+2026-08-16, with `Updated: 2026-10-21` as the last confirmed application
+publication date, not a `0.2.2` publication claim. The application consumes
+E2R Validator `0.7.0`. See the [0.2.2 release preparation](docs/liaisonscape-0.2.2-release-candidate-preparation-2026-10-25.md)
+for the remaining date and Human review gates.
 
 ## Known limitations
 
