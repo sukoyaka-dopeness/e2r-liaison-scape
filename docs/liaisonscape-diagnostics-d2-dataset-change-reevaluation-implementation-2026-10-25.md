@@ -2,7 +2,7 @@
 
 Recorded: 2026-10-25
 
-Current status: **D2-FIX1 LOCAL IMPLEMENTATION COMPLETE / AUTOMATED VERIFICATION PASS / HUMAN BROWSER ACCEPTED — PASS (BOUNDED); FORMAL D2 CLOSURE PENDING; NOT PUBLISHED**. The implementation is local commit `e1eba83c3f3bbee4929a3c9af44acda378482812`; the Human decision below is subsequent to the pending review checkpoint retained in this document.
+Current status: **D2-FIX1 LOCAL IMPLEMENTATION COMPLETE / AUTOMATED VERIFICATION PASS / HUMAN BROWSER ACCEPTED — PASS (BOUNDED); DIAGNOSTICS D2 FORMAL HUMAN ACCEPTED / CLOSED (BOUNDED); NOT PUBLISHED**. The implementation is local commit `e1eba83c3f3bbee4929a3c9af44acda378482812`. The bounded Browser Acceptance and subsequent Formal Closure below supersede the pending review status retained as a historical checkpoint.
 
 ## Defect and bounded correction
 
@@ -41,3 +41,11 @@ Human explicitly accepted **D2-FIX1 HUMAN BROWSER ACCEPTED / PASS (BOUNDED)** fo
 This acceptance covers these reported paths only. It neither extends Diagnostics D1's separate bounded closure nor verifies all Dataset mutations, browser environments, Export files, or acquisition and safety paths. In particular, the displayed lifetime of operation-specific Diagnostics after a later successful Dataset edit has **not** completed Human Browser Review. Its current display policy is unchanged by this documentation decision.
 
 Human also observed that the candidate warning dialog joins the code and path on one line, for example `コード: extension_version_unspecified場所: /extensions/metadata`. Separating them for readability is an **OPEN UI quality follow-up**, not a D2 re-evaluation failure. No UI change is authorized or made here. Formal D2 Closure, publication of the local fix, and any change to operation-specific Diagnostics or the candidate dialog require separate Human decisions.
+
+## Subsequent Formal Human Closure — Diagnostics D2 (bounded)
+
+Human adopted the Closure Readiness Audit's **GO (BOUNDED)** recommendation and formally decided **DIAGNOSTICS D2 FORMAL HUMAN ACCEPTED / CLOSED (BOUNDED)**. This decision closes the original D2 issue only for **Current Dataset Diagnostics re-evaluation after a committed Dataset change**. It covers the stale warning after title-only Metadata removal, legitimate warning retention when Metadata remains, and warning creation after a committed edit, within the automated and Human-reviewed paths above. The D2-FIX1 implementation commit, the separately recorded D2-01–D2-06 bounded Human Browser Acceptance, 675/675 tests with lint/build/diff checks at implementation, and the later read-only targeted 5/5 PASS informed this Human decision. Automated, Human browser, and Human-inspected Export JSON evidence retain their separate boundaries; no Codex-operated browser or console review is claimed.
+
+The operation-specific Diagnostics display lifetime after a later successful Dataset edit is an independent **OPEN / HUMAN BROWSER REVIEW PENDING** issue. No display-policy decision or additional Human PASS follows from this closure. The candidate replacement dialog's joined code/path presentation is an independent **OPEN / UI QUALITY FOLLOW-UP**; no UI correction has been accepted or implemented. Other Dataset mutations and browser environments were not exhaustively reviewed. Diagnostics D1's earlier bounded closure, Validator `0.7.0`, the Lighthouse JA warnings, and LiaisonScape `0.2.2` publication closure remain separate and unchanged.
+
+D2-FIX1 and this closure record are local and **NOT PUBLISHED**. Push or deployment requires a separate Human authorization; the published `0.2.2` application source does not contain D2-FIX1.
