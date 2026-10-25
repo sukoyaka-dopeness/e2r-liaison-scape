@@ -2,7 +2,7 @@
 
 Recorded: 2026-10-25
 
-Status: **LOCAL IMPLEMENTATION / AUTOMATED VERIFICATION PASS; HUMAN BROWSER ACCEPTANCE PENDING; FORMAL D2 CLOSURE PENDING; NOT PUBLISHED**.
+Current status: **D2-FIX1 LOCAL IMPLEMENTATION COMPLETE / AUTOMATED VERIFICATION PASS / HUMAN BROWSER ACCEPTED — PASS (BOUNDED); FORMAL D2 CLOSURE PENDING; NOT PUBLISHED**. The implementation is local commit `e1eba83c3f3bbee4929a3c9af44acda378482812`; the Human decision below is subsequent to the pending review checkpoint retained in this document.
 
 ## Defect and bounded correction
 
@@ -19,8 +19,25 @@ Acquisition-candidate and local Import-failure Diagnostics retain their separate
 - The existing D1 integration tests continue to cover candidate/current attribution, replacement Cancel, warning-only acceptance, and focus restoration. The full suite also covers Dataset and operation-specific safety paths; this implementation does not extend the earlier bounded Human acceptance. Persistence of an operation-specific diagnostic after an unrelated successful Dataset edit was not independently tested.
 - Current verification: `npm test` **675/675 PASS**, `npm run lint` PASS, `npm run build` PASS, and `git diff --check` PASS. The full test runner emitted non-failing React input-polyfill `attachEvent`/`detachEvent` console errors in DOM tests; its TAP result had zero failures.
 
-## Human review and remaining scope
+## Human review requested at the implementation checkpoint
 
 Human Browser Review remains necessary for the title-only warning disappearance, legitimate warning retention when Metadata remains, warning appearance after a committed edit, EN/JA display, Export alignment, and D1 candidate/Cancel behavior. Automated and DOM results do not establish Human Browser PASS or Formal D2 Closure. Other Dataset mutations use the common commit path, but their individual warning transitions and all browser environments were not exhaustively reviewed.
 
 LiaisonScape `0.2.2` remains the published, bounded-closure release. This local implementation does not revise that publication or its metadata. Validator `0.7.0`, the Lighthouse JA `unknown_extension` and `specification_unavailable` warnings, LS-DA-PRESERVE2's bounded acceptance, Dimension Assessment `0.2.0` non-Stable Candidate status, Diagnostics D1's bounded closure, Cross-Context Workspace Safety PENDING, and the narrow-width Footer Credits follow-up remain unchanged. A local implementation commit does not authorize Push, deployment, Human acceptance, or a Roadmap status change.
+
+## Subsequent bounded Human Browser Acceptance — D2-FIX1
+
+Human explicitly accepted **D2-FIX1 HUMAN BROWSER ACCEPTED / PASS (BOUNDED)** for the local implementation commit above. Human reported viewing both Japanese and English UI. The exact browser, viewport dimensions, console state, and screenshots or exported JSON files are not recorded in this Repository; no file or screenshot artifact is inferred from the report. Codex did not perform this Human browser review or a console audit. The earlier 675/675 tests, lint, build, and diff check are automated evidence, separate from this Human decision.
+
+| Case | Human-reported result | Evidence boundary |
+| --- | --- | --- |
+| D2-01 | PASS — deleting the title-only Metadata title removes `extension_version_unspecified`; the Entity remains. | Browser observation reported by Human. |
+| D2-02 | PASS — restoring the title restores `extension_version_unspecified`. | Browser observation reported by Human. |
+| D2-03 | PASS — if `datasetId` remains in Metadata, deleting the title retains the legitimate warning. | Browser observation reported by Human. |
+| D2-04 | PASS (bounded) — candidate warnings appear in the replacement confirmation dialog, do not contaminate Current Dataset Diagnostics, and Cancel preserves the current state. | Human's reported interaction and Cancel observation; no screenshot-only or Codex-operated proof of the post-Cancel state is claimed. |
+| D2-05 | PASS — Human inspected the exported E2R JSON: `version` `1.0`, one Entity, empty `events` and `relations`, and no restored deleted Metadata. | Human's exported-file inspection; the file was not supplied to or independently compared by Codex. |
+| D2-06 | PASS — English UI also showed warning removal for title-only Metadata, warning retention with `datasetId`, and Entity preservation. | Human browser report for EN; Human also reported viewing JA. |
+
+This acceptance covers these reported paths only. It neither extends Diagnostics D1's separate bounded closure nor verifies all Dataset mutations, browser environments, Export files, or acquisition and safety paths. In particular, the displayed lifetime of operation-specific Diagnostics after a later successful Dataset edit has **not** completed Human Browser Review. Its current display policy is unchanged by this documentation decision.
+
+Human also observed that the candidate warning dialog joins the code and path on one line, for example `コード: extension_version_unspecified場所: /extensions/metadata`. Separating them for readability is an **OPEN UI quality follow-up**, not a D2 re-evaluation failure. No UI change is authorized or made here. Formal D2 Closure, publication of the local fix, and any change to operation-specific Diagnostics or the candidate dialog require separate Human decisions.
