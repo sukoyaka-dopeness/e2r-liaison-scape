@@ -74,10 +74,10 @@ https://sukoyaka-dopeness.github.io/e2r-liaison-scape/
 
 LiaisonScape `0.2.3` was published on 2026-10-25 JST from application source
 `33732e8307579df6de00f8f89d5a19341f449abb`. Its Credits show First release
-`2026-08-16` and Updated `2026-10-25`. The [0.2.3 publication record](docs/liaisonscape-0.2.3-maintenance-release-candidate-2026-10-25.md#subsequent-bounded-local-human-browser-acceptance-and-publication)
-distinguishes bounded local Human Browser Acceptance, successful CI and Pages,
-and public HTTPS asset verification. **Public HTTPS Human Browser Review and
-Formal Publication Closure remain pending.** The release includes the bounded
+`2026-08-16` and Updated `2026-10-25`. The [0.2.3 publication and Closure record](docs/liaisonscape-0.2.3-maintenance-release-candidate-2026-10-25.md#subsequent-public-https-human-browser-acceptance-and-formal-publication-closure)
+distinguishes local and public bounded Human Browser Acceptance from successful
+CI, Pages, and public HTTPS asset verification. **Formal Publication Closure is
+HUMAN ACCEPTED / CLOSED (BOUNDED).** The release includes the bounded
 Diagnostics D2-FIX1 correction and retains Validator `0.7.0`.
 
 LiaisonScape `0.2.2` was published on 2026-10-25 JST from application source
