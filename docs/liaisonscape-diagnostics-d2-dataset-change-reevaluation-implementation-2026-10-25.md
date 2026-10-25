@@ -2,7 +2,7 @@
 
 Recorded: 2026-10-25
 
-Current status: **D2-FIX1 LOCAL IMPLEMENTATION COMPLETE / AUTOMATED VERIFICATION PASS / HUMAN BROWSER ACCEPTED — PASS (BOUNDED); DIAGNOSTICS D2 FORMAL HUMAN ACCEPTED / CLOSED (BOUNDED); NOT PUBLISHED**. The implementation is local commit `e1eba83c3f3bbee4929a3c9af44acda378482812`. The bounded Browser Acceptance and subsequent Formal Closure below supersede the pending review status retained as a historical checkpoint.
+Current status: **D2-FIX1 IMPLEMENTATION COMPLETE / AUTOMATED VERIFICATION PASS / HUMAN BROWSER ACCEPTED — PASS (BOUNDED); DIAGNOSTICS D2 FORMAL HUMAN ACCEPTED / CLOSED (BOUNDED); PUBLISHED IN LIAISONSCAPE 0.2.3**. The implementation is commit `e1eba83c3f3bbee4929a3c9af44acda378482812`. The bounded Browser Acceptance, Formal Closure, and subsequent publication below supersede the pending review and unpublished statuses retained as historical checkpoints.
 
 ## Defect and bounded correction
 
@@ -48,4 +48,4 @@ Human adopted the Closure Readiness Audit's **GO (BOUNDED)** recommendation and 
 
 The operation-specific Diagnostics display lifetime after a later successful Dataset edit is an independent **OPEN / HUMAN BROWSER REVIEW PENDING** issue. No display-policy decision or additional Human PASS follows from this closure. The candidate replacement dialog's joined code/path presentation is an independent **OPEN / UI QUALITY FOLLOW-UP**; no UI correction has been accepted or implemented. Other Dataset mutations and browser environments were not exhaustively reviewed. Diagnostics D1's earlier bounded closure, Validator `0.7.0`, the Lighthouse JA warnings, and LiaisonScape `0.2.2` publication closure remain separate and unchanged.
 
-D2-FIX1 and this closure record are local and **NOT PUBLISHED**. Push or deployment requires a separate Human authorization; the published `0.2.2` application source does not contain D2-FIX1.
+At the Formal D2 Closure checkpoint, D2-FIX1 and this record were local and **NOT PUBLISHED**. The then-published `0.2.2` application source did not contain D2-FIX1. Human subsequently authorized the exact four-commit Push and Pages deployment; D2-FIX1 is now included in published LiaisonScape `0.2.3` application source `33732e8307579df6de00f8f89d5a19341f449abb`. The [0.2.3 publication evidence](liaisonscape-0.2.3-maintenance-release-candidate-2026-10-25.md#subsequent-bounded-local-human-browser-acceptance-and-publication) keeps local Human Browser Acceptance, CI/Pages, HTTP/asset verification, pending public Human Browser Review, and pending Formal Publication Closure distinct.

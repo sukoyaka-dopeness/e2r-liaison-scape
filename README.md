@@ -72,6 +72,14 @@ https://sukoyaka-dopeness.github.io/e2r-liaison-scape/
 
 ## Version
 
+LiaisonScape `0.2.3` was published on 2026-10-25 JST from application source
+`33732e8307579df6de00f8f89d5a19341f449abb`. Its Credits show First release
+`2026-08-16` and Updated `2026-10-25`. The [0.2.3 publication record](docs/liaisonscape-0.2.3-maintenance-release-candidate-2026-10-25.md#subsequent-bounded-local-human-browser-acceptance-and-publication)
+distinguishes bounded local Human Browser Acceptance, successful CI and Pages,
+and public HTTPS asset verification. **Public HTTPS Human Browser Review and
+Formal Publication Closure remain pending.** The release includes the bounded
+Diagnostics D2-FIX1 correction and retains Validator `0.7.0`.
+
 LiaisonScape `0.2.2` was published on 2026-10-25 JST from application source
 `e5bcd8accd0a44ad51b04b825e8ebbc3a25a96a4`. Its Credits show First release
 `2026-08-16` and Updated `2026-10-25`. The [publication and bounded public Human
@@ -81,15 +89,6 @@ Human Browser PASS. Human formally accepted and closed the `0.2.2` publication
 within the record's stated bounds on 2026-10-25 JST. The later Closure
 Documentation synchronization at `7987032731b4c83baaa2cf48aefa7d719cb03cdb`
 did not change that published application source.
-
-The next local maintenance release candidate is `0.2.3`, centered on the
-[bounded Diagnostics D2 correction](docs/liaisonscape-diagnostics-d2-dataset-change-reevaluation-implementation-2026-10-25.md).
-It is **not published**. Its local Credits show Version `0.2.3` and retain
-First release `2026-08-16`. Updated `2026-10-25` is the last confirmed
-application publication date, not an accepted `0.2.3` publication date.
-Before Push, Human must confirm the actual JST publication date and align
-Credits, tests, and documentation if it differs; see the
-[0.2.3 release candidate record](docs/liaisonscape-0.2.3-maintenance-release-candidate-2026-10-25.md).
 
 The earlier `0.2.1` Credits-fix application source
 `54202255df0c34e26c2e1b2d2654ba782e4c4d5e` was deployed to GitHub Pages
