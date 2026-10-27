@@ -283,6 +283,16 @@ If there is a problem, review the displayed message and correct the relevant
 Entity or Relation. Information that LiaisonScape does not use for display is
 preserved as far as possible when the Dataset is loaded and saved.
 
+For the reviewed official Lighthouse Restoration EN/JA sample, a compact,
+initially closed **Additional information** entry explains Dimension
+Assessment 0.2.0 data. Open it for the limits of LiaisonScape's display and
+editing features, the bounded Lighthouse JA graph-edit/Export preservation
+evidence, and exact technical diagnostic codes, severity and paths. Graph work
+can continue. This explanation requires the exact reviewed sample and matching
+declaration; it does not guarantee all edits or apply to unknown or modified
+Extension data. Current and replacement-candidate information remain distinct.
+Actual validation, save and Export failures keep their separate notices.
+
 ## Future possibilities
 
 The following are areas under consideration or planned exploration, not

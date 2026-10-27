@@ -302,6 +302,20 @@ li { margin: .35rem 0; }
 .confirmation { width: min(42rem, calc(100% - 32px)); }
 .replacement-confirmation .detail-actions { flex-wrap: nowrap; gap: 8px; }
 .replacement-confirmation .detail-actions button { white-space: nowrap; }
+.sample-extension-notice {
+  max-width: 42rem;
+  margin: 8px 0;
+  padding: 6px 10px;
+  border: 1px solid #e5e4e7;
+  border-radius: 6px;
+  background: #fff;
+  overflow-wrap: anywhere;
+}
+.sample-extension-notice > summary,
+.sample-extension-technical > summary { cursor: pointer; font-weight: 600; }
+.sample-extension-notice p { margin: 10px 0; }
+.sample-extension-notice code { white-space: normal; overflow-wrap: anywhere; }
+.sample-extension-notice summary:focus-visible { outline: 2px solid #7045b7; outline-offset: 2px; }
 .confirmation-backdrop { z-index: 30; }
 .detail.confirmation { z-index: 31; }
 .detail.confirmation-entity,

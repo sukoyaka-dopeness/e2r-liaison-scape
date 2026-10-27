@@ -80,6 +80,13 @@ CI, Pages, and public HTTPS asset verification. **Formal Publication Closure is
 HUMAN ACCEPTED / CLOSED (BOUNDED).** The release includes the bounded
 Diagnostics D2-FIX1 correction and retains Validator `0.7.0`.
 
+LiaisonScape `0.2.4` is the Human-accepted bounded Public Beta release for the
+Lighthouse Restoration Sample Dataset warning UX improvement. The release date
+is 2026-10-28 JST. See the [candidate and acceptance record](docs/l3-lighthouse-sample-warning-ux-local-candidate-2026-10-28.md)
+and [0.2.4 release record](docs/liaisonscape-0.2.4-release-candidate-preparation-2026-10-28.md)
+for its scope and publication evidence. The formal RC acceptance and release
+authorization are separate from post-deployment publication verification.
+
 LiaisonScape `0.2.2` was published on 2026-10-25 JST from application source
 `e5bcd8accd0a44ad51b04b825e8ebbc3a25a96a4`. Its Credits show First release
 `2026-08-16` and Updated `2026-10-25`. The [publication and bounded public Human

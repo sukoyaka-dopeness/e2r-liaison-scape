@@ -12,6 +12,8 @@ import { AutoLayoutConfirmation } from "./components/AutoLayoutConfirmation";
 import { DetailDismissalConfirmation } from "./components/DetailDismissalConfirmation";
 import { CreationDismissalConfirmation } from "./components/CreationDismissalConfirmation";
 import { DatasetReplacementDialog } from "./components/DatasetReplacementDialog";
+import { SampleExtensionNotice } from "./components/SampleExtensionNotice";
+import { isKnownDimensionAssessmentNotice } from "./known-sample-extension-notice";
 import { CreditsDialog } from "./components/CreditsDialog";
 import { EntityDetailDialog } from "./components/EntityDetailDialog";
 import { EntityDeletionResolutionDialog } from "./components/EntityDeletionResolutionDialog";
@@ -1517,7 +1519,7 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
   }
 
   const replacementDialog = dataset && pendingDatasetReplacement
-    ? <DatasetReplacementDialog locale={locale} datasetModified={datasetModified} pendingUserWork={pendingUserWork} diagnostics={pendingDatasetReplacementDiagnostics} onCancel={cancelDatasetReplacement} onDiscard={discardAndContinueDatasetReplacement} onExportAndContinue={exportAndContinueDatasetReplacement} onExportDataset={exportDatasetOnly} />
+    ? <DatasetReplacementDialog locale={locale} datasetModified={datasetModified} pendingUserWork={pendingUserWork} dataset={pendingDatasetReplacement} diagnostics={pendingDatasetReplacementDiagnostics} onCancel={cancelDatasetReplacement} onDiscard={discardAndContinueDatasetReplacement} onExportAndContinue={exportAndContinueDatasetReplacement} onExportDataset={exportDatasetOnly} />
     : null;
   const datasetLoadingIndicator = datasetLoadingVisible
     ? <div className="dataset-loading-indicator" role="status" aria-live="polite" aria-atomic="true"><span className="dataset-loading-indicator__spinner" aria-hidden="true" />{translate(locale, "datasetLoading")}</div>
@@ -2557,7 +2559,8 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
       />}
       {dataset && deleteConfirmation && <ConfirmationDialog locale={locale} subject={deleteConfirmation === "entity" ? "Entity" : "Relation"} onCancel={cancelDeletion} onConfirm={confirmDeletion} />}
       {dataset && autoLayoutConfirmationOpen && <AutoLayoutConfirmation locale={locale} onCancel={() => { setAutoLayoutConfirmationOpen(false); maintenanceMenuSummaryRef.current?.focus(); }} onConfirm={applyAutoLayout} />}
-      {diagnostics.length > 0 && (
+      {isKnownDimensionAssessmentNotice(dataset, diagnostics) && <SampleExtensionNotice locale={locale} diagnostics={diagnostics} scope="current" />}
+      {diagnostics.length > 0 && !isKnownDimensionAssessmentNotice(dataset, diagnostics) && (
         <ul aria-label={translate(locale, "validationDiagnostics")}>
           {diagnostics.map((diagnostic, index) => (
             <li key={`${diagnostic.code}-${index}`}>

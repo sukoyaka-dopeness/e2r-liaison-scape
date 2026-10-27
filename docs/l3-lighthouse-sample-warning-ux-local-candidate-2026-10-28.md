@@ -1,0 +1,29 @@
+# L3 Lighthouse Sample Warning UX — local candidate
+
+Date: 2026-10-28 JST
+
+Status: **APP-LOCAL ROUTE A ADOPTED / HUMAN ACCEPTED / CLOSED (BOUNDED)** on 2026-10-28 JST. This is work after the published and boundedly accepted 0.2.3 release, with independent LiaisonScape acceptance.
+
+The installed Validator 0.7.0 continues to emit the exact `unknown_extension` and `specification_unavailable` warnings for Lighthouse Restoration EN/JA. LiaisonScape checks the exact Dimension Assessment ID, payload `specVersion` 0.2.0, one matching Specification use, the precise two-warning set, and exact payload equality with one of the reviewed public Lighthouse samples. The reviewed payload strings are generated from those fixtures and test-bound to them; this is not structural or semantic validation. A changed payload (including an invalid value), different version, absent or conflicting declaration, extra warning or error retains the ordinary diagnostic presentation. Key-order-only changes can also fall back conservatively. The user text does not guarantee validity or preservation through all edits.
+
+The normal Workspace and replacement Candidate offer an initially closed, compact **Additional information / 追加情報** disclosure for the bounded case. EN/JA text explains the additional data, unavailable Dimension Assessment editing, the limited Lighthouse JA graph edit and Export preservation evidence, and continued graph work. Exact Code, Severity and Path stay accessible inside the disclosure. Candidate warnings remain in the replacement dialog. Other diagnostics, validation failures and save/Export refusals are not demoted. The replacement focus list excludes descendants of a closed disclosure while retaining its summary. No Dataset, Validator, graph editing, save, Export or replacement algorithm changed.
+
+`tests/knownSampleExtensionNotice.test.ts` checks both official locales, Current/Candidate text, exact technical diagnostics and fail-closed classification. Existing integration and safety tests remain separate evidence. Human Browser review remains needed at normal and narrow widths in EN/JA: open Lighthouse, observe the compact entry without graph occlusion, expand with mouse and Enter/Space, traverse diagnostic details and replacement actions by Tab/Shift+Tab, inspect long paths/scrolling, and verify Cancel and focus restoration. Disposable malformed/unknown/mixed cases and actual operation refusals should retain distinct non-reassuring notices. Browser results must not be inferred from DOM or source tests.
+
+This follows the previously selected [L3 presentation design](../../e2r-spec/docs/liaisonscape/liaisonscape-l3-diagnostics-presentation-design-2026-10-26.md) and app-local route A. A later Validator update requires its own compatibility milestone.
+
+## Human Browser review — 2026-10-28 JST
+
+Human reported PASS for Lighthouse JA/EN at normal and approximately 390px widths: the disclosure and explanation, exact technical Diagnostics and long Paths were readable, with no major interference in the Graph Workspace. Human also confirmed that Cancel during Dataset replacement retained the previous Dataset and judged the compact disclosure visually coherent. These are Human Browser observations, not automated-test or Codex-browser results. Other unreported actions and exceptional data shapes are not inferred as Human PASS. No LiaisonScape Runtime change followed this review. **HUMAN BROWSER REVIEW PASS REPORTED / FORMAL ACCEPTANCE DECISION PENDING**; its decision is independent of NarrativeLine's visual follow-up.
+
+## Bounded formal acceptance proposal — 2026-10-28 JST
+
+**Recommendation: HUMAN ACCEPTED / CLOSED (BOUNDED) is supportable for this local Candidate, subject to explicit Human decision.** Scope it to the reported official Lighthouse JA/EN display at normal and approximately 390px widths, compact closed entry, expanded explanation and exact technical-detail readability, Graph Workspace layout, and observed replacement Cancel retention. The previously reported other checks are retained as Human PASS only to the extent their actual operation and environment were recorded; unspecified keyboard sequences or failure fixtures are not inferred. There has been no Runtime change since the Human Browser review, and no confirmed release-blocking defect remains within this scope.
+
+Exclude other browsers and sizes, arbitrary or modified Dimension Assessment payloads, unknown Extensions, mismatched declarations, mixed Diagnostics, failure and refusal paths, every edit/save/Export preservation route, semantic validation, and complete accessibility coverage. Exact-sample classification and fallback cases have automated checks, not Human Browser PASS. Validator 0.7.0's legitimate warnings remain available. Formal Acceptance, Stage/Commit/Push and publication remain separate Human decisions.
+
+## Subsequent formal Human decision — 2026-10-28 JST
+
+Human independently approved **HUMAN ACCEPTED / CLOSED (BOUNDED)** for this LiaisonScape L3 local candidate. The directly observed scope is the official Lighthouse JA/EN review above at normal and approximately 390px widths: compact closed entry, readable expanded explanation and exact technical Diagnostics including long Paths, no major Graph Workspace obstruction, visually coherent presentation, and retention of the previous Dataset after replacement Cancel. No LiaisonScape Runtime change followed that Human review. Unreported keyboard sequences and exceptional fixtures are not added to Human Browser PASS.
+
+The preceding recommendation and pending language describe the earlier checkpoint, not the current decision. Automated/source evidence for fallback and ownership remains distinct from Human Browser observation. The exclusions above remain in force. This acceptance authorizes neither a new Release Candidate nor staging, commit, publication, or expansion of the existing 0.2.3 Publication Closure.

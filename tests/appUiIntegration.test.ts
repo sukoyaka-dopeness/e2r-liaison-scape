@@ -641,6 +641,7 @@ test("labels staged replacement warnings as belonging to the candidate Dataset",
       locale,
       datasetModified: true,
       pendingUserWork: false,
+      dataset: { version: "1.0", entities: [], events: [], relations: [] },
       diagnostics: candidateDiagnostics,
       onCancel: () => { cancelCount += 1; },
       onDiscard: () => {},
@@ -731,10 +732,10 @@ test("localizes the Home Credits surface while preserving identity and dismissal
     assert.ok(dialog);
     assert.equal(dialog.querySelector("#credits-title")?.textContent, "Credits");
     assert.equal(dialog.querySelector(".credits-actions button")?.textContent, "Close");
-    assert.match(dialog.textContent ?? "", /Application: LiaisonScape 0\.2\.3/);
+    assert.match(dialog.textContent ?? "", /Application: LiaisonScape 0\.2\.4/);
     assert.match(dialog.textContent ?? "", /Creator: sukoyaka-dopeness/);
     assert.match(dialog.textContent ?? "", /First release: 2026-08-16/);
-    assert.match(dialog.textContent ?? "", /Updated: 2026-10-25/);
+    assert.match(dialog.textContent ?? "", /Updated: 2026-10-28/);
     assert.match(dialog.textContent ?? "", /With gratitude to all the AI systems that contributed to this project\./);
     assert.equal(dialog.querySelector('a[href="https://github.com/sukoyaka-dopeness/e2r-liaison-scape"]')?.textContent, "LiaisonScape repository");
     assert.equal(dialog.querySelector('a[href="https://github.com/sukoyaka-dopeness/e2r-spec"]')?.textContent, "E2R specification repository");
@@ -755,10 +756,10 @@ test("localizes the Japanese Credits surface and preserves every dismissal path"
     assert.equal(dialog.querySelector("#credits-title")?.textContent, "クレジット");
     assert.equal(dialog.querySelector(".credits-actions button")?.textContent, "閉じる");
     assert.equal(environment.document.querySelector(".credits-backdrop")?.getAttribute("aria-label"), "クレジットを閉じる");
-    assert.match(dialog.textContent ?? "", /アプリケーション: LiaisonScape 0\.2\.3/);
+    assert.match(dialog.textContent ?? "", /アプリケーション: LiaisonScape 0\.2\.4/);
     assert.match(dialog.textContent ?? "", /作成者: sukoyaka-dopeness/);
     assert.match(dialog.textContent ?? "", /初回リリース: 2026-08-16/);
-    assert.match(dialog.textContent ?? "", /更新日: 2026-10-25/);
+    assert.match(dialog.textContent ?? "", /更新日: 2026-10-28/);
     assert.match(dialog.textContent ?? "", /このプロジェクトに貢献したすべてのAIシステムに感謝します。/);
     assert.match(dialog.textContent ?? "", /LiaisonScapeリポジトリ/);
     assert.match(dialog.textContent ?? "", /E2R仕様リポジトリ/);
@@ -794,7 +795,7 @@ test("uses the same localized Credits surface from Workspace", async () => {
     assert.ok(dialog);
     assert.equal(dialog.querySelector("#credits-title")?.textContent, "クレジット");
     assert.equal(dialog.querySelector(".credits-actions button")?.textContent, "閉じる");
-    assert.match(dialog.textContent ?? "", /LiaisonScape 0\.2\.3/);
+    assert.match(dialog.textContent ?? "", /LiaisonScape 0\.2\.4/);
     assert.match(dialog.textContent ?? "", /このプロジェクトに貢献したすべてのAIシステムに感謝します。/);
   }});
 });

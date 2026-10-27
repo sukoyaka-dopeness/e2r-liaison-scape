@@ -1,23 +1,32 @@
 import { useEffect, useRef } from "react";
 import { replacementActions, type ReplacementAction } from "../dataset-replacement-safety";
-import type { Diagnostic } from "../dataset";
+import type { Dataset, Diagnostic } from "../dataset";
 import { translate, type Locale } from "../i18n";
+import { isKnownDimensionAssessmentNotice } from "../known-sample-extension-notice";
+import { SampleExtensionNotice } from "./SampleExtensionNotice";
 
-type Props = { locale: Locale; datasetModified: boolean; pendingUserWork: boolean; diagnostics: Diagnostic[]; onCancel: () => void; onDiscard: () => void; onExportAndContinue: () => void; onExportDataset: () => void };
+type Props = { locale: Locale; datasetModified: boolean; pendingUserWork: boolean; dataset: Dataset; diagnostics: Diagnostic[]; onCancel: () => void; onDiscard: () => void; onExportAndContinue: () => void; onExportDataset: () => void };
 
-export function DatasetReplacementDialog({ locale, datasetModified, pendingUserWork, diagnostics, onCancel, onDiscard, onExportAndContinue, onExportDataset }: Props) {
+export function DatasetReplacementDialog({ locale, datasetModified, pendingUserWork, dataset, diagnostics, onCancel, onDiscard, onExportAndContinue, onExportDataset }: Props) {
   const dialogRef = useRef<HTMLElement>(null);
   const firstRef = useRef<HTMLButtonElement>(null);
   const actions = replacementActions(datasetModified, pendingUserWork);
   useEffect(() => {
-    const initialFocus = dialogRef.current?.querySelector<HTMLElement>(".candidate-diagnostics summary") ?? firstRef.current;
+    const initialFocus = dialogRef.current?.querySelector<HTMLElement>(".candidate-diagnostics summary, .sample-extension-notice summary") ?? firstRef.current;
     initialFocus?.focus();
   }, [diagnostics]);
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") { event.preventDefault(); onCancel(); return; }
       if (event.key !== "Tab" || !dialogRef.current) return;
-      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>("button:not(:disabled), summary"));
+      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>("button:not(:disabled), summary"))
+        .filter((element) => {
+          for (let parent = element.parentElement; parent && parent !== dialogRef.current; parent = parent.parentElement) {
+            if (parent.tagName === "DETAILS" && !(parent as HTMLDetailsElement).open
+              && !(parent === element.parentElement && element.tagName === "SUMMARY")) return false;
+          }
+          return true;
+        });
       if (focusable.length === 0) return;
       const index = focusable.indexOf(document.activeElement as HTMLElement);
       const nextIndex = index === -1
@@ -37,5 +46,8 @@ export function DatasetReplacementDialog({ locale, datasetModified, pendingUserW
         ? <button key={action} type="button" onClick={onExportAndContinue}>{translate(locale, "exportAndContinue")}</button>
         : <button key={action} type="button" onClick={onExportDataset}>{translate(locale, "exportDatasetOnly")}</button>;
   const warnings = diagnostics.filter(({ severity }) => severity === "warning");
-  return <><button className="detail-backdrop confirmation-backdrop" type="button" aria-label={translate(locale, "cancelReplacement")} onClick={onCancel} /><aside ref={dialogRef} className="detail confirmation replacement-confirmation" role="dialog" aria-modal="true" aria-labelledby="dataset-replacement-title"><h3 id="dataset-replacement-title">{translate(locale, "datasetReplacementTitle")}</h3><p>{translate(locale, "datasetReplacementMessage")}</p>{warnings.length > 0 && <details className="candidate-diagnostics"><summary>{translate(locale, "replacementCandidateWarnings")}</summary><ul aria-label={translate(locale, "replacementCandidateWarnings")}>{warnings.map((diagnostic, index) => <li key={`${diagnostic.code}-${index}`}><span>{translate(locale, "diagnosticCodeLabel")}: {diagnostic.code}</span><span>{translate(locale, "diagnosticPathLabel")}: {diagnostic.path}</span></li>)}</ul></details>}<div className="detail-actions">{actions.map(button)}</div></aside></>;
+  return <><button className="detail-backdrop confirmation-backdrop" type="button" aria-label={translate(locale, "cancelReplacement")} onClick={onCancel} /><aside ref={dialogRef} className="detail confirmation replacement-confirmation" role="dialog" aria-modal="true" aria-labelledby="dataset-replacement-title"><h3 id="dataset-replacement-title">{translate(locale, "datasetReplacementTitle")}</h3><p>{translate(locale, "datasetReplacementMessage")}</p>{isKnownDimensionAssessmentNotice(dataset, diagnostics)
+    ? <SampleExtensionNotice locale={locale} diagnostics={diagnostics} scope="candidate" />
+    : warnings.length > 0 && <details className="candidate-diagnostics"><summary>{translate(locale, "replacementCandidateWarnings")}</summary><ul aria-label={translate(locale, "replacementCandidateWarnings")}>{warnings.map((diagnostic, index) => <li key={`${diagnostic.code}-${index}`}><span>{translate(locale, "diagnosticCodeLabel")}: {diagnostic.code}</span><span>{locale === "ja" ? "重要度" : "Severity"}: {diagnostic.severity}</span><span>{translate(locale, "diagnosticPathLabel")}: {diagnostic.path}</span></li>)}</ul></details>}
+    <div className="detail-actions">{actions.map(button)}</div></aside></>;
 }
