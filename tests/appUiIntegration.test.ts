@@ -270,7 +270,19 @@ test("renders the production LiaisonScape Home surface", async () => {
     assert.equal(koFiLink?.getAttribute("rel"), "noreferrer");
     assert.equal(koFiLink?.previousElementSibling, supportLink);
     assert.equal(environment.document.querySelector(".home-footer")?.contains(supportLink), false);
+    const hubGroup = environment.document.querySelector(".home-ecosystem")!;
+    const hubLink = hubGroup.querySelector("a")!;
+    assert.ok(hubGroup.previousElementSibling?.classList.contains("home-guides"));
+    assert.ok(hubGroup.nextElementSibling?.classList.contains("home-support"));
+    assert.equal(hubLink.textContent?.trim(), "Explore other E2R apps on E2R Hub");
+    assert.equal(hubLink.getAttribute("href"), "https://sukoyaka-dopeness.github.io/e2r-hub/#locale=en");
+    assert.equal(hubLink.getAttribute("target"), "_blank");
+    assert.equal(hubLink.getAttribute("rel"), "noopener noreferrer");
+    assert.ok(hubLink.getAttribute("aria-label")?.includes("new tab"));
     await act(async () => { (environment.document.querySelector(".locale-button") as HTMLButtonElement).click(); });
+    assert.equal(hubLink.textContent?.trim(), "E2R Hubでほかのアプリを見る");
+    assert.equal(hubLink.getAttribute("href"), "https://sukoyaka-dopeness.github.io/e2r-hub/#locale=ja");
+    assert.ok(hubLink.getAttribute("aria-label")?.includes("新しいタブ"));
     assert.equal(environment.document.querySelector(".home-support .support-link")?.textContent, "GitHub SponsorsでE2Rを支援する");
     assert.equal(environment.document.querySelectorAll(".home-support .support-link")[1]?.textContent, "Ko-fiでE2Rを支援する");
   } finally {

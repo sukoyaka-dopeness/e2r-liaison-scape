@@ -37,6 +37,8 @@ body { margin: 0; }
 .home-actions button:first-child { color: #08060d; border-color: #e5e4e7; background: #fff; }
 .home-guides { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 28px; }
 .home-guides a { color: #4f2390; font-size: .86rem; }
+.home-ecosystem { max-width: 100%; margin-top: 24px; text-align: center; }
+.home-ecosystem a { display: inline-block; max-width: 100%; color: #4f2390; font-size: .86rem; font-weight: 400; overflow-wrap: break-word; }
 .home-content .sample-info-link { font-size: .86rem; }
 .home-support { display: grid; justify-items: center; gap: 8px; margin-top: 1.5rem; }
 .home-content .support-link { color: #6b6375; font-size: .86rem; text-align: center; text-underline-offset: .18em; }

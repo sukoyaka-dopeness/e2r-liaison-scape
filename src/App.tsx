@@ -1575,6 +1575,17 @@ export default function App({ initialLayoutOverride, parallelBundleVariant, para
             {translate(locale, "userGuide")}
           </a>
         </nav>
+        <nav className="home-ecosystem" aria-label={locale === "ja" ? "E2Rエコシステム" : "E2R ecosystem"}>
+          <a
+            href={`https://sukoyaka-dopeness.github.io/e2r-hub/#locale=${locale}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={locale === "ja" ? "新しいタブで開きます" : "Opens in a new tab"}
+            aria-label={locale === "ja" ? "E2R Hubでほかのアプリを見る（新しいタブで開きます）" : "Explore other E2R apps on E2R Hub (opens in a new tab)"}
+          >
+            {locale === "ja" ? "E2R Hubでほかのアプリを見る" : "Explore other E2R apps on E2R Hub"}
+          </a>
+        </nav>
         <div className="home-support">
           <a className="support-link" href={GITHUB_SPONSORS_URL} target="_blank" rel="noreferrer">
             {translate(locale, "supportE2r")}
