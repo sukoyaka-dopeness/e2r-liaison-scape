@@ -4,7 +4,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createServer } from "vite";
 
-test("Locale Conflict actions match NarrativeLine copy in each target language", async () => {
+test("Locale Conflict has fixed bilingual questions and English/Japanese actions", async () => {
   const server = await createServer({
     root: process.cwd(),
     server: { middlewareMode: true, hmr: false, ws: false },
@@ -13,11 +13,11 @@ test("Locale Conflict actions match NarrativeLine copy in each target language",
   try {
     const { LocaleConflictDialog } = await server.ssrLoadModule("/src/components/LocaleConflictDialog.tsx");
     const cases = [
-      { saved: "en", requested: "ja", expected: ['lang="en">Continue in English</button>', 'lang="ja">日本語で表示</button>'], savedLabel: "Continue in English" },
-      { saved: "ja", requested: "en", expected: ['lang="ja">日本語で続ける</button>', 'lang="en">Show in English</button>'], savedLabel: "日本語で続ける" },
+      { saved: "en", requested: "ja" },
+      { saved: "ja", requested: "en" },
     ] as const;
 
-    for (const { saved, requested, expected, savedLabel } of cases) {
+    for (const { saved, requested } of cases) {
       const html = renderToStaticMarkup(React.createElement(LocaleConflictDialog, {
         locale: saved,
         requestedLocale: requested,
@@ -29,9 +29,11 @@ test("Locale Conflict actions match NarrativeLine copy in each target language",
         .filter((button) => /\blang="(?:en|ja)"/.test(button));
 
       assert.equal(actionButtons.length, 2);
-      assert.ok(actionButtons[0].endsWith(expected[0]));
-      assert.ok(actionButtons[1].endsWith(expected[1]));
-      assert.match(html, new RegExp(`aria-label="${savedLabel}"`));
+      assert.ok(actionButtons[0].endsWith('lang="en">English</button>'));
+      assert.ok(actionButtons[1].endsWith('lang="ja">日本語</button>'));
+      assert.match(html, /<span lang="en">Which language would you like to use\?<\/span>/);
+      assert.match(html, /<span lang="ja">どちらの言語で表示しますか？<\/span>/);
+      assert.match(html, /aria-describedby="locale-conflict-detail"/);
       assert.doesNotMatch(actionButtons.join(" "), /saved language|requested by link|保存済みの言語|リンクで指定された言語/);
     }
   } finally {

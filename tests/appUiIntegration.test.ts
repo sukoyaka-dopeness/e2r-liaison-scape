@@ -179,6 +179,25 @@ test("resolves requested locale before Handoff and keeps conflict choice tempora
   });
 });
 
+test("bilingual locale order keeps both selection routes temporary and initially focuses saved locale", async () => {
+  for (const saved of ["en", "ja"] as const) for (const selected of ["en", "ja"] as const) {
+    await withProductionApp({
+      locale: saved,
+      beforeRender: environment => environment.window.history.replaceState(null, "", `#locale=${saved === "en" ? "ja" : "en"}`),
+      callback: async environment => {
+        const dialog = environment.document.querySelector(".locale-conflict")!;
+        const buttons = [...dialog.querySelectorAll<HTMLButtonElement>("button")];
+        assert.deepEqual(buttons.map(button => [button.lang, button.textContent]), [["en", "English"], ["ja", "日本語"]]);
+        assert.equal((environment.document.activeElement as HTMLElement).lang, saved);
+        assert.equal(environment.document.documentElement.lang, saved);
+        await act(async () => buttons[selected === "en" ? 0 : 1]!.click());
+        assert.equal(environment.document.querySelector(".locale-conflict"), null);
+        assert.equal(environment.document.documentElement.lang, selected);
+        assert.equal(environment.window.localStorage.getItem("liaisonscape.locale"), saved);
+      },
+    });
+  }
+});
 test("browser fallback is not persisted and explicit selector writes preference and locale fragment", async () => {
   await withProductionApp({
     locale: "en",
