@@ -193,6 +193,7 @@ test("bilingual locale order keeps both selection routes temporary and initially
         await act(async () => buttons[selected === "en" ? 0 : 1]!.click());
         assert.equal(environment.document.querySelector(".locale-conflict"), null);
         assert.equal(environment.document.documentElement.lang, selected);
+        assert.equal(environment.document.activeElement, environment.document.querySelector("header a.app-brand"));
         assert.equal(environment.window.localStorage.getItem("liaisonscape.locale"), saved);
       },
     });

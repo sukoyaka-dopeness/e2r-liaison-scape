@@ -8,16 +8,23 @@ type Props = {
   onUseRequested: () => void;
 };
 
-function finishLocaleChoice(action: () => void) {
-  action();
-  window.requestAnimationFrame(() => {
-    if (document.activeElement === document.body) document.querySelector<HTMLElement>("header a, header button")?.focus();
-  });
-}
-
 export function LocaleConflictDialog({ locale, requestedLocale, onUseSaved, onUseRequested }: Props) {
   const dialogRef = useRef<HTMLElement>(null);
   const savedRef = useRef<HTMLButtonElement>(null);
+  const resolutionStarted = useRef(false);
+  useEffect(() => () => {
+    if (!resolutionStarted.current) return;
+    // Wait for the resolving render and ordinary modal cleanup to finish.
+    window.requestAnimationFrame(() => {
+      // A subsequent Handoff dialog owns focus while it is open.
+      if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return;
+      document.querySelector<HTMLElement>("header a.app-brand")?.focus({ preventScroll: true });
+    });
+  }, []);
+  function finishLocaleChoice(action: () => void) {
+    resolutionStarted.current = true;
+    action();
+  }
   useEffect(() => { savedRef.current?.focus(); }, []);
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
