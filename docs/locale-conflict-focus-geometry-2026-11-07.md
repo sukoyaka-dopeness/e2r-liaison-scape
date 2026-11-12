@@ -278,7 +278,7 @@ NarrativeLine, LiaisonScape and ParameterPlotter, and separately for the
 NarrativeLine Home action-width refinement. The closure covers exactly those
 two workstreams, their accepted implementation, publication and bounded
 verification. The Home decision is also recorded in
-[its own record](../../e2r-narrative-line/docs/home-action-width-visual-refinement-2026-11-06.md).
+[its own record](https://github.com/sukoyaka-dopeness/e2r-narrative-line/blob/main/docs/home-action-width-visual-refinement-2026-11-06.md).
 
 The Human adopted the Codex-operated 96-case public evidence, saved-Locale
 comparisons and nine English Home geometry measurements, together with prior
