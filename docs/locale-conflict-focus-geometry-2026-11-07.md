@@ -232,3 +232,65 @@ edit/save-failure states remain outside this bounded acceptance.
 This section is a local Documentation-only addendum. It does not authorize or
 perform a new Commit, Push, Deployment, acceptance, or closure, and does not
 change Core, Extension, Dataset, Locale or Handoff semantics.
+
+
+## Public browser evidence and audit - 2026-11-12
+
+The preceding synchronization is a historical checkpoint. On 2026-11-12,
+an isolated Chrome headless profile and disposable browser contexts were used
+for independent CDP testing of the three public HTTPS applications. This is
+real-browser evidence, not official Browser Use recovery or Human review. The
+previous Browser Use BLOCKED history remains valid: the access host was
+unavailable. Publication Acceptance and Closure remain Human decisions.
+
+The subsequent evidence audit checked 96 unique cases: three apps, saved EN/JA,
+1280/390/360/320px, and English/Japanese/Escape/backdrop actions (32 per app).
+Within that scope, bilingual content, button order, initial focus, Tab/Shift+Tab,
+Enter/Space, focus return to each app-name link, selected display language,
+unchanged saved Locale values and reload continuity passed. CDP captured no
+Runtime.exceptionThrown in these cases; this is not an exhaustive console-warning
+or all-path error audit. Direct saved-Locale comparison, previously excluded
+from local acceptance, is now supported for these isolated public cases only.
+
+DOM geometry measurements covered three apps at 1280/360/320px. Dialog buttons
+measured approximately 67.03 by 36px with the accepted heading styling and no
+measured horizontal overflow. Home measurements were in English: all three
+were 320px at 1280 and 360, and NarrativeLine was 286px versus 288px for the
+other two at 320. Human accepted the 2px difference on 2026-11-07. The audit
+reconstructed 96 unique cases and nine geometry measurements from the local
+`workspace/diagnostics/public-visual-review-20261112/` result JSON and scripts.
+The results do not record asset hashes or a Git SHA; previous deployment and
+sampled asset checks establish only a bounded revision association, not complete
+identity.
+
+Actual screen-reader speech, successor Handoff-dialog focus contention, other
+browser engines, all editing/save-failure states and full delivered dependency
+identity remain NOT VERIFIED. This addendum does not change the 2026-11-07 local
+Human Acceptance, grant product-wide assurance, or establish Public Browser
+Acceptance, Publication Acceptance or Closure. Human review remains pending.
+
+## Human Publication Acceptance and Closure - 2026-11-12
+
+**PUBLICATION ACCEPTANCE APPROVED (BOUNDED) / PUBLICATION CLOSURE APPROVED
+(BOUNDED).** The Human explicitly adopted the preceding isolated public
+Chrome/CDP evidence for the Locale Conflict Dialog visual refinement in
+NarrativeLine, LiaisonScape and ParameterPlotter, and separately for the
+NarrativeLine Home action-width refinement. The closure covers exactly those
+two workstreams, their accepted implementation, publication and bounded
+verification. The Home decision is also recorded in
+[its own record](../../e2r-narrative-line/docs/home-action-width-visual-refinement-2026-11-06.md).
+
+The Human adopted the Codex-operated 96-case public evidence, saved-Locale
+comparisons and nine English Home geometry measurements, together with prior
+local acceptance and publication evidence. This is not a claim that the Human
+personally performed those 96 browser cases. The previously accepted 286px
+versus 288px difference at 320px remains acceptable. The 2026-11-07 bounded
+local Human Acceptance remains distinct and unchanged.
+
+Official Browser Use remains BLOCKED independently; CDP did not restore it.
+Actual screen-reader speech, successor Handoff-dialog focus contention, other
+browser engines, all edit/save-failure states, complete delivered dependency
+identity, unobserved console warnings and Runtime paths, and Cross-Context
+Workspace Safety as a whole remain outside this closure. They are not thereby
+declared FAIL or new publication blockers. This decision does not close
+Home-to-Hub, other releases, untested functionality or the entire product.
